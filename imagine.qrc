@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/icons" >
+        <file>Resources/start_acq.bmp</file>
+        <file>Resources/start_live.bmp</file>
+        <file>Resources/stop.bmp</file>
+    </qresource>
+</RCC>

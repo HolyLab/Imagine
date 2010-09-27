@@ -1,0 +1,12 @@
+STIMSEQ
+header size=9 lines
+version=2.0 # the format version
+app version=2.0 # the stim file generator's version
+datetime=
+post seq valve=0
+unit=stack
+unit offset=0 # 0 means stack# is 0-based. 1 means stack# is 1-based.
+comment=this is a sample stim file
+0 0 # this means pre seq valve is 0. see: comment in next line.
+1 4 # this means stack_4 HAS valve_1, that is, BEFORE stack_4, valve_1 should be opened.
+12 6
