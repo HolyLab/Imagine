@@ -1,5 +1,5 @@
 /*-------------------------------------------------------------------------
-** Copyright (C) 2005-2008 Timothy E. Holy and Zhongsheng Guo
+** Copyright (C) 2005-2010 Timothy E. Holy and Zhongsheng Guo
 **    All rights reserved.
 ** Author: All code authored by Zhongsheng Guo.
 ** License: This file may be used under the terms of the GNU General Public
@@ -23,10 +23,10 @@ using std::vector;
 
 #include "atmcd32d.h"        		// Andor functions
 
-class AndorCamera {
+#include "camera_g.hpp"
+
+class AndorCamera: public Camera {
 public:
-   typedef unsigned short PixelValue;
-   enum ExtraErrorCode {eNoEnoughMem=DRV_ERROR_CODES-100 };
    enum AcqMode {eSingleScan=1, eAccumulate, eKineticSeries, eRunTillAbort=5,
          eUndocumentedFrameTransfer=6,
    };
@@ -34,13 +34,8 @@ public:
       eExternalStart=6,
    };
 
-   int  hbin, vbin,  hstart,  hend,  vstart,  vend; //image binning params. 1-based.
-                                //for hend and vend: <0 means chip width (or height)
 private:
    AndorCapabilities caps;                     // AndorCapabilities structure
-   char model[32];                // headmodel
-   int 	chipWidth;       				// dims of
-   int	chipHeight;       				// CCD chip
 
    //todo: move next two to local
    int  idxVirticalSpeed;                 // Vertical Speed Index
@@ -50,39 +45,15 @@ private:
    int     readMode;
    int     triggerMode;
 
-   int  nFrames;
-
-   int	errorCode;    //these two are paired. errorCode meanings are defined by 
-   string errorMsg;   //   atmcd32d.h and ExtraErrorCode. 
-
-   // image Buffers
-   PixelValue * pImageArray;	 // main image buffer read from card
-   int imageArraySize; //in pixel
-
 public:
    AndorCamera(){
-      hbin=vbin=1;
-      hstart=vstart=1;
-      hend=vend= -1; //
-
       //acquisitionMode=eUndocumentedFrameTransfer; //6
       readMode=4;
       triggerMode=eInternalTrigger;   //internal mode
 
-      nFrames=100;  //todo: make this as a param
-
-      pImageArray=NULL;
-      imageArraySize=0;
-
-      strcpy(model, "Unknown");
    }//ctor
 
    ~AndorCamera(){
-      // free all allocated memory
-      if(pImageArray){
-         delete []pImageArray;
-         pImageArray = NULL;
-      }
    }
 
    string getErrorMsg(){
@@ -92,23 +63,13 @@ public:
       else return errorMsg;
    }
 
-   int getErrorCode(){
-      return errorCode;
+   int getExtraErrorCode(ExtraErrorCodeType type) {
+      switch(type){
+      case eOutOfMem: return DRV_ERROR_CODES-100;
+      //default: 
+      }
    }
 
-   PixelValue * getImageArray(){
-      return pImageArray;
-   }
-
-   //todo: to verify
-   int getImageWidth(){
-      return (hend-hstart+1)/hbin;
-   }
-
-   //todo: to verify
-   int getImageHeight(){
-      return (vend-vstart+1)/vbin;
-   }
 
    vector<float> getHorShiftSpeeds()
    {
@@ -155,10 +116,6 @@ public:
       return preAmpGains;
    }//getPreAmpGains(),
 
-   string getModel()
-   {
-      return model;
-   }//getModel()
 
    //return true if success
    bool init(){
@@ -182,11 +139,13 @@ public:
       }
 
       // Get Head Model
-      errorCode=GetHeadModel(model);
+      char tModel[32];                // headmodel
+      errorCode=GetHeadModel(tModel);
       if(errorCode!=DRV_SUCCESS){
          errorMsg+="Get Head Model information";
          return false;
       }
+      model=tModel;
 
       // Get detector information
       errorCode=GetDetector(&chipWidth,&chipHeight);
@@ -279,34 +238,6 @@ public:
 
       return true;
    }//fini(),
-
-   //allocate the image array space
-   bool allocImageArray(int nFrames, bool shouldReallocAnyway){
-      int nPixels=getImageWidth()*getImageHeight()*nFrames;
-
-      if(shouldReallocAnyway || nPixels>imageArraySize){
-         if(pImageArray){
-            delete []pImageArray;
-            pImageArray = NULL;
-            imageArraySize=0;
-         }
-      }//if, should delete old allocation
-
-      //here if pImageArray!=NULL, 
-      //     then !shouldReallocAnyway && nPixels<=imageArraySize.
-
-      if(!pImageArray){
-         pImageArray=new PixelValue[nPixels];
-         if(!pImageArray){
-            errorCode=eNoEnoughMem;
-            errorMsg="no enough memory";
-            return false;
-         }//if, fail to alloc enough mem
-         imageArraySize=nPixels;
-      }//if, no allocated space before
-
-      return true;
-   }//allocImageArray(),
 
 
    //------------------------------------------------------------------------------
