@@ -70,6 +70,12 @@ public:
       }
    }
 
+   long getAcquiredFrameCount()
+   {
+      long nFramesGotCur;
+      GetTotalNumberImagesAcquired(&nFramesGotCur);
+      return nFramesGotCur;
+   }
 
    vector<float> getHorShiftSpeeds()
    {

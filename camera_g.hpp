@@ -75,6 +75,8 @@ public:
       return errorCode;
    }
 
+   virtual long getAcquiredFrameCount()=0; // #frames acquired so far
+
    PixelValue * getImageArray(){
       return pImageArray;
    }

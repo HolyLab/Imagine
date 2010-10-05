@@ -212,7 +212,8 @@ void DataAcqThread::run_live()
    long nFramesGot=0;
    long nFramesGotCur;
    while(!stopRequested){
-      GetTotalNumberImagesAcquired(&nFramesGotCur);
+      nFramesGotCur=camera.getAcquiredFrameCount();
+
       if(nFramesGot!=nFramesGotCur && !isUpdatingImage){
          nFramesGot=nFramesGotCur;
          //get the last frame:
@@ -416,7 +417,8 @@ nextStack:
    int status;
    GetStatus(&status);  //todo: check return value
    while(status!=DRV_IDLE){
-      GetTotalNumberImagesAcquired(&nFramesGotForStackCur);
+      nFramesGotForStackCur=camera.getAcquiredFrameCount();
+
       if(nFramesGotForStack!=nFramesGotForStackCur && !isUpdatingImage){
          nFramesGotForStack=nFramesGotForStackCur;
          //get the latest frame:
