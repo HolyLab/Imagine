@@ -455,7 +455,7 @@ public:
 
 };//class, AndorCamera
 
-extern AndorCamera camera;
+//extern AndorCamera camera;
 
 
 #endif //ANDOR_G_HPP

@@ -18,6 +18,7 @@
     <ProjectGuid>{E3EDAAF3-D18D-4FED-B184-7BD5E21DD470}</ProjectGuid>
     <RootNamespace>imagine</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
+    <ProjectName>imagine2</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
