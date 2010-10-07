@@ -48,26 +48,8 @@ protected:
    int imageArraySize; //in pixel
 
 public:
-   Camera(){
-      hbin=vbin=1;
-      hstart=vstart=1;
-      hend=vend= -1; //
-
-      pImageArray=NULL;
-      imageArraySize=0;
-
-      nFrames=100;  //todo: make this as a param
-
-      model="Unknown";
-
-   }
-   virtual ~Camera(){
-      // free all allocated memory
-      if(pImageArray){
-         delete []pImageArray;
-         pImageArray = NULL;
-      }
-   }
+   Camera();
+   virtual ~Camera();
 
    virtual string getErrorMsg()=0;
 
@@ -103,32 +85,7 @@ public:
    virtual int getExtraErrorCode(ExtraErrorCodeType type)=0;
 
    //allocate the image array space
-   bool allocImageArray(int nFrames, bool shouldReallocAnyway){
-      int nPixels=getImageWidth()*getImageHeight()*nFrames;
-
-      if(shouldReallocAnyway || nPixels>imageArraySize){
-         if(pImageArray){
-            delete []pImageArray;
-            pImageArray = NULL;
-            imageArraySize=0;
-         }
-      }//if, should delete old allocation
-
-      //here if pImageArray!=NULL, 
-      //     then !shouldReallocAnyway && nPixels<=imageArraySize.
-
-      if(!pImageArray){
-         pImageArray=new PixelValue[nPixels];
-         if(!pImageArray){
-            errorCode=getExtraErrorCode(eOutOfMem);
-            errorMsg="no enough memory";
-            return false;
-         }//if, fail to alloc enough mem
-         imageArraySize=nPixels;
-      }//if, no allocated space before
-
-      return true;
-   }//allocImageArray(),
+   bool allocImageArray(int nFrames, bool shouldReallocAnyway);
 
 
 };//class, Camera
