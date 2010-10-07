@@ -3,7 +3,31 @@
 
 #include "camera_g.hpp"
 
+#include "PvApi.h"
+
 class AvtCamera: public Camera {
+public:
+   AvtCamera(){
+      //
+   }
+
+   ~AvtCamera(){
+      //
+   }
+
+   string getErrorMsg(){
+      if(errorCode==ePvErrSuccess){
+         return "no error";
+      }
+      else return errorMsg;
+   }
+
+   int getExtraErrorCode(ExtraErrorCodeType type) {
+      switch(type){
+      case eOutOfMem: return __ePvErr_force_32-100; //NOTE: this might be an issue
+      //default: 
+      }
+   }
 
 
 };
