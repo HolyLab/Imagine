@@ -13,9 +13,77 @@
 ** warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 **-------------------------------------------------------------------------*/
 
+#include "Winbase.h"
+
 #include "avt_g.hpp"
+
+// wait for a camera to be plugged
+void WaitForCamera()
+{
+    //printf("waiting for a camera ...\n");
+    while(!PvCameraCount() ) //&& !GCamera.Abort)
+        Sleep(250);
+    //printf("\n");
+}
+
 
 bool AvtCamera::init()
 {
+   errorMsg="Camera Initialization failed when: ";
+
+   errorCode=PvInitialize();
+   if(result!=ePvErrSuccess){
+      errorMsg+="call PvInitialize";
+      return false;
+   }
+
+   // wait for a camera to be plugged
+   WaitForCamera();
+
+   tPvUint32 count,connected;
+   tPvCameraInfo list;
+
+   count = PvCameraList(&list,1,&connected);
+   if(count == 1)    {
+        cameraID = list.UniqueId;
+        model=list.DisplayName; //TODO: null-terminated?
+   }
+   else {
+      errorMsg+="can't find one and only one AVT camera"; 
+      return false;
+   }
+
+   errorCode=PvCameraOpen(cameraID,ePvAccessMaster,&cameraHandle);   
+
+   if(result!=ePvErrSuccess){
+      errorMsg+="open camera";
+      return false;
+   }
+
+   //NOTE: now we can start camera
+
+   return true;
+
+}
+
+AvtCamera::fini()
+{
+   //unsetup the camera
+
+   //printf("clearing the queue\n");  
+   // dequeue all the frame still queued (this will block until they all have been dequeued)
+   PvCaptureQueueClear(cameraHandle);
+   // then close the camera
+   // printf("and closing the camera\n");  
+   PvCameraClose(cameraHandle);
+
+   // delete all the allocated buffers
+    for(int i=0;i<FRAMESCOUNT;i++)
+        delete [] (char*)GCamera.Frames[i].ImageBuffer;
+
+    cameraHandle = NULL;
+
+    // uninitialise the API
+    PvUnInitialize();
 
 }

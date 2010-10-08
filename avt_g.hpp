@@ -6,6 +6,9 @@
 #include "PvApi.h"
 
 class AvtCamera: public Camera {
+    unsigned long   cameraID;
+    tPvHandle       cameraHandle;
+
 public:
    AvtCamera(){
       //
