@@ -181,7 +181,7 @@ void DataAcqThread::run()
 void DataAcqThread::run_live()
 {
    //prepare for camera:
-   camera.setAcqModeAndTime(AndorCamera::eRunTillAbort,
+   camera.setAcqModeAndTime(Camera::eLive,
                             this->exposureTime, 
                             this->nFramesPerStack,
                             AndorCamera::eInternalTrigger  //use internal trigger
@@ -250,7 +250,7 @@ void DataAcqThread::run_acq_and_save()
    
    //prepare for camera:
    //camera.setAcqModeAndTime(AndorCamera::eKineticSeries,
-   camera.setAcqModeAndTime(AndorCamera::eUndocumentedFrameTransfer,
+   camera.setAcqModeAndTime(Camera::eAcqAndSave,
                             this->exposureTime, 
                             this->nFramesPerStack,
                             this->triggerMode);

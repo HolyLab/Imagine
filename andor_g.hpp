@@ -209,12 +209,21 @@ public:
 
    //TODO: change this func's name 
    //set up trigger mode, acq. mode and time
-   bool setAcqModeAndTime(AcqMode acqMode,
+   bool setAcqModeAndTime(GenericAcqMode theAcqMode,
                           float exposure,
                           int anFrames,  //used only in kinetic-series mode
                           TriggerMode triggerMode
                           )
    {
+      //todo:
+      AcqMode acqMode;
+      if(theAcqMode==eLive) acqMode=AndorCamera::eRunTillAbort;
+      else if(theAcqMode==eAcqAndSave) acqMode=AndorCamera::eUndocumentedFrameTransfer;
+      else {
+         cerr<<"coding error"<<endl;
+         exit(1);
+      }
+
       this->nFrames=anFrames;
       this->triggerMode=triggerMode;
 
