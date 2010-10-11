@@ -28,6 +28,15 @@ public:
    enum ExtraErrorCodeType {
       eOutOfMem,
    };
+   enum TriggerMode {eInternalTrigger=0, 
+      eExternalStart=6,
+   };
+
+   enum GenericAcqMode{
+      eLive,
+      eAcqAndSave,
+   };
+
    int  hbin, vbin,  hstart,  hend,  vstart,  vend; //image binning params. 1-based.
                                 //for hend and vend: <0 means chip width (or height)
 
@@ -86,6 +95,22 @@ public:
 
    //allocate the image array space
    bool allocImageArray(int nFrames, bool shouldReallocAnyway);
+
+   //params common to both live- and save-modes
+   virtual bool setAcqParams(int emGain,
+                     int preAmpGainIdx,
+                     int horShiftSpeedIdx,
+                     int verShiftSpeedIdx,
+                     int verClockVolAmp,
+                     bool isBaselineClamp
+                     )=0;
+
+   //params different for live from for save mode
+   bool setAcqModeAndTime(GenericAcqMode acqMode,
+                          float exposure,
+                          int anFrames,  //used only in kinetic-series mode
+                          TriggerMode triggerMode
+                          );
 
 
 };//class, Camera

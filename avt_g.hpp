@@ -35,6 +35,14 @@ public:
    bool init();
    bool fini();
 
+   bool setAcqParams(int emGain,
+                     int preAmpGainIdx,
+                     int horShiftSpeedIdx,
+                     int verShiftSpeedIdx,
+                     int verClockVolAmp,
+                     bool isBaselineClamp
+                     ) ;
+
 };
 
 

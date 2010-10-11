@@ -30,9 +30,6 @@ public:
    enum AcqMode {eSingleScan=1, eAccumulate, eKineticSeries, eRunTillAbort=5,
          eUndocumentedFrameTransfer=6,
    };
-   enum TriggerMode {eInternalTrigger=0, 
-      eExternalStart=6,
-   };
 
 private:
    AndorCapabilities caps;                     // AndorCapabilities structure

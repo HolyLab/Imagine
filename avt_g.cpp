@@ -60,6 +60,26 @@ bool AvtCamera::init()
       return false;
    }
 
+   unsigned long sWidth,sHeight;
+   errorCode = PvAttrUint32Get(GCamera.Handle,"SensorWidth",&sWidth);
+
+   if(errorCode!=ePvErrSuccess){
+      errorMsg+="get camera chip width";
+      return false;
+   }
+   
+   errorCode = PvAttrUint32Get(GCamera.Handle,"SensorHeight",&sHeight);
+
+   if(errorCode!=ePvErrSuccess){
+      errorMsg+="get camera chip height";
+      return false;
+   }
+
+   this->chipWidth=sWidth;
+   this->chipHeight=sHeight;
+
+
+
    //NOTE: now we can start camera
 
    return true;
@@ -90,3 +110,18 @@ bool AvtCamera::fini()
 
     return true;
 }
+
+
+bool AvtCamera::setAcqParams(int emGain,
+                     int preAmpGainIdx,
+                     int horShiftSpeedIdx,
+                     int verShiftSpeedIdx,
+                     int verClockVolAmp,
+                     bool isBaselineClamp
+                     ) 
+{
+
+}
+
+
+
