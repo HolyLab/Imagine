@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="imagine"
 	ProjectGUID="{E3EDAAF3-D18D-4FED-B184-7BD5E21DD470}"
 	RootNamespace="imagine"
 	Keyword="Qt4VSv1.0"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -39,7 +40,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="qtgen,$(QTDIR)\include,.\qtgen\Release,$(QTDIR)\include\QtCore,$(QTDIR)\include\QtGui"
+				AdditionalIncludeDirectories="&quot;qtgen&quot;;&quot;$(QTDIR)\include&quot;;&quot;.\qtgen\Release&quot;;&quot;$(QTDIR)\include\QtCore&quot;;&quot;$(QTDIR)\include\QtGui&quot;;&quot;.\&quot;"
+				PreprocessorDefinitions="QT_DLL"
 				RuntimeLibrary="2"
 				DebugInformationFormat="0"
 			/>
@@ -56,9 +58,11 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="qtmain.lib QtCore4.lib QtGui4.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
-				AdditionalLibraryDirectories="$(QTDIR)\lib"
+				AdditionalLibraryDirectories="&quot;$(QTDIR)\lib&quot;"
 				GenerateDebugInformation="false"
 				SubSystem="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -77,9 +81,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -110,8 +111,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="qtgen;&quot;$(QTDIR)\include&quot;;.\qtgen\Debug;&quot;$(QTDIR)\include\QtCore&quot;;&quot;$(QTDIR)\include\QtGui&quot;;&quot;E:\jason\qwt-5.0.1\src&quot;"
-				PreprocessorDefinitions="DEBUG_AI"
+				AdditionalIncludeDirectories="&quot;qtgen&quot;;&quot;$(QTDIR)\include&quot;;&quot;.\qtgen\Debug&quot;;&quot;$(QTDIR)\include\QtCore&quot;;&quot;$(QTDIR)\include\QtGui&quot;;E:\jason\qwt-5.0.1\src;&quot;.\&quot;"
+				PreprocessorDefinitions="DEBUG_AI;QT_DLL"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
 			/>
@@ -133,6 +134,8 @@
 				SubSystem="1"
 				HeapReserveSize="0"
 				StackReserveSize="0"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -151,9 +154,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -215,7 +215,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Moc&apos;ing ai_thread.hpp..."
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  -I&quot;.\qtgen&quot; -I&quot;$(QTDIR)\include&quot; -I&quot;.\qtgen\Release&quot; -I&quot;$(QTDIR)\include\QtCore&quot; -I&quot;$(QTDIR)\include\QtGui&quot; &quot;.\ai_thread.hpp&quot; -o &quot;.\qtgen\Release\moc_ai_thread.h.cpp&quot;&#x0D;&#x0A;"
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DQT_DLL -D_VC80_UPGRADE=0x0710  &quot;-I.\qtgen&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\qtgen\Release&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I.&quot; &quot;.\ai_thread.hpp&quot; -o &quot;.\qtgen\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
 						AdditionalDependencies="$(QTDIR)\bin\moc.exe;.\ai_thread.hpp"
 						Outputs="&quot;.\qtgen\Release\moc_ai_thread.h.cpp&quot;"
 					/>
@@ -226,7 +226,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Moc&apos;ing ai_thread.hpp..."
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  -DDEBUG_AI -I&quot;.\qtgen&quot; -I&quot;$(QTDIR)\include&quot; -I&quot;.\qtgen\Debug&quot; -I&quot;$(QTDIR)\include\QtCore&quot; -I&quot;$(QTDIR)\include\QtGui&quot; -I&quot;E:\jason\qwt-5.0.1\src&quot; &quot;.\ai_thread.hpp&quot; -o &quot;.\qtgen\Debug\moc_ai_thread.h.cpp&quot;&#x0D;&#x0A;"
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DDEBUG_AI -DQT_DLL -D_VC80_UPGRADE=0x0710  &quot;-I.\qtgen&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\qtgen\Debug&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-IE:\jason\qwt-5.0.1\src&quot; &quot;-I.&quot; &quot;.\ai_thread.hpp&quot; -o &quot;.\qtgen\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
 						AdditionalDependencies="$(QTDIR)\bin\moc.exe;.\ai_thread.hpp"
 						Outputs="&quot;.\qtgen\Debug\moc_ai_thread.h.cpp&quot;"
 					/>
@@ -261,6 +261,28 @@
 			<File
 				RelativePath=".\Atmcd32d.h"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\data_acq_thread.hpp"
@@ -270,10 +292,10 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="Moc&apos;ing data_acq_thread.hpp..."
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  -I&quot;.\qtgen&quot; -I&quot;$(QTDIR)\include&quot; -I&quot;.\qtgen\Release&quot; -I&quot;$(QTDIR)\include\QtCore&quot; -I&quot;$(QTDIR)\include\QtGui&quot; &quot;.\data_acq_thread.hpp&quot; -o &quot;.\qtgen\Release\moc_data_acq_thread.h.cpp&quot;&#x0D;&#x0A;"
-						AdditionalDependencies="$(QTDIR)\bin\moc.exe;.\data_acq_thread.hpp"
-						Outputs="&quot;.\qtgen\Release\moc_data_acq_thread.h.cpp&quot;"
+						Description="Moc&apos;ing $(InputFileName)..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DQT_DLL -D_VC80_UPGRADE=0x0710  &quot;-I.\qtgen&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\qtgen\Release&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I.&quot; &quot;.\data_acq_thread.hpp&quot; -o &quot;.\qtgen\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+						Outputs="&quot;.\qtgen\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -281,10 +303,10 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="Moc&apos;ing data_acq_thread.hpp..."
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  -DDEBUG_AI -I&quot;.\qtgen&quot; -I&quot;$(QTDIR)\include&quot; -I&quot;.\qtgen\Debug&quot; -I&quot;$(QTDIR)\include\QtCore&quot; -I&quot;$(QTDIR)\include\QtGui&quot; -I&quot;E:\jason\qwt-5.0.1\src&quot; &quot;.\data_acq_thread.hpp&quot; -o &quot;.\qtgen\Debug\moc_data_acq_thread.h.cpp&quot;&#x0D;&#x0A;"
-						AdditionalDependencies="$(QTDIR)\bin\moc.exe;.\data_acq_thread.hpp"
-						Outputs="&quot;.\qtgen\Debug\moc_data_acq_thread.h.cpp&quot;"
+						Description="Moc&apos;ing $(InputFileName)..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DDEBUG_AI -DQT_DLL -D_VC80_UPGRADE=0x0710  &quot;-I.\qtgen&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\qtgen\Debug&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-IE:\jason\qwt-5.0.1\src&quot; &quot;-I.&quot; &quot;.\data_acq_thread.hpp&quot; -o &quot;.\qtgen\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+						Outputs="&quot;.\qtgen\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
 					/>
 				</FileConfiguration>
 			</File>
@@ -297,7 +319,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Moc&apos;ing fanctrldialog.h..."
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  -I&quot;.\qtgen&quot; -I&quot;$(QTDIR)\include&quot; -I&quot;.\qtgen\Release&quot; -I&quot;$(QTDIR)\include\QtCore&quot; -I&quot;$(QTDIR)\include\QtGui&quot; &quot;.\fanctrldialog.h&quot; -o &quot;.\qtgen\$(ConfigurationName)\moc_fanctrldialog.cpp&quot;&#x0D;&#x0A;"
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DQT_DLL -D_VC80_UPGRADE=0x0710  &quot;-I.\qtgen&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\qtgen\Release&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I.&quot; &quot;.\fanctrldialog.h&quot; -o &quot;.\qtgen\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
 						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;.\fanctrldialog.h"
 						Outputs="&quot;.\qtgen\$(ConfigurationName)\moc_fanctrldialog.cpp&quot;"
 					/>
@@ -308,7 +330,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Moc&apos;ing fanctrldialog.h..."
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  -DDEBUG_AI -I&quot;.\qtgen&quot; -I&quot;$(QTDIR)\include&quot; -I&quot;.\qtgen\Debug&quot; -I&quot;$(QTDIR)\include\QtCore&quot; -I&quot;$(QTDIR)\include\QtGui&quot; -I&quot;E:\jason\qwt-5.0.1\src&quot; &quot;.\fanctrldialog.h&quot; -o &quot;.\qtgen\$(ConfigurationName)\moc_fanctrldialog.cpp&quot;&#x0D;&#x0A;"
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DDEBUG_AI -DQT_DLL -D_VC80_UPGRADE=0x0710  &quot;-I.\qtgen&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\qtgen\Debug&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-IE:\jason\qwt-5.0.1\src&quot; &quot;-I.&quot; &quot;.\fanctrldialog.h&quot; -o &quot;.\qtgen\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
 						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;.\fanctrldialog.h"
 						Outputs="&quot;.\qtgen\$(ConfigurationName)\moc_fanctrldialog.cpp&quot;"
 					/>
@@ -317,6 +339,28 @@
 			<File
 				RelativePath=".\histogram_item.h"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\imagelabel.h"
@@ -327,7 +371,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Moc&apos;ing imagelabel.h..."
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  -I&quot;.\qtgen&quot; -I&quot;$(QTDIR)\include&quot; -I&quot;.\qtgen\Release&quot; -I&quot;$(QTDIR)\include\QtCore&quot; -I&quot;$(QTDIR)\include\QtGui&quot; &quot;.\imagelabel.h&quot; -o &quot;.\qtgen\Release\moc_imagelabel.cpp&quot;&#x0D;&#x0A;"
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DQT_DLL -D_VC80_UPGRADE=0x0710  &quot;-I.\qtgen&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\qtgen\Release&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I.&quot; &quot;.\imagelabel.h&quot; -o &quot;.\qtgen\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
 						AdditionalDependencies="$(QTDIR)\bin\moc.exe;.\imagelabel.h"
 						Outputs="&quot;.\qtgen\Release\moc_imagelabel.cpp&quot;"
 					/>
@@ -338,7 +382,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Moc&apos;ing imagelabel.h..."
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  -DDEBUG_AI -I&quot;.\qtgen&quot; -I&quot;$(QTDIR)\include&quot; -I&quot;.\qtgen\Debug&quot; -I&quot;$(QTDIR)\include\QtCore&quot; -I&quot;$(QTDIR)\include\QtGui&quot; -I&quot;E:\jason\qwt-5.0.1\src&quot; &quot;.\imagelabel.h&quot; -o &quot;.\qtgen\Debug\moc_imagelabel.cpp&quot;&#x0D;&#x0A;"
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DDEBUG_AI -DQT_DLL -D_VC80_UPGRADE=0x0710  &quot;-I.\qtgen&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\qtgen\Debug&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-IE:\jason\qwt-5.0.1\src&quot; &quot;-I.&quot; &quot;.\imagelabel.h&quot; -o &quot;.\qtgen\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
 						AdditionalDependencies="$(QTDIR)\bin\moc.exe;.\imagelabel.h"
 						Outputs="&quot;.\qtgen\Debug\moc_imagelabel.cpp&quot;"
 					/>
@@ -353,7 +397,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Moc&apos;ing imagine.h..."
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  -I&quot;.\qtgen&quot; -I&quot;$(QTDIR)\include&quot; -I&quot;.\qtgen\Release&quot; -I&quot;$(QTDIR)\include\QtCore&quot; -I&quot;$(QTDIR)\include\QtGui&quot; &quot;.\imagine.h&quot; -o &quot;.\qtgen\Release\moc_imagine.cpp&quot;&#x0D;&#x0A;"
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DQT_DLL -D_VC80_UPGRADE=0x0710  &quot;-I.\qtgen&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\qtgen\Release&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I.&quot; &quot;.\imagine.h&quot; -o &quot;.\qtgen\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
 						AdditionalDependencies="$(QTDIR)\bin\moc.exe;.\imagine.h"
 						Outputs="&quot;.\qtgen\Release\moc_imagine.cpp&quot;"
 					/>
@@ -364,7 +408,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Moc&apos;ing imagine.h..."
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  -DDEBUG_AI -I&quot;.\qtgen&quot; -I&quot;$(QTDIR)\include&quot; -I&quot;.\qtgen\Debug&quot; -I&quot;$(QTDIR)\include\QtCore&quot; -I&quot;$(QTDIR)\include\QtGui&quot; -I&quot;E:\jason\qwt-5.0.1\src&quot; &quot;.\imagine.h&quot; -o &quot;.\qtgen\Debug\moc_imagine.cpp&quot;&#x0D;&#x0A;"
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DDEBUG_AI -DQT_DLL -D_VC80_UPGRADE=0x0710  &quot;-I.\qtgen&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\qtgen\Debug&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-IE:\jason\qwt-5.0.1\src&quot; &quot;-I.&quot; &quot;.\imagine.h&quot; -o &quot;.\qtgen\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
 						AdditionalDependencies="$(QTDIR)\bin\moc.exe;.\imagine.h"
 						Outputs="&quot;.\qtgen\Debug\moc_imagine.cpp&quot;"
 					/>
@@ -373,6 +417,28 @@
 			<File
 				RelativePath=".\misc.hpp"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\ni_daq_g.hpp"
@@ -403,6 +469,28 @@
 			<File
 				RelativePath=".\NIDAQmx.h"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\scoped_ptr_g.hpp"
@@ -439,7 +527,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Moc&apos;ing temperaturedialog.h..."
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  -I&quot;.\qtgen&quot; -I&quot;$(QTDIR)\include&quot; -I&quot;.\qtgen\Release&quot; -I&quot;$(QTDIR)\include\QtCore&quot; -I&quot;$(QTDIR)\include\QtGui&quot; &quot;.\temperaturedialog.h&quot; -o &quot;.\qtgen\Release\moc_temperaturedialog.cpp&quot;&#x0D;&#x0A;"
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DQT_DLL -D_VC80_UPGRADE=0x0710  &quot;-I.\qtgen&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\qtgen\Release&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I.&quot; &quot;.\temperaturedialog.h&quot; -o &quot;.\qtgen\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
 						AdditionalDependencies="$(QTDIR)\bin\moc.exe;.\temperaturedialog.h"
 						Outputs="&quot;.\qtgen\Release\moc_temperaturedialog.cpp&quot;"
 					/>
@@ -450,7 +538,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Moc&apos;ing temperaturedialog.h..."
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  -DDEBUG_AI -I&quot;.\qtgen&quot; -I&quot;$(QTDIR)\include&quot; -I&quot;.\qtgen\Debug&quot; -I&quot;$(QTDIR)\include\QtCore&quot; -I&quot;$(QTDIR)\include\QtGui&quot; -I&quot;E:\jason\qwt-5.0.1\src&quot; &quot;.\temperaturedialog.h&quot; -o &quot;.\qtgen\Debug\moc_temperaturedialog.cpp&quot;&#x0D;&#x0A;"
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DDEBUG_AI -DQT_DLL -D_VC80_UPGRADE=0x0710  &quot;-I.\qtgen&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\qtgen\Debug&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-IE:\jason\qwt-5.0.1\src&quot; &quot;-I.&quot; &quot;.\temperaturedialog.h&quot; -o &quot;.\qtgen\$(ConfigurationName)\moc_$(InputName).cpp&quot;&#x0D;&#x0A;"
 						AdditionalDependencies="$(QTDIR)\bin\moc.exe;.\temperaturedialog.h"
 						Outputs="&quot;.\qtgen\Debug\moc_temperaturedialog.cpp&quot;"
 					/>
@@ -459,6 +547,28 @@
 			<File
 				RelativePath=".\timer_g.hpp"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -580,14 +690,80 @@
 			<File
 				RelativePath=".\Resources\start_acq.bmp"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Resources\start_live.bmp"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Resources\stop.bmp"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -764,6 +940,28 @@
 			<File
 				RelativePath=".\qtgen\ui_fanctrldialog.h"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\qtgen\ui_imagine.h"
@@ -794,7 +992,65 @@
 			<File
 				RelativePath=".\qtgen\ui_temperaturedialog.h"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Performing Custom Build Step"
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
 			</File>
+			<Filter
+				Name="Release"
+				Filter="cpp;moc"
+				SourceControlFiles="false"
+				>
+				<File
+					RelativePath=".\qtgen\Release\moc_data_acq_thread.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+			</Filter>
+			<Filter
+				Name="Debug"
+				Filter="cpp;moc"
+				SourceControlFiles="false"
+				>
+				<File
+					RelativePath=".\qtgen\debug\moc_data_acq_thread.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\imagine.ico"
@@ -806,6 +1062,7 @@
 					Name="VCCustomBuildTool"
 					Description="Creating windows resources..."
 					CommandLine="rc.exe /fo &quot;imagine.res&quot; &quot;imagine.rc&quot;&#x0D;&#x0A;"
+					AdditionalDependencies=""
 					Outputs="imagine.res"
 				/>
 			</FileConfiguration>
@@ -816,6 +1073,7 @@
 					Name="VCCustomBuildTool"
 					Description="Creating windows resources..."
 					CommandLine="rc.exe /fo &quot;imagine.res&quot; &quot;imagine.rc&quot;&#x0D;&#x0A;"
+					AdditionalDependencies=""
 					Outputs="imagine.res"
 				/>
 			</FileConfiguration>
@@ -823,8 +1081,8 @@
 	</Files>
 	<Globals>
 		<Global
-			Name="QtVersion"
-			Value="4.3.1"
+			Name="QtVersion Win32"
+			Value="4.6.3"
 		/>
 	</Globals>
 </VisualStudioProject>

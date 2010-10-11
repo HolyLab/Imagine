@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'temperaturedialog.h'
 **
-** Created: Mon Oct 11 11:31:41 2010
+** Created: Mon Oct 11 15:09:48 2010
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.0)
 **
 ** WARNING! All changes made in this file will be lost!

@@ -22,6 +22,21 @@
       <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
       <Extensions>moc;h;cpp</Extensions>
     </Filter>
+    <Filter Include="Generated Files\Debug">
+      <UniqueIdentifier>{024e6e32-384d-4fae-b2e3-27501b7452e4}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Release">
+      <UniqueIdentifier>{9ee71f03-35a8-465f-86cd-ea084d511ad9}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Template">
+      <UniqueIdentifier>{b5fc9478-04af-4d98-a117-3ced73e9b370}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ai_thread.cpp">
@@ -47,18 +62,6 @@
     </ClCompile>
     <ClCompile Include="temperaturedialog.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\release\moc_ai_thread.h.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\debug\moc_ai_thread.h.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\debug\moc_data_acq_thread.h.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\release\moc_data_acq_thread.h.cpp">
-      <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="qtgen\debug\moc_fanctrldialog.cpp">
       <Filter>Generated Files</Filter>
@@ -95,6 +98,18 @@
     </ClCompile>
     <ClCompile Include="avt_g.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\release\moc_ai_thread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\debug\moc_ai_thread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\debug\moc_data_acq_thread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\release\moc_data_acq_thread.cpp">
+      <Filter>Generated Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
