@@ -58,6 +58,10 @@ FanCtrlDialog* fanCtrlDialog=NULL;
 ImagineStatus curStatus;
 ImagineAction curAction;
 
+//todo: 
+extern AndorCamera camera;
+
+
 class CurveData: public QwtData
 {
    QList<QPointF> data;

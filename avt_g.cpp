@@ -13,7 +13,7 @@
 ** warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 **-------------------------------------------------------------------------*/
 
-#include "Winbase.h"
+#include <Windows.h>
 
 #include "avt_g.hpp"
 
@@ -32,7 +32,7 @@ bool AvtCamera::init()
    errorMsg="Camera Initialization failed when: ";
 
    errorCode=PvInitialize();
-   if(result!=ePvErrSuccess){
+   if(errorCode!=ePvErrSuccess){
       errorMsg+="call PvInitialize";
       return false;
    }
@@ -55,7 +55,7 @@ bool AvtCamera::init()
 
    errorCode=PvCameraOpen(cameraID,ePvAccessMaster,&cameraHandle);   
 
-   if(result!=ePvErrSuccess){
+   if(errorCode!=ePvErrSuccess){
       errorMsg+="open camera";
       return false;
    }
@@ -66,7 +66,7 @@ bool AvtCamera::init()
 
 }
 
-AvtCamera::fini()
+bool AvtCamera::fini()
 {
    //unsetup the camera
 
@@ -78,12 +78,15 @@ AvtCamera::fini()
    PvCameraClose(cameraHandle);
 
    // delete all the allocated buffers
-    for(int i=0;i<FRAMESCOUNT;i++)
+   /* TODO
+    for(int i=0;i<FRAMESCOUNT;i++){
         delete [] (char*)GCamera.Frames[i].ImageBuffer;
-
+    }
+    */
     cameraHandle = NULL;
 
-    // uninitialise the API
+    // TODO  uninitialise the API
     PvUnInitialize();
 
+    return true;
 }

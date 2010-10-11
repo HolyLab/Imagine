@@ -32,6 +32,8 @@ public:
       }
    }
 
+   bool init();
+   bool fini();
 
 };
 

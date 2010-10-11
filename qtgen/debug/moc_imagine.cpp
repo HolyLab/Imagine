@@ -1,8 +1,8 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'imagine.h'
 **
-** Created: Mon Sep 27 17:15:11 2010
-**      by: The Qt Meta Object Compiler version 59 (Qt 4.3.1)
+** Created: Mon Oct 11 11:31:41 2010
+**      by: The Qt Meta Object Compiler version 62 (Qt 4.7.0)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -10,21 +10,25 @@
 #include "../../imagine.h"
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'imagine.h' doesn't include <QObject>."
-#elif Q_MOC_OUTPUT_REVISION != 59
-#error "This file was generated using the moc from 4.3.1. It"
+#elif Q_MOC_OUTPUT_REVISION != 62
+#error "This file was generated using the moc from 4.7.0. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
 
+QT_BEGIN_MOC_NAMESPACE
 static const uint qt_meta_data_Imagine[] = {
 
  // content:
-       1,       // revision
+       5,       // revision
        0,       // classname
        0,    0, // classinfo
-      35,   10, // methods
+      35,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
 
  // slots: signature, parameters, type, tag, flags
        9,    8,    8,    8, 0x08,
@@ -108,16 +112,20 @@ const QMetaObject Imagine::staticMetaObject = {
       qt_meta_data_Imagine, 0 }
 };
 
+#ifdef Q_NO_DATA_RELOCATION
+const QMetaObject &Imagine::getStaticMetaObject() { return staticMetaObject; }
+#endif //Q_NO_DATA_RELOCATION
+
 const QMetaObject *Imagine::metaObject() const
 {
-    return &staticMetaObject;
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->metaObject : &staticMetaObject;
 }
 
 void *Imagine::qt_metacast(const char *_clname)
 {
     if (!_clname) return 0;
     if (!strcmp(_clname, qt_meta_stringdata_Imagine))
-	return static_cast<void*>(const_cast< Imagine*>(this));
+        return static_cast<void*>(const_cast< Imagine*>(this));
     return QMainWindow::qt_metacast(_clname);
 }
 
@@ -163,8 +171,10 @@ int Imagine::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 32: zoom_onMousePressed((*reinterpret_cast< QMouseEvent*(*)>(_a[1]))); break;
         case 33: zoom_onMouseMoved((*reinterpret_cast< QMouseEvent*(*)>(_a[1]))); break;
         case 34: zoom_onMouseReleased((*reinterpret_cast< QMouseEvent*(*)>(_a[1]))); break;
+        default: ;
         }
         _id -= 35;
     }
     return _id;
 }
+QT_END_MOC_NAMESPACE

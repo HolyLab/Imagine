@@ -1,8 +1,8 @@
 /****************************************************************************
 ** Resource object code
 **
-** Created: Mon Sep 27 17:15:10 2010
-**      by: The Resource Compiler for Qt version 4.3.1
+** Created: Mon Oct 11 11:31:41 2010
+**      by: The Resource Compiler for Qt version 4.7.0
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -10,7 +10,7 @@
 #include <QtCore/qglobal.h>
 
 static const unsigned char qt_resource_data[] = {
-  // E:/jason/imagine2/trunk/Resources/start_live.bmp
+  // E:/zsguo/imagine2/trunk/Resources/start_live.bmp
   0x0,0x0,0x1b,0x36,
   0x42,
   0x4d,0x36,0x1b,0x0,0x0,0x0,0x0,0x0,0x0,0x36,0x0,0x0,0x0,0x28,0x0,0x0,
@@ -449,7 +449,7 @@ static const unsigned char qt_resource_data[] = {
   0xef,0xde,0xeb,0xef,0xde,0xeb,0xef,0xde,0xeb,0xef,0xde,0xeb,0xef,0xde,0xeb,0xef,
   0xde,0xeb,0xef,0xde,0xeb,0xef,0xde,0xeb,0xef,0xde,0xeb,0xef,0xde,0xeb,0xef,0xde,
   0xeb,0xef,0x0,0x0,0x0,
-    // E:/jason/imagine2/trunk/Resources/stop.bmp
+    // E:/zsguo/imagine2/trunk/Resources/stop.bmp
   0x0,0x0,0x1b,0x36,
   0x42,
   0x4d,0x36,0x1b,0x0,0x0,0x0,0x0,0x0,0x0,0x36,0x0,0x0,0x0,0x28,0x0,0x0,
@@ -888,7 +888,7 @@ static const unsigned char qt_resource_data[] = {
   0xef,0xde,0xeb,0xef,0xde,0xeb,0xef,0xde,0xeb,0xef,0xde,0xeb,0xef,0xde,0xeb,0xef,
   0xde,0xeb,0xef,0xde,0xeb,0xef,0xde,0xeb,0xef,0xde,0xeb,0xef,0xde,0xeb,0xef,0xde,
   0xeb,0xef,0xde,0xeb,0xef,
-    // E:/jason/imagine2/trunk/Resources/start_acq.bmp
+    // E:/zsguo/imagine2/trunk/Resources/start_acq.bmp
   0x0,0x0,0x1b,0x36,
   0x42,
   0x4d,0x36,0x1b,0x0,0x0,0x0,0x0,0x0,0x0,0x36,0x0,0x0,0x0,0x28,0x0,0x0,
@@ -1375,17 +1375,32 @@ static const unsigned char qt_resource_struct[] = {
 
 };
 
-int qInitResources_imagine()
+QT_BEGIN_NAMESPACE
+
+extern Q_CORE_EXPORT bool qRegisterResourceData
+    (int, const unsigned char *, const unsigned char *, const unsigned char *);
+
+extern Q_CORE_EXPORT bool qUnregisterResourceData
+    (int, const unsigned char *, const unsigned char *, const unsigned char *);
+
+QT_END_NAMESPACE
+
+
+int QT_MANGLE_NAMESPACE(qInitResources_imagine)()
 {
-    extern bool qRegisterResourceData(int, const unsigned char *, const unsigned char *, const unsigned char *);
-    qRegisterResourceData(0x01, qt_resource_struct, qt_resource_name, qt_resource_data);
+    QT_PREPEND_NAMESPACE(qRegisterResourceData)
+        (0x01, qt_resource_struct, qt_resource_name, qt_resource_data);
     return 1;
 }
-Q_CONSTRUCTOR_FUNCTION(qInitResources_imagine)
-int qCleanupResources_imagine()
+
+Q_CONSTRUCTOR_FUNCTION(QT_MANGLE_NAMESPACE(qInitResources_imagine))
+
+int QT_MANGLE_NAMESPACE(qCleanupResources_imagine)()
 {
-    extern bool qUnregisterResourceData(int, const unsigned char *, const unsigned char *, const unsigned char *);
-    qUnregisterResourceData(0x01, qt_resource_struct, qt_resource_name, qt_resource_data);
+    QT_PREPEND_NAMESPACE(qUnregisterResourceData)
+       (0x01, qt_resource_struct, qt_resource_name, qt_resource_data);
     return 1;
 }
-Q_DESTRUCTOR_FUNCTION(qCleanupResources_imagine)
+
+Q_DESTRUCTOR_FUNCTION(QT_MANGLE_NAMESPACE(qCleanupResources_imagine))
+
