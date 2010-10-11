@@ -87,6 +87,15 @@
     <ClCompile Include="qtgen\qrc_imagine.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="andor_g.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="camera_g.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="avt_g.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Atmcd32d.h">
@@ -111,6 +120,15 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="camera_g.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="avt_g.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PvApi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PvRegIo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
