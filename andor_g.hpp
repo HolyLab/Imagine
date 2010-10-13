@@ -30,7 +30,7 @@ using std::endl;
 
 class AndorCamera: public Camera {
 public:
-   enum AcqMode {eSingleScan=1, eAccumulate, eKineticSeries, eRunTillAbort=5,
+   enum AndorAcqMode {eSingleScan=1, eAccumulate, eKineticSeries, eRunTillAbort=5,
          eUndocumentedFrameTransfer=6,
    };
 
@@ -212,16 +212,16 @@ public:
 
    //TODO: change this func's name 
    //set up trigger mode, acq. mode and time
-   bool setAcqModeAndTime(GenericAcqMode theAcqMode,
+   bool setAcqModeAndTime(GenericAcqMode genericAcqMode,
                           float exposure,
                           int anFrames,  //used only in kinetic-series mode
                           TriggerMode triggerMode
                           )
    {
       //todo:
-      AcqMode acqMode;
-      if(theAcqMode==eLive) acqMode=AndorCamera::eRunTillAbort;
-      else if(theAcqMode==eAcqAndSave) acqMode=AndorCamera::eUndocumentedFrameTransfer;
+      AndorAcqMode acqMode;
+      if(genericAcqMode==eLive) acqMode=AndorCamera::eRunTillAbort;
+      else if(genericAcqMode==eAcqAndSave) acqMode=AndorCamera::eUndocumentedFrameTransfer;
       else {
          cerr<<"coding error"<<endl;
          exit(1);

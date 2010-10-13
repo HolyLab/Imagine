@@ -144,4 +144,18 @@ bool AvtCamera::setAcqParams(int emGain,
 }
 
 
+      //params different for live from for save mode
+bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
+                          float exposure,
+                          int anFrames,  //used only in kinetic-series mode
+                          TriggerMode triggerMode
+                          )
+{
+   //todo:
+
+
+   return true;
+}
+
+
 
