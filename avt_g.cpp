@@ -122,7 +122,22 @@ bool AvtCamera::setAcqParams(int emGain,
 {
    //TODO: the gain settings
 
-   //set image dim
+   ///set image dim
+   ///TODO: check error code and make sure the start/end/etc are in bin-ed unit
+   PvAttrUint32Set(cameraHandle,"BinningX",hbin);
+
+   PvAttrUint32Set(cameraHandle,"BinningY",vbin);
+
+   PvAttrUint32Set(cameraHandle,"RegionX",hstart);
+
+   PvAttrUint32Set(cameraHandle,"RegionY",vstart);
+
+   PvAttrUint32Set(cameraHandle,"width",getImageWidth());
+
+   PvAttrUint32Set(cameraHandle,"height",getImageHeight());
+
+
+   //
 
 
    return true;
