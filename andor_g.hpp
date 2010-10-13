@@ -18,8 +18,11 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 using std::string;
 using std::vector;
+using std::cerr;
+using std::endl;
 
 #include "atmcd32d.h"        		// Andor functions
 

@@ -120,7 +120,7 @@ bool AvtCamera::setAcqParams(int emGain,
                      bool isBaselineClamp
                      ) 
 {
-   //todo:
+   // TODO blah
    return true;
 }
 
