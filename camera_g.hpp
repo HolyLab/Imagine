@@ -35,7 +35,7 @@ public:
    enum GenericAcqMode{
       eLive,
       eAcqAndSave,
-   };
+   } genericAcqMode;
 
    int  hbin, vbin,  hstart,  hend,  vstart,  vend; //image binning params. 1-based.
                                 //for hend and vend: <0 means chip width (or height)
