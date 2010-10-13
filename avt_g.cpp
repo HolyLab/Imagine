@@ -120,7 +120,11 @@ bool AvtCamera::setAcqParams(int emGain,
                      bool isBaselineClamp
                      ) 
 {
-   // TODO blah
+   //TODO: the gain settings
+
+   //set image dim
+
+
    return true;
 }
 
