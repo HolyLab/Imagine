@@ -157,10 +157,13 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
    this->triggerMode=triggerMode;
 
 
+   //init the capture stream
+   PvCaptureStart(cameraHandle);
+
    //todo: set trigger mode
 
    ///todo: set acq mode
-
+   PvAttrEnumSet(cameraHandle,"FrameStartTriggerMode","Freerun");
 
    ///todo: set exp time
 
