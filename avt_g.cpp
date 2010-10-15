@@ -153,6 +153,18 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 {
    this->genericAcqMode=genericAcqMode;
 
+   this->nFrames=anFrames;
+   this->triggerMode=triggerMode;
+
+
+   //todo: set trigger mode
+
+   ///todo: set acq mode
+
+
+   ///todo: set exp time
+
+   ///todo: set up #frames to acq
 
 
 

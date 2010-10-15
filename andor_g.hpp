@@ -43,7 +43,6 @@ private:
 
    //AcqMode acquisitionMode;
    int     readMode;
-   int     triggerMode;
 
 public:
    AndorCamera(){
