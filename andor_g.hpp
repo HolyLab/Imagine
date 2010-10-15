@@ -218,7 +218,8 @@ public:
                           TriggerMode triggerMode
                           )
    {
-      //todo:
+      this->genericAcqMode=genericAcqMode;
+
       AndorAcqMode acqMode;
       if(genericAcqMode==eLive) acqMode=AndorCamera::eRunTillAbort;
       else if(genericAcqMode==eAcqAndSave) acqMode=AndorCamera::eUndocumentedFrameTransfer;

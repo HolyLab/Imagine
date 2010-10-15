@@ -97,6 +97,7 @@ public:
    bool allocImageArray(int nFrames, bool shouldReallocAnyway);
 
    //params common to both live- and save-modes
+   ///NOTE: roi/binning are also set here
    virtual bool setAcqParams(int emGain,
                      int preAmpGainIdx,
                      int horShiftSpeedIdx,
