@@ -209,71 +209,12 @@ public:
       return true;
    }//abortAcq(),
 
-   //TODO: change this func's name 
-   //set up trigger mode, acq. mode and time
+
    bool setAcqModeAndTime(GenericAcqMode genericAcqMode,
                           float exposure,
                           int anFrames,  //used only in kinetic-series mode
                           TriggerMode triggerMode
-                          )
-   {
-      this->genericAcqMode=genericAcqMode;
-
-      AndorAcqMode acqMode;
-      if(genericAcqMode==eLive) acqMode=AndorCamera::eRunTillAbort;
-      else if(genericAcqMode==eAcqAndSave) acqMode=AndorCamera::eUndocumentedFrameTransfer;
-      else {
-         cerr<<"coding error"<<endl;
-         exit(1);
-      }
-
-      this->nFrames=anFrames;
-      this->triggerMode=triggerMode;
-
-      //set trigger mode:
-      errorCode=SetTriggerMode(triggerMode);
-      if(errorCode!=DRV_SUCCESS){
-         errorMsg="Set Trigger Mode Error";
-         return false;
-      }
-
-      // Set acquisition mode:
-      errorCode=SetAcquisitionMode(acqMode);
-      if(errorCode!=DRV_SUCCESS){
-         errorMsg="Set Acquisition Mode error";
-         return false;
-      }
-
-      //TODO: after change acqMode from runTillAbort to Kinetic, 
-      //   you must call SetNumberKinetics(nFrames);
-      //   but I don't know whether I should call SetExposureTime() also.
-      //   To be safe, here I also call SetExposureTime().
-
-      // Set Exposure Time
-      errorCode = SetExposureTime(exposure);
-      if (errorCode != DRV_SUCCESS) {
-         errorMsg="set exposure time error";
-         return false;
-      }
-
-      // set # of kinetic scans(i.e. frames) to be taken
-//      if(acqMode==eKineticSeries){
-      if(acqMode==eKineticSeries || acqMode==eUndocumentedFrameTransfer){
-         errorCode=SetNumberKinetics(nFrames);
-         if(errorCode!=DRV_SUCCESS) {
-            errorMsg="Set number Frames error";
-            return false;
-         }
-      }//if, in kinetic-series mode
-
-      // It is necessary to get the actual times as the system will calculate the
-      // nearest possible time. eg if you set exposure time to be 0, the system
-      // will use the closest value (around 0.01s)
-      //    float fAccumTime,fKineticTime;
-      //    GetAcquisitionTimings(&exposure,&fAccumTime,&fKineticTime);
-
-      return true;
-   }//setAcqModeAndTime(),
+                          );
 
    // This function sets up the acquisition settings exposure time
    //		shutter, trigger and starts an acquisition. It also starts a
@@ -286,67 +227,7 @@ public:
                      int verShiftSpeedIdx,
                      int verClockVolAmp,
                      bool isBaselineClamp
-                     ) 
-   {
-      //todo: is this necessary?
-      int status;
-      GetStatus(&status);  //todo: check return value
-      if(status!=DRV_IDLE){
-         errorMsg="set camera parameter error: camera is not idle now";
-         return false;
-      }
-
-      //set horizontal shift speed, i.e. readout rate
-      errorCode=SetHSSpeed(0, horShiftSpeedIdx); 
-      if(errorCode!=DRV_SUCCESS){
-         errorMsg="Set Horizontal Speed error";
-         return false;
-      }
-
-      //set preamp gain:
-      errorCode =  SetPreAmpGain(preAmpGainIdx);
-      if(errorCode != DRV_SUCCESS) {
-         errorMsg="set pre-amp gain error";
-         return false;
-      }
-
-      //set vertical shift speed
-      errorCode=SetVSSpeed(verShiftSpeedIdx);
-      if(errorCode!=DRV_SUCCESS){
-         errorMsg="Set Vertical Speed error";
-         return false;
-      }
-
-      //set vert. clock voltage amplitude:
-      errorCode=SetVSAmplitude(verClockVolAmp);
-      if(errorCode!=DRV_SUCCESS){
-         errorMsg="Set Vertical clock voltage amplitude error";
-         return false;
-      }
-
-      //set em gain
-      errorCode =  SetEMCCDGain(emGain);
-      if(errorCode != DRV_SUCCESS) {
-         errorMsg="set EM gain error";
-         return false;
-      }
-      Sleep(250);  // a delay is required for gain level to change
-
-      // This function only needs to be called when acquiring an image. It sets
-      // the horizontal and vertical binning and the area of the image to be
-      // captured. In this example it is set to 1x1 binning and is acquiring the
-      // whole image
-      SetImage(hbin, vbin, hstart, hend, vstart, vend);
-
-      //turn on/off SDK's baseline clamp:
-      errorCode=SetBaselineClamp(isBaselineClamp);
-      if(errorCode!=DRV_SUCCESS){
-         errorMsg="Set baseline clamp error";
-         return false;
-      }
-
-      return true;
-   }//setAcqParams(),
+                     ) ;
 
    //start acquisition. Return true if successful
    bool startAcq(){
