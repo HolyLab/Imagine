@@ -216,11 +216,6 @@ public:
                           TriggerMode triggerMode
                           );
 
-   // This function sets up the acquisition settings exposure time
-   //		shutter, trigger and starts an acquisition. It also starts a
-   //	timer to check when the acquisition has finished.
-   //   exposure: time in sec
-   //TODO: may need set up trigger mode as well so that it is verified that the trigger mode is valid
    bool setAcqParams(int emGain,
                      int preAmpGainIdx,
                      int horShiftSpeedIdx,
