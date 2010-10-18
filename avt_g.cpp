@@ -80,6 +80,21 @@ bool AvtCamera::init()
 
 
 
+   //todo: maybe we should make it a param. 
+   //For avt, it should be <=100.
+   circBufSize=100;
+
+   //alloc circular buf
+   pRealCircBuf=new PixelValue[chipWidth*chipHeight*circBufSize+31];
+
+   if(!pRealCircBuf){
+      errorMsg+="no enough mem";
+      return false;
+   }
+
+   //align it
+
+
    //NOTE: now we can start camera
 
    return true;

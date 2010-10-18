@@ -9,13 +9,28 @@ class AvtCamera: public Camera {
     unsigned long   cameraID;
     tPvHandle       cameraHandle;
 
+    int circBufSize; //in frames
+    PixelValue* pCircBuf;  //the buffer for circular buffer
+                     //NOTE: it's word-aligned
+    PixelValue* pRealCircBuf; //the ptr from operator new;
+
+    //the buf for the live image
+    //todo: we might also want it to be aligned
+    PixelValue* pLiveImage;
+
 public:
    AvtCamera(){
       //
+      pCircBuf=pRealCircBuf=nullptr;
+
+      pLiveImage=nullptr;
    }
 
    ~AvtCamera(){
       //
+      delete pLiveImage;
+      
+      delete pRealCircBuf;
    }
 
    string getErrorMsg(){

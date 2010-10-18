@@ -49,7 +49,7 @@ bool Camera::allocImageArray(int nFrames, bool shouldReallocAnyway)
       if(shouldReallocAnyway || nPixels>imageArraySize){
          if(pImageArray){
             delete []pImageArray;
-            pImageArray = NULL;
+            pImageArray = nullptr;
             imageArraySize=0;
          }
       }//if, should delete old allocation

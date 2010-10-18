@@ -20,8 +20,9 @@ bool AndorCamera::init()
 {
       char     tBuf[256];
 
-      GetCurrentDirectory(256,tBuf);// Look in current working directory for driver files
-      errorCode=Initialize(tBuf);  // Initialize driver in current directory
+      //will look in current working directory for driver files
+      GetCurrentDirectory(256,tBuf);
+      errorCode=Initialize(tBuf); 
       errorMsg="Camera Initialization failed when: ";
 
       if(errorCode!=DRV_SUCCESS){

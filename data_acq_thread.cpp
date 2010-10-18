@@ -266,7 +266,7 @@ void DataAcqThread::run_acq_and_save()
    //prepare for AO:
    if(aoOnce){
       delete aoOnce;
-      aoOnce=NULL;
+      aoOnce=nullptr;
    }
 
    int aoChannelForPiezo=0; //TODO: put this configurable
@@ -477,7 +477,7 @@ nextStack:
       if(isCreateFilePerStack){
          ofsCam->close();
          delete ofsCam;
-         ofsCam=0;
+         ofsCam=nullptr;
       }
 
       if(isSaveSifToo){

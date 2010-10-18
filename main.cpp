@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
    QPixmap pixmap("splash.jpg");
    QSplashScreen *splash = new QSplashScreen(pixmap);
    splash->show();
-   splash->showMessage("Initialize the camera ...", 
+   splash->showMessage("Initialize the Andor camera ...", 
       Qt::AlignLeft|Qt::AlignBottom, Qt::red);
    //qApp->processEvents();
    if(!camera.init()){
