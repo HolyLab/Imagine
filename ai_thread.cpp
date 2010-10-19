@@ -1,5 +1,5 @@
 /*-------------------------------------------------------------------------
-** Copyright (C) 2005-2008 Timothy E. Holy and Zhongsheng Guo
+** Copyright (C) 2005-2010 Timothy E. Holy and Zhongsheng Guo
 **    All rights reserved.
 ** Author: All code authored by Zhongsheng Guo.
 ** License: This file may be used under the terms of the GNU General Public
@@ -37,6 +37,8 @@ AiThread::AiThread(QObject *parent, int readBufSize, int driverBufSize, int scan
       chanList.push_back(i);
    }
    this->chanList=chanList;
+
+   ai=nullptr;
 
    ai=new NiDaqAi(chanList);
    ai->cfgTiming(scanrate, driverBufSize);
