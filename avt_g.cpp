@@ -88,12 +88,29 @@ bool AvtCamera::init()
    pRealCircBuf=new PixelValue[chipWidth*chipHeight*circBufSize+31];
 
    if(!pRealCircBuf){
+      errorCode=getExtraErrorCode(eOutOfMem);
       errorMsg+="no enough mem";
       return false;
    }
 
-   //align it
+   //todo: align it
+   pCircBuf=pRealCircBuf; //tmp:
 
+
+   //the latest live image
+   pLiveImage=new PixelValue[chipWidth*chipHeight+31];
+
+
+   //prepare the tPvFrame structure
+   pFrames=new tPvFrame[circBufSize];
+   if(!pFrames){
+      errorCode=getExtraErrorCode(eOutOfMem);
+      errorMsg+="not enough mem";
+      return false;
+   }
+   for(int frameIdx=0; frameIdx<circBufSize; ++frameIdx){
+      pFrames[frameIdx].ImageBuffer=pCircBuf+frameIdx*chipWidth*chipHeight; 
+   }
 
    //NOTE: now we can start camera
 
@@ -174,6 +191,13 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 
    //init the capture stream
    PvCaptureStart(cameraHandle);
+
+   //fill the remaining field of tPvFrame struct
+   for(int frameIdx=0; frameIdx<circBufSize; ++frameIdx){
+      pFrames[frameIdx].ImageBufferSize=getImageWidth()*getImageHeight(); 
+   }
+
+   //todo: enqueue the frames
 
    //todo: set trigger mode
 

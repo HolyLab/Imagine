@@ -10,6 +10,7 @@ class AvtCamera: public Camera {
     tPvHandle       cameraHandle;
 
     int circBufSize; //in frames
+    tPvFrame *  pFrames;
     PixelValue* pCircBuf;  //the buffer for circular buffer
                      //NOTE: it's word-aligned
     PixelValue* pRealCircBuf; //the ptr from operator new;
