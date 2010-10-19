@@ -1,5 +1,5 @@
 /*-------------------------------------------------------------------------
-** Copyright (C) 2005-2008 Timothy E. Holy and Zhongsheng Guo
+** Copyright (C) 2005-2010 Timothy E. Holy and Zhongsheng Guo
 **    All rights reserved.
 ** Author: All code authored by Zhongsheng Guo.
 ** License: This file may be used under the terms of the GNU General Public
@@ -89,7 +89,7 @@ bool DataAcqThread::saveHeader(QString filename, NiDaqAi* ai)
    header<<headerMagic<<endl;
    header<<"[general]"<<endl
       <<"header version=5.1"<<endl
-      <<"app version=0.9, build ("<<__DATE__<<", "<<__TIME__<<")"<<endl
+      <<"app version=2.0, build ("<<__DATE__<<", "<<__TIME__<<")"<<endl
       <<"date and time="<<QDateTime::currentDateTime().toString(Qt::ISODate).toStdString()<<endl
       <<"byte order=l"<<endl<<endl;
 

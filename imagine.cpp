@@ -819,20 +819,6 @@ void Imagine::closeEvent(QCloseEvent *event)
    event->accept();
 }
 
-//TODO: move this func to misc.cpp
-QString replaceExtName(QString filename, QString newExtname)
-{
-   QFileInfo fi(filename);
-   QString ext = fi.suffix(); 
-   if(ext.isEmpty()){
-      return filename+"."+newExtname;
-   }
-   else {
-      filename.chop(ext.size());
-      return filename+newExtname;
-   }
-}//replaceExtName()
-
 
 void Imagine::on_btnFullChipSize_clicked()
 {
