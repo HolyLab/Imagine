@@ -238,7 +238,7 @@ void DataAcqThread::run_live()
       }
    }//while, user did not requested stop
 
-   AbortAcquisition(); //TODO: check return value
+   camera.stopAcq(); //TODO: check return value
 
    delete frame;  //TODO: use scoped ptr
 

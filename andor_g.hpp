@@ -256,6 +256,16 @@ public:
    }//startAcq(),
 
 
+   bool stopAcq()
+   {
+      if(genericAcqMode==eLive){
+         //todo: check return value
+         AbortAcquisition();
+      }
+      //else  do  nothing
+
+      return true;
+   }
 };//class, AndorCamera
 
 //extern AndorCamera camera;

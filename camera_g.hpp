@@ -75,6 +75,7 @@ public:
    virtual bool getLatestLiveImage(PixelValue * frame)=0;
 
    virtual bool startAcq()=0;
+   virtual bool stopAcq()=0;
 
    PixelValue * getImageArray(){
       return pImageArray;
