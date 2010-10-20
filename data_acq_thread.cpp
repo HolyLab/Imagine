@@ -436,7 +436,7 @@ nextStack:
 
    //get the last frame if nec
    if(nFramesGotForStack<nFramesPerStack){
-      GetMostRecentImage16(frame, nPixels);
+      camera.getLatestLiveImage(frame);
       QByteArray data16((const char*)frame, imageW*imageH*2);
       emit imageDataReady(data16, nFramesPerStack-1, imageW, imageH); //-1: due to 0-based indexing
    }
@@ -549,6 +549,8 @@ nextStack:
       //disable spool
       SetSpool(0,2,NULL,10); //disable spooling
    }
+
+   camera.stopAcq();
 
    QString ttMsg="Acquisition is done";
    if(stopRequested) ttMsg+=" (User requested STOP)";
