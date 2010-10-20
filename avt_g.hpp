@@ -80,6 +80,7 @@ public:
 
    long getAcquiredFrameCount();
 
+   bool startAcq();
 };
 
 

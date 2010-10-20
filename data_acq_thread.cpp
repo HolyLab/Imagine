@@ -184,7 +184,7 @@ void DataAcqThread::run_live()
    camera.setAcqModeAndTime(Camera::eLive,
                             this->exposureTime, 
                             this->nFramesPerStack,
-                            AndorCamera::eInternalTrigger  //use internal trigger
+                            Camera::eInternalTrigger  //use internal trigger
                             );
    emit newStatusMsgReady(QString("Camera: set acq mode and time: %1")
       .arg(camera.getErrorMsg().c_str()));

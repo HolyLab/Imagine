@@ -207,14 +207,11 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
    ////set trigger mode
 
    ///trigger for sequence/acquisition
-   if(genericAcqMode==eLive){
+   if(triggerMode==eInternalTrigger){
       PvAttrEnumSet(cameraHandle,"AcqStartTriggerMode","Disabled");
    }
    else {
-      //todo: tmp
-      PvAttrEnumSet(cameraHandle,"AcqStartTriggerMode","Disabled");
-      
-      //PvAttrEnumSet(cameraHandle,"AcqStartTriggerMode","SyncIn1");
+      PvAttrEnumSet(cameraHandle,"AcqStartTriggerMode","SyncIn1");
    }
 
    ///trigger for frame
@@ -249,6 +246,18 @@ long AvtCamera::getAcquiredFrameCount()
 {
    CLockGuard tGuard(mpLock);
    return nAcquiredFrames;
+}
+
+
+bool AvtCamera::startAcq()
+{
+   if(triggerMode==eInternalTrigger){
+      PvCommandRun(cameraHandle,"AcquisitionStart");
+   }
+   else {
+      //todo: external triggered, no nec?
+      PvCommandRun(cameraHandle,"AcquisitionStart");
+   }
 }
 
 
