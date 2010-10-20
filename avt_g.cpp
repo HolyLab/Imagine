@@ -200,11 +200,35 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
    }
 
    //todo: enqueue the frames
+   for(int frameIdx=0; frameIdx<circBufSize; ++frameIdx){
+      PvCaptureQueueFrame(cameraHandle,&pFrames[frameIdx], onFrameDone);
+   }
 
    //todo: set trigger mode
+   ///trigger for sequence/acquisition
+   if(genericAcqMode==eLive){
+      PvAttrEnumSet(cameraHandle,"AcqStartTriggerMode","Disabled");
+   }
+   else {
+      //todo: tmp
+      PvAttrEnumSet(cameraHandle,"AcqStartTriggerMode","Disabled");
+      
+      //PvAttrEnumSet(cameraHandle,"AcqStartTriggerMode","SyncIn1");
+   }
+
+   ///trigger for frame
+   PvAttrEnumSet(cameraHandle,"FrameStartTriggerMode","Freerun");
 
    ///todo: set acq mode
-   PvAttrEnumSet(cameraHandle,"FrameStartTriggerMode","Freerun");
+   if(genericAcqMode==eLive){
+      PvAttrEnumSet(cameraHandle,"AcquisitionMode","Continuous");
+   }
+   else {
+      //todo: maybe should be "Continuous"
+      PvAttrEnumSet(cameraHandle,"AcquisitionMode","MultiFrame"); 
+
+      //PvAttrEnumSet(cameraHandle,"AcquisitionMode","Continuous");
+   }
 
    ///todo: set exp time
 
