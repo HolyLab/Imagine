@@ -177,6 +177,27 @@ bool AvtCamera::setAcqParams(int emGain,
    return true;
 }
 
+/*
+// callback called when a frame is done
+void _STDCALL FrameDoneCB(tPvFrame* pFrame)
+{
+    // if the frame was completed (or if data were missing/lost) we re-enqueue it
+    if(pFrame->Status == ePvErrSuccess  || 
+       pFrame->Status == ePvErrDataLost ||
+       pFrame->Status == ePvErrDataMissing)
+        PvCaptureQueueFrame(GCamera.Handle,pFrame,FrameDoneCB);  
+}
+*/
+
+// callback called when a frame is done
+void /* _STDCALL */ onFrameDone(tPvFrame* pFrame)
+{
+   // if the frame was completed we re-enqueue it
+   //cout<<"frame #"<<pFrame->FrameCount<<endl;
+   if(pFrame->Status != ePvErrUnplugged && pFrame->Status != ePvErrCancelled)
+        PvCaptureQueueFrame(cameraHandle,pFrame, onFrameDone);
+}
+
 
 //params different for live from for save mode
 bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
@@ -264,5 +285,7 @@ bool AvtCamera::startAcq()
 bool AvtCamera::stopAcq()
 {
    PvCommandRun(cameraHandle,"AcquisitionStop");
+
+   PvCaptureEnd(cameraHandle) ;
 }
 

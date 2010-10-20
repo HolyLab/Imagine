@@ -50,6 +50,7 @@ public:
       readMode=4;
       triggerMode=eInternalTrigger;   //internal mode
 
+      vendor="andor";
    }//ctor
 
    ~AndorCamera(){

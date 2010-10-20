@@ -39,6 +39,7 @@ public:
 
    GenericAcqMode  genericAcqMode;
    TriggerMode     triggerMode;
+   string vendor;
 
 
    int  hbin, vbin,  hstart,  hend,  vstart,  vend; //image binning params. 1-based.

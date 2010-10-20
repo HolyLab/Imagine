@@ -33,6 +33,7 @@ template<typename T> string toString(T aValue) { //don't define as toString(T& r
 }
 
 
-QString replaceExtName(QString filename, QString newExtname)
+QString replaceExtName(QString filename, QString newExtname);
+
 
 #endif //MISC_HPP

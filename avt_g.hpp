@@ -36,6 +36,8 @@ public:
 
       nAcquiredFrames=0;
       mpLock=new QMutex;
+
+      vendor="avt";
    }
 
    ~AvtCamera(){
