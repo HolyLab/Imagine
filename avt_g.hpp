@@ -19,6 +19,8 @@ class AvtCamera: public Camera {
     //todo: we might also want it to be aligned
     PixelValue* pLiveImage;
 
+    long nAcquiredFrames;
+
 public:
    AvtCamera(){
       //
@@ -66,6 +68,8 @@ public:
                           TriggerMode triggerMode
                           );
  
+
+    long getAcquiredFrameCount();
 
 };
 

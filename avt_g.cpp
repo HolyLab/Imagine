@@ -214,4 +214,10 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 }
 
 
+long AvtCamera::getAcquiredFrameCount()
+{
+
+
+}
+
 
