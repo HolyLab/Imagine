@@ -1,6 +1,9 @@
 #ifndef AVT_G_HPP
 #define AVT_G_HPP
 
+#include <QMutex>
+
+
 #include "camera_g.hpp"
 
 #include "PvApi.h"
@@ -20,6 +23,9 @@ class AvtCamera: public Camera {
     PixelValue* pLiveImage;
 
     long nAcquiredFrames;
+    //lock used to coordinate accessing to nAcquiredFrames
+    QMutex* mpLock; 
+
 
 public:
    AvtCamera(){
