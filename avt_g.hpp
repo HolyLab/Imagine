@@ -81,6 +81,8 @@ public:
    long getAcquiredFrameCount();
 
    bool startAcq();
+
+   bool stopAcq();
 };
 
 

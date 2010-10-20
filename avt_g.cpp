@@ -261,3 +261,8 @@ bool AvtCamera::startAcq()
 }
 
 
+bool AvtCamera::stopAcq()
+{
+   PvCommandRun(cameraHandle,"AcquisitionStop");
+}
+
