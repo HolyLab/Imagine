@@ -33,6 +33,9 @@ public:
       pCircBuf=pRealCircBuf=nullptr;
 
       pLiveImage=nullptr;
+
+      nAcquiredFrames=0;
+      mpLock=new QMutex;
    }
 
    ~AvtCamera(){

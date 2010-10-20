@@ -16,6 +16,8 @@
 #include <Windows.h>
 
 #include "avt_g.hpp"
+#include "lockguard.h"
+
 
 // wait for a camera to be plugged
 void WaitForCamera()
@@ -192,7 +194,7 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
    //init the capture stream
    PvCaptureStart(cameraHandle);
 
-   //fill the remaining field of tPvFrame struct
+   //fill the remaining fields of tPvFrame struct
    for(int frameIdx=0; frameIdx<circBufSize; ++frameIdx){
       pFrames[frameIdx].ImageBufferSize=getImageWidth()*getImageHeight(); 
    }
@@ -216,8 +218,8 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 
 long AvtCamera::getAcquiredFrameCount()
 {
-
-
+   CLockGuard tGuard(mpLock);
+   return nAcquiredFrames;
 }
 
 
