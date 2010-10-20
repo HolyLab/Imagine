@@ -190,7 +190,7 @@ void _STDCALL FrameDoneCB(tPvFrame* pFrame)
 */
 
 // callback called when a frame is done
-void /* _STDCALL */ onFrameDone(tPvFrame* pFrame)
+void  __stdcall onFrameDone(tPvFrame* pFrame)
 {
    // if the frame was completed we re-enqueue it
    //cout<<"frame #"<<pFrame->FrameCount<<endl;
