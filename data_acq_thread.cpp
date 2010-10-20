@@ -216,8 +216,10 @@ void DataAcqThread::run_live()
 
       if(nFramesGot!=nFramesGotCur && !isUpdatingImage){
          nFramesGot=nFramesGotCur;
+         
          //get the last frame:
-         GetMostRecentImage16(frame, nPixels);
+         camera.getLatestLiveImage(frame);
+
          //copy data
          QByteArray data16((const char*)frame, imageW*imageH*2);
          emit imageDataReady(data16, nFramesGot-1, imageW, imageH); //-1: due to 0-based indexing
@@ -421,8 +423,10 @@ nextStack:
 
       if(nFramesGotForStack!=nFramesGotForStackCur && !isUpdatingImage){
          nFramesGotForStack=nFramesGotForStackCur;
+
          //get the latest frame:
-         GetMostRecentImage16(frame, nPixels);
+         camera.getLatestLiveImage(frame);
+         
          //copy data
          QByteArray data16((const char*)frame, imageW*imageH*2);
          emit imageDataReady(data16, nFramesGotForStack-1, imageW, imageH); //-1: due to 0-based indexing
