@@ -234,9 +234,11 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
       //PvAttrEnumSet(cameraHandle,"AcquisitionMode","Continuous");
    }
 
-   ///todo: set exp time
+   ///set exp mode 
+   PvAttrEnumSet(cameraHandle,"ExposureMode","Manual");
 
-
+   /// and time
+   PvAttrUint32Set(cameraHandle, "ExposureValue", exposure*1000*1000);
 
 
    return true;
