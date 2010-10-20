@@ -220,6 +220,12 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
    ///trigger for frame
    PvAttrEnumSet(cameraHandle,"FrameStartTriggerMode","Freerun");
 
+   ///set exp mode 
+   PvAttrEnumSet(cameraHandle,"ExposureMode","Manual");
+
+   /// and time
+   PvAttrUint32Set(cameraHandle, "ExposureValue", exposure*1000*1000);
+
    ///set acq mode
    if(genericAcqMode==eLive){
       PvAttrEnumSet(cameraHandle,"AcquisitionMode","Continuous");
@@ -233,12 +239,6 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 
       //PvAttrEnumSet(cameraHandle,"AcquisitionMode","Continuous");
    }
-
-   ///set exp mode 
-   PvAttrEnumSet(cameraHandle,"ExposureMode","Manual");
-
-   /// and time
-   PvAttrUint32Set(cameraHandle, "ExposureValue", exposure*1000*1000);
 
 
    return true;
