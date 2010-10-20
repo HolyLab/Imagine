@@ -72,7 +72,7 @@ public:
 
    virtual long getAcquiredFrameCount()=0; // #frames acquired so far
 
-   virtual bool getLatestLiveImage()=0;
+   virtual bool getLatestLiveImage(PixelValue * frame)=0;
 
 
    PixelValue * getImageArray(){

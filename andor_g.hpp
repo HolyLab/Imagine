@@ -76,6 +76,16 @@ public:
       return nFramesGotCur;
    }
 
+   bool getLatestLiveImage(PixelValue * frame)
+   {
+      long nPixels=getImageWidth()*getImageHeight();
+
+      //todo: check return value
+      GetMostRecentImage16(frame, nPixels);
+
+      return true;
+   }
+
    vector<float> getHorShiftSpeeds()
    {
       vector<float> horSpeeds;

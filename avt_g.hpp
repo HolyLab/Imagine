@@ -70,7 +70,7 @@ public:
                      bool isBaselineClamp
                      ) ;
 
-      //params different for live from for save mode
+   //params different for live from for save mode
    bool setAcqModeAndTime(GenericAcqMode genericAcqMode,
                           float exposure,
                           int anFrames,  //used only in kinetic-series mode
@@ -78,7 +78,7 @@ public:
                           );
  
 
-    long getAcquiredFrameCount();
+   long getAcquiredFrameCount();
 
 };
 
