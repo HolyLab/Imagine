@@ -24,7 +24,7 @@
 
 
 
-extern Camera* camera;
+extern Camera* pCamera;
 
 
 
@@ -42,8 +42,8 @@ int main(int argc, char *argv[])
 
    }
 
-   if(cameraVendor=="avt") camera=new AvtCamera;
-   else if(cameraVendor=="andor") camera=new AndorCamera;
+   if(cameraVendor=="avt") pCamera=new AvtCamera;
+   else if(cameraVendor=="andor") pCamera=new AndorCamera;
    else {
       //todo: error msg
       return 1;
@@ -54,8 +54,9 @@ int main(int argc, char *argv[])
    QPixmap pixmap("splash.jpg");
    QSplashScreen *splash = new QSplashScreen(pixmap);
    splash->show();
-   splash->showMessage(QString("Initialize the %1 camera ...").arg(), 
+   splash->showMessage(QString("Initialize the %1 camera ...").arg(pCamera->vendor), 
       Qt::AlignLeft|Qt::AlignBottom, Qt::red);
+
    //qApp->processEvents();
    if(!camera.init()){
       splash->showMessage("Failed to initialize the camera.", 
