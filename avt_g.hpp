@@ -26,6 +26,8 @@ class AvtCamera: public Camera {
     //todo: we might also want it to be aligned
     PixelValue* pLiveImage;
 
+    PixelValue* pBlackImage;
+
     long nAcquiredFrames;
     //lock used to coordinate accessing to nAcquiredFrames
     QMutex* mpLock; 
@@ -37,6 +39,8 @@ public:
       pCircBuf=pRealCircBuf=nullptr;
 
       pLiveImage=nullptr;
+
+      pBlackImage=nullptr;
 
       nAcquiredFrames=0;
       mpLock=new QMutex;
