@@ -17,7 +17,7 @@
 
 #include "andor_g.hpp"
 
-extern AndorCamera camera;
+extern Camera* pCamera;
 
 
 FanCtrlDialog::FanCtrlDialog(QWidget *parent)
@@ -38,7 +38,7 @@ void FanCtrlDialog::on_buttonBox_accepted()
    if(ui.radioButtonLow->isChecked()) speed=AndorCamera::fsLow;
    else if(ui.radioButtonOff->isChecked()) speed=AndorCamera::fsOff;
 
-   camera.setHeatsinkFanSpeed(speed); //TODO: check return value
+   ((AndorCamera*)pCamera)->setHeatsinkFanSpeed(speed); //TODO: check return value
 
    this->hide();
 }

@@ -59,7 +59,7 @@ ImagineStatus curStatus;
 ImagineAction curAction;
 
 //todo: 
-extern AndorCamera camera;
+extern Camera* pCamera;
 
 
 class CurveData: public QwtData

@@ -69,6 +69,8 @@ public:
       case eOutOfMem: return __ePvErr_force_32-100; //NOTE: this might be an issue
       //default: 
       }
+
+      return -1;
    }
 
    bool init();
@@ -100,9 +102,10 @@ public:
 
    double getCycleTime();
 
+   //transfer data from card
    bool transferData()
    {
-      //do nothing
+      //do nothing, since the data already in the buffer
 
       return true;
    }

@@ -19,7 +19,7 @@
 
 #include "andor_g.hpp"
 
-extern AndorCamera camera;
+extern Camera* pCamera;
 
 TemperatureDialog::TemperatureDialog(QWidget *parent)
     : QDialog(parent)
@@ -41,12 +41,8 @@ void TemperatureDialog::on_radioButtonOn_toggled(bool isChecked)
 {
    ui.btnSet->setEnabled(isChecked);
 
-   if(isChecked){
-      camera.switchCooler(true);
-   }
-   else {
-      camera.switchCooler(false);
-   }
+   ((AndorCamera*)pCamera)->switchCooler(isChecked);
+
 }
 
 void TemperatureDialog::on_btnSet_clicked()

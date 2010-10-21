@@ -68,6 +68,8 @@ public:
       case eOutOfMem: return DRV_ERROR_CODES-100;
       //default: 
       }
+
+      return -1;
    }
 
    long getAcquiredFrameCount()
