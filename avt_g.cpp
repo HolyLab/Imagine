@@ -118,9 +118,6 @@ bool AvtCamera::init()
       errorMsg+="not enough mem";
       return false;
    }
-   for(int frameIdx=0; frameIdx<circBufSize; ++frameIdx){
-      pFrames[frameIdx].ImageBuffer=pCircBuf+frameIdx*chipWidth*chipHeight; 
-   }
 
    //NOTE: now we can start camera
 
@@ -248,12 +245,13 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 
    //fill the remaining fields of tPvFrame struct
    for(int frameIdx=0; frameIdx<circBufSize; ++frameIdx){
+      pFrames[frameIdx].ImageBuffer=pCircBuf+frameIdx*getImageWidth()*getImageHeight(); 
       pFrames[frameIdx].ImageBufferSize=getImageWidth()*getImageHeight()*sizeof(PixelValue); 
       pFrames[frameIdx].Context[0]=this;
       pFrames[frameIdx].Context[1]=(void*)frameIdx;
    }
 
-   //todo: enqueue the frames
+   //enqueue the frames
    for(int frameIdx=0; frameIdx<circBufSize; ++frameIdx){
       PvCaptureQueueFrame(cameraHandle,&pFrames[frameIdx], onFrameDone);
    }
