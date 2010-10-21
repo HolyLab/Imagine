@@ -915,11 +915,9 @@ void Imagine::on_btnApply_clicked()
    QString headerFilename=ui.lineEditFilename->text();
    if(headerFilename.isEmpty()){
       dataAcqThread.isSaveData=false;
-      dataAcqThread.isSaveSifToo=false;
    }
    else {
       dataAcqThread.isSaveData=true;
-      dataAcqThread.isSaveSifToo=ui.cbSaveSifToo->isChecked();
 
       dataAcqThread.headerFilename=headerFilename;  //TODO: add ext if necessary
       dataAcqThread.aiFilename=replaceExtName(headerFilename, "ai");

@@ -455,14 +455,13 @@ nextStack:
 
    if(!isUseSpool){
       //get camera's data:
-      bool result=camera.getData();
+      bool result=camera.transferData();
       if(!result){
          emit newStatusMsgReady(QString(camera.getErrorMsg().c_str())
             +QString("(errCode=%1)").arg(camera.getErrorCode()));
          return;
       }
    }
-   Camera::PixelValue * imageArray=camera.getImageArray();
 
    //save data to files:
    //save camera's data:
@@ -472,6 +471,7 @@ nextStack:
             camFilename.arg(idxCurStack,4,10,QLatin1Char('0')).toStdString().c_str(), 
             ios::binary|ios::out|ios::trunc );
       }
+      Camera::PixelValue * imageArray=camera.getImageArray();
       ofsCam->write((const char*)imageArray, 
          sizeof(AndorCamera::PixelValue)*nFramesPerStack*imageW*imageH );
       if(!*ofsCam){

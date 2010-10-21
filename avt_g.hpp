@@ -100,6 +100,14 @@ public:
 
    double getCycleTime();
 
+   bool transferData()
+   {
+      //do nothing
+
+      return true;
+   }
+
+
    friend void  __stdcall onFrameDone(tPvFrame* pFrame);
 };
 

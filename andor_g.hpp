@@ -176,7 +176,7 @@ public:
    //     }
    //note: before call this func, make sure camera is idle. Otherwise
    //   this func will be ganranteed return false.
-   bool getData(void)   {
+   bool transferData(void)   {
       int nPixels=getImageWidth()*getImageHeight()*nFrames;
 
       if(!allocImageArray(nFrames,false)){

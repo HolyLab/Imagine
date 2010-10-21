@@ -126,7 +126,7 @@ public:
 
    virtual double getCycleTime()=0;
 
-   virtual bool getData()=0;
+   virtual bool transferData()=0;
 
 
 };//class, Camera
