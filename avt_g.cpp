@@ -194,6 +194,8 @@ void  __stdcall onFrameDone(tPvFrame* pFrame)
 {
    // if the frame was completed we re-enqueue it
    //cout<<"frame #"<<pFrame->FrameCount<<endl;
+   AvtCamera* pCamera=(AvtCamera*)pFrame->Context[0];
+
    if(pFrame->Status != ePvErrUnplugged && pFrame->Status != ePvErrCancelled)
         PvCaptureQueueFrame(cameraHandle,pFrame, onFrameDone);
 }
@@ -217,7 +219,9 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 
    //fill the remaining fields of tPvFrame struct
    for(int frameIdx=0; frameIdx<circBufSize; ++frameIdx){
-      pFrames[frameIdx].ImageBufferSize=getImageWidth()*getImageHeight(); 
+      pFrames[frameIdx].ImageBufferSize=getImageWidth()*getImageHeight()*sizeof(PixelValue); 
+      pFrames[frameIdx].Context[0]=this;
+      pFrames[frameIdx].Context[1]=(void*)frameIdx;
    }
 
    //todo: enqueue the frames
