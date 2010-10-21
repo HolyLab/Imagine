@@ -484,11 +484,6 @@ nextStack:
          ofsCam=nullptr;
       }
 
-      if(isSaveSifToo){
-         QString sifFilename=sifFileBasename
-            +QString("_%1.sif").arg(idxCurStack,4,10,QLatin1Char('0'));
-         SaveAsSif((char*)sifFilename.toStdString().c_str());   
-      }//if, save the stack as andor's sif format too
    }//if, save data to file and not using spool
 
    //save ai data:
