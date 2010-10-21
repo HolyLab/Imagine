@@ -196,9 +196,21 @@ void  __stdcall onFrameDone(tPvFrame* pFrame)
    //cout<<"frame #"<<pFrame->FrameCount<<endl;
    AvtCamera* pCamera=(AvtCamera*)pFrame->Context[0];
    int frameIdx=(int)pFrame->Context[1];
+   int nPixels=pCamera->getImageHeight()*pCamera->getImageWidth();
 
-   if(pFrame->Status != ePvErrUnplugged && pFrame->Status != ePvErrCancelled)
-        PvCaptureQueueFrame(pCamera->cameraHandle,pFrame, onFrameDone);
+   CLockGuard tGuard(pCamera->mpLock);
+
+   //if suc: the image; otherwise all zeros
+   //update live image; save to buf/file
+   //update counter
+   //if nec, re-enqueue
+
+   if(pFrame->Status == ePvErrSuccess){//pFrame->Status != ePvErrUnplugged && pFrame->Status != ePvErrCancelled
+      memcpy(pCamera->pLiveImage, pFrame->ImageBuffer, sizeof(Camera::PixelValue)*nPixels);
+
+      PvCaptureQueueFrame(pCamera->cameraHandle,pFrame, onFrameDone);
+
+   }
 }
 
 
