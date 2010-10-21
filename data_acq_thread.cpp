@@ -263,7 +263,7 @@ void DataAcqThread::run_acq_and_save()
       .arg(camera.getErrorMsg().c_str()));
 
    //get the real params used by the camera:
-   cycleTime=camera.getCycleTime;
+   cycleTime=camera.getCycleTime();
 
    //prepare for AO:
    if(aoOnce){
@@ -281,10 +281,10 @@ void DataAcqThread::run_acq_and_save()
    NiDaqAo* ao=new NiDaqAo(aoChannels);
 
    double durationAo=nFramesPerStack*cycleTime; //in sec
-   if(triggerMode==AndorCamera::eInternalTrigger){
+   if(triggerMode==Camera::eInternalTrigger){
       durationAo+=0.1; 
    }
-   else if(triggerMode==AndorCamera::eExternalStart){
+   else if(triggerMode==Camera::eExternalStart){
       durationAo+=piezoPreTriggerTime;
    }
 
@@ -311,7 +311,7 @@ void DataAcqThread::run_acq_and_save()
    }
    bufAo[ao->nScans-1]=bufAo[0]; //the last sample resets piezo's position exactly
 
-   if(triggerMode==AndorCamera::eExternalStart){
+   if(triggerMode==Camera::eExternalStart){
       bufAo+=ao->nScans;
       int aoTTLHigh=ao->toDigUnit(5.0);            
       int aoTTLLow=ao->toDigUnit(0);
@@ -361,7 +361,7 @@ void DataAcqThread::run_acq_and_save()
    int imageH=camera.getImageHeight();
 
    int nPixels=imageW*imageH;
-   AndorCamera::PixelValue * frame=new AndorCamera::PixelValue[nPixels];
+   Camera::PixelValue * frame=new Camera::PixelValue[nPixels];
 
    idxCurStack=0;
    Timer_g timer;
@@ -396,7 +396,7 @@ nextStack:
    camera.startAcq();
 
    //for external start, put 100ms delay here to wait camera ready for trigger
-   if(triggerMode==AndorCamera::eExternalStart){
+   if(triggerMode==Camera::eExternalStart){
       double timeToWait=0.1;
       //TODO: maybe I should use busy waiting?
       QThread::msleep(timeToWait*1000); // *1000: sec -> ms
