@@ -34,7 +34,7 @@ using namespace std;
 #include "scoped_ptr_g.hpp"
 
 
-AndorCamera camera;
+Camera* camera;
 NiDaqDo * digOut=NULL;
 NiDaqAoWriteOne * aoOnce=NULL;
 

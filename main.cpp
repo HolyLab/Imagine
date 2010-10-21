@@ -20,10 +20,11 @@
 #include "imagine.h"
 
 #include "andor_g.hpp"
+#include "avt_g.hpp"
 
 
-//todo: 
-extern AndorCamera camera;
+
+extern Camera* camera;
 
 
 
@@ -31,12 +32,29 @@ int main(int argc, char *argv[])
 {
    QApplication a(argc, argv);
 
+   QString cameraVendor="avt";
+   if(argc>1) cameraVendor=argv[1];
+   if(cameraVendor!="avt" && cameraVendor!="andor"){
+      QMessageBox::critical(0, "Imagine", "please specify the camera (avt or andor) on the command line."
+         , QMessageBox::Ok, QMessageBox::NoButton);
+
+      return 1;
+
+   }
+
+   if(cameraVendor=="avt") camera=new AvtCamera;
+   else if(cameraVendor=="andor") camera=new AndorCamera;
+   else {
+      //todo: error msg
+      return 1;
+   }
+
    //show splash windows and init camera:
    //see: QSplashScreen class ref
    QPixmap pixmap("splash.jpg");
    QSplashScreen *splash = new QSplashScreen(pixmap);
    splash->show();
-   splash->showMessage("Initialize the Andor camera ...", 
+   splash->showMessage(QString("Initialize the %1 camera ...").arg(), 
       Qt::AlignLeft|Qt::AlignBottom, Qt::red);
    //qApp->processEvents();
    if(!camera.init()){
