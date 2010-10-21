@@ -208,17 +208,25 @@ void  __stdcall onFrameDone(tPvFrame* pFrame)
 
    CLockGuard tGuard(pCamera->mpLock);
 
-   //if suc: the image; otherwise all zeros
    //update live image; save to buf/file
    //update counter
    //if nec, re-enqueue
 
-   if(pFrame->Status == ePvErrSuccess){//pFrame->Status != ePvErrUnplugged && pFrame->Status != ePvErrCancelled
-      memcpy(pCamera->pLiveImage, pFrame->ImageBuffer, sizeof(Camera::PixelValue)*nPixels);
+   //if suc: the image; otherwise all zeros
+   void *src=pFrame->Status == ePvErrSuccess?pFrame->ImageBuffer:pCamera->pBlackImage;
 
-      PvCaptureQueueFrame(pCamera->cameraHandle,pFrame, onFrameDone);
+   ///the live image
+   memcpy(pCamera->pLiveImage, 
+      src, 
+      sizeof(Camera::PixelValue)*nPixels
+      );
 
+   ///the saved buf
+
+   if(){//pFrame->Status != ePvErrUnplugged && pFrame->Status != ePvErrCancelled
    }
+   
+      PvCaptureQueueFrame(pCamera->cameraHandle,pFrame, onFrameDone);
 }
 
 
