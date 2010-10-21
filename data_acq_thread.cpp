@@ -34,7 +34,7 @@ using namespace std;
 #include "scoped_ptr_g.hpp"
 
 
-Camera* camera;
+Camera* pCamera;
 NiDaqDo * digOut=NULL;
 NiDaqAoWriteOne * aoOnce=NULL;
 
