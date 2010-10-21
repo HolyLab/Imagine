@@ -180,6 +180,8 @@ void DataAcqThread::run()
 
 void DataAcqThread::run_live()
 {
+   Camera& camera=*pCamera;
+
    //prepare for camera:
    camera.setAcqModeAndTime(Camera::eLive,
                             this->exposureTime, 
@@ -194,7 +196,7 @@ void DataAcqThread::run_live()
    int imageW=camera.getImageWidth();
    int imageH=camera.getImageHeight();
    int nPixels=imageW*imageH;
-   AndorCamera::PixelValue * frame=new AndorCamera::PixelValue[nPixels];
+   Camera::PixelValue * frame=new Camera::PixelValue[nPixels];
 
    Timer_g timer;
    timer.start();
@@ -203,10 +205,6 @@ void DataAcqThread::run_live()
    emit newStatusMsgReady(QString("Camera: started acq: %1")
       .arg(camera.getErrorMsg().c_str()));
 
-
-   //todo: encapsulate getmostrecentimage16()
-   //todo: encapsulate GetTotalNumberImagesAcquired()
-   //todo: encapsulate AbortAcquisition()
 
    long nDisplayUpdating=0;
    long nFramesGot=0;
@@ -246,12 +244,15 @@ void DataAcqThread::run_live()
    emit newStatusMsgReady(ttMsg);
 }//run_live()
 
+
 void DataAcqThread::run_acq_and_save()
 {
-   //prepare for AO AI and camera:
+   Camera& camera=*pCamera;
+
+   ////prepare for AO AI and camera:
    
-   //prepare for camera:
-   //camera.setAcqModeAndTime(AndorCamera::eKineticSeries,
+   ///prepare for camera:
+   ///camera.setAcqModeAndTime(AndorCamera::eKineticSeries,
    camera.setAcqModeAndTime(Camera::eAcqAndSave,
                             this->exposureTime, 
                             this->nFramesPerStack,
