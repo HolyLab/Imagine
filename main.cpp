@@ -54,11 +54,11 @@ int main(int argc, char *argv[])
    QPixmap pixmap("splash.jpg");
    QSplashScreen *splash = new QSplashScreen(pixmap);
    splash->show();
-   splash->showMessage(QString("Initialize the %1 camera ...").arg(pCamera->vendor), 
+   splash->showMessage(QString("Initialize the %1 camera ...").arg(QString::fromStdString(pCamera->vendor)), 
       Qt::AlignLeft|Qt::AlignBottom, Qt::red);
 
    //qApp->processEvents();
-   if(!camera.init()){
+   if(!pCamera->init()){
       splash->showMessage("Failed to initialize the camera.", 
          Qt::AlignLeft|Qt::AlignBottom, Qt::red);
 

@@ -84,6 +84,8 @@ QString linize(QString lines)
 const string headerMagic="IMAGINE";
 bool DataAcqThread::saveHeader(QString filename, NiDaqAi* ai)
 {
+   Camera& camera=*pCamera;
+
    ofstream header(filename.toStdString().c_str(), 
          ios::out|ios::trunc );
    header<<headerMagic<<endl;
@@ -261,10 +263,7 @@ void DataAcqThread::run_acq_and_save()
       .arg(camera.getErrorMsg().c_str()));
 
    //get the real params used by the camera:
-   //TODO: wrapp the func GetAcquisitionTimings() and check return value
-   float tExp, tAccumTime, tKineticTime;
-   GetAcquisitionTimings(&tExp,&tAccumTime,&tKineticTime);
-   cycleTime=tKineticTime;
+   cycleTime=camera.getCycleTime;
 
    //prepare for AO:
    if(aoOnce){
@@ -275,7 +274,7 @@ void DataAcqThread::run_acq_and_save()
    int aoChannelForPiezo=0; //TODO: put this configurable
    vector<int> aoChannels;
    aoChannels.push_back(aoChannelForPiezo);
-   if(triggerMode==AndorCamera::eExternalStart){
+   if(triggerMode==Camera::eExternalStart){
       int aoChannelForTrigger=1;
       aoChannels.push_back(aoChannelForTrigger);
    }
@@ -463,7 +462,7 @@ nextStack:
          return;
       }
    }
-   AndorCamera::PixelValue * imageArray=camera.getImageArray();
+   Camera::PixelValue * imageArray=camera.getImageArray();
 
    //save data to files:
    //save camera's data:

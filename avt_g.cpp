@@ -220,10 +220,20 @@ void  __stdcall onFrameDone(tPvFrame* pFrame)
 
    ///the saved buf
 
-   if(){//pFrame->Status != ePvErrUnplugged && pFrame->Status != ePvErrCancelled
-   }
+   //if(){//pFrame->Status != ePvErrUnplugged && pFrame->Status != ePvErrCancelled
+   //}
    
       PvCaptureQueueFrame(pCamera->cameraHandle,pFrame, onFrameDone);
+}
+
+
+double AvtCamera::getCycleTime()
+{
+   tPvUint32 time;
+
+   PvAttrUint32Get(cameraHandle, "ExposureValue", &time);
+
+   return time/1000.0/1000;
 }
 
 

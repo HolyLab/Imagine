@@ -98,6 +98,8 @@ public:
 
    bool stopAcq();
 
+   double getCycleTime();
+
    friend void  __stdcall onFrameDone(tPvFrame* pFrame);
 };
 

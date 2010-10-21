@@ -267,6 +267,17 @@ public:
 
       return true;
    }
+
+
+   double getCycleTime()
+   {
+   float tExp, tAccumTime, tKineticTime;
+   //todo: check return value
+   GetAcquisitionTimings(&tExp,&tAccumTime,&tKineticTime);
+
+   return tKineticTime;
+   }
+
 };//class, AndorCamera
 
 //extern AndorCamera camera;

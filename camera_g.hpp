@@ -117,13 +117,14 @@ public:
                      )=0;
 
    //params different for live from for save mode
-   bool setAcqModeAndTime(GenericAcqMode genericAcqMode,
+   virtual bool setAcqModeAndTime(GenericAcqMode genericAcqMode,
                           float exposure,
                           int anFrames,  //used only in kinetic-series mode
                           TriggerMode triggerMode
-                          );
+                          )=0;
 
 
+   virtual double getCycleTime()=0;
 };//class, Camera
 
 
