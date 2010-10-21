@@ -235,14 +235,23 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    ui.comboBoxTriggerMode->addItem("Internal");
    ui.comboBoxTriggerMode->setCurrentIndex(0);
 
-   //TODO: get pre-amp gain and fill in the cfg window
-   //fill in horizontal shift speed (i.e. read out rate):
-   vector<float> horSpeeds=camera.getHorShiftSpeeds();
-   for(int i=0; i<horSpeeds.size(); ++i){
-      ui.comboBoxHorReadoutRate->addItem(QString().setNum(horSpeeds[i])
-         +" MHz");
+   Camera& camera=*pCamera;
+
+   bool isAndor=camera.vendor=="andor";
+
+   if(isAndor){
+      //TODO: get pre-amp gain and fill in the cfg window
+      //fill in horizontal shift speed (i.e. read out rate):
+      vector<float> horSpeeds=((AndorCamera*)pCamera)->getHorShiftSpeeds();
+      for(int i=0; i<horSpeeds.size(); ++i){
+         ui.comboBoxHorReadoutRate->addItem(QString().setNum(horSpeeds[i])
+            +" MHz");
+      }
+      ui.comboBoxHorReadoutRate->setCurrentIndex(0);
    }
-   ui.comboBoxHorReadoutRate->setCurrentIndex(0);
+   else{
+      ui.comboBoxHorReadoutRate->setEditable(false);
+   }
 
    //fill in pre-amp gains:
    vector<float> preAmpGains=camera.getPreAmpGains();
