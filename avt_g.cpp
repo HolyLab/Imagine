@@ -277,6 +277,9 @@ long AvtCamera::getAcquiredFrameCount()
 
 bool AvtCamera::startAcq()
 {
+   CLockGuard tGuard(mpLock);
+   nAcquiredFrames=0;
+
    if(triggerMode==eInternalTrigger){
       PvCommandRun(cameraHandle,"AcquisitionStart");
    }
@@ -291,9 +294,24 @@ bool AvtCamera::startAcq()
 
 bool AvtCamera::stopAcq()
 {
+   //todo: do we need to clear the queue?
+
    PvCommandRun(cameraHandle,"AcquisitionStop");
 
    PvCaptureEnd(cameraHandle) ;
+
+   return true;
+}
+
+
+bool AvtCamera::getLatestLiveImage(PixelValue * frame)
+{
+   CLockGuard tGuard(mpLock);
+
+   if(nAcquiredFrames<=0)   return false;
+
+   int nPixels=getImageHeight()*getImageWidth();
+   memcpy(frame, pLiveImage, nPixels*sizeof(PixelValue));
 
    return true;
 }

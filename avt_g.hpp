@@ -86,6 +86,8 @@ public:
 
    long getAcquiredFrameCount();
 
+   bool getLatestLiveImage(PixelValue * frame);
+
    bool startAcq();
 
    bool stopAcq();
