@@ -14,6 +14,10 @@
 **-------------------------------------------------------------------------*/
 
 
+#include <QString>
+#include <QFileInfo>
+
+
 #include "misc.hpp"
 
 QString replaceExtName(QString filename, QString newExtname)

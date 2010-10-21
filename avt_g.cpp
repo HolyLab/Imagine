@@ -195,9 +195,10 @@ void  __stdcall onFrameDone(tPvFrame* pFrame)
    // if the frame was completed we re-enqueue it
    //cout<<"frame #"<<pFrame->FrameCount<<endl;
    AvtCamera* pCamera=(AvtCamera*)pFrame->Context[0];
+   int frameIdx=(int)pFrame->Context[1];
 
    if(pFrame->Status != ePvErrUnplugged && pFrame->Status != ePvErrCancelled)
-        PvCaptureQueueFrame(cameraHandle,pFrame, onFrameDone);
+        PvCaptureQueueFrame(pCamera->cameraHandle,pFrame, onFrameDone);
 }
 
 
@@ -283,6 +284,8 @@ bool AvtCamera::startAcq()
       //todo: external triggered, no nec?
       PvCommandRun(cameraHandle,"AcquisitionStart");
    }
+
+   return true;
 }
 
 
@@ -291,5 +294,7 @@ bool AvtCamera::stopAcq()
    PvCommandRun(cameraHandle,"AcquisitionStop");
 
    PvCaptureEnd(cameraHandle) ;
+
+   return true;
 }
 

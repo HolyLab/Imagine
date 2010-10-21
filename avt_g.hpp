@@ -8,6 +8,10 @@
 
 #include "PvApi.h"
 
+
+void  __stdcall onFrameDone(tPvFrame* pFrame);
+
+
 class AvtCamera: public Camera {
     unsigned long   cameraID;
     tPvHandle       cameraHandle;
@@ -85,6 +89,8 @@ public:
    bool startAcq();
 
    bool stopAcq();
+
+   friend void  __stdcall onFrameDone(tPvFrame* pFrame);
 };
 
 

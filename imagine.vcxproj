@@ -105,6 +105,7 @@
     <ClCompile Include="imagelabel.cpp" />
     <ClCompile Include="imagine.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="misc.cpp" />
     <ClCompile Include="temperaturedialog.cpp" />
     <ClCompile Include="qtgen\release\moc_ai_thread.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

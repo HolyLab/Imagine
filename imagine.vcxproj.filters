@@ -111,6 +111,9 @@
     <ClCompile Include="qtgen\release\moc_data_acq_thread.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="misc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Atmcd32d.h">
