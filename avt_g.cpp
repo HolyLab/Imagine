@@ -103,6 +103,14 @@ bool AvtCamera::init()
    pLiveImage=new PixelValue[chipWidth*chipHeight+31];
 
 
+   //the black image
+   //todo: may need align too
+   int size=chipWidth*chipHeight+31;
+   pBlackImage=new PixelValue[size];
+   memset(pBlackImage, 0, size*sizeof(PixelValue)); //all zeros
+
+
+
    //prepare the tPvFrame structure
    pFrames=new tPvFrame[circBufSize];
    if(!pFrames){

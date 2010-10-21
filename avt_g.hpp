@@ -53,6 +53,8 @@ public:
       delete pLiveImage;
       
       delete pRealCircBuf;
+
+      delete pBlackImage;
    }
 
    string getErrorMsg(){
