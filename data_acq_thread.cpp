@@ -251,6 +251,18 @@ void DataAcqThread::run_acq_and_save()
 {
    Camera& camera=*pCamera;
 
+   bool isAndor=camera.vendor=="andor";
+   
+   if(isAndor){
+      isUseSpool=true;  //TODO: make ui aware this
+   }
+   else {
+      isUseSpool=false;
+   }
+
+   isCreateFilePerStack=true; //TODO: make ui aware this
+
+
    ////prepare for AO AI and camera:
    
    ///prepare for camera:
@@ -331,8 +343,6 @@ void DataAcqThread::run_acq_and_save()
 
    //after all devices are prepared, now we can save the file header:
    camFilename=replaceExtName(headerFilename, "cam"); //NOTE: necessary if user overwrite files
-   isUseSpool=true;  //TODO: make ui aware this
-   isCreateFilePerStack=true; //TODO: make ui aware this
    QString stackDir=replaceExtName(camFilename, "stacks");
    if(isUseSpool || isCreateFilePerStack){
       QDir::current().mkpath(stackDir);
