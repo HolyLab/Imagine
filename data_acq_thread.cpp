@@ -185,13 +185,14 @@ void DataAcqThread::run_live()
    Camera& camera=*pCamera;
 
    //prepare for camera:
-   camera.setAcqModeAndTime(Camera::eLive,
+   bool suc=camera.setAcqModeAndTime(Camera::eLive,
                             this->exposureTime, 
                             this->nFramesPerStack,
                             Camera::eInternalTrigger  //use internal trigger
                             );
    emit newStatusMsgReady(QString("Camera: set acq mode and time: %1")
       .arg(camera.getErrorMsg().c_str()));
+   if(!suc) return;
 
    isUpdatingImage=false;
 

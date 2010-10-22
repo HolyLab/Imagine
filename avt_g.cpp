@@ -260,9 +260,14 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
    this->nFrames=anFrames;
    this->triggerMode=triggerMode;
 
+   errorCode=ePvErrSuccess;
 
    //init the capture stream
-   PvCaptureStart(cameraHandle);
+   errorCode=PvCaptureStart(cameraHandle);
+   if(errorCode!=ePvErrSuccess){
+      errorMsg="error when PvCaptureStart";
+      return false;
+   }
 
    //fill the remaining fields of tPvFrame struct
    for(int frameIdx=0; frameIdx<circBufSize; ++frameIdx){
@@ -274,38 +279,50 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 
    //enqueue the frames
    for(int frameIdx=0; frameIdx<circBufSize; ++frameIdx){
-      PvCaptureQueueFrame(cameraHandle,&pFrames[frameIdx], onFrameDone);
+      errorCode=PvCaptureQueueFrame(cameraHandle,&pFrames[frameIdx], onFrameDone);
+      if(errorCode!=ePvErrSuccess){
+         errorMsg="error when queue frames";
+         return false;
+      }
    }
 
    ////set trigger mode
 
    ///trigger for sequence/acquisition
    if(triggerMode==eInternalTrigger){
-      PvAttrEnumSet(cameraHandle,"AcqStartTriggerMode","Disabled");
+      errorCode=PvAttrEnumSet(cameraHandle,"AcqStartTriggerMode","Disabled");
    }
    else {
-      PvAttrEnumSet(cameraHandle,"AcqStartTriggerMode","SyncIn1");
+      errorCode=PvAttrEnumSet(cameraHandle,"AcqStartTriggerMode","SyncIn1");
+   }
+   if(errorCode!=ePvErrSuccess){
+      errorMsg="error when set acq trigger mode";
+      return false;
    }
 
    ///trigger for frame
-   PvAttrEnumSet(cameraHandle,"FrameStartTriggerMode","Freerun");
+   errorCode=PvAttrEnumSet(cameraHandle,"FrameStartTriggerMode","Freerun");
+   if(errorCode!=ePvErrSuccess){
+      errorMsg="error when set frame trigger mode";
+      return false;
+   }
 
    ///set exp mode 
-   PvAttrEnumSet(cameraHandle,"ExposureMode","Manual");
+   errorCode=PvAttrEnumSet(cameraHandle,"ExposureMode","Manual");
 
    /// and time
-   PvAttrUint32Set(cameraHandle, "ExposureValue", exposure*1000*1000);
+   errorCode=PvAttrUint32Set(cameraHandle, "ExposureValue", exposure*1000*1000);
 
    ///set acq mode
    if(genericAcqMode==eLive){
-      PvAttrEnumSet(cameraHandle,"AcquisitionMode","Continuous");
+      errorCode=PvAttrEnumSet(cameraHandle,"AcquisitionMode","Continuous");
    }
    else {
       //set up #frames to acq
-      PvAttrUint32Set(cameraHandle, "AcquisitionFrameCount", nFrames);
+      errorCode=PvAttrUint32Set(cameraHandle, "AcquisitionFrameCount", nFrames);
 
       //todo: maybe should be "Continuous"
-      PvAttrEnumSet(cameraHandle,"AcquisitionMode","MultiFrame"); 
+      errorCode=PvAttrEnumSet(cameraHandle,"AcquisitionMode","MultiFrame"); 
 
       //PvAttrEnumSet(cameraHandle,"AcquisitionMode","Continuous");
    }
@@ -316,7 +333,7 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
    }//if, fail to alloc enough mem
 
 
-   return true;
+   return errorCode==ePvErrSuccess;
 }
 
 
