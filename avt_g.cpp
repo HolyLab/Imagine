@@ -14,6 +14,8 @@
 **-------------------------------------------------------------------------*/
 
 #include <Windows.h>
+#include <assert.h>
+
 
 #include "avt_g.hpp"
 #include "lockguard.h"
@@ -204,11 +206,7 @@ void  __stdcall onFrameDone(tPvFrame* pFrame)
    int nPixels=pCamera->getImageHeight()*pCamera->getImageWidth();
 
    CLockGuard tGuard(pCamera->mpLock);
-
-   //update live image; save to buf/file
-   //update counter
-   //if nec, re-enqueue
-
+   
    //if suc: the image; otherwise all zeros
    void *src=pFrame->Status == ePvErrSuccess?pFrame->ImageBuffer:pCamera->pBlackImage;
 
@@ -220,6 +218,9 @@ void  __stdcall onFrameDone(tPvFrame* pFrame)
 
    ///the saved buf
    pCamera->nAcquiredFrames=pFrame->FrameCount;
+
+   assert((pCamera->nAcquiredFrames-1)%pCamera->circBufSize==frameIdx);
+
    if(pCamera->nAcquiredFrames<=pCamera->nFrames){
       memcpy(pCamera->pImageArray+(pCamera->nAcquiredFrames-1)*nPixels, 
          src, 
@@ -228,11 +229,13 @@ void  __stdcall onFrameDone(tPvFrame* pFrame)
 
    }
 
-   //if(){//pFrame->Status != ePvErrUnplugged && pFrame->Status != ePvErrCancelled
-   //}
-   
+   if(pCamera->nAcquiredFrames<pCamera->nFrames
+        && pFrame->Status != ePvErrUnplugged 
+        && pFrame->Status != ePvErrCancelled
+      ){
       PvCaptureQueueFrame(pCamera->cameraHandle,pFrame, onFrameDone);
-}
+   }
+}//onFrameDone(),
 
 
 double AvtCamera::getCycleTime()
