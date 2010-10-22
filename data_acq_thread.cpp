@@ -419,17 +419,14 @@ nextStack:
       .arg(camera.getErrorMsg().c_str()));
 
 
-   //todo: encapsulate GetStatus()
-   //todo: encapsulate getmostrecentimage16()
-   //todo: encapsulate GetTotalNumberImagesAcquired()
-
    //bool isResize=false;
    long nFramesGotForStack=0;
    long nFramesGotForStackCur;
-   int status;
-   GetStatus(&status);  //todo: check return value
-   while(status!=DRV_IDLE){
+   while(true){
       nFramesGotForStackCur=camera.getAcquiredFrameCount();
+      if(nFramesGotForStackCur==nFramesPerStack){
+         break;
+      }
 
       if(nFramesGotForStack!=nFramesGotForStackCur && !isUpdatingImage){
          nFramesGotForStack=nFramesGotForStackCur;
@@ -441,7 +438,6 @@ nextStack:
          QByteArray data16((const char*)frame, imageW*imageH*2);
          emit imageDataReady(data16, nFramesGotForStack-1, imageW, imageH); //-1: due to 0-based indexing
       }
-      GetStatus(&status);  //todo: check return value
    }//while, camera is not idle
 
    //get the last frame if nec
