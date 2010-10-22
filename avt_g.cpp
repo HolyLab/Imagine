@@ -299,7 +299,8 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
       //PvAttrEnumSet(cameraHandle,"AcquisitionMode","Continuous");
    }
 
-   ///take care of image array saving (in mem or to disk)
+   ///take care of image array saving (in mem only)
+
 
    return true;
 }

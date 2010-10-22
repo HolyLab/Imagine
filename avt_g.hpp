@@ -50,11 +50,11 @@ public:
 
    ~AvtCamera(){
       //
-      delete pLiveImage;
+      delete[] pLiveImage;
       
-      delete pRealCircBuf;
+      delete[] pRealCircBuf;
 
-      delete pBlackImage;
+      delete[] pBlackImage;
    }
 
    string getErrorMsg(){

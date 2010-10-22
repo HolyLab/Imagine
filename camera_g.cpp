@@ -42,6 +42,8 @@ Camera::~Camera()
 
 }
 
+
+//todo: align it
 bool Camera::allocImageArray(int nFrames, bool shouldReallocAnyway)
 {
       int nPixels=getImageWidth()*getImageHeight()*nFrames;
