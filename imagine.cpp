@@ -883,12 +883,14 @@ void Imagine::on_btnUseZoomWindow_clicked()
 
 void Imagine::on_btnApply_clicked()
 {
+
+
    QString triggerModeStr=ui.comboBoxTriggerMode->currentText();
    AndorCamera::TriggerMode triggerMode;
    if(triggerModeStr=="External Start") triggerMode=AndorCamera::eExternalStart;
    else if(triggerModeStr=="Internal")  triggerMode=AndorCamera::eInternalTrigger;
    else {
-      assert(1); //if code goes here, it is a bug
+      assert(0); //if code goes here, it is a bug
    }
    dataAcqThread.triggerMode=triggerMode;
 
