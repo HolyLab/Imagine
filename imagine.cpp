@@ -248,52 +248,59 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
             +" MHz");
       }
       ui.comboBoxHorReadoutRate->setCurrentIndex(0);
-   }
+
+      //fill in pre-amp gains:
+      vector<float> preAmpGains=((AndorCamera*)pCamera)->getPreAmpGains();
+      for(int i=0; i<preAmpGains.size(); ++i){
+         ui.comboBoxPreAmpGains->addItem(QString().setNum(preAmpGains[i]));
+      }
+      ui.comboBoxPreAmpGains->setCurrentIndex(preAmpGains.size()-1);
+
+      //verify all pre-amp gains available on all hor. shift speeds:
+      for(int horShiftSpeedIdx=0; horShiftSpeedIdx<horSpeeds.size(); ++horShiftSpeedIdx){
+         for(int preAmpGainIdx=0; preAmpGainIdx<preAmpGains.size(); ++preAmpGainIdx){
+            int isAvail;
+            //todo: put next func in class AndorCamera
+            IsPreAmpGainAvailable(0,0,horShiftSpeedIdx, preAmpGainIdx, &isAvail);
+            if(!isAvail){
+               appendLog("WARNING: not all pre-amp gains available for all readout rates");
+            }
+         }//for, each pre amp gain
+      }//for, each hor. shift speed
+
+      /* for this specific camera (ixon 885), nADChannels=nOutputAmplifiers=1
+         so this chunk code is not necessary.
+      int nADChannels=0, nOutputAmplifiers=0;
+      GetNumberADChannels(&nADChannels); //TODO: wrap it
+      GetNumberAmp(&nOutputAmplifiers); //TODO: wrap it
+      */
+
+      //fill in vert. shift speed combo box
+      vector<float> verSpeeds=((AndorCamera*)pCamera)->getVerShiftSpeeds();
+      for(int i=0; i<verSpeeds.size(); ++i){
+         ui.comboBoxVertShiftSpeed->addItem(QString().setNum(verSpeeds[i])
+            +" us");
+      }
+      ui.comboBoxVertShiftSpeed->setCurrentIndex(2);
+
+      //fill in vert. clock amplitude combo box:
+      for(int i=0; i<5; ++i){
+         QString tstr;
+         if(i==0) tstr="0 - Normal";
+         else tstr=QString("+%1").arg(i);
+         ui.comboBoxVertClockVolAmp->addItem(tstr);
+      }
+      ui.comboBoxVertClockVolAmp->setCurrentIndex(0);
+
+   }//if, is andor camera
    else{
-      ui.comboBoxHorReadoutRate->setEditable(false);
+      ui.comboBoxHorReadoutRate->setEnabled(false);
+      ui.comboBoxPreAmpGains->setEnabled(false);
+      ui.comboBoxVertShiftSpeed->setEnabled(false);
+      ui.comboBoxVertClockVolAmp->setEnabled(false);
+
    }
 
-   //fill in pre-amp gains:
-   vector<float> preAmpGains=camera.getPreAmpGains();
-   for(int i=0; i<preAmpGains.size(); ++i){
-      ui.comboBoxPreAmpGains->addItem(QString().setNum(preAmpGains[i]));
-   }
-   ui.comboBoxPreAmpGains->setCurrentIndex(preAmpGains.size()-1);
-
-   //verify all pre-amp gains available on all hor. shift speeds:
-   for(int horShiftSpeedIdx=0; horShiftSpeedIdx<horSpeeds.size(); ++horShiftSpeedIdx){
-      for(int preAmpGainIdx=0; preAmpGainIdx<preAmpGains.size(); ++preAmpGainIdx){
-         int isAvail;
-         IsPreAmpGainAvailable(0,0,horShiftSpeedIdx, preAmpGainIdx, &isAvail);
-         if(!isAvail){
-            appendLog("WARNING: not all pre-amp gains available for all readout rates");
-         }
-      }//for, each pre amp gain
-   }//for, each hor. shift speed
-
-   /* for this specific camera (ixon 885), nADChannels=nOutputAmplifiers=1
-      so this chunk code is not necessary.
-   int nADChannels=0, nOutputAmplifiers=0;
-   GetNumberADChannels(&nADChannels); //TODO: wrap it
-   GetNumberAmp(&nOutputAmplifiers); //TODO: wrap it
-   */
-
-   //fill in vert. shift speed combo box
-   vector<float> verSpeeds=camera.getVerShiftSpeeds();
-   for(int i=0; i<verSpeeds.size(); ++i){
-      ui.comboBoxVertShiftSpeed->addItem(QString().setNum(verSpeeds[i])
-         +" us");
-   }
-   ui.comboBoxVertShiftSpeed->setCurrentIndex(2);
-
-   //fill in vert. clock amplitude combo box:
-   for(int i=0; i<5; ++i){
-      QString tstr;
-      if(i==0) tstr="0 - Normal";
-      else tstr=QString("+%1").arg(i);
-      ui.comboBoxVertClockVolAmp->addItem(tstr);
-   }
-   ui.comboBoxVertClockVolAmp->setCurrentIndex(0);
 
    //apply the camera setting:
    on_btnApply_clicked();
