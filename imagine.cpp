@@ -802,20 +802,26 @@ void Imagine::closeEvent(QCloseEvent *event)
       event->ignore();
    }
    */
-   
-   //TODO: ask user wait for temperature rising.
-   //   like andor mcd, if temperature is too low,  event->ignore();
-   int temperature=20; //assume room temperature
-   if(temperatureDialog){
-      temperature=temperatureDialog->updateTemperature();
-   }//if, user might adjust temperature
-   if(temperature<=0){
-      QMessageBox::information(0, "Imagine", 
-         "Camera's temperature is below 0.\nPlease raise it to above 0");
-      event->ignore();
-      return;
+
+   Camera& camera=*pCamera;
+
+   bool isAndor=camera.vendor=="andor";
+
+   if(isAndor){
+      //TODO: ask user wait for temperature rising.
+      //   like andor mcd, if temperature is too low,  event->ignore();
+      int temperature=20; //assume room temperature
+      if(temperatureDialog){
+         temperature=temperatureDialog->updateTemperature();
+      }//if, user might adjust temperature
+      if(temperature<=0){
+         QMessageBox::information(0, "Imagine", 
+            "Camera's temperature is below 0.\nPlease raise it to above 0");
+         event->ignore();
+         return;
+      }
+      ((AndorCamera*)pCamera)->switchCooler(false); //switch off cooler
    }
-   camera.switchCooler(false); //switch off cooler
 
    //shutdown camera
    //see: QMessageBox Class Reference
