@@ -104,6 +104,8 @@ public:
 
    double getCycleTime();
 
+   //bool isIdle();
+
    //transfer data from card
    bool transferData()
    {

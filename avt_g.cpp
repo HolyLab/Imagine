@@ -368,3 +368,13 @@ bool AvtCamera::getLatestLiveImage(PixelValue * frame)
    return true;
 }
 
+/*
+bool AvtCamera::isIdle()
+{
+   CLockGuard tGuard(mpLock);
+
+   return mIsIdle;
+}
+*/
+
+
