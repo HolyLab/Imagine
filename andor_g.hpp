@@ -280,6 +280,14 @@ public:
    return tKineticTime;
    }
 
+   bool enableSpool(char* path, int bufsize)
+   {
+      //todo: check rtn value
+      SetSpool(1,2,path,bufsize); //Enabled, Mode 2, aPath stem and buffer size of bufsize
+
+      return true;
+   }
+
 };//class, AndorCamera
 
 //extern AndorCamera camera;

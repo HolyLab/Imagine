@@ -401,7 +401,7 @@ nextStack:
    if(isUseSpool) {
       QString stemName=camFilename.arg(idxCurStack,4,10,QLatin1Char('0'));
       //enable spool
-      SetSpool(1,2,(char*)(stemName.toStdString().c_str()),10); //Enabled, Mode 2, aPath stem and buffer size of 10
+      ((AndorCamera*)(&camera))->enableSpool((char*)(stemName.toStdString().c_str()), 10);
    }
    camera.startAcq();
 
@@ -479,7 +479,7 @@ nextStack:
       }
       Camera::PixelValue * imageArray=camera.getImageArray();
       ofsCam->write((const char*)imageArray, 
-         sizeof(AndorCamera::PixelValue)*nFramesPerStack*imageW*imageH );
+         sizeof(Camera::PixelValue)*nFramesPerStack*imageW*imageH );
       if(!*ofsCam){
          //TODO: deal with the error
       }//if, error occurs when write camera data
@@ -548,7 +548,7 @@ nextStack:
 
    if(isUseSpool){
       //disable spool
-      SetSpool(0,2,NULL,10); //disable spooling
+      ((AndorCamera*)(&camera))->enableSpool(NULL,10); //disable spooling
    }
 
    camera.stopAcq();
