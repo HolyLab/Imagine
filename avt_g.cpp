@@ -219,6 +219,14 @@ void  __stdcall onFrameDone(tPvFrame* pFrame)
       );
 
    ///the saved buf
+   pCamera->nAcquiredFrames=pFrame->FrameCount;
+   if(pCamera->nAcquiredFrames<=pCamera->nFrames){
+      memcpy(pCamera->pImageArray+(pCamera->nAcquiredFrames-1)*nPixels, 
+         src, 
+         sizeof(Camera::PixelValue)*nPixels
+         );
+
+   }
 
    //if(){//pFrame->Status != ePvErrUnplugged && pFrame->Status != ePvErrCancelled
    //}
@@ -300,6 +308,9 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
    }
 
    ///take care of image array saving (in mem only)
+   if(!allocImageArray(nFrames,false)){
+      return false;
+   }//if, fail to alloc enough mem
 
 
    return true;

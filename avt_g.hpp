@@ -55,6 +55,8 @@ public:
       delete[] pRealCircBuf;
 
       delete[] pBlackImage;
+
+      delete mpLock;
    }
 
    string getErrorMsg(){
