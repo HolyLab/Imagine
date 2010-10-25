@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'imagine.ui'
 **
-** Created: Mon Oct 11 12:48:04 2010
+** Created: Mon Oct 25 17:24:35 2010
 **      by: Qt User Interface Compiler version 4.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -85,7 +85,6 @@ public:
     QSpacerItem *spacerItem1;
     QPushButton *btnSelectFile;
     QLineEdit *lineEditFilename;
-    QCheckBox *cbSaveSifToo;
     QLabel *label_2;
     QTextEdit *textEditComment;
     QWidget *tabCamera;
@@ -188,11 +187,13 @@ public:
         ImagineClass->resize(763, 643);
         actionStartAcqAndSave = new QAction(ImagineClass);
         actionStartAcqAndSave->setObjectName(QString::fromUtf8("actionStartAcqAndSave"));
-        const QIcon icon = QIcon(QString::fromUtf8(":/icons/Resources/start_acq.bmp"));
+        QIcon icon;
+        icon.addFile(QString::fromUtf8(":/icons/Resources/start_acq.bmp"), QSize(), QIcon::Normal, QIcon::Off);
         actionStartAcqAndSave->setIcon(icon);
         actionStop = new QAction(ImagineClass);
         actionStop->setObjectName(QString::fromUtf8("actionStop"));
-        const QIcon icon1 = QIcon(QString::fromUtf8(":/icons/Resources/stop.bmp"));
+        QIcon icon1;
+        icon1.addFile(QString::fromUtf8(":/icons/Resources/stop.bmp"), QSize(), QIcon::Normal, QIcon::Off);
         actionStop->setIcon(icon1);
         actionOpenShutter = new QAction(ImagineClass);
         actionOpenShutter->setObjectName(QString::fromUtf8("actionOpenShutter"));
@@ -204,7 +205,8 @@ public:
         actionTemperature->setObjectName(QString::fromUtf8("actionTemperature"));
         actionStartLive = new QAction(ImagineClass);
         actionStartLive->setObjectName(QString::fromUtf8("actionStartLive"));
-        const QIcon icon2 = QIcon(QString::fromUtf8(":/icons/Resources/start_live.bmp"));
+        QIcon icon2;
+        icon2.addFile(QString::fromUtf8(":/icons/Resources/start_live.bmp"), QSize(), QIcon::Normal, QIcon::Off);
         actionStartLive->setIcon(icon2);
         actionNoAutoScale = new QAction(ImagineClass);
         actionNoAutoScale->setObjectName(QString::fromUtf8("actionNoAutoScale"));
@@ -231,15 +233,14 @@ public:
         dwStim = new QDockWidget(centralWidget);
         dwStim->setObjectName(QString::fromUtf8("dwStim"));
         dwStim->setGeometry(QRect(0, 0, 421, 120));
-        dwStim->setMinimumSize(QSize(0, 80));
-        dwStim->setMaximumSize(QSize(16777215, 16777215));
+        dwStim->setMinimumSize(QSize(89, 111));
+        dwStim->setMaximumSize(QSize(524287, 524287));
         dockWidgetContents = new QWidget();
         dockWidgetContents->setObjectName(QString::fromUtf8("dockWidgetContents"));
         hboxLayout = new QHBoxLayout(dockWidgetContents);
         hboxLayout->setSpacing(6);
-        hboxLayout->setContentsMargins(11, 11, 11, 11);
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         hboxLayout->setContentsMargins(9, 9, 9, 9);
+        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         tableWidgetStimDisplay = new QTableWidget(dockWidgetContents);
         if (tableWidgetStimDisplay->columnCount() < 3)
             tableWidgetStimDisplay->setColumnCount(3);
@@ -260,13 +261,12 @@ public:
         dockWidgetContents1->setObjectName(QString::fromUtf8("dockWidgetContents1"));
         vboxLayout = new QVBoxLayout(dockWidgetContents1);
         vboxLayout->setSpacing(6);
-        vboxLayout->setContentsMargins(11, 11, 11, 11);
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         vboxLayout->setContentsMargins(9, 9, 9, 9);
+        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         hboxLayout1 = new QHBoxLayout();
         hboxLayout1->setSpacing(6);
-        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
+        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
         label_22 = new QLabel(dockWidgetContents1);
         label_22->setObjectName(QString::fromUtf8("label_22"));
 
@@ -295,28 +295,26 @@ public:
         dwLog->setWidget(dockWidgetContents1);
         dwCfg = new QDockWidget(centralWidget);
         dwCfg->setObjectName(QString::fromUtf8("dwCfg"));
-        dwCfg->setGeometry(QRect(20, 130, 306, 395));
-        dwCfg->setMinimumSize(QSize(275, 395));
+        dwCfg->setGeometry(QRect(20, 130, 362, 395));
+        dwCfg->setMinimumSize(QSize(362, 395));
         dockWidgetContents2 = new QWidget();
         dockWidgetContents2->setObjectName(QString::fromUtf8("dockWidgetContents2"));
         vboxLayout1 = new QVBoxLayout(dockWidgetContents2);
         vboxLayout1->setSpacing(6);
-        vboxLayout1->setContentsMargins(11, 11, 11, 11);
-        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         vboxLayout1->setContentsMargins(9, 9, 9, 9);
+        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         tabWidgetCfg = new QTabWidget(dockWidgetContents2);
         tabWidgetCfg->setObjectName(QString::fromUtf8("tabWidgetCfg"));
         tabGeneral = new QWidget();
         tabGeneral->setObjectName(QString::fromUtf8("tabGeneral"));
         vboxLayout2 = new QVBoxLayout(tabGeneral);
         vboxLayout2->setSpacing(6);
-        vboxLayout2->setContentsMargins(11, 11, 11, 11);
-        vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
         vboxLayout2->setContentsMargins(9, 9, 9, 9);
+        vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
         hboxLayout2 = new QHBoxLayout();
         hboxLayout2->setSpacing(6);
-        hboxLayout2->setObjectName(QString::fromUtf8("hboxLayout2"));
         hboxLayout2->setContentsMargins(0, 0, 0, 0);
+        hboxLayout2->setObjectName(QString::fromUtf8("hboxLayout2"));
         label = new QLabel(tabGeneral);
         label->setObjectName(QString::fromUtf8("label"));
 
@@ -339,11 +337,6 @@ public:
 
         vboxLayout2->addWidget(lineEditFilename);
 
-        cbSaveSifToo = new QCheckBox(tabGeneral);
-        cbSaveSifToo->setObjectName(QString::fromUtf8("cbSaveSifToo"));
-
-        vboxLayout2->addWidget(cbSaveSifToo);
-
         label_2 = new QLabel(tabGeneral);
         label_2->setObjectName(QString::fromUtf8("label_2"));
 
@@ -359,18 +352,14 @@ public:
         tabCamera->setObjectName(QString::fromUtf8("tabCamera"));
         vboxLayout3 = new QVBoxLayout(tabCamera);
         vboxLayout3->setSpacing(6);
-        vboxLayout3->setContentsMargins(11, 11, 11, 11);
-        vboxLayout3->setObjectName(QString::fromUtf8("vboxLayout3"));
         vboxLayout3->setContentsMargins(9, 9, 9, 9);
+        vboxLayout3->setObjectName(QString::fromUtf8("vboxLayout3"));
         groupBox = new QGroupBox(tabCamera);
         groupBox->setObjectName(QString::fromUtf8("groupBox"));
         gridLayout = new QGridLayout(groupBox);
         gridLayout->setSpacing(6);
-        gridLayout->setContentsMargins(11, 11, 11, 11);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
-        gridLayout->setHorizontalSpacing(6);
-        gridLayout->setVerticalSpacing(6);
         gridLayout->setContentsMargins(9, 9, 9, 9);
+        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         comboBoxTriggerMode = new QComboBox(groupBox);
         comboBoxTriggerMode->setObjectName(QString::fromUtf8("comboBoxTriggerMode"));
 
@@ -439,17 +428,14 @@ public:
 
         hboxLayout3 = new QHBoxLayout();
         hboxLayout3->setSpacing(6);
-        hboxLayout3->setObjectName(QString::fromUtf8("hboxLayout3"));
         hboxLayout3->setContentsMargins(0, 0, 0, 0);
+        hboxLayout3->setObjectName(QString::fromUtf8("hboxLayout3"));
         groupBox_2 = new QGroupBox(tabCamera);
         groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
         gridLayout1 = new QGridLayout(groupBox_2);
         gridLayout1->setSpacing(6);
-        gridLayout1->setContentsMargins(11, 11, 11, 11);
-        gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
-        gridLayout1->setHorizontalSpacing(6);
-        gridLayout1->setVerticalSpacing(6);
         gridLayout1->setContentsMargins(9, 9, 9, 9);
+        gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
         comboBoxPreAmpGains = new QComboBox(groupBox_2);
         comboBoxPreAmpGains->setObjectName(QString::fromUtf8("comboBoxPreAmpGains"));
 
@@ -488,11 +474,8 @@ public:
         groupBox_3->setObjectName(QString::fromUtf8("groupBox_3"));
         gridLayout2 = new QGridLayout(groupBox_3);
         gridLayout2->setSpacing(6);
-        gridLayout2->setContentsMargins(11, 11, 11, 11);
-        gridLayout2->setObjectName(QString::fromUtf8("gridLayout2"));
-        gridLayout2->setHorizontalSpacing(6);
-        gridLayout2->setVerticalSpacing(6);
         gridLayout2->setContentsMargins(9, 9, 9, 9);
+        gridLayout2->setObjectName(QString::fromUtf8("gridLayout2"));
         label_18 = new QLabel(groupBox_3);
         label_18->setObjectName(QString::fromUtf8("label_18"));
         label_18->setWordWrap(true);
@@ -568,9 +551,8 @@ public:
         tabStim->setObjectName(QString::fromUtf8("tabStim"));
         vboxLayout4 = new QVBoxLayout(tabStim);
         vboxLayout4->setSpacing(6);
-        vboxLayout4->setContentsMargins(11, 11, 11, 11);
-        vboxLayout4->setObjectName(QString::fromUtf8("vboxLayout4"));
         vboxLayout4->setContentsMargins(9, 9, 9, 9);
+        vboxLayout4->setObjectName(QString::fromUtf8("vboxLayout4"));
         cbStim = new QCheckBox(tabStim);
         cbStim->setObjectName(QString::fromUtf8("cbStim"));
 
@@ -578,8 +560,8 @@ public:
 
         hboxLayout4 = new QHBoxLayout();
         hboxLayout4->setSpacing(6);
-        hboxLayout4->setObjectName(QString::fromUtf8("hboxLayout4"));
         hboxLayout4->setContentsMargins(0, 0, 0, 0);
+        hboxLayout4->setObjectName(QString::fromUtf8("hboxLayout4"));
         label_13 = new QLabel(tabStim);
         label_13->setObjectName(QString::fromUtf8("label_13"));
 
@@ -720,7 +702,7 @@ public:
         dwHist = new QDockWidget(centralWidget);
         dwHist->setObjectName(QString::fromUtf8("dwHist"));
         dwHist->setGeometry(QRect(400, 240, 274, 51));
-        dwHist->setMinimumSize(QSize(30, 10));
+        dwHist->setMinimumSize(QSize(80, 40));
         dockWidgetContents_2 = new QWidget();
         dockWidgetContents_2->setObjectName(QString::fromUtf8("dockWidgetContents_2"));
         vboxLayout5 = new QVBoxLayout(dockWidgetContents_2);
@@ -832,7 +814,6 @@ public:
         dwCfg->setWindowTitle(QApplication::translate("ImagineClass", "Config", 0, QApplication::UnicodeUTF8));
         label->setText(QApplication::translate("ImagineClass", "File name:", 0, QApplication::UnicodeUTF8));
         btnSelectFile->setText(QApplication::translate("ImagineClass", "...", 0, QApplication::UnicodeUTF8));
-        cbSaveSifToo->setText(QApplication::translate("ImagineClass", "Save each stack in Andor's format too", 0, QApplication::UnicodeUTF8));
         label_2->setText(QApplication::translate("ImagineClass", "Comment:", 0, QApplication::UnicodeUTF8));
         tabWidgetCfg->setTabText(tabWidgetCfg->indexOf(tabGeneral), QApplication::translate("ImagineClass", "general", 0, QApplication::UnicodeUTF8));
         groupBox->setTitle(QApplication::translate("ImagineClass", "time/duration", 0, QApplication::UnicodeUTF8));
