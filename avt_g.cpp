@@ -380,13 +380,18 @@ bool AvtCamera::startAcq()
 
 bool AvtCamera::stopAcq()
 {
-   //todo: do we need to clear the queue?
-
    errorCode=PvCommandRun(cameraHandle,"AcquisitionStop");
 
    if(errorCode!=ePvErrSuccess) return false;
 
    errorCode=PvCaptureEnd(cameraHandle) ;
+
+   if(errorCode!=ePvErrSuccess) return false;
+
+   // dequeue all the frame still queued (this will block until they all have been dequeued)
+   errorCode=PvCaptureQueueClear(cameraHandle);
+
+   if(errorCode!=ePvErrSuccess) return false;
 
    return errorCode==ePvErrSuccess;
 }
