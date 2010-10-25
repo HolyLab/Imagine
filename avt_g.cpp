@@ -337,6 +337,10 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
       //PvAttrEnumSet(cameraHandle,"AcquisitionMode","Continuous");
    }
 
+   tPvFloat32 frameRate=-1;
+   errorCode=PvAttrFloat32Get(cameraHandle, "FrameRate", &frameRate);
+   cout<<"frame rate is: "<<frameRate<<endl;
+
    ///take care of image array saving (in mem only)
    if(!allocImageArray(nFrames,false)){
       return false;
