@@ -166,6 +166,10 @@ bool AvtCamera::setAcqParams(int emGain,
 {
    //TODO: the gain settings
 
+   ///pixel format
+   errorCode=PvAttrEnumSet(cameraHandle,"PixelFormat","Mono16");
+   if(errorCode!=ePvErrSuccess) return false;
+
    ///set image dim
    ///TODO: check error code and make sure the start/end/etc are in bin-ed unit
    errorCode=PvAttrUint32Set(cameraHandle,"BinningX",hbin);
