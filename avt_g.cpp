@@ -223,18 +223,18 @@ void  __stdcall onFrameDone(tPvFrame* pFrame)
 
    ///the saved buf
    if(pCamera->genericAcqMode==Camera::eAcqAndSave){
-   assert((pCamera->nAcquiredFrames-1)%pCamera->circBufSize==frameIdx);
+      assert((pCamera->nAcquiredFrames-1)%pCamera->circBufSize==frameIdx);
 
-   if(pCamera->nAcquiredFrames<=pCamera->nFrames){
-      memcpy(pCamera->pImageArray+(pCamera->nAcquiredFrames-1)*nPixels, 
-         src, 
-         sizeof(Camera::PixelValue)*nPixels
-         );
+      if(pCamera->nAcquiredFrames<=pCamera->nFrames){
+         memcpy(pCamera->pImageArray+(pCamera->nAcquiredFrames-1)*nPixels, 
+            src, 
+            sizeof(Camera::PixelValue)*nPixels
+            );
 
+      }
    }
-   }
 
-   if(pCamera->nAcquiredFrames<pCamera->nFrames
+   if((pCamera->nAcquiredFrames<pCamera->nFrames || pCamera->genericAcqMode==Camera::eLive)
         && pFrame->Status != ePvErrUnplugged 
         && pFrame->Status != ePvErrCancelled
       ){
