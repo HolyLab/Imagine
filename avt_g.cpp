@@ -219,9 +219,10 @@ void  __stdcall onFrameDone(tPvFrame* pFrame)
       sizeof(Camera::PixelValue)*nPixels
       );
 
-   ///the saved buf
    pCamera->nAcquiredFrames=pFrame->FrameCount;
 
+   ///the saved buf
+   if(pCamera->genericAcqMode==Camera::eAcqAndSave){
    assert((pCamera->nAcquiredFrames-1)%pCamera->circBufSize==frameIdx);
 
    if(pCamera->nAcquiredFrames<=pCamera->nFrames){
@@ -230,6 +231,7 @@ void  __stdcall onFrameDone(tPvFrame* pFrame)
          sizeof(Camera::PixelValue)*nPixels
          );
 
+   }
    }
 
    if(pCamera->nAcquiredFrames<pCamera->nFrames
@@ -350,17 +352,17 @@ long AvtCamera::getAcquiredFrameCount()
 bool AvtCamera::startAcq()
 {
    CLockGuard tGuard(mpLock);
-   nAcquiredFrames=0;
+   nAcquiredFrames=0; //todo: maybe too late if external trigger?
 
    if(triggerMode==eInternalTrigger){
-      PvCommandRun(cameraHandle,"AcquisitionStart");
+      errorCode=PvCommandRun(cameraHandle,"AcquisitionStart");
    }
    else {
       //todo: external triggered, no nec?
-      PvCommandRun(cameraHandle,"AcquisitionStart");
+      errorCode=PvCommandRun(cameraHandle,"AcquisitionStart");
    }
 
-   return true;
+   return errorCode==ePvErrSuccess;
 }
 
 
@@ -368,11 +370,13 @@ bool AvtCamera::stopAcq()
 {
    //todo: do we need to clear the queue?
 
-   PvCommandRun(cameraHandle,"AcquisitionStop");
+   errorCode=PvCommandRun(cameraHandle,"AcquisitionStop");
 
-   PvCaptureEnd(cameraHandle) ;
+   if(errorCode!=ePvErrSuccess) return false;
 
-   return true;
+   errorCode=PvCaptureEnd(cameraHandle) ;
+
+   return errorCode==ePvErrSuccess;
 }
 
 
