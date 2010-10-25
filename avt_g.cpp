@@ -235,7 +235,11 @@ void  __stdcall onFrameDone(tPvFrame* pFrame)
       sizeof(Camera::PixelValue)*nPixels
       );
 
-   pCamera->nAcquiredFrames=pFrame->FrameCount;
+
+   if(pFrame->Status == ePvErrSuccess) pCamera->nAcquiredFrames=pFrame->FrameCount;
+   else {
+      pCamera->nAcquiredFrames++;
+   }
 
    ///the saved buf
    if(pCamera->genericAcqMode==Camera::eAcqAndSave){
@@ -283,12 +287,6 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 
    errorCode=ePvErrSuccess;
 
-   //init the capture stream
-   errorCode=PvCaptureStart(cameraHandle);
-   if(errorCode!=ePvErrSuccess){
-      errorMsg="error when PvCaptureStart";
-      return false;
-   }
 
    //fill the remaining fields of tPvFrame struct
    for(int frameIdx=0; frameIdx<circBufSize; ++frameIdx){
@@ -296,15 +294,6 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
       pFrames[frameIdx].ImageBufferSize=getImageWidth()*getImageHeight()*sizeof(PixelValue); 
       pFrames[frameIdx].Context[0]=this;
       pFrames[frameIdx].Context[1]=(void*)frameIdx;
-   }
-
-   //enqueue the frames
-   for(int frameIdx=0; frameIdx<circBufSize; ++frameIdx){
-      errorCode=PvCaptureQueueFrame(cameraHandle,&pFrames[frameIdx], onFrameDone);
-      if(errorCode!=ePvErrSuccess){
-         errorMsg="error when queue frames";
-         return false;
-      }
    }
 
    ////set trigger mode
@@ -370,6 +359,23 @@ bool AvtCamera::startAcq()
    CLockGuard tGuard(mpLock);
    nAcquiredFrames=0; //todo: maybe too late if external trigger?
 
+   //init the capture stream
+   errorCode=PvCaptureStart(cameraHandle);
+   if(errorCode!=ePvErrSuccess){
+      errorMsg="error when PvCaptureStart";
+      return false;
+   }
+
+   //enqueue the frames
+   for(int frameIdx=0; frameIdx<circBufSize; ++frameIdx){
+      errorCode=PvCaptureQueueFrame(cameraHandle,&pFrames[frameIdx], onFrameDone);
+      if(errorCode!=ePvErrSuccess){
+         errorMsg="error when queue frames";
+         return false;
+      }
+   }
+
+
    if(triggerMode==eInternalTrigger){
       errorCode=PvCommandRun(cameraHandle,"AcquisitionStart");
    }
@@ -392,7 +398,10 @@ bool AvtCamera::stopAcq()
 
    if(errorCode!=ePvErrSuccess) return false;
 
-   // dequeue all the frame still queued (this will block until they all have been dequeued)
+   /// dequeue all the frame still queued (this will block until they all have been dequeued)
+   
+   //CLockGuard tGuard(mpLock); //SEE: PvCaptureQueueClear()
+
    errorCode=PvCaptureQueueClear(cameraHandle);
 
    if(errorCode!=ePvErrSuccess) return false;

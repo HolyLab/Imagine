@@ -515,6 +515,7 @@ nextStack:
          QThread::msleep(timeToWait*1000); // *1000: sec -> ms
       }//if, need wait more than 10ms
 
+      camera.stopAcq();
       goto nextStack;
    }//if, there're more stacks and no stop requested
 
