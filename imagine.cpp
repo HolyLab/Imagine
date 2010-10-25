@@ -306,7 +306,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    on_btnApply_clicked();
 
    //pre-allocate space for camera buffer:
-   int nFrameToHold=250; //TODO: make this ui aware
+   int nFrameToHold=60; //TODO: make this ui aware
    if(!camera.allocImageArray(nFrameToHold,true)){
       appendLog(QString("reserve %1-frame memory failed")
          .arg(nFrameToHold));
@@ -883,7 +883,7 @@ void Imagine::on_btnUseZoomWindow_clicked()
 
 void Imagine::on_btnApply_clicked()
 {
-
+   Camera& camera=*pCamera;
 
    QString triggerModeStr=ui.comboBoxTriggerMode->currentText();
    AndorCamera::TriggerMode triggerMode;

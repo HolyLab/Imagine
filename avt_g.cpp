@@ -20,6 +20,9 @@
 #include "avt_g.hpp"
 #include "lockguard.h"
 
+#include <iostream>
+using std::cout;
+using std::endl;
 
 // wait for a camera to be plugged
 void WaitForCamera()
@@ -200,7 +203,7 @@ void _STDCALL FrameDoneCB(tPvFrame* pFrame)
 void  __stdcall onFrameDone(tPvFrame* pFrame)
 {
    // if the frame was completed we re-enqueue it
-   //cout<<"frame #"<<pFrame->FrameCount<<endl;
+   cout<<"frame #"<<pFrame->FrameCount<<endl;
    AvtCamera* pCamera=(AvtCamera*)pFrame->Context[0];
    int frameIdx=(int)pFrame->Context[1];
    int nPixels=pCamera->getImageHeight()*pCamera->getImageWidth();
