@@ -168,20 +168,32 @@ bool AvtCamera::setAcqParams(int emGain,
 
    ///set image dim
    ///TODO: check error code and make sure the start/end/etc are in bin-ed unit
-   PvAttrUint32Set(cameraHandle,"BinningX",hbin);
+   errorCode=PvAttrUint32Set(cameraHandle,"BinningX",hbin);
+   if(errorCode!=ePvErrSuccess) return false;
 
-   PvAttrUint32Set(cameraHandle,"BinningY",vbin);
+   errorCode=PvAttrUint32Set(cameraHandle,"BinningY",vbin);
+   if(errorCode!=ePvErrSuccess) return false;
 
-   PvAttrUint32Set(cameraHandle,"RegionX",hstart);
+   errorCode=PvAttrUint32Set(cameraHandle,"RegionX",hstart);
+   if(errorCode!=ePvErrSuccess) return false;
 
-   PvAttrUint32Set(cameraHandle,"RegionY",vstart);
+   errorCode=PvAttrUint32Set(cameraHandle,"RegionY",vstart);
+   if(errorCode!=ePvErrSuccess) return false;
 
-   PvAttrUint32Set(cameraHandle,"width",getImageWidth());
+   errorCode=PvAttrUint32Set(cameraHandle,"Width",getImageWidth());
+   if(errorCode!=ePvErrSuccess) return false;
 
-   PvAttrUint32Set(cameraHandle,"height",getImageHeight());
+   errorCode=PvAttrUint32Set(cameraHandle,"Height",getImageHeight());
+   if(errorCode!=ePvErrSuccess) return false;
 
 
    //
+    unsigned long sWidth,sHeight;
+    unsigned long rWidth,rHeight;
+    unsigned long CenterX,CenterY;
+    PvAttrUint32Get(cameraHandle,"Width",&rWidth);
+    PvAttrUint32Get(cameraHandle,"Height",&rHeight);
+    cout<<"new width/height"<<rWidth<<"/"<<rHeight<<endl;
 
 
    return true;
