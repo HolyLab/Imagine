@@ -25,12 +25,20 @@ using std::cout;
 using std::endl;
 
 // wait for a camera to be plugged
-void WaitForCamera()
+bool wait4Camera()
 {
-    //printf("waiting for a camera ...\n");
-    while(!PvCameraCount() ) //&& !GCamera.Abort)
-        Sleep(250);
-    //printf("\n");
+    printf("waiting for a camera ...\n");
+    for(int i=0; i<3; ++i){
+      if(PvCameraCount() ) //&& !GCamera.Abort)
+           return true;
+      else {
+         printf("... wait 3 more seconds\n");
+         Sleep(3000);
+      }
+    }
+    printf("... give up.\n");
+
+    return false;
 }
 
 
@@ -45,7 +53,11 @@ bool AvtCamera::init()
    }
 
    // wait for a camera to be plugged
-   WaitForCamera();
+   if(!wait4Camera()){
+      PvUnInitialize();
+      errorMsg+="no camera found";
+      return false;
+   }
 
    tPvUint32 count,connected;
    tPvCameraInfo list;
