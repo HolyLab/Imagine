@@ -207,6 +207,7 @@
     </CustomBuild>
     <ClInclude Include="avt_g.hpp" />
     <ClInclude Include="camera_g.hpp" />
+    <ClInclude Include="cooke.hpp" />
     <ClInclude Include="histogram_item.h" />
     <CustomBuild Include="imagelabel.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing imagelabel.h...</Message>

@@ -152,6 +152,9 @@
     <ClInclude Include="lockguard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="cooke.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\start_acq.bmp">
