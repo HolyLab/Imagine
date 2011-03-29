@@ -22,6 +22,21 @@ public:
 
    }
 
+   string getErrorMsg(){
+      if(errorCode==PCO_NOERROR){
+         return "no error";
+      }
+      else return errorMsg;
+   }
+
+   int getExtraErrorCode(ExtraErrorCodeType type) {
+      switch(type){
+      case eOutOfMem: return PCO_ERROR_NOMEMORY; //NOTE: this might be an issue
+      //default: 
+      }
+
+      return -1;
+   }
 
 };//class, CookeCamera
 
