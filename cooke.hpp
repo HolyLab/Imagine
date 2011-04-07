@@ -38,6 +38,8 @@ public:
       return -1;
    }
 
+   bool init();
+
 };//class, CookeCamera
 
 #endif //COOKE_HPP

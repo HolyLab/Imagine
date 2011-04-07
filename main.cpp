@@ -21,7 +21,7 @@
 
 #include "andor_g.hpp"
 #include "avt_g.hpp"
-
+#include "cooke.hpp"
 
 
 extern Camera* pCamera;
@@ -34,8 +34,8 @@ int main(int argc, char *argv[])
 
    QString cameraVendor="avt";
    if(argc>1) cameraVendor=argv[1];
-   if(cameraVendor!="avt" && cameraVendor!="andor"){
-      QMessageBox::critical(0, "Imagine", "please specify the camera (avt or andor) on the command line."
+   if(cameraVendor!="avt" && cameraVendor!="andor" && cameraVendor!="cooke"){
+      QMessageBox::critical(0, "Imagine", "please specify the camera (andor, avt or cooke) on the command line."
          , QMessageBox::Ok, QMessageBox::NoButton);
 
       return 1;
@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
 
    if(cameraVendor=="avt") pCamera=new AvtCamera;
    else if(cameraVendor=="andor") pCamera=new AndorCamera;
+   else if(cameraVendor=="cooke") pCamera=new CookeCamera;
    else {
       //todo: error msg
       return 1;
