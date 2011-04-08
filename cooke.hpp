@@ -1,6 +1,8 @@
 #ifndef COOKE_HPP
 #define COOKE_HPP
 
+#include <windows.h>
+
 #include "camera_g.hpp"
 
 #include "SC2_CamExport.h"
@@ -12,6 +14,7 @@
 
 
 class CookeCamera: public Camera {
+   HANDLE hCamera;
 
 public:
    CookeCamera(){

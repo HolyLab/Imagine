@@ -99,6 +99,7 @@
     <ClCompile Include="andor_g.cpp" />
     <ClCompile Include="avt_g.cpp" />
     <ClCompile Include="camera_g.cpp" />
+    <ClCompile Include="cooke.cpp" />
     <ClCompile Include="data_acq_thread.cpp" />
     <ClCompile Include="fanctrldialog.cpp" />
     <ClCompile Include="histogram_item.cpp" />
