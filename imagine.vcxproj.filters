@@ -214,5 +214,14 @@
       <Filter>Generated Files</Filter>
     </CustomBuild>
     <CustomBuild Include="imagine.ico" />
+    <CustomBuild Include="qtgen\Debug\cooke.moc">
+      <Filter>Generated Files\Debug</Filter>
+    </CustomBuild>
+    <CustomBuild Include="qtgen\Release\cooke.moc">
+      <Filter>Generated Files\Release</Filter>
+    </CustomBuild>
+    <CustomBuild Include="qtgen\Template\cooke.moc">
+      <Filter>Generated Files\Template</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>

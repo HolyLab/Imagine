@@ -213,7 +213,7 @@ bool AvtCamera::setAcqParams(int emGain,
 
 
    return true;
-}
+}//setAcqParams(),
 
 /*
 // callback called when a frame is done
