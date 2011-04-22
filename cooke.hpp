@@ -76,7 +76,7 @@ public:
    }
 
    ~CookeCamera(){
-
+      //todo: free 
    }
 
    string getErrorMsg(){
@@ -134,6 +134,7 @@ public:
       return true;
    }
 
+   long extractFrameCounter(PixelValue* rawData);
 };//class, CookeCamera
 
 

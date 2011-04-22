@@ -419,4 +419,8 @@ bool CookeCamera::stopAcq()
    return true;
 }//stopAcq(),
 
+long CookeCamera::extractFrameCounter(PixelValue* rawData)
+{
+
+}
 
