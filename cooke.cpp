@@ -71,8 +71,14 @@ bool CookeCamera::init()
    //model
    this->model=strCamType.strHardwareVersion.Board[0].szName;
 
-   //todo: alloc liveImage and black image
+   //todo: alignment
+   int nPixels=chipWidth*chipHeight;
    
+   pLiveImage=new PixelValue[nPixels];
+
+   pBlackImage=new PixelValue[nPixels];
+   memset(pBlackImage, 0, nPixels*sizeof(PixelValue)); //all zeros
+
 
    return true;
 }//init(),
@@ -80,8 +86,6 @@ bool CookeCamera::init()
 bool CookeCamera::fini()
 {
    PCO_CloseCamera(hCamera);
-
-   //todo: free mem
 
    return true;
 }//fini(),
@@ -418,7 +422,7 @@ bool CookeCamera::stopAcq()
    workerThread->wait();
 
    //reverse of PCO_AllocateBuffer()
-   //todo: what about the events associated w/ the 2 buffers
+   //TODO: what about the events associated w/ the 2 buffers
    PCO_FreeBuffer(hCamera, mBufIndex[0]);    // Frees the memory that was allocated for the buffer
    PCO_FreeBuffer(hCamera, mBufIndex[1]);    // Frees the memory that was allocated for the buffer
 
