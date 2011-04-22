@@ -7,6 +7,10 @@
 #include <QThread>
 #include <QWaitCondition>
 
+#include <iostream>
+using std::cout;
+using std::endl;
+
 bool CookeCamera::init()
 {
    errorMsg="Camera Initialization failed when: ";
@@ -297,14 +301,20 @@ public:
 
          PixelValue* rawData=camera->mRingBuf[eventIdx];
          long counter=camera->extractFrameCounter(rawData);
-         if(camera->nAcquiredFrames==0) camera->firstFrameCounter=counter;
+         if(camera->nAcquiredFrames==0) {
+            camera->firstFrameCounter=counter;
+            cout<<"first frame's counter is "<<counter<<endl;
+         }
          int curFrameIdx=counter-camera->firstFrameCounter;
          long nPixelsPerFrame=camera->getImageHeight()*camera->getImageWidth();
 
          //fill the gap w/ black images
+         int gapWidth=0;
          for(int frameIdx=camera->nAcquiredFrames; frameIdx<min(camera->nFrames, curFrameIdx); ++frameIdx){
             memcpy(camera->pImageArray+frameIdx*nPixelsPerFrame, camera->pBlackImage, sizeof(Camera::PixelValue)*nPixelsPerFrame);
+            gapWidth++;
          }
+         if(gapWidth) cout<<"fill "<<gapWidth<<" frames with black images (start at frame idx="<<camera->nAcquiredFrames<<")"<<endl;
 
          //fill the frame array and live image
          if(curFrameIdx<camera->nFrames){
@@ -421,6 +431,12 @@ bool CookeCamera::stopAcq()
 
 long CookeCamera::extractFrameCounter(PixelValue* rawData)
 {
+   unsigned long result=0;
+   for(int i=0; i<4; ++i){
+      unsigned hex=rawData[i];
+      result=result*100+hex/16*10+hex%16;
+   }
 
+   return result;
 }
 
