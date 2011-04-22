@@ -31,6 +31,8 @@ class CookeCamera: public Camera {
    //todo: we might also want it to be aligned
    PixelValue* pLiveImage;
 
+   //for speed reason: a black frame used for copying
+   //todo: alignment
    PixelValue* pBlackImage;
 
    long firstFrameCounter; //first first frame's counter value
