@@ -1,3 +1,6 @@
+#ifndef SC2_CAMEXPORT_H
+#define SC2_CAMEXPORT_H
+
 //-----------------------------------------------------------------//
 // Name        | SC2_CamExport.h             | Type: ( ) source    //
 //-------------------------------------------|       (*) header    //
@@ -1788,3 +1791,5 @@ SC2_SDK_FUNC int WINAPI PCO_WriteHeadEEProm(HANDLE ph, WORD wAddress, BYTE bData
 #ifdef __cplusplus
 }       //  Assume C declarations for C++
 #endif  //C++
+
+#endif //SC2_CAMEXPORT_H
