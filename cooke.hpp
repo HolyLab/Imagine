@@ -76,7 +76,9 @@ public:
    }
 
    ~CookeCamera(){
-      //todo: free 
+      delete[] pLiveImage;
+      delete[] pBlackImage;
+      delete mpLock;
    }
 
    string getErrorMsg(){
