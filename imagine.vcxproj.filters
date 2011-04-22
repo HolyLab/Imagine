@@ -117,6 +117,18 @@
     <ClCompile Include="cooke.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cookeworkerthread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_cookeworkerthread.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Release\moc_cookeworkerthread.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Template\moc_cookeworkerthread.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Atmcd32d.h">
@@ -222,6 +234,9 @@
     </CustomBuild>
     <CustomBuild Include="qtgen\Template\cooke.moc">
       <Filter>Generated Files\Template</Filter>
+    </CustomBuild>
+    <CustomBuild Include="cookeworkerthread.h">
+      <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>

@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 {
    QApplication a(argc, argv);
 
-   QString cameraVendor="avt";
+   QString cameraVendor="cooke";
    if(argc>1) cameraVendor=argv[1];
    if(cameraVendor!="avt" && cameraVendor!="andor" && cameraVendor!="cooke"){
       QMessageBox::critical(0, "Imagine", "please specify the camera (andor, avt or cooke) on the command line."

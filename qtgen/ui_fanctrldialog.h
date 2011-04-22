@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'fanctrldialog.ui'
 **
-** Created: Fri Apr 22 15:42:30 2011
+** Created: Fri Apr 22 16:21:41 2011
 **      by: Qt User Interface Compiler version 4.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
