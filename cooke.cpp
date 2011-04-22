@@ -262,7 +262,7 @@ class CookeCamera::WorkerThread: public QThread {
    Q_OBJECT
 private:
    CookeCamera* camera;
-   bool shouldStop;
+   volatile bool shouldStop; //todo: do we need a lock to guard it?
 
 public:
    WorkerThread(QObject *parent = 0, CookeCamera * camera)
@@ -271,6 +271,10 @@ public:
       shouldStop=false;
    }
    ~WorkerThread(){}
+
+   void requestStop(){
+      shouldStop=true;
+   }
 
    void run(){
       while(true){
@@ -288,7 +292,9 @@ public:
          if(shouldStop)break; //break the while
          int eventIdx=waitResult-WAIT_OBJECT_0;
          //todo: should we call GetBufferStatus() to double-check the status about transferring? SEE: demo.cpp
+         
          CLockGuard tGuard(camera->mpLock);
+
          PixelValue* rawData=camera->mRingBuf[eventIdx];
          long counter=camera->extractFrameCounter(rawData);
          if(camera->nAcquiredFrames==0) camera->firstFrameCounter=counter;
