@@ -77,6 +77,8 @@ bool CookeCamera::fini()
 {
    PCO_CloseCamera(hCamera);
 
+   //todo: free mem
+
    return true;
 }//fini(),
 
@@ -134,6 +136,12 @@ bool CookeCamera::setAcqParams(int emGain,
    errorCode=PCO_SetTimestampMode(hCamera, 2); //2: bcd+ascii
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to set timestamp mode";
+      return false;
+   }
+
+   errorCode=PCO_SetBitAlignment(hCamera, 1);
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to set bit alignment mode";
       return false;
    }
 
@@ -282,6 +290,7 @@ public:
          //todo: should we call GetBufferStatus() to double-check the status about transferring? SEE: demo.cpp
          CLockGuard tGuard(camera->mpLock);
 
+         //reset event then add back the bufffer
       }//while,
    }//run(),
 };//class, CookeCamera::WorkerThread
