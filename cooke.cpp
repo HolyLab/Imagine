@@ -67,7 +67,7 @@ bool CookeCamera::init()
    //model
    this->model=strCamType.strHardwareVersion.Board[0].szName;
 
-   //todo: block the worker thread here?
+   //todo: alloc liveImage and black image
    
 
    return true;
@@ -249,29 +249,42 @@ long CookeCamera::getAcquiredFrameCount()
    return nAcquiredFrames;
 }
 
-//todo: put it as CookerCamera's nested class
-class CookeWorkerThread: public QThread {
+
+class CookeCamera::WorkerThread: public QThread {
    Q_OBJECT
 private:
    CookeCamera* camera;
    bool shouldStop;
 
 public:
-   CookeWorkerThread(QObject *parent = 0, CookeCamera * camera)
+   WorkerThread(QObject *parent = 0, CookeCamera * camera)
       : QThread(parent){
       this->camera=camera;
       shouldStop=false;
    }
-   ~CookeWorkerThread(){}
+   ~WorkerThread(){}
 
    void run(){
       while(true){
          if(shouldStop) break;
          ///wait for events
+         int waitResult=WaitForMultipleObjects(2, camera->mEvent, false, 500);
+         switch(waitResult){
+            case WAIT_OBJECT_0 + 0:
+            case WAIT_OBJECT_0 + 1:
+               break; //break the switch
+            default: //WAIT_ABANDONED, WAIT_TIMEOUT or WAIT_FAILED
+               //todo: should we try to keep going? SEE: CSC2Class::SC2Thread()
+               shouldStop=true; //or goto
+         }//switch,
+         if(shouldStop)break; //break the while
+         int eventIdx=waitResult-WAIT_OBJECT_0;
+         //todo: should we call GetBufferStatus() to double-check the status about transferring? SEE: demo.cpp
+         CLockGuard tGuard(camera->mpLock);
 
       }//while,
    }//run(),
-};//class, CookeWorkerThread
+};//class, CookeCamera::WorkerThread
 
 
 bool CookeCamera::startAcq()
@@ -299,7 +312,7 @@ bool CookeCamera::startAcq()
       return false;
    }
 
-   workerThread=new CookeWorkerThread;
+   workerThread=new WorkerThread(0, this);
 
    errorCode = PCO_SetRecordingState(hCamera, 1); //1: run
    if(errorCode!=PCO_NOERROR) {

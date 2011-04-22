@@ -14,6 +14,9 @@
 
 
 class CookeCamera: public Camera {
+   class WorkerThread;
+   friend class WorkerThread;
+
    HANDLE hCamera;
    PCO_General strGeneral;
    PCO_CameraType strCamType;
@@ -32,16 +35,27 @@ class CookeCamera: public Camera {
 
    long firstFrameCounter; //first first frame's counter value
    long nAcquiredFrames;
-   //lock used to coordinate accessing to nAcquiredFrames
+   //lock used to coordinate accessing to nAcquiredFrames & pLiveImage
    QMutex* mpLock; 
 
    WORD mBufIndex[2]; //m_wBufferNr
    HANDLE mEvent[2];//m_hEvent
    PixelValue* mRingBuf[2]; //m_pic12
 
+   WorkerThread* workerThread;
 
 public:
    CookeCamera(){
+      pLiveImage=nullptr;
+
+      pBlackImage=nullptr;
+
+      firstFrameCounter=-1;
+      nAcquiredFrames=0;
+      mpLock=new QMutex;
+
+      workerThread=nullptr;
+
       vendor="cooke";
 
       strGeneral.wSize = sizeof(strGeneral);// initialize all structure size members
