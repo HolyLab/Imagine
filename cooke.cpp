@@ -289,8 +289,42 @@ public:
          int eventIdx=waitResult-WAIT_OBJECT_0;
          //todo: should we call GetBufferStatus() to double-check the status about transferring? SEE: demo.cpp
          CLockGuard tGuard(camera->mpLock);
+         PixelValue* rawData=camera->mRingBuf[eventIdx];
+         long counter=camera->extractFrameCounter(rawData);
+         if(camera->nAcquiredFrames==0) camera->firstFrameCounter=counter;
+         int curFrameIdx=counter-camera->firstFrameCounter;
+         long nPixelsPerFrame=camera->getImageHeight()*camera->getImageWidth();
+
+         //fill the gap w/ black images
+         for(int frameIdx=camera->nAcquiredFrames; frameIdx<min(camera->nFrames, curFrameIdx); ++frameIdx){
+            memcpy(camera->pImageArray+frameIdx*nPixelsPerFrame, camera->pBlackImage, sizeof(Camera::PixelValue)*nPixelsPerFrame);
+         }
+
+         //fill the frame array and live image
+         if(curFrameIdx<camera->nFrames){
+            memcpy(camera->pImageArray+curFrameIdx*nPixelsPerFrame, rawData, sizeof(Camera::PixelValue)*nPixelsPerFrame);
+            memcpy(camera->pLiveImage, rawData, sizeof(Camera::PixelValue)*nPixelsPerFrame);
+            camera->nAcquiredFrames=curFrameIdx+1;
+         }
+         else {
+            memcpy(camera->pLiveImage, camera->pBlackImage, sizeof(Camera::PixelValue)*nPixelsPerFrame);
+            camera->nAcquiredFrames=camera->nFrames;
+         }
 
          //reset event then add back the bufffer
+         ResetEvent(camera->mEvent[eventIdx]);
+         if(camera->nAcquiredFrames<camera->nFrames){
+            //in fifo mode, frameIdxInCamRam are 0 for both buffers?
+            int frameIdxInCamRam=0;
+            camera->errorCode = PCO_AddBuffer(camera->hCamera, frameIdxInCamRam, frameIdxInCamRam, camera->mBufIndex[eventIdx]);// Add buffer to the driver queue
+            if(camera->errorCode!=PCO_NOERROR) {
+               camera->errorMsg="failed to add buffer";
+               break; //break the while
+            }
+         }
+         else {
+            break;
+         }
       }//while,
    }//run(),
 };//class, CookeCamera::WorkerThread
