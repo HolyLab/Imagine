@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'imagine.ui'
 **
-** Created: Fri Apr 22 16:21:41 2011
+** Created: Fri Apr 22 16:36:53 2011
 **      by: Qt User Interface Compiler version 4.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -527,8 +527,8 @@ public:
         spinBoxHend->setObjectName(QString::fromUtf8("spinBoxHend"));
         spinBoxHend->setGeometry(QRect(201, 20, 61, 22));
         spinBoxHend->setMinimum(1);
-        spinBoxHend->setMaximum(1004);
-        spinBoxHend->setValue(1004);
+        spinBoxHend->setMaximum(2560);
+        spinBoxHend->setValue(2560);
         spinBoxVstart = new QSpinBox(tabBinning);
         spinBoxVstart->setObjectName(QString::fromUtf8("spinBoxVstart"));
         spinBoxVstart->setGeometry(QRect(80, 60, 51, 22));
@@ -538,8 +538,8 @@ public:
         spinBoxVend->setObjectName(QString::fromUtf8("spinBoxVend"));
         spinBoxVend->setGeometry(QRect(200, 60, 61, 22));
         spinBoxVend->setMinimum(1);
-        spinBoxVend->setMaximum(1002);
-        spinBoxVend->setValue(1002);
+        spinBoxVend->setMaximum(2160);
+        spinBoxVend->setValue(2160);
         btnUseZoomWindow = new QPushButton(tabBinning);
         btnUseZoomWindow->setObjectName(QString::fromUtf8("btnUseZoomWindow"));
         btnUseZoomWindow->setGeometry(QRect(24, 100, 241, 23));
@@ -785,6 +785,9 @@ public:
         toolBar_3->addAction(actionDisplayFullImage);
 
         retranslateUi(ImagineClass);
+
+        tabWidgetCfg->setCurrentIndex(2);
+
 
         QMetaObject::connectSlotsByName(ImagineClass);
     } // setupUi

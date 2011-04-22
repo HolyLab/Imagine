@@ -163,6 +163,9 @@
       </property>
       <item>
        <widget class="QTabWidget" name="tabWidgetCfg">
+        <property name="currentIndex">
+         <number>2</number>
+        </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
           <string>general</string>
@@ -538,10 +541,10 @@
            <number>1</number>
           </property>
           <property name="maximum">
-           <number>1004</number>
+           <number>2560</number>
           </property>
           <property name="value">
-           <number>1004</number>
+           <number>2560</number>
           </property>
          </widget>
          <widget class="QSpinBox" name="spinBoxVstart">
@@ -573,10 +576,10 @@
            <number>1</number>
           </property>
           <property name="maximum">
-           <number>1002</number>
+           <number>2160</number>
           </property>
           <property name="value">
-           <number>1002</number>
+           <number>2160</number>
           </property>
          </widget>
          <widget class="QPushButton" name="btnUseZoomWindow">
