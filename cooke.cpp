@@ -273,7 +273,7 @@ private:
    volatile bool shouldStop; //todo: do we need a lock to guard it?
 
 public:
-   WorkerThread(QObject *parent = 0, CookeCamera * camera)
+   WorkerThread(CookeCamera * camera, QObject *parent = 0)
       : QThread(parent){
       this->camera=camera;
       shouldStop=false;
@@ -375,7 +375,7 @@ bool CookeCamera::startAcq()
       return false;
    }
 
-   workerThread=new WorkerThread(0, this);
+   workerThread=new WorkerThread(this);
 
    errorCode = PCO_SetRecordingState(hCamera, 1); //1: run
    if(errorCode!=PCO_NOERROR) {
@@ -442,5 +442,17 @@ long CookeCamera::extractFrameCounter(PixelValue* rawData)
    }
 
    return result;
+}
+
+bool CookeCamera::getLatestLiveImage(PixelValue * frame)
+{
+   CLockGuard tGuard(mpLock);
+
+   if(nAcquiredFrames<=0)   return false;
+
+   int nPixels=getImageHeight()*getImageWidth();
+   memcpy(frame, pLiveImage, nPixels*sizeof(PixelValue));
+
+   return true;
 }
 
