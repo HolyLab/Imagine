@@ -3,6 +3,7 @@
 
 #include <iostream>
 using std::cout;
+using std::cerr;
 using std::endl;
 
 #include <assert.h>
@@ -36,6 +37,9 @@ public:
    }
 
    void run(){
+#if defined(_DEBUG)
+      cerr<<"enter cooke worker thread run()"<<endl;
+#endif
       while(true){
          if(shouldStop) break;
          ///wait for events
