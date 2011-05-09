@@ -63,7 +63,7 @@ public:
          int curFrameIdx=counter-camera->firstFrameCounter;
 
          //todo: tmp
-         curFrameIdx=camera->nAcquiredFrames;
+         //curFrameIdx=camera->nAcquiredFrames;
 
 
          assert(curFrameIdx>=0);
@@ -88,13 +88,21 @@ public:
             camera->nAcquiredFrames=curFrameIdx+1;
          }
          else {
-            memcpy(camera->pLiveImage, camera->pBlackImage, sizeof(Camera::PixelValue)*nPixelsPerFrame);
-            camera->nAcquiredFrames=camera->nFrames;
+            if(camera->genericAcqMode==Camera::eAcqAndSave){
+               memcpy(camera->pLiveImage, camera->pBlackImage, sizeof(Camera::PixelValue)*nPixelsPerFrame);
+               camera->nAcquiredFrames=camera->nFrames;
+            }
+            else {
+               memcpy(camera->pLiveImage, rawData, sizeof(Camera::PixelValue)*nPixelsPerFrame);
+               camera->nAcquiredFrames=curFrameIdx+1;
+            }
          }
 
-         //reset event then add back the bufffer
+         //reset event
          ResetEvent(camera->mEvent[eventIdx]);
-         if(camera->nAcquiredFrames<camera->nFrames){
+      
+         ///then add back the buffer
+         if(camera->nAcquiredFrames<camera->nFrames || camera->genericAcqMode==Camera::eLive){
             //in fifo mode, frameIdxInCamRam are 0 for both buffers?
             int frameIdxInCamRam=0;
             camera->errorCode = PCO_AddBuffer(camera->hCamera, frameIdxInCamRam, frameIdxInCamRam, camera->mBufIndex[eventIdx]);// Add buffer to the driver queue
@@ -104,9 +112,7 @@ public:
             }
          }
          else {
-            if(camera->genericAcqMode==Camera::eAcqAndSave){
-               break;
-            }
+            break;
          }
       }//while,
    }//run(),
