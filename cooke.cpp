@@ -190,7 +190,7 @@ double CookeCamera::getCycleTime()
       return -1;
    }
 
-   return sec+nsec/1e-9;
+   return sec+nsec*1e-9;
 }
 
 

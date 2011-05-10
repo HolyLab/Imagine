@@ -119,6 +119,9 @@ public:
             break;
          }
       }//while,
+#if defined(_DEBUG)
+      cerr<<"leave cooke worker thread run()"<<endl;
+#endif
    }//run(),
 };//class, CookeCamera::WorkerThread
 
