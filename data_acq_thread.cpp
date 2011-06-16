@@ -261,7 +261,7 @@ void DataAcqThread::run_acq_and_save()
       isUseSpool=false;
    }
 
-   isCreateFilePerStack=true; //TODO: make ui aware this
+   isCreateFilePerStack=false; //TODO: make ui aware this
 
 
    ////prepare for AO AI and camera:
