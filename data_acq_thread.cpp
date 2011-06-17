@@ -479,11 +479,13 @@ nextStack:
          ofsCam=new FastOfstream( camFilename.arg(idxCurStack,4,10,QLatin1Char('0')).toStdString().c_str()  );
       }
       Camera::PixelValue * imageArray=camera.getImageArray();
+      double timerValue=timer.read();
       ofsCam->write((const char*)imageArray, 
          sizeof(Camera::PixelValue)*nFramesPerStack*imageW*imageH );
       if(!*ofsCam){
          //TODO: deal with the error
       }//if, error occurs when write camera data
+      cout<<"time for writing the stack: "<<timer.read()-timerValue<<endl;
       //ofsCam->flush();
       if(isCreateFilePerStack){
          ofsCam->close();

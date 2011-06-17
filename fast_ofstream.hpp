@@ -11,6 +11,11 @@ class FastOfstream {
    HANDLE hFile;
    bool isGood; //Status
 
+   //for debug
+   int nWrites;
+   vector<double> times;
+   Timer_g timer;
+
    FastOfstream(const FastOfstream&);
    FastOfstream& operator=(const FastOfstream&);
 
@@ -20,6 +25,9 @@ public:
       unalignedbuf=0;
       hFile=INVALID_HANDLE_VALUE;
       isGood=false;
+
+      nWrites=0;
+      timer.start();
 
       bufsize=bufsize_in_kb*1024;
       datasize=0;
@@ -43,6 +51,8 @@ public:
    }
 
    FastOfstream& write(const char* moredata, int morecount){
+      double timerValue=timer.read();
+      
       //pad/copy (for alignment, otherwise sometimes we can use moredata directly) then write cur buf (repeatly)
       //leave the remainder in cur buf
       while(true){
@@ -54,12 +64,22 @@ public:
          //now 0<=datasize<bufsize
 
          int amount2cp=min(bufsize-datasize, morecount);
+
+         /* this has 10x performance hit when in debug mode
          for(int i=0; i<amount2cp; ++i){
             buf[datasize++]=*moredata++;
          }
+         */
+         //alternative:
+         memcpy(buf+datasize, moredata, amount2cp);
+         datasize+=amount2cp;
+         moredata+=amount2cp;
+
          morecount-=amount2cp;
          if(!morecount) break;
       }//while,
+      
+      cout<<"in write(), spent "<<timer.read()-timerValue<<endl;
 
       return *this;
    }//write(),
@@ -69,10 +89,14 @@ public:
 
       DWORD nWritten;
 
+      double timerValue=timer.read();
       if(!WriteFile(hFile, buf, datasize, &nWritten, NULL)){
          isGood=false;
       }
       else   assert(datasize==nWritten);
+      times.push_back(timer.read()-timerValue);
+
+      nWrites++;
 
 skip_write:
       datasize=0;
@@ -86,6 +110,13 @@ skip_write:
       flush();
       CloseHandle(hFile);
       hFile=INVALID_HANDLE_VALUE;
+
+      cout<<"#writes: "<<nWrites<<endl;
+      cout<<"time for writes: ";
+      for(auto i=times.begin(); i!=times.end(); ++i){
+         cout<<*i<<" \t";
+      }
+      cout<<endl;
    }
 
    ~FastOfstream(){
