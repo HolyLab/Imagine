@@ -32,6 +32,7 @@ using namespace std;
 #include "ni_daq_g.hpp"
 #include "ai_thread.hpp"
 #include "scoped_ptr_g.hpp"
+#include "fast_ofstream.hpp"
 
 
 Camera* pCamera;
@@ -355,14 +356,14 @@ void DataAcqThread::run_acq_and_save()
       camFilename=stackDir+"\\stack_%1";
    }
 
-   ofstream *ofsAi=NULL, *ofsCam=NULL;
+   ofstream *ofsAi=NULL;
+   FastOfstream *ofsCam=NULL;
    if(isSaveData){
       saveHeader(headerFilename, aiThread->ai);
       ofsAi =new ofstream(aiFilename.toStdString().c_str(), 
          ios::binary|ios::out|ios::trunc );
       if(!isUseSpool && !isCreateFilePerStack){
-         ofsCam=new ofstream(camFilename.toStdString().c_str(), 
-            ios::binary|ios::out|ios::trunc );
+         ofsCam=new FastOfstream(camFilename.toStdString().c_str() );
       }
    }//if, save data to file
 
@@ -474,9 +475,7 @@ nextStack:
    //save camera's data:
    if(isSaveData && !isUseSpool){
       if(isCreateFilePerStack){
-         ofsCam=new ofstream(
-            camFilename.arg(idxCurStack,4,10,QLatin1Char('0')).toStdString().c_str(), 
-            ios::binary|ios::out|ios::trunc );
+         ofsCam=new FastOfstream( camFilename.arg(idxCurStack,4,10,QLatin1Char('0')).toStdString().c_str()  );
       }
       Camera::PixelValue * imageArray=camera.getImageArray();
       ofsCam->write((const char*)imageArray, 
@@ -484,7 +483,7 @@ nextStack:
       if(!*ofsCam){
          //TODO: deal with the error
       }//if, error occurs when write camera data
-      ofsCam->flush();
+      //ofsCam->flush();
       if(isCreateFilePerStack){
          ofsCam->close();
          delete ofsCam;
