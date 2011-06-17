@@ -24,8 +24,8 @@ public:
       bufsize=bufsize_in_kb*1024;
       datasize=0;
       int alignment=1024*1024;
-      char * unalignedbuf=new char[bufsize+alignment];
-      char* buf=unalignedbuf+(alignment-(unsigned long)unalignedbuf%alignment);
+      unalignedbuf=new char[bufsize+alignment];
+      buf=unalignedbuf+(alignment-(unsigned long)unalignedbuf%alignment);
 
       hFile=CreateFileA(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 
          FILE_ATTRIBUTE_NORMAL|FILE_FLAG_NO_BUFFERING,
@@ -81,8 +81,11 @@ skip_write:
    }
 
    void close(){
+      if(hFile==INVALID_HANDLE_VALUE) return;
+
       flush();
       CloseHandle(hFile);
+      hFile=INVALID_HANDLE_VALUE;
    }
 
    ~FastOfstream(){

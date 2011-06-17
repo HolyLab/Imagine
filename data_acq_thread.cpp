@@ -364,6 +364,7 @@ void DataAcqThread::run_acq_and_save()
          ios::binary|ios::out|ios::trunc );
       if(!isUseSpool && !isCreateFilePerStack){
          ofsCam=new FastOfstream(camFilename.toStdString().c_str() );
+         assert(*ofsCam);
       }
    }//if, save data to file
 
