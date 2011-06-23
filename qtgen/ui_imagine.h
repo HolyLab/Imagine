@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'imagine.ui'
 **
-** Created: Fri Jun 17 10:21:57 2011
+** Created: Thu Jun 23 13:57:20 2011
 **      by: Qt User Interface Compiler version 4.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -528,7 +528,7 @@ public:
         spinBoxHend->setGeometry(QRect(201, 20, 61, 22));
         spinBoxHend->setMinimum(1);
         spinBoxHend->setMaximum(2560);
-        spinBoxHend->setValue(2560);
+        spinBoxHend->setValue(1);
         spinBoxVstart = new QSpinBox(tabBinning);
         spinBoxVstart->setObjectName(QString::fromUtf8("spinBoxVstart"));
         spinBoxVstart->setGeometry(QRect(80, 60, 51, 22));
@@ -786,7 +786,7 @@ public:
 
         retranslateUi(ImagineClass);
 
-        tabWidgetCfg->setCurrentIndex(2);
+        tabWidgetCfg->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(ImagineClass);

@@ -303,6 +303,10 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
 
    }
 
+   //ui.spinBoxHend->setValue(camera.getImageWidth()); //TODO: use chipWidth instead
+   //ui.spinBoxVend->setValue(camera.getImageHeight());
+   ui.spinBoxHend->setValue(1920); //TODO: use chipWidth instead
+   ui.spinBoxVend->setValue(1080);
 
    //apply the camera setting:
    on_btnApply_clicked();
