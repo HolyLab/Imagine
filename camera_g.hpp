@@ -84,6 +84,14 @@ public:
       return pImageArray;
    }
 
+   int getChipWidth(){
+      return chipWidth;
+   }
+
+   int getChipHeight(){
+      return chipHeight;
+   }
+
    //todo: to verify
    int getImageWidth(){
       return (hend-hstart+1)/hbin;
