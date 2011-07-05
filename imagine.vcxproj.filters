@@ -170,6 +170,9 @@
     <ClInclude Include="cooke.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="circbuf.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\start_acq.bmp">

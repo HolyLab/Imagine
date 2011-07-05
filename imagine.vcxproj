@@ -221,6 +221,7 @@
     </CustomBuild>
     <ClInclude Include="avt_g.hpp" />
     <ClInclude Include="camera_g.hpp" />
+    <ClInclude Include="circbuf.hpp" />
     <ClInclude Include="cooke.hpp" />
     <CustomBuild Include="cookeworkerthread.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
