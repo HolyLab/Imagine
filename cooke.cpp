@@ -243,7 +243,7 @@ bool CookeCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 
    ///take care of image array saving (in mem only)
    if(genericAcqMode==eAcqAndSave){
-      if(!allocImageArray(nFrames,false)){
+      if(!isSpooling() && !allocImageArray(nFrames,false)){
          return false;
       }//if, fail to alloc enough mem
    }
@@ -370,6 +370,7 @@ bool CookeCamera::getLatestLiveImage(PixelValue * frame)
 
 
 //return false if, say, can't open the spooling file to save
+//NOTE: have to call this b4 setAcqModeAndTime() to avoid out-of-mem
 bool CookeCamera::setSpooling(string filename)
 {
    if(ofsSpooling){

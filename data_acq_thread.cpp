@@ -268,6 +268,10 @@ void DataAcqThread::run_acq_and_save()
    ////prepare for AO AI and camera:
    
    ///prepare for camera:
+
+   //todo: if cooke, seeSpooling() here!!!
+   assert(false);
+
    ///camera.setAcqModeAndTime(AndorCamera::eKineticSeries,
    camera.setAcqModeAndTime(Camera::eAcqAndSave,
                             this->exposureTime, 
