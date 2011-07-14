@@ -129,6 +129,18 @@
     <ClCompile Include="qtgen\Template\moc_cookeworkerthread.cpp">
       <Filter>Generated Files\Template</Filter>
     </ClCompile>
+    <ClCompile Include="cookespoolthread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_cookespoolthread.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Release\moc_cookespoolthread.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Template\moc_cookespoolthread.cpp">
+      <Filter>Generated Files\Template</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Atmcd32d.h">
@@ -233,6 +245,9 @@
     </CustomBuild>
     <CustomBuild Include="imagine.ico" />
     <CustomBuild Include="cookeworkerthread.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="cookespoolthread.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
