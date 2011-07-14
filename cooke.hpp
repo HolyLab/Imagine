@@ -48,6 +48,8 @@ class CookeCamera: public Camera {
 
    WorkerThread* workerThread;
 
+   bool isUseSpool;
+
 public:
    CookeCamera(){
       pLiveImage=nullptr;
@@ -59,6 +61,8 @@ public:
       mpLock=new QMutex;
 
       workerThread=nullptr;
+      
+      isUseSpool=false;
 
       vendor="cooke";
 
@@ -141,6 +145,8 @@ public:
    }
 
    long extractFrameCounter(PixelValue* rawData);
+
+   void setSpooling(bool enabled);
 };//class, CookeCamera
 
 

@@ -368,3 +368,8 @@ bool CookeCamera::getLatestLiveImage(PixelValue * frame)
    return true;
 }
 
+//todo: check camera is idle b/c it's only called when the camera is idle
+void CookeCamera::setSpooling(bool enabled)
+{
+
+}
