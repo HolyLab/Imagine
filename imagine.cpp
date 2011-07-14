@@ -309,12 +309,14 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    //apply the camera setting:
    on_btnApply_clicked();
 
+   /*
    //pre-allocate space for camera buffer:
    int nFrameToHold=60; //TODO: make this ui aware
    if(!camera.allocImageArray(nFrameToHold,true)){
       appendLog(QString("reserve %1-frame memory failed")
          .arg(nFrameToHold));
    }
+   */
 
    //prepare for DO:
    digOut=new NiDaqDo();
