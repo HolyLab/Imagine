@@ -334,9 +334,9 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
       .arg(date.year()-2000, 1, 16)
       .arg(date.month(), 1, 16)
       .arg(date.day(), 2, 10, QChar('0'));
-   QString copyright="(c) 2005-2008 Tim Holy & Zhongsheng Guo";
+   QString copyright="(c) 2005-2011 Tim Holy & Zhongsheng Guo";
    this->statusBar()->showMessage(
-      QString("Ready. Imagine Version 1.0 (Build %1). %2").arg(ver)
+      QString("Ready. Imagine Version 2.0 (Build %1). %2").arg(ver)
       .arg(copyright));
 
    //to enable pass QImage in signal/slot
