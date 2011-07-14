@@ -48,8 +48,6 @@ class CookeCamera: public Camera {
 
    WorkerThread* workerThread;
 
-   bool isUseSpool;
-
 public:
    CookeCamera(){
       pLiveImage=nullptr;
@@ -146,7 +144,6 @@ public:
 
    long extractFrameCounter(PixelValue* rawData);
 
-   void setSpooling(bool enabled);
 };//class, CookeCamera
 
 

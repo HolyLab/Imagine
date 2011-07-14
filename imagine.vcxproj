@@ -368,33 +368,6 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\rcc.exe;Resources/start_acq.bmp;Resources/start_live.bmp;Resources/stop.bmp;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">qtgen\qrc_imagine.cpp;%(Outputs)</Outputs>
     </CustomBuild>
-    <CustomBuild Include="qtgen\Debug\cooke.moc">
-      <FileType>Document</FileType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\cooke.cpp</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing %(Identity)...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\$(ConfigurationName)\%(Filename).moc</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "cooke.cpp" -o ".\qtgen\$(ConfigurationName)\%(Filename).moc"</Command>
-    </CustomBuild>
-    <CustomBuild Include="qtgen\Release\cooke.moc">
-      <FileType>Document</FileType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\cooke.cpp</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing %(Identity)...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\$(ConfigurationName)\%(Filename).moc</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "cooke.cpp" -o ".\qtgen\$(ConfigurationName)\%(Filename).moc"</Command>
-    </CustomBuild>
-    <CustomBuild Include="qtgen\Template\cooke.moc">
-      <FileType>Document</FileType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">$(QTDIR)\bin\moc.exe;.\cooke.cpp</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Moc%27ing %(Identity)...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">.\qtgen\$(ConfigurationName)\%(Filename).moc</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB  "-I." "-I.\qtgen" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "cooke.cpp" -o ".\qtgen\$(ConfigurationName)\%(Filename).moc"</Command>
-    </CustomBuild>
     <None Include="Resources\start_acq.bmp" />
     <None Include="Resources\start_live.bmp" />
     <None Include="Resources\stop.bmp" />

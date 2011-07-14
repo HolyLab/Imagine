@@ -404,6 +404,7 @@ nextStack:
    if(isUseSpool) {
       QString stemName=camFilename.arg(idxCurStack,4,10,QLatin1Char('0'));
       //enable spool
+      //todo: use Camera::setSpooling() instead
       ((AndorCamera*)(&camera))->enableSpool((char*)(stemName.toStdString().c_str()), 10);
    }
    camera.startAcq();

@@ -30,25 +30,31 @@ Camera::Camera()
 
       model="Unknown";
 
+      spoolingFilename="";
 }
 
 Camera::~Camera()
+{
+   freeImageArray();
+}
+
+void Camera::freeImageArray()
 {
       // free all allocated memory
       if(pImageArray){
          delete []pImageArray;
          pImageArray = NULL;
+         imageArraySize=0;
       }
 
 }
-
 
 //todo: align it
 bool Camera::allocImageArray(int nFrames, bool shouldReallocAnyway)
 {
       int nPixels=getImageWidth()*getImageHeight()*nFrames;
 
-      if(shouldReallocAnyway || nPixels>imageArraySize){
+      if(shouldReallocAnyway || nPixels>imageArraySize ){
          if(pImageArray){
             delete []pImageArray;
             pImageArray = nullptr;
@@ -72,4 +78,14 @@ bool Camera::allocImageArray(int nFrames, bool shouldReallocAnyway)
       return true;
 
 }
+
+
+//todo: check camera is idle b/c it's only called when the camera is idle
+void Camera::setSpooling(string filename)
+{
+   spoolingFilename=filename;
+   if(filename==""){
+      freeImageArray();
+   }
+}//setSpooling(),
 

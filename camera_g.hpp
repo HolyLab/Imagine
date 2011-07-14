@@ -61,6 +61,8 @@ protected:
    PixelValue * pImageArray;	 // main image buffer read from card
    int imageArraySize; //in pixel
 
+   string spoolingFilename;
+
 public:
    Camera();
    virtual ~Camera();
@@ -138,7 +140,12 @@ public:
 
    virtual bool transferData()=0;
 
+   bool isSpooling() {return spoolingFilename!="";}
+   //string getSpoolingFilename(){return spoolingFilename;}
+   virtual void setSpooling(string filename); //when filename is empty, disable the spooling
 
+private:
+   void   freeImageArray();
 };//class, Camera
 
 
