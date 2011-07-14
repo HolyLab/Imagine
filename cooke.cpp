@@ -368,3 +368,21 @@ bool CookeCamera::getLatestLiveImage(PixelValue * frame)
    return true;
 }
 
+
+//return false if, say, can't open the spooling file to save
+bool CookeCamera::setSpooling(string filename)
+{
+   if(ofsSpooling){
+      delete ofsSpooling; //the file is closed too
+      ofsSpooling=nullptr;
+   }
+
+   Camera::setSpooling(filename);
+
+   if(isSpooling()){
+      ofsSpooling=new FastOfstream(filename.c_str() );
+      return *ofsSpooling;
+   }
+   else return true;
+
+}

@@ -142,7 +142,7 @@ public:
 
    bool isSpooling() {return spoolingFilename!="";}
    //string getSpoolingFilename(){return spoolingFilename;}
-   virtual void setSpooling(string filename); //when filename is empty, disable the spooling
+   virtual bool setSpooling(string filename); //when filename is empty, disable the spooling
 
 private:
    void   freeImageArray();

@@ -81,11 +81,13 @@ bool Camera::allocImageArray(int nFrames, bool shouldReallocAnyway)
 
 
 //todo: check camera is idle b/c it's only called when the camera is idle
-void Camera::setSpooling(string filename)
+bool Camera::setSpooling(string filename)
 {
    spoolingFilename=filename;
    if(filename==""){
       freeImageArray();
    }
+
+   return true;
 }//setSpooling(),
 

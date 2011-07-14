@@ -14,6 +14,8 @@
 //#define PCO_ERRT_H_CREATE_OBJECT
 //#include "PCO_errt.h"
 
+#include "fast_ofstream.hpp"
+
 
 class CookeCamera: public Camera {
    class WorkerThread;
@@ -48,6 +50,8 @@ class CookeCamera: public Camera {
 
    WorkerThread* workerThread;
 
+   FastOfstream *ofsSpooling;
+
 public:
    CookeCamera(){
       pLiveImage=nullptr;
@@ -60,7 +64,7 @@ public:
 
       workerThread=nullptr;
       
-      isUseSpool=false;
+      ofsSpooling=nullptr;
 
       vendor="cooke";
 
@@ -143,6 +147,8 @@ public:
    }
 
    long extractFrameCounter(PixelValue* rawData);
+
+   bool setSpooling(string filename);
 
 };//class, CookeCamera
 
