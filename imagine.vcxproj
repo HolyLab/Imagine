@@ -237,6 +237,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB  "-I." "-I.\qtgen" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "cookeworkerthread.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
+    <ClInclude Include="fast_ofstream.hpp" />
     <ClInclude Include="histogram_item.h" />
     <CustomBuild Include="imagelabel.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing imagelabel.h...</Message>

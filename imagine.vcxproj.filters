@@ -173,6 +173,9 @@
     <ClInclude Include="circbuf.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="fast_ofstream.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\start_acq.bmp">
