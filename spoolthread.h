@@ -24,16 +24,32 @@ using std::endl;
 class SpoolThread: public QThread {
    Q_OBJECT
 private:
-   FastOfstream *ofsSpooling;
+   FastOfstream *ofsSpooling; //NOTE: SpoolThread is not the owner
+
+   CircularBuf * circBuf;
+   int itemSize;
+   char * circBufData;
+
    volatile bool shouldStop; //todo: do we need a lock to guard it?
 
 public:
-   SpoolThread(FastOfstream *ofsSpooling, QObject *parent = 0)
+   //PRE: itemsize: the size of each item in the circ buf
+   SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *parent = 0)
       : QThread(parent){
       this->ofsSpooling=ofsSpooling;
+      circBuf=nullptr;
+      this->itemSize=itemSize;
+
+      int circBufCap=16;//todo: hard coded 16
+      circBuf=new CircularBuf(circBufCap); 
+      circBufData=new char[itemSize*circBuf->capacity()]; //todo: alignment
+
       shouldStop=false;
    }
-   ~SpoolThread(){}
+   ~SpoolThread(){
+      delete circBuf;
+      delete[] circBufData;
+   }
 
    void requestStop(){
       shouldStop=true;
