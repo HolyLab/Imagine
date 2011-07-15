@@ -100,7 +100,7 @@
     <ClCompile Include="avt_g.cpp" />
     <ClCompile Include="camera_g.cpp" />
     <ClCompile Include="cooke.cpp" />
-    <ClCompile Include="cookespoolthread.cpp" />
+    <ClCompile Include="spoolthread.cpp" />
     <ClCompile Include="cookeworkerthread.cpp" />
     <ClCompile Include="data_acq_thread.cpp" />
     <ClCompile Include="fanctrldialog.cpp" />
@@ -109,27 +109,27 @@
     <ClCompile Include="imagine.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="misc.cpp" />
-    <ClCompile Include="qtgen\Debug\moc_cookespoolthread.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="qtgen\Debug\moc_cookeworkerthread.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="qtgen\Release\moc_cookespoolthread.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    <ClCompile Include="qtgen\Debug\moc_spoolthread.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="qtgen\Release\moc_cookeworkerthread.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="qtgen\Template\moc_cookespoolthread.cpp">
+    <ClCompile Include="qtgen\Release\moc_spoolthread.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="qtgen\Template\moc_cookeworkerthread.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="qtgen\Template\moc_cookeworkerthread.cpp">
+    <ClCompile Include="qtgen\Template\moc_spoolthread.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -250,16 +250,16 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB  "-I." "-I.\qtgen" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "cookeworkerthread.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
-    <CustomBuild Include="cookespoolthread.h">
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+    <CustomBuild Include="spoolthread.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"  -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710 "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I."</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"  -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710 "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I."</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"  -DQT_DLL -DQT_SCRIPT_LIB "-I." "-I.\qtgen" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I."</Command>

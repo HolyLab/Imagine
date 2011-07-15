@@ -129,17 +129,17 @@
     <ClCompile Include="qtgen\Template\moc_cookeworkerthread.cpp">
       <Filter>Generated Files\Template</Filter>
     </ClCompile>
-    <ClCompile Include="cookespoolthread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\Debug\moc_cookespoolthread.cpp">
+    <ClCompile Include="qtgen\Debug\moc_spoolthread.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="qtgen\Release\moc_cookespoolthread.cpp">
+    <ClCompile Include="qtgen\Release\moc_spoolthread.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="qtgen\Template\moc_cookespoolthread.cpp">
+    <ClCompile Include="qtgen\Template\moc_spoolthread.cpp">
       <Filter>Generated Files\Template</Filter>
+    </ClCompile>
+    <ClCompile Include="spoolthread.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -247,7 +247,7 @@
     <CustomBuild Include="cookeworkerthread.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="cookespoolthread.h">
+    <CustomBuild Include="spoolthread.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

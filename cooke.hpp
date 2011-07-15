@@ -19,9 +19,7 @@
 
 class CookeCamera: public Camera {
    class WorkerThread;
-   class SpoolThread;
    friend class WorkerThread;
-   friend class SpoolThread;
 
    HANDLE hCamera;
    PCO_General strGeneral;
