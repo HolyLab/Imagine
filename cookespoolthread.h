@@ -11,6 +11,8 @@ using std::endl;
 #include "cooke.hpp"
 #include "lockguard.h"
 
+#include "fast_ofstream.hpp"
+
 #include <QThread>
 
 #include <QMutex>
@@ -21,13 +23,13 @@ using std::endl;
 class CookeCamera::SpoolThread: public QThread {
    Q_OBJECT
 private:
-   CookeCamera* camera;
+   FastOfstream *ofsSpooling;
    volatile bool shouldStop; //todo: do we need a lock to guard it?
 
 public:
-   SpoolThread(CookeCamera * camera, QObject *parent = 0)
+   SpoolThread(FastOfstream *ofsSpooling, QObject *parent = 0)
       : QThread(parent){
-      this->camera=camera;
+      this->ofsSpooling=ofsSpooling;
       shouldStop=false;
    }
    ~SpoolThread(){}
