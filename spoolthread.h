@@ -44,6 +44,11 @@ public:
       circBuf=new CircularBuf(circBufCap); 
       circBufData=new char[itemSize*circBuf->capacity()]; //todo: alignment
 
+      //todo: provide way to check out-of-mem etc.. e.g., if(circBufData==nullptr) isInGoodState=false;
+      //          If FastOfstream obj fails (i.e. write error), isInGoodState is set to false too.
+
+
+
       shouldStop=false;
    }
    ~SpoolThread(){
