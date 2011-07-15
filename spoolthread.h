@@ -1,5 +1,5 @@
-#ifndef COOKESPOOLTHREAD_H
-#define COOKESPOOLTHREAD_H
+#ifndef SPOOLTHREAD_H
+#define SPOOLTHREAD_H
 
 #include <iostream>
 using std::cout;
@@ -8,10 +8,11 @@ using std::endl;
 
 #include <assert.h>
 
-#include "cooke.hpp"
 #include "lockguard.h"
 
 #include "fast_ofstream.hpp"
+#include "circbuf.hpp"
+
 
 #include <QThread>
 
@@ -20,7 +21,7 @@ using std::endl;
 #include <QWaitCondition>
 
 
-class CookeCamera::SpoolThread: public QThread {
+class SpoolThread: public QThread {
    Q_OBJECT
 private:
    FastOfstream *ofsSpooling;
@@ -52,7 +53,7 @@ public:
       cerr<<"leave cooke spooling thread run()"<<endl;
 #endif
    }//run(),
-};//class, CookeCamera::SpoolThread
+};//class, SpoolThread
 
 
-#endif // COOKESPOOLTHREAD_H
+#endif // SPOOLTHREAD_H
