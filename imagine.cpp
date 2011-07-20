@@ -902,7 +902,7 @@ bool Imagine::checkRoi()
 {
    Camera& camera=*pCamera;
 
-   QString filename=camera.vendor+"_roi.js";
+   QString filename=QString::fromStdString(camera.vendor+"_roi.js");
 
    if(!QFile::exists(filename)) return;
    
