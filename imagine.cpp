@@ -27,6 +27,8 @@
 #include <QPainter>
 #include <QVBoxLayout>
 #include <QDate>
+#include <QScriptEngine>
+#include <QScriptProgram>
 
 #include <qwt_plot.h>
 #include <qwt_plot_grid.h>
@@ -917,9 +919,33 @@ bool Imagine::checkRoi()
    QTextStream in(&file);
    QString jscode=in.readAll();
 
+   QScriptEngine se;
+   QScriptProgram sp(jscode);
+   QScriptValue jsobj=se.evaluate(sp);
+   if(se.hasUncaughtException()){
+      QMessageBox::warning(this, tr("Imagine"),
+         tr("There's problem when evaluating roi checking script %1:\n%2\n%3.")
+         .arg(filename)
+         .arg(QString("   ... at line %1").arg(se.uncaughtExceptionLineNumber()))
+         .arg(QString("   ... error msg: %1").arg(se.uncaughtException().toString())));
+      return false;
+   }
+   
+   //set the roi def
+   jsobj.setProperty("hstart",ui.spinBoxHstart->value());
+   jsobj.setProperty("hend",ui.spinBoxHend->value());
+   jsobj.setProperty("vstart",ui.spinBoxVstart->value());
+   jsobj.setProperty("vend",ui.spinBoxVend->value());
 
+   //set the window reference
+   QScriptValue qtwin=se.newQObject(this);
+   jsobj.setProperty("window", qtwin);
 
-   return true;
+   QScriptValue checkFunc=jsobj.property("check");
+
+   bool result=checkFunc.call(jsobj).toBool();
+
+   return result;
 }
 
 
