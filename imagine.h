@@ -65,6 +65,7 @@ private:
     void updateIntenCurve(const AndorCamera::PixelValue * frame, 
        const int imageW, const int imageH, const int frameIdx);
 
+    bool checkRoi();
 
 private slots:
         void on_actionHeatsinkFan_triggered();

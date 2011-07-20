@@ -898,9 +898,38 @@ void Imagine::on_btnUseZoomWindow_clicked()
 }
 
 
+bool Imagine::checkRoi()
+{
+   Camera& camera=*pCamera;
+
+   QString filename=camera.vendor+"_roi.js";
+
+   if(!QFile::exists(filename)) return;
+   
+   QFile file(filename);
+   if (!file.open(QFile::ReadOnly | QFile::Text)) {
+      QMessageBox::warning(this, tr("Imagine"),
+         tr("Cannot read roi checking script %1:\n%2.")
+         .arg(filename)
+         .arg(file.errorString()));
+      return;
+   }
+   QTextStream in(&file);
+   //QApplication::setOverrideCursor(Qt::WaitCursor);
+   QString jscode=in.readAll();
+
+
+   return true;
+}
+
+
 void Imagine::on_btnApply_clicked()
 {
    Camera& camera=*pCamera;
+
+   if(!checkRoi()){
+      return;
+   }
 
    QString triggerModeStr=ui.comboBoxTriggerMode->currentText();
    AndorCamera::TriggerMode triggerMode;
