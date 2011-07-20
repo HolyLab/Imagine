@@ -188,8 +188,19 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    histogram->setColor(Qt::darkCyan);
    histogram->attach(histPlot);
 
-   histPlot->setAxisScale(QwtPlot::yLeft, 1, 1000000.0);
-   histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1<<14);
+   ///todo: make it more robust by query Camera class
+   if(pCamera->vendor=="andor"){
+      histPlot->setAxisScale(QwtPlot::yLeft, 1, 1000000.0);
+      histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1<<14);
+   }
+   else if(pCamera->vendor=="cooke"){
+      histPlot->setAxisScale(QwtPlot::yLeft, 1, 5000000.0);
+      histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1<<16);
+   }
+   else {
+      histPlot->setAxisScale(QwtPlot::yLeft, 1, 1000000.0);
+      histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1<<14);
+   }
 
    //intensity curve
    //TODO: make it ui aware
