@@ -904,7 +904,7 @@ bool Imagine::checkRoi()
 
    QString filename=QString::fromStdString(camera.vendor+"_roi.js");
 
-   if(!QFile::exists(filename)) return;
+   if(!QFile::exists(filename)) return true;
    
    QFile file(filename);
    if (!file.open(QFile::ReadOnly | QFile::Text)) {
@@ -912,11 +912,11 @@ bool Imagine::checkRoi()
          tr("Cannot read roi checking script %1:\n%2.")
          .arg(filename)
          .arg(file.errorString()));
-      return;
+      return false;
    }
    QTextStream in(&file);
-   //QApplication::setOverrideCursor(Qt::WaitCursor);
    QString jscode=in.readAll();
+
 
 
    return true;
