@@ -30,6 +30,10 @@ private:
    int itemSize;
    char * circBufData;
 
+   QWaitCondition bufNotEmpty;
+   QWaitCondition bufNotFull;
+   QMutex* mpLock;
+
    volatile bool shouldStop; //todo: do we need a lock to guard it?
 
 public:
@@ -47,18 +51,29 @@ public:
       //todo: provide way to check out-of-mem etc.. e.g., if(circBufData==nullptr) isInGoodState=false;
       //          If FastOfstream obj fails (i.e. write error), isInGoodState is set to false too.
 
-
+      mpLock=new QMutex;
+    
 
       shouldStop=false;
-   }
+   }//ctor,
+
+
    ~SpoolThread(){
       delete circBuf;
       delete[] circBufData;
-   }
+      delete mpLock;
+
+   }//dtor,
 
    void requestStop(){
       shouldStop=true;
    }
+
+   //add one item to the ring buf. Blocked when full.
+   void appendItem(char* item){
+
+   }
+
 
    void run(){
 #if defined(_DEBUG)
