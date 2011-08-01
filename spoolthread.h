@@ -28,6 +28,7 @@ private:
 
    CircularBuf * circBuf;
    int itemSize;
+   char * tmpItem;
    char * circBufData;
 
    QWaitCondition bufNotEmpty;
@@ -41,12 +42,13 @@ public:
    SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *parent = 0)
       : QThread(parent){
       this->ofsSpooling=ofsSpooling;
-      circBuf=nullptr;
+      circBuf=tmpItem=nullptr;
       this->itemSize=itemSize;
 
       int circBufCap=16;//todo: hard coded 16
       circBuf=new CircularBuf(circBufCap); 
       circBufData=new char[itemSize*circBuf->capacity()]; //todo: alignment
+      tmpItem=new char[itemSize]; //todo: align
 
       //todo: provide way to check out-of-mem etc.. e.g., if(circBufData==nullptr) isInGoodState=false;
       //          If FastOfstream obj fails (i.e. write error), isInGoodState is set to false too.
@@ -61,6 +63,7 @@ public:
    ~SpoolThread(){
       delete circBuf;
       delete[] circBufData;
+      delete[] tmpItem;
       delete mpLock;
 
    }//dtor,
@@ -89,6 +92,16 @@ public:
 
       while(true){
          if(shouldStop) break;
+         mpLock->lock();
+         while(circBuf->empty()){
+            bufNotEmpty.wait(mpLock); //wait 4 not empty
+         }
+         int idx=circBuf->get();
+         memcpy(tmpItem, circBufData+idx*itemSize, itemSize);
+         bufNotFull.wakeAll();
+         mpLock->unlock();
+
+         //now save tmpItem
 
       }//while,
 
