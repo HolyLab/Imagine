@@ -93,6 +93,7 @@ public:
       while(true){
          if(shouldStop) break;
          mpLock->lock();
+         //todo: take care wakeup due to stop-request
          while(circBuf->empty()){
             bufNotEmpty.wait(mpLock); //wait 4 not empty
          }
@@ -102,6 +103,7 @@ public:
          mpLock->unlock();
 
          //now save tmpItem
+         this->ofsSpooling->write(tmpItem, itemSize);
 
       }//while,
 
