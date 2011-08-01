@@ -37,7 +37,7 @@ private:
    volatile bool shouldStop; //todo: do we need a lock to guard it?
 
 public:
-   //PRE: itemsize: the size of each item in the circ buf
+   //PRE: itemsize: the size (in bytes) of each item in the circ buf
    SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *parent = 0)
       : QThread(parent){
       this->ofsSpooling=ofsSpooling;
@@ -71,8 +71,15 @@ public:
 
    //add one item to the ring buf. Blocked when full.
    void appendItem(char* item){
-
-   }
+      mpLock->lock();
+      while(circBuf->full()){
+         bufNotFull.wait(mpLock);
+      }
+      int idx=circBuf->put();
+      memcpy(circBufData+idx*itemSize, item, itemSize);
+      bufNotEmpty.wakeAll();
+      mpLock->unlock();
+   }//appendItem(),
 
 
    void run(){
