@@ -10,6 +10,7 @@ using std::endl;
 
 #include "cooke.hpp"
 #include "lockguard.h"
+#include "spoolthread.h"
 
 #include <QThread>
 
@@ -22,18 +23,36 @@ class CookeCamera::WorkerThread: public QThread {
    Q_OBJECT
 private:
    CookeCamera* camera;
+   SpoolThread* spoolingThread;
+
    volatile bool shouldStop; //todo: do we need a lock to guard it?
 
 public:
    WorkerThread(CookeCamera * camera, QObject *parent = 0)
       : QThread(parent){
       this->camera=camera;
+      
+      if(camera->isSpooling()){
+         spoolingThread=new SpoolThread(camera->ofsSpooling, 
+            camera->getImageWidth()*camera->getImageHeight()*sizeof(CookeCamera::PixelValue));
+      }
+      else {
+         spoolingThread=nullptr;
+      }
+
       shouldStop=false;
    }
-   ~WorkerThread(){}
+   ~WorkerThread(){
+      if(spoolingThread){
+         spoolingThread->wait();
+         delete spoolingThread;
+         spoolingThread=nullptr;
+      }
+   }
 
    void requestStop(){
       shouldStop=true;
+      if(spoolingThread)spoolingThread->requestStop();
    }
 
    void run(){
