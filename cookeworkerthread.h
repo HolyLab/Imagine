@@ -35,6 +35,7 @@ public:
       if(camera->isSpooling()){
          spoolingThread=new SpoolThread(camera->ofsSpooling, 
             camera->getImageWidth()*camera->getImageHeight()*sizeof(CookeCamera::PixelValue));
+         spoolingThread->start();
       }
       else {
          spoolingThread=nullptr;
@@ -53,6 +54,17 @@ public:
    void requestStop(){
       shouldStop=true;
       if(spoolingThread)spoolingThread->requestStop();
+   }
+
+   void append2seq(CookeCamera::PixelValue* frame, int frameIdx, int nPixelsPerFrame){
+      //if(spoolingThread) assert(sizeof(Camera::PixelValue)*nPixelsPerFrame==spoolThread->itemSize);
+      if(spoolingThread){
+         spoolingThread->appendItem((char*)frame);
+      }
+      else {
+         memcpy(camera->pImageArray+frameIdx*nPixelsPerFrame, frame, sizeof(Camera::PixelValue)*nPixelsPerFrame);
+
+      }
    }
 
    void run(){
@@ -96,7 +108,7 @@ public:
          int gapWidth=0;
          for(int frameIdx=camera->nAcquiredFrames; frameIdx<min(camera->nFrames, curFrameIdx); ++frameIdx){
             if(camera->genericAcqMode==Camera::eAcqAndSave){
-               memcpy(camera->pImageArray+frameIdx*nPixelsPerFrame, camera->pBlackImage, sizeof(Camera::PixelValue)*nPixelsPerFrame);
+               append2seq(camera->pBlackImage, frameIdx, nPixelsPerFrame);
             }
             gapWidth++;
          }
@@ -105,9 +117,9 @@ public:
          //fill the frame array and live image
          if(curFrameIdx<camera->nFrames){
             if(camera->genericAcqMode==Camera::eAcqAndSave){
-               memcpy(camera->pImageArray+curFrameIdx*nPixelsPerFrame, rawData, sizeof(Camera::PixelValue)*nPixelsPerFrame);
+               append2seq(rawData, curFrameIdx, nPixelsPerFrame);
             }
-            memcpy(camera->pLiveImage, rawData, sizeof(Camera::PixelValue)*nPixelsPerFrame);
+            memcpy(camera->pLiveImage, rawData, sizeof(CookeCamera::PixelValue)*nPixelsPerFrame);
             camera->nAcquiredFrames=curFrameIdx+1;
          }
          else {
