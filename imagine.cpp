@@ -716,15 +716,9 @@ void Imagine::on_actionStartAcqAndSave_triggered()
          return;
       }
 
-      if(QMessageBox::question(
-         this,
-         tr("No file to save as? --- Imagine"),
-         tr("No saving file was specified.\n"
-            "Do you want to continue?"),
-         tr("&Yes"), tr("&No"),
-           QString(), 0, 1)){
-         return;
-      }
+      QMessageBox::information(this, "Need file name --- Imagine",
+            "Please specify file name to save");
+      return;
    }
 
    //warn user if overwrite file:
@@ -1009,13 +1003,8 @@ void Imagine::on_btnApply_clicked()
 
    //set filenames:
    QString headerFilename=ui.lineEditFilename->text();
-   if(headerFilename.isEmpty()){
-      dataAcqThread.isSaveData=false;
-   }
-   else {
-      dataAcqThread.isSaveData=true;
-
-      dataAcqThread.headerFilename=headerFilename;  //TODO: add ext if necessary
+   dataAcqThread.headerFilename=headerFilename; 
+   if(!headerFilename.isEmpty()){
       dataAcqThread.aiFilename=replaceExtName(headerFilename, "ai");
       dataAcqThread.camFilename=replaceExtName(headerFilename, "cam");
       dataAcqThread.sifFileBasename=replaceExtName(headerFilename, "");

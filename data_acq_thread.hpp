@@ -66,7 +66,6 @@ public:
     bool applyStim;
 
     //file saving params:
-    bool isSaveData;
     QString headerFilename, aiFilename, camFilename, sifFileBasename;
     bool isUseSpool;
 
