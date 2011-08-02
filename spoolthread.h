@@ -54,8 +54,7 @@ public:
       //          If FastOfstream obj fails (i.e. write error), isInGoodState is set to false too.
 
       mpLock=new QMutex;
-    
-
+ 
       shouldStop=false;
    }//ctor,
 
@@ -70,17 +69,21 @@ public:
 
    void requestStop(){
       shouldStop=true;
+      bufNotFull.wakeAll();
+      bufNotEmpty.wakeAll();
    }
 
    //add one item to the ring buf. Blocked when full.
    void appendItem(char* item){
       mpLock->lock();
-      while(circBuf->full()){
+      while(circBuf->full() && !shouldStop){
          bufNotFull.wait(mpLock);
       }
+      if(shouldStop)goto finishup;
       int idx=circBuf->put();
       memcpy(circBufData+idx*itemSize, item, itemSize);
       bufNotEmpty.wakeAll();
+finishup:
       mpLock->unlock();
    }//appendItem(),
 
@@ -91,12 +94,11 @@ public:
 #endif
 
       while(true){
-         if(shouldStop) break;
          mpLock->lock();
-         //todo: take care wakeup due to stop-request
-         while(circBuf->empty()){
+         while(circBuf->empty() && !shouldStop){
             bufNotEmpty.wait(mpLock); //wait 4 not empty
          }
+         if(shouldStop) goto finishup;
          int idx=circBuf->get();
          memcpy(tmpItem, circBufData+idx*itemSize, itemSize);
          bufNotFull.wakeAll();
@@ -104,8 +106,14 @@ public:
 
          //now save tmpItem
          this->ofsSpooling->write(tmpItem, itemSize);
-
       }//while,
+finishup:
+      while(!circBuf->empty()){
+         int idx=circBuf->get();
+         memcpy(tmpItem, circBufData+idx*itemSize, itemSize);
+         this->ofsSpooling->write(tmpItem, itemSize);
+      }
+      mpLock->unlock();
 
 #if defined(_DEBUG)
       cerr<<"leave cooke spooling thread run()"<<endl;
