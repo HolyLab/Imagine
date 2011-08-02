@@ -272,8 +272,10 @@ void DataAcqThread::run_acq_and_save()
 
    camFilename=replaceExtName(headerFilename, "cam"); //NOTE: necessary if user overwrite files
 
-   //todo: if cooke, seeSpooling() here!!!
-   assert(false);
+   //if cooke, seeSpooling() here!!! (to avoid out-of-mem when setAcqAndTime())
+   if(isCooke && isUseSpool){
+      camera.setSpooling(camFilename.toStdString());
+   }
 
    ///camera.setAcqModeAndTime(AndorCamera::eKineticSeries,
    camera.setAcqModeAndTime(Camera::eAcqAndSave,
@@ -400,12 +402,13 @@ nextStack:
       .arg(timer.read(), 10, 'f', 4) //width=10, fixed point, 4 decimal digits 
       );
 
-   if(isUseSpool) {
+   if(isAndor && isUseSpool) {
       QString stemName=camFilename.arg(idxCurStack,4,10,QLatin1Char('0'));
       //enable spool
       //todo: use Camera::setSpooling() instead
       ((AndorCamera*)(&camera))->enableSpool((char*)(stemName.toStdString().c_str()), 10);
    }
+
    camera.startAcq();
 
    //for external start, put 100ms delay here to wait camera ready for trigger
@@ -472,8 +475,9 @@ nextStack:
       }
    }
 
-   //save data to files:
-   //save camera's data:
+   ////save data to files:
+   
+   ///save camera's data:
    if(!isUseSpool){
       Camera::PixelValue * imageArray=camera.getImageArray();
       double timerValue=timer.read();
@@ -486,7 +490,7 @@ nextStack:
       //ofsCam->flush();
    }//if, save data to file and not using spool
 
-   //save ai data:
+   ///save ai data:
    aiThread->save(*ofsAi);
    ofsAi->flush();
 
@@ -527,19 +531,19 @@ nextStack:
    aiThread->stopAcq();
    aiThread->save(*ofsAi);
 
-   //TODO: do we really need these close()?
    if(!isUseSpool){
       ofsCam->close();
-      delete ofsCam;   //TODO: use scoped ptr
-      ofsCam=0;
+      delete ofsCam;  
+      ofsCam=nullptr;
    }
 
    ofsAi->close();
    delete ofsAi;    //TODO: use scoped ptr
 
+   ///disable spool
    if(isUseSpool){
-      //disable spool
-      ((AndorCamera*)(&camera))->enableSpool(NULL,10); //disable spooling
+      if(isAndor) ((AndorCamera*)(&camera))->enableSpool(NULL,10); //disable spooling
+      else if(isCooke) camera.setSpooling(""); //disable spooling which also closes file
    }
 
    camera.stopAcq();
