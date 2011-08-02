@@ -3,7 +3,10 @@
 
 #include <windows.h>
 
+#include <cassert>
+
 #include <iostream>
+#include <vector>
 using namespace std;
 
 #include "timer_g.hpp"

@@ -42,7 +42,8 @@ public:
    SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *parent = 0)
       : QThread(parent){
       this->ofsSpooling=ofsSpooling;
-      circBuf=tmpItem=nullptr;
+      circBuf=nullptr;
+      tmpItem=nullptr;
       this->itemSize=itemSize;
 
       int circBufCap=16;//todo: hard coded 16
