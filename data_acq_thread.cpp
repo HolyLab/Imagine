@@ -262,9 +262,6 @@ void DataAcqThread::run_acq_and_save()
       isUseSpool=false;
    }
 
-   //isCreateFilePerStack=false; //TODO: make ui aware this
-
-
    ////prepare for AO AI and camera:
    
    ///prepare for camera:
@@ -361,7 +358,7 @@ void DataAcqThread::run_acq_and_save()
       saveHeader(headerFilename, aiThread->ai);
       ofsAi =new ofstream(aiFilename.toStdString().c_str(), 
          ios::binary|ios::out|ios::trunc );
-      if(!isUseSpool && !isCreateFilePerStack){
+      if(!isUseSpool){
          ofsCam=new FastOfstream(camFilename.toStdString().c_str() );
          assert(*ofsCam);
       }
@@ -475,9 +472,6 @@ nextStack:
    //save data to files:
    //save camera's data:
    if(isSaveData && !isUseSpool){
-      if(isCreateFilePerStack){
-         ofsCam=new FastOfstream( camFilename.arg(idxCurStack,4,10,QLatin1Char('0')).toStdString().c_str()  );
-      }
       Camera::PixelValue * imageArray=camera.getImageArray();
       double timerValue=timer.read();
       ofsCam->write((const char*)imageArray, 
@@ -487,12 +481,6 @@ nextStack:
       }//if, error occurs when write camera data
       cout<<"time for writing the stack: "<<timer.read()-timerValue<<endl;
       //ofsCam->flush();
-      if(isCreateFilePerStack){
-         ofsCam->close();
-         delete ofsCam;
-         ofsCam=nullptr;
-      }
-
    }//if, save data to file and not using spool
 
    //save ai data:
@@ -540,7 +528,7 @@ nextStack:
       aiThread->save(*ofsAi);
 
       //TODO: do we really need these close()?
-      if(!isUseSpool && !isCreateFilePerStack){
+      if(!isUseSpool){
          ofsCam->close();
          delete ofsCam;   //TODO: use scoped ptr
          ofsCam=0;
