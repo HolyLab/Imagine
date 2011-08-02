@@ -68,7 +68,7 @@ public:
     //file saving params:
     bool isSaveData;
     QString headerFilename, aiFilename, camFilename, sifFileBasename;
-    bool isCreateFilePerStack;
+    //bool isCreateFilePerStack;
     bool isUseSpool;
 
     //comment:
