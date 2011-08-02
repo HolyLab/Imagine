@@ -3,6 +3,10 @@
 
 #include <windows.h>
 
+#include <iostream>
+using namespace std;
+
+#include "timer_g.hpp"
 
 class FastOfstream {
    char* unalignedbuf, *buf;

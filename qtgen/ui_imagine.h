@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'imagine.ui'
 **
-** Created: Thu Jun 23 13:57:20 2011
+** Created: Tue Aug 2 14:52:36 2011
 **      by: Qt User Interface Compiler version 4.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -786,7 +786,7 @@ public:
 
         retranslateUi(ImagineClass);
 
-        tabWidgetCfg->setCurrentIndex(0);
+        tabWidgetCfg->setCurrentIndex(2);
 
 
         QMetaObject::connectSlotsByName(ImagineClass);
