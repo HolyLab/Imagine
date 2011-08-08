@@ -239,6 +239,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    //
    //addDockWidget(Qt::LeftDockWidgetArea, ui.dwCfg);
    ui.dwCfg->show();
+   ui.dwCfg->raise();
 
    //show logo
    QImage tImage("logo.jpg"); //todo: put logo here
