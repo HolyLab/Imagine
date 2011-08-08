@@ -86,7 +86,7 @@ int PCOCONVERT_API PCO_ConvertSetDisplay(HANDLE ph, PCO_Display* pstrDisplay);
 // Sets the PCO_Display structure
 
 int PCOCONVERT_API PCO_ConvertSetBayer(HANDLE ph, PCO_Bayer* pstrBayer);
-//int PCOCONVERT_API PCO_ConvertSetFilter(HANDLE ph, PCO_Filter* pstrFilter);
+int PCOCONVERT_API PCO_ConvertSetFilter(HANDLE ph, PCO_Filter* pstrFilter);
 int PCOCONVERT_API PCO_ConvertSetSensorInfo(HANDLE ph, PCO_SensorInfo* pstrSensorInfo);
 
 int PCOCONVERT_API PCO_LoadPseudoLut(HANDLE ph, int format, char *filename);

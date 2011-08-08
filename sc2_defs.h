@@ -191,11 +191,13 @@
 #define WARNING_POWERSUPPLYTEMPERATURE  0x00000002
 #define WARNING_CAMERATEMPERATURE       0x00000004
 #define WARNING_SENSORTEMPERATURE       0x00000008
+#define WARNING_EXTERNAL_BATTERY_LOW    0x00000010
 
 #define ERROR_POWERSUPPLYVOLTAGERANGE   0x00000001
 #define ERROR_POWERSUPPLYTEMPERATURE    0x00000002
 #define ERROR_CAMERATEMPERATURE         0x00000004
 #define ERROR_SENSORTEMPERATURE         0x00000008
+#define ERROR_EXTERNAL_BATTERY_LOW      0x00000010
 
 #define ERROR_CAMERAINTERFACE           0x00010000
 #define ERROR_CAMERARAM                 0x00020000
@@ -209,6 +211,10 @@
 #define STATUS_FRAMERATE_VALID          0x00000010
 #define STATUS_SEQ_STOP_TRIGGERED       0x00000020
 #define STATUS_LOCKED_TO_EXTSYNC        0x00000040
+#define STATUS_EXT_BATTERY_AVAILABLE    0x00000080
+#define STATUS_IS_IN_POWERSAVE          0x00000100
+#define STATUS_POWERSAVE_LEFT           0x00000200
+
 
 
 
@@ -386,6 +392,12 @@ extern const int far PCO_SENSOR_TYPE_DEF_NUM;
 #define GENERALCAPS1_ENHANCED_DESCRIPTOR_2             0x80000000
 
 
+// dwGeneralCaps2 is for internal use only
+// defines for interpreting the dwGeneralCaps2 member are therefore in sc2_defs_intern.h
+
+
+
+
 // ------------------------------------------------------------------------ //
 // -- Defines for Get/Set Camera Temperature Command: --------------------- //
 // ------------------------------------------------------------------------ //
@@ -414,6 +426,17 @@ extern const int far PCO_SENSOR_TYPE_DEF_NUM;
 #define MAILBOX_STATUS_NO_VALID_MESSAGE                     0x0000
 #define MAILBOX_STATUS_MESSAGE_VALID                        0x0001
 #define MAILBOX_STATUS_MESSAGE_HAS_BEEN_READ                0x0003
+
+
+
+// ------------------------------------------------------------------------ //
+// -- Defines for Get/Set Powersave Mode: --------------------------------- //
+// ------------------------------------------------------------------------ //
+
+#define POWERSAVE_MODE_OFF                                  0x0000
+#define POWERSAVE_MODE_ON                                   0x0001
+//#define POWERSAVE_MODE_FORCE_OFF                            0x1000 
+//#define POWERSAVE_MODE_FORCE_ON                             0x1001
 
 
 // ------------------------------------------------------------------------ //
@@ -455,6 +478,14 @@ extern const int far PCO_SENSOR_TYPE_DEF_NUM;
 
 #define OFFSET_MODE_AUTO 0
 #define OFFSET_MODE_OFF  1
+
+
+// ------------------------------------------------------------------------ //
+// -- Defines for Get/Set Double Image Mode Command: ---------------------- //
+// ------------------------------------------------------------------------ //
+
+#define DOUBLE_IMAGE_MODE_OFF            0x0000
+#define DOUBLE_IMAGE_MODE_ON             0x0001     
 
 
 // ------------------------------------------------------------------------ //
@@ -655,6 +686,7 @@ extern const int far PCO_SENSOR_TYPE_DEF_NUM;
 
 #define BIT_ALIGNMENT_MSB               0
 #define BIT_ALIGNMENT_LSB               1
+#define BIT_ALIGNMENT_MID               0x1000  // for 3x8 bit CL (Hamamatsu)
 
 
 // ------------------------------------------------------------------------ //
@@ -797,6 +829,14 @@ extern const int far PCO_SENSOR_TYPE_DEF_NUM;
 #define LOOKUPTABLE_FORMAT_24BIT  0x0008
 #define LOOKUPTABLE_FORMAT_32BIT  0x0010
 #define LOOKUPTABLE_FORMAT_AUTO   0x8000
+
+// ------------------------------------------------------------------------ //
+// -- Defines for Linetiming   -------------------------------------------- //
+// ------------------------------------------------------------------------ //
+
+#define CMOS_LINETIMING_PARAM_OFF  0x0000
+#define CMOS_LINETIMING_PARAM_ON   0x0001
+
 
 #endif
 

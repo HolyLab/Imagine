@@ -80,7 +80,7 @@ typedef struct
   DWORD  dwCAMERA_SERIAL_NO;         // camera serial no, 0 if unknown
   WORD   wCAMERA_TYPE;               // type of pco camera taking the images, see SDK, 0 if unknown
   BYTE   bBIT_RESOLUTION;            // number of valid bits of the pixel values, e.g. 12 for the pco.dimax
-  BYTE   bBIT_ALIGNMENT;             // alignment of the valid bits in a 16 bit word: 0x01 is MSB aligned, 0x00 is LSB aligned
+  BYTE   bSYNC_STATUS;               // status of PLL for external synchronisation (100 Hz or 1 kHz): 0 = off, 1 = locked
   WORD   wDARK_OFFSET;               // nominal dark offset in counts, 0xFFFF if unknown, current dark offset may differ
   // 52
   BYTE   bTRIGGER_MODE;              // exposure trigger mode, see PCO SDK

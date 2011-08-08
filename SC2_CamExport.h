@@ -1,6 +1,3 @@
-#ifndef SC2_CAMEXPORT_H
-#define SC2_CAMEXPORT_H
-
 //-----------------------------------------------------------------//
 // Name        | SC2_CamExport.h             | Type: ( ) source    //
 //-------------------------------------------|       (*) header    //
@@ -100,6 +97,13 @@
 //-----------------------------------------------------------------//
 //  1.12     | 02.03.2010 |  FRE: Added PCO_G(S)etMetaDataMode     //
 //           | 08.03.2010 |  FRE: Added PCO_G(S)etFastTimingMode   //
+//-----------------------------------------------------------------//
+//  1.13     | 16.11.2010 |  FRE: added                            //
+//           |            | PCO_GetCameraSetup, PCO_SetCameraSetup //
+//-----------------------------------------------------------------//
+//  1.14     | 31.03.2011 |  FRE: added                            //
+//           |            | PCO_G(S)etPowerSaveMode                //
+//           |            | PCO_GetBatteryStatus                   //
 //-----------------------------------------------------------------//
 
 #ifdef SC2_CAM_EXPORTS
@@ -225,6 +229,17 @@ SC2_SDK_FUNC int WINAPI PCO_GetTemperature(HANDLE ph, SHORT* sCCDTemp, SHORT* sC
 // Out: int -> Error message.
 /* Example: see PCO_GetCameraHealthStatus.*/
 
+SC2_SDK_FUNC int WINAPI PCO_GetInfoString(HANDLE ph, DWORD dwinfotype,
+                         char *buf_in, WORD size_in);
+// Gets the name of the camera.
+// In: HANDLE ph -> Handle to a previously opened camera.
+//     DWORD dwinfotype -> 0: Camera and interface name
+//                         1: Camera name only
+//                         2: Sensor name
+//     char *buf_in -> Pointer to a string, to receive the info string.
+//     WORD size_in -> WORD variable which holds the maximum length of the string.
+// Out: int -> Error message.
+
 SC2_SDK_FUNC int WINAPI PCO_GetCameraName(HANDLE ph, char* szCameraName, WORD wSZCameraNameLen);
 // Gets the name of the camera.
 // Not applicable to all cameras.
@@ -253,7 +268,7 @@ SC2_SDK_FUNC int WINAPI PCO_GetCameraSetup(HANDLE ph, WORD *wType, DWORD *dwSetu
 
 SC2_SDK_FUNC int WINAPI PCO_SetCameraSetup(HANDLE ph, WORD wType, DWORD *dwSetup, WORD wLen);
 // Sets the camera setup structure (see camera specific structures)
-// Camera must be switched off do activate new setup
+// Camera must be reinitialized do activate new setup (Close-Open)
 // Not applicable to all cameras.
 // See sc2_defs.h for valid flags: -- Defines for Get / Set Camera Setup
 // In: HANDLE ph -> Handle to a previously opened camera.
@@ -262,6 +277,47 @@ SC2_SDK_FUNC int WINAPI PCO_SetCameraSetup(HANDLE ph, WORD wType, DWORD *dwSetup
 //     WORD wLen -> WORD to set the length of the array
 // Out: int -> Error message.
 
+SC2_SDK_FUNC int WINAPI PCO_GetPowerSaveMode(HANDLE ph, WORD *wMode, WORD *wDelayMinutes);
+// Gets the camera power save mode.
+// Not applicable to all cameras. Actually this is supported by pco.dimax.
+// In: HANDLE ph -> Handle to a previously opened camera.
+//     WORD *wMode -> Word pointer to get the actual power save mode. (0-off,default; 1-on)
+//     WORD *wDelayMinutes -> WORD to get the delay till the camera enters power save mode
+//                            after main power loss. The actual switching delay is between
+//                            wDelayMinutes and wDelayMinutes + 1. Possible range is 1 .. 60.
+// Out: int -> Error message.
+
+SC2_SDK_FUNC int WINAPI PCO_SetPowerSaveMode(HANDLE ph, WORD wMode, WORD wDelayMinutes);
+// Sets the camera power save mode.
+// Not applicable to all cameras. Actually this is supported by pco.dimax.
+// In: HANDLE ph -> Handle to a previously opened camera.
+//     WORD wMode -> Word to set the actual power save mode. (0-off,default; 1-on)
+//     WORD wDelayMinutes -> WORD to set the delay till the camera enters power save mode
+//                            after main power loss. The actual switching delay is between
+//                            wDelayMinutes and wDelayMinutes + 1. Possible range is 1 .. 60.
+// Out: int -> Error message.
+
+SC2_SDK_FUNC int WINAPI PCO_GetBatteryStatus(HANDLE ph, WORD *wBatteryType, WORD *wBatteryLevel,
+                                             WORD *wPowerStatus, WORD *wReserved, WORD wNumReserved);
+// Gets the camera battery status.
+// Not applicable to all cameras. Actually this is supported by pco.dimax.
+// In: HANDLE ph -> Handle to a previously opened camera.
+//     WORD *wBatteryType -> Word pointer to get the battery type.
+//                           0x0000 = no battery mounted
+//                           0x0001 = nickel metal hydride type
+//                           0x0002 = lithium ion type
+//                           0x0003 = lithium iron phosphate type
+//                           0xFFFF = unknown battery type
+//     WORD *wBatteryLevel -> Word pointer to get the battery level in percent.
+//     WORD *wPowerStatus  -> Word pointer to get the power status.
+//                            0x0001 = power supply is available
+//                            0x0002 = battery mounted and detected
+//                            0x0004 = battery is charged
+//                            Bits can be combined e.g. 0x0003 means that camera has
+//                            a battery and is running on external power, 0x0002: camera
+//                            runs on battery.
+
+// Out: int -> Error message.
 
 /////////////////////////////////////////////////////////////////////
 /////// End: General commands ///////////////////////////////////////
@@ -1664,17 +1720,6 @@ SC2_SDK_FUNC int WINAPI PCO_CamLinkSetImageParameters(HANDLE ph, WORD wxres, WOR
 //     WORD wyres -> Y Resolution of the images to be transferred
 // Out: int -> Error message.
 
-SC2_SDK_FUNC int WINAPI PCO_GetInfoString(HANDLE ph, DWORD dwinfotype,
-                         char *buf_in, WORD size_in);
-// Gets the name of the camera.
-// In: HANDLE ph -> Handle to a previously opened camera.
-//     DWORD dwinfotype -> 0: Camera and interface name
-//                         1: Camera name only
-//                         2: Sensor name
-//     char *buf_in -> Pointer to a string, to receive the info string.
-//     WORD size_in -> WORD variable which holds the maximum length of the string.
-// Out: int -> Error message.
-
 SC2_SDK_FUNC int WINAPI PCO_SetTimeouts(HANDLE ph, void *buf_in,unsigned int size_in);
 // Here you can set the timeouts for the driver.
 // In: HANDLE ph -> Handle to a previously opened camera.
@@ -1785,11 +1830,14 @@ SC2_SDK_FUNC int WINAPI PCO_WriteHeadEEProm(HANDLE ph, WORD wAddress, BYTE bData
 //     WORD wLen -> Length parameter (not used up to now)
 // Out: int -> Error message.
 
+SC2_SDK_FUNC int WINAPI PCO_RebootCamera(HANDLE ph);
+// Reboot camera. Call a PCO_CloseCamera afterwards and wait at least 10 seconds before reopening it.
+// In: HANDLE ph -> Handle to a previously opened camera.
+// Out: int -> Error message.
+
 /////////////////////////////////////////////////////////////////////
 /////// End: FirmWare commands //////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 #ifdef __cplusplus
 }       //  Assume C declarations for C++
 #endif  //C++
-
-#endif //SC2_CAMEXPORT_H

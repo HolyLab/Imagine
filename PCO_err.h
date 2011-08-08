@@ -327,6 +327,8 @@ DWORD GetErrorSource(DWORD dwerr);
 #define PCO_ERROR_DRIVER_FILE_WRITE_ERR             0x80002025 // error while writing to file 
 
 #define PCO_ERROR_DRIVER_LUT_MISMATCH               0x80002026 // camera and dll lut do not match
+#define PCO_ERROR_DRIVER_FORMAT_NOT_SUPPORTED       0x80002027 // grabber does not support the transfer format
+#define PCO_ERROR_DRIVER_BUFFER_DMASIZE             0x80002028 // dmaerror not enough data transferred
 
 
 
@@ -364,6 +366,12 @@ DWORD GetErrorSource(DWORD dwerr);
 #define PCO_ERROR_SDKDLL_DLLNOTFOUND_DIVZERO        0x80003011 // A DLL could not be found, due to div by zero
 
 #define PCO_WARNING_SDKDLL_BUFFER_STILL_ALLOKATED   0xC0003001 // Buffers are still allocated
+
+#define PCO_WARNING_SDKDLL_NO_IMAGE_BOARD           0xC0003002 // No Images are in the board buffer
+#define PCO_WARNING_SDKDLL_COC_VALCHANGE            0xC0003003 // value change when testing COC
+#define PCO_WARNING_SDKDLL_COC_STR_SHORT            0xC0003004 // string buffer to short for replacement
+
+
   // The following error messages have been shifted to the common error code range:
   //
   //    PCO_ERROR_SDKDLL_NOMEMORY                   0x80003007 // No memory available

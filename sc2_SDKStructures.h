@@ -144,7 +144,7 @@
 
 #define PCO_OPENFLAG_GENERIC_IS_CAMLINK  0x0001
 
-typedef struct
+typedef struct                         // Buffer list structure for  PCO_WaitforBuffer
 {
  SHORT sBufNr;
  WORD  ZZwAlignDummy;
@@ -167,7 +167,7 @@ typedef struct
 
   DWORD         dwOpenFlags[5];        // [0]-[4]: moved to strCLOpen.dummy[0]-[4]
   void*         wOpenPtr[6];
-  WORD          zzwDummy[8];           // 88
+  WORD          zzwDummy[8];           // 88 - 64bit: 112
 }PCO_OpenStruct;
 
 typedef struct
@@ -483,7 +483,7 @@ typedef struct
   WORD  wType;                         // Selected signal type
   WORD  wPolarity;                     // Selected signal polarity
   WORD  wFilterSetting;                // Selected signal filter // 12
-  WORD  wSelected;                     // Select signal
+  WORD  wSelected;                     // Select signal (0: standard signal, >1 other signal)
   WORD  ZZwReserved;
   DWORD ZZdwReserved[11];              // 60
 } PCO_Signal;
@@ -504,7 +504,7 @@ typedef struct
 } PCO_ImageTiming;
 
 
-#define PCO_TIMINGDUMMY 23
+#define PCO_TIMINGDUMMY 24
 typedef struct
 {
   WORD        wSize;                   // Sizeof this struct
@@ -540,7 +540,7 @@ typedef struct
   DWORD       dwFrameRateExposure;     // Dimax: Exposure time in ns      // 2300
   WORD        wTimingControlMode;      // Dimax: Timing Control Mode: 0->Exp./Del. 1->FPS
   WORD        wFastTimingMode;         // Dimax: Fast Timing Mode: 0->off 1->on
-  WORD        ZZwDummy[PCO_TIMINGDUMMY];                                               // 2350
+  WORD        ZZwDummy[PCO_TIMINGDUMMY];                                               // 2352
 } PCO_Timing;
 
 #define PCO_STORAGEDUMMY 39
@@ -634,12 +634,17 @@ typedef struct
   WORD        wSize;                   // Sizeof this struct
   WORD        ZZwAlignDummy1;
   DWORD       dwBufferStatus;          // Buffer status
-  HANDLE      hBufferEvent;            // Handle to buffer event  // 12
-  DWORD       dwBufferAddress;         // Buffer address
-  DWORD       dwBufferSize;            // Buffer size             // 20
+  HANDLE      hBufferEvent;            // Handle to buffer event  // 12 (16 @64bit)
+  // HANDLE will be 8byte on 64bit OS and 4byte on 32bit OS. 
+  DWORD       ZZdwBufferAddress;       // Buffer address, obsolete
+  DWORD       dwBufferSize;            // Buffer size             // 20 (24 @64bit)
   DWORD       dwDrvBufferStatus;       // Buffer status in driver
-  DWORD       dwImageSize;             // Image size              // 28
-  WORD        ZZwDummy[36];                                       // 100
+  DWORD       dwImageSize;             // Image size              // 28 (32 @64bit)
+  void        *pBufferAdress;          // buffer address          // 32 (40 @64bit)
+#if !defined _WIN64
+  DWORD       ZZdwDummyFill;           // additional dword        // 36 (40 @64bit)
+#endif
+  WORD        ZZwDummy[32];                                       // 100 (104 @64bit)
 } PCO_APIBuffer;
 
 
@@ -686,6 +691,6 @@ typedef struct
   PCO_Image         strImage;
   PCO_APIManagement strAPIManager;
   WORD              ZZwDummy[40];
-} PCO_Camera;                          // 10064
+} PCO_Camera;                          // 17404
 
 #endif // SC2_STRUCTURES_H

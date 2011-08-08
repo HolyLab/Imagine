@@ -152,6 +152,8 @@ static char* PCO_ERROR_DRIVER_TXT[] =
   "Error while reading from file.",                // 0x80002024  PCO_ERROR_DRIVER_FILE_READ_ERR   
   "Error while writing to file.",                  // 0x80002025  PCO_ERROR_DRIVER_FILE_WRITE_ERR
   "Camera and dll lut do not match.",              // 0x80002026  PCO_ERROR_DRIVER_LUT_MISMATCH
+  "Grabber does not support transfer format.",     // 0x80002027  PCO_ERROR_DRIVER_FORMAT_NOT_SUPPORTED
+  "DMA Error not enough data transferred."         // 0x80002028  PCO_ERROR_DRIVER_BUFFER_DMASIZE
 };
 
 const int DRIVER_MSGNUM = sizeof(PCO_ERROR_DRIVER_TXT) / sizeof(PCO_ERROR_DRIVER_TXT[0]);
@@ -287,7 +289,9 @@ static char* PCO_ERROR_FIRMWARE_TXT[] =
   "COC Timebase setting invalid.",                 // 0x80001039  PCO_ERROR_FIRMWARE_COC_TIMEBASE_INVALID
   "", "", "", "", "", "",                          // 0x8000103A - 0x8000103F
 
-  "", "", "", "", "", "", "", "",                  // 0x80001040 - 0x80001047
+  "COC modulate period time invalid.",             // 0x80001040 PCO_ERROR_FIRMWARE_COC_PERIOD_INVALID
+  "COC modulate monitor time invalid",             // 0x80001041 PCO_ERROR_FIRMWARE_COC_MONITOR_INVALID
+  "", "", "", "", "", "",                          // 0x80001042 - 0x80001047
   "", "", "", "", "", "", "", "",                  // 0x80001048 - 0x8000104F
 
   "Attempt to open unknown device for update.",    // 0x80001050  PCO_ERROR_FIRMWARE_UNKNOWN_DEVICE     
@@ -329,7 +333,12 @@ static char* PCO_ERROR_FIRMWARE_TXT[] =
   "Flash loader block invalid.",                   // 0x8000108c  PCO_ERROR_FIRMWARE_GIGE_DOWNLOAD_INVALID_LDR         
   "", "", "",                                      // 0x8000108d - 0x8000108F
   "Image packet lost.",                            // 0x80001090 PCO_ERROR_FIRMWARE_GIGE_DRIVER_IMG_PKT_LOST
-  "GiGE Data bandwidth conflict.",				   // 0x80001091 PCO_ERROR_FIRMWARE_GIGE_BANDWIDTH_CONFLICT
+  "GiGE Data bandwidth conflict.",		   // 0x80001091 PCO_ERROR_FIRMWARE_GIGE_BANDWIDTH_CONFLICT
+  "", "", "", "", "",                              // 0x80001092 - 0x80001096
+  "", "", "", "", "",                              // 0x80001097 - 0x8000109B
+  "", "", "", "",                                  // 0x8000109C - 0x8000109F
+  "External modulation frequency out of range.",   // 0x80001100 PCO_ERROR_FIRMWARE_FLICAM_EXT_MOD_OUT_OF_RANGE
+  "Sync PLL not locked."                           // 0x80001101 PCO_ERROR_FIRMWARE_FLICAM_SYNC_PLL_NOT_LOCKED
 };
 
 const int FIRMWARE_MSGNUM = sizeof(PCO_ERROR_FIRMWARE_TXT) / sizeof(PCO_ERROR_FIRMWARE_TXT[0]);
@@ -369,6 +378,9 @@ static char* PCO_ERROR_SDKDLLWARNING_TXT[] =
 {
   "No error.",                                     // 0x00000000  PCO_NOERROR
   "Buffers are still allocated"                    // 0xC0003001 PCO_WARNING_SDKDLL_BUFFER_STILL_ALLOKATED
+  "No Images are in the board buffer"              // 0xC0003002 PCO_WARNING_SDKDLL_NO_IMAGE_BOARD
+  "value change when testing COC"                  // 0xC0003003 PCO_WARNING_SDKDLL_COC_VALCHANGE
+  "string buffer to short for replacement"         // 0xC0003004 PCO_WARNING_SDKDLL_COC_STR_SHORT
 };
 
 const int SDKDLLWARNING_MSGNUM = sizeof(PCO_ERROR_SDKDLLWARNING_TXT) / sizeof(PCO_ERROR_SDKDLLWARNING_TXT[0]);
