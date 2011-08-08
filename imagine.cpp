@@ -236,6 +236,10 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    scrollArea->setWidget(ui.labelImage);
    setCentralWidget(scrollArea);
 
+   //
+   //addDockWidget(Qt::LeftDockWidgetArea, ui.dwCfg);
+   ui.dwCfg->show();
+
    //show logo
    QImage tImage("logo.jpg"); //todo: put logo here
    if(!tImage.isNull()) {
@@ -246,7 +250,9 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    //fill in trigger mode combo box
    ui.comboBoxTriggerMode->addItem("External Start");
    ui.comboBoxTriggerMode->addItem("Internal");
-   ui.comboBoxTriggerMode->setCurrentIndex(0);
+
+   //todo: even on cooke, use external start
+   ui.comboBoxTriggerMode->setCurrentIndex(pCamera->vendor=="cooke");
 
    Camera& camera=*pCamera;
 
