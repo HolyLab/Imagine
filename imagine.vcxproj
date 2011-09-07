@@ -100,6 +100,7 @@
     <ClCompile Include="avt_g.cpp" />
     <ClCompile Include="camera_g.cpp" />
     <ClCompile Include="cooke.cpp" />
+    <ClCompile Include="positioner.cpp" />
     <ClCompile Include="spoolthread.cpp" />
     <ClCompile Include="cookeworkerthread.cpp" />
     <ClCompile Include="data_acq_thread.cpp" />
@@ -327,6 +328,7 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\temperaturedialog.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\Release\moc_temperaturedialog.cpp;%(Outputs)</Outputs>
     </CustomBuild>
+    <ClInclude Include="positioner.hpp" />
     <ClInclude Include="PvApi.h" />
     <ClInclude Include="PvRegIo.h" />
     <ClInclude Include="timer_g.hpp" />

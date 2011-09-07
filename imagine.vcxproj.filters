@@ -141,6 +141,9 @@
     <ClCompile Include="spoolthread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="positioner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Atmcd32d.h">
@@ -186,6 +189,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fast_ofstream.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="positioner.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
