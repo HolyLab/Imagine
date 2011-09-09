@@ -164,7 +164,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidgetCfg">
         <property name="currentIndex">
-         <number>0</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -955,25 +955,6 @@
           </property>
           <property name="text">
            <string>vv</string>
-          </property>
-         </widget>
-         <widget class="QDoubleSpinBox" name="doubleSpinBoxPiezoPreTriggerTime">
-          <property name="geometry">
-           <rect>
-            <x>120</x>
-            <y>251</y>
-            <width>62</width>
-            <height>22</height>
-           </rect>
-          </property>
-          <property name="maximum">
-           <double>1000.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>10.000000000000000</double>
-          </property>
-          <property name="value">
-           <double>60.000000000000000</double>
           </property>
          </widget>
         </widget>

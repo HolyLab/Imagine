@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'imagine.ui'
 **
-** Created: Mon Aug 8 14:47:58 2011
+** Created: Fri Sep 9 15:01:30 2011
 **      by: Qt User Interface Compiler version 4.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -155,7 +155,6 @@ public:
     QPushButton *btnIncPosAndMove;
     QPushButton *btnDecPosAndMove;
     QPushButton *btnFastDecPosAndMove;
-    QDoubleSpinBox *doubleSpinBoxPiezoPreTriggerTime;
     QWidget *tabShutter;
     QLabel *label_11;
     QLabel *label_12;
@@ -662,12 +661,6 @@ public:
         btnFastDecPosAndMove = new QPushButton(tabPiezo);
         btnFastDecPosAndMove->setObjectName(QString::fromUtf8("btnFastDecPosAndMove"));
         btnFastDecPosAndMove->setGeometry(QRect(250, 130, 21, 23));
-        doubleSpinBoxPiezoPreTriggerTime = new QDoubleSpinBox(tabPiezo);
-        doubleSpinBoxPiezoPreTriggerTime->setObjectName(QString::fromUtf8("doubleSpinBoxPiezoPreTriggerTime"));
-        doubleSpinBoxPiezoPreTriggerTime->setGeometry(QRect(120, 251, 62, 22));
-        doubleSpinBoxPiezoPreTriggerTime->setMaximum(1000);
-        doubleSpinBoxPiezoPreTriggerTime->setSingleStep(10);
-        doubleSpinBoxPiezoPreTriggerTime->setValue(60);
         tabWidgetCfg->addTab(tabPiezo, QString());
         tabShutter = new QWidget();
         tabShutter->setObjectName(QString::fromUtf8("tabShutter"));
@@ -786,7 +779,7 @@ public:
 
         retranslateUi(ImagineClass);
 
-        tabWidgetCfg->setCurrentIndex(0);
+        tabWidgetCfg->setCurrentIndex(4);
 
 
         QMetaObject::connectSlotsByName(ImagineClass);
