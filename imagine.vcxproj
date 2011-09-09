@@ -186,8 +186,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="qtgen\qrc_imagine.cpp" />
+    <ClCompile Include="volpiezo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="volpiezo.hpp" />
     <CustomBuild Include="ai_thread.hpp">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing ai_thread.hpp...</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "ai_thread.hpp" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>

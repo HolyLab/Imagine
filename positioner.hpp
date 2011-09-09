@@ -22,7 +22,7 @@ public:
    virtual ~Positioner(){}
 
    virtual double min()=0;
-   virtual double max()=0;
+   virtual double max()=0; //the unit is macro
    virtual bool moveTo(double to)=0; //move as quick as possible
    enum Status {idle, running, preparing};
    virtual Status status()=0;
@@ -34,6 +34,7 @@ public:
 
    virtual bool prepareCmd()=0;
    virtual bool runCmd()=0;
+   virtual bool waitCmd()=0;
    virtual bool abortCmd()=0;
 };//class, Positioner
 
