@@ -44,11 +44,11 @@ bool VolPiezo::prepareCmd()
    int aoChannelForPiezo=0; //TODO: put this configurable
    vector<int> aoChannels;
    aoChannels.push_back(aoChannelForPiezo);
-   if(triggerMode==Camera::eExternalStart){
-      int aoChannelForTrigger=1;
-      aoChannels.push_back(aoChannelForTrigger);
-   }
-   NiDaqAo* ao=new NiDaqAo(aoChannels);
+   int aoChannelForTrigger=1;
+   aoChannels.push_back(aoChannelForTrigger);
+
+   if(ao) cleanup();
+   ao=new NiDaqAo(aoChannels);
 
    double durationAo=nFramesPerStack*cycleTime; //in sec
    if(triggerMode==Camera::eInternalTrigger){
