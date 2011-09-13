@@ -13,7 +13,6 @@ public:
    double max(){return 400; }
 
    bool moveTo(double to);
-   Status status();
 
    bool prepareCmd();
    bool runCmd();
