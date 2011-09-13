@@ -33,9 +33,12 @@ using namespace std;
 #include "ai_thread.hpp"
 #include "scoped_ptr_g.hpp"
 #include "fast_ofstream.hpp"
+#include "positioner.hpp"
 
 
-Camera* pCamera;
+Camera* pCamera=nullptr;
+Positioner* pPositioner=nullptr;
+
 NiDaqDo * digOut=NULL;
 
 //defined in imagine.cpp:

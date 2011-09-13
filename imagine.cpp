@@ -52,6 +52,8 @@ using namespace std;
 #include "ni_daq_g.hpp"
 #include "temperaturedialog.h"
 #include "fanctrldialog.h"
+#include "positioner.hpp"
+
 
 vector<pair<int,int> > stimuli; //first: stim (valve), second: time (stack#)
 int curStimIndex;
@@ -62,6 +64,7 @@ ImagineAction curAction;
 
 //todo: 
 extern Camera* pCamera;
+extern Positioner* pPositioner;
 
 
 class CurveData: public QwtData
@@ -1256,21 +1259,7 @@ void Imagine::on_btnSetCurPosAsStop_clicked()
 void Imagine::on_btnMovePiezo_clicked()
 {
    double um=ui.doubleSpinBoxCurPos->value();
-   double vol=zpos2voltage(um);
-   if(aoOnce==NULL){
-      int aoChannelForPiezo=0; //TODO: put this configurable
-      aoOnce=new NiDaqAoWriteOne(aoChannelForPiezo);
-      Sleep(0.5*1000); //sleep 0.5s 
-   }
-   uInt16 sampleValue=aoOnce->toDigUnit(vol);
-   //temp commented: 
-   try{
-      assert(aoOnce->writeOne(sampleValue));
-   }
-   catch(...){
-      
-   }
-
+   pPositioner->moveTo(um);
 }
 
 
