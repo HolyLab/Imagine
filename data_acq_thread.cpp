@@ -358,7 +358,7 @@ nextStack:
 
    camera.startAcq();
 
-   //for external start, put 100ms delay here to wait camera ready for trigger
+   //for external start, put 100ms delay here to wait camera's readiness for trigger
    if(triggerMode==Camera::eExternalStart){
       double timeToWait=0.1;
       //TODO: maybe I should use busy waiting?
