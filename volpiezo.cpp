@@ -1,5 +1,7 @@
 #include "volpiezo.hpp"
 
+#include <Windows.h>
+
 #include "ni_daq_g.hpp"
 
 NiDaqAoWriteOne * aoOnce=NULL;
