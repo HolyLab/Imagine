@@ -1255,10 +1255,6 @@ void Imagine::on_btnSetCurPosAsStop_clicked()
 
 void Imagine::on_btnMovePiezo_clicked()
 {
-   //double timeToWait=0.1;
-   //Sleep(timeToWait*1000); // *1000: sec -> ms
-   cout<<"in  on_btnMovePiezo_clicked()"<<endl;
-
    double um=ui.doubleSpinBoxCurPos->value();
    double vol=zpos2voltage(um);
    if(aoOnce==NULL){
@@ -1275,12 +1271,6 @@ void Imagine::on_btnMovePiezo_clicked()
       
    }
 
-   cout<<"out on_btnMovePiezo_clicked()"<<endl;
-   /*
-   //re-read the piezo pos since DAQ is discret.
-   double timeToWait=ui.doubleSpinBoxPiezoSettleTime->value();  //time to wait for piezo to settle down
-   QTimer::singleShot(timeToWait*1000, this, SLOT(readPiezoCurPos()));
-   */
 }
 
 
