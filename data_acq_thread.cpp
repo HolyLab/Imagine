@@ -290,65 +290,10 @@ void DataAcqThread::run_acq_and_save()
    //get the real params used by the camera:
    cycleTime=camera.getCycleTime();
 
-   //prepare for AO:
-   if(aoOnce){
-      delete aoOnce;
-      aoOnce=nullptr;
-   }
-
-   int aoChannelForPiezo=0; //TODO: put this configurable
-   vector<int> aoChannels;
-   aoChannels.push_back(aoChannelForPiezo);
-   if(triggerMode==Camera::eExternalStart){
-      int aoChannelForTrigger=1;
-      aoChannels.push_back(aoChannelForTrigger);
-   }
-   NiDaqAo* ao=new NiDaqAo(aoChannels);
-
-   double durationAo=nFramesPerStack*cycleTime; //in sec
-   if(triggerMode==Camera::eInternalTrigger){
-      durationAo+=0.1; 
-   }
-   else if(triggerMode==Camera::eExternalStart){
-      durationAo+=piezoPreTriggerTime;
-   }
-
-   double durationResetPosition=idleTimeBwtnStacks/2;
-   int nScansForReset=int(scanRateAo*durationResetPosition);
-   ao->cfgTiming(scanRateAo, int(scanRateAo*durationAo)+nScansForReset); //+(): for reset position
-   if(ao->isError()) {
-      delete ao;
-      emit newStatusMsgReady("error when configure AO timing");
-      return;
-   }
-
-   //get buffer address and generate waveform:
-   int aoStartValue=ao->toDigUnit(piezoStartPos);
-   int aoStopValue=ao->toDigUnit(piezoStopPos);
-
-   uInt16 * bufAo=ao->getOutputBuf();
-   for(int i=0;i<ao->nScans-nScansForReset;i++){
-      bufAo[i] = uInt16( double(i)/(ao->nScans-nScansForReset)*(aoStopValue-aoStartValue)+aoStartValue );
-   }
-   int firstScanNumberForReset=ao->nScans-nScansForReset;
-   for(int i=firstScanNumberForReset; i<ao->nScans; ++i){
-      bufAo[i] = uInt16( double(i-firstScanNumberForReset)/(nScansForReset)*(aoStartValue-aoStopValue)+aoStopValue );
-   }
-   bufAo[ao->nScans-1]=bufAo[0]; //the last sample resets piezo's position exactly
-
-   if(triggerMode==Camera::eExternalStart){
-      bufAo+=ao->nScans;
-      int aoTTLHigh=ao->toDigUnit(5.0);            
-      int aoTTLLow=ao->toDigUnit(0);
-      for(int i=0;i<ao->nScans;i++){
-         bufAo[i] = aoTTLLow; 
-      }
-      bufAo[int(piezoPreTriggerTime*scanRateAo)]=aoTTLHigh; //the sample that starts camera
-   }
-
-   ao->updateOutputBuf();
-   //todo: check error like
-   // if(ao->isError()) goto exitpoint;
+   pPositioner->clearCmd();
+   pPositioner->setFrom(piezoStartPosUm);
+   pPositioner->addMovement(piezoStopPosUm, , 1);
+   pPositioner->prepareCmd();
 
    //prepare for AI:
    AiThread * aiThread=new AiThread(); //TODO: set buf size and scan rate here
@@ -420,8 +365,7 @@ nextStack:
       QThread::msleep(timeToWait*1000); // *1000: sec -> ms
    }
 
-   //start piezo movement (and may also trigger the camera):
-   ao->start(); //todo: check error
+   pPositioner->runCmd();
 
    emit newStatusMsgReady(QString("Camera: started acq: %1")
       .arg(camera.getErrorMsg().c_str()));
@@ -496,10 +440,7 @@ nextStack:
    aiThread->save(*ofsAi);
    ofsAi->flush();
 
-   //wait until piezo's orig position is reset
-   ao->wait(-1); //wait forever
-   //stop ao task:
-   ao->stop();
+   pPositioner->waitCmd();
 
    idxCurStack++;  //post: it is #stacks we got so far
    if(idxCurStack<this->nStacks && !stopRequested){
@@ -524,11 +465,6 @@ nextStack:
    }
 
    delete frame;  //TODO: use scoped ptr
-
-   delete ao;     //TODO: use scoped ptr
-
-   //wait 200ms to have Piezo settled (so ai thread can record its final position)
-   QThread::msleep(0.2*1000); // *1000: sec -> ms
 
    aiThread->stopAcq();
    aiThread->save(*ofsAi);

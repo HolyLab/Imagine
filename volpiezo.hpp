@@ -22,6 +22,7 @@ public:
 private:
 
    double zpos2voltage(double um);
+   void cleanup();
 };//class, VolPiezo
 
 #endif
