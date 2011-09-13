@@ -63,13 +63,14 @@ bool VolPiezo::prepareCmd()
    if(ao) cleanup();
    ao=new NiDaqAo(aoChannels);
 
-
+   double totalTime=0;
+   for(unsigned idx=0; idx<movements.size(); ++idx) totalTime+=movements[idx].duration;
 
    double durationAo=; //in sec
-
    double durationResetPosition=;
    int nScansForReset=int(scanRateAo*durationResetPosition);
-   ao->cfgTiming(scanRateAo, int(scanRateAo*durationAo)+nScansForReset); //+(): for reset position
+
+   ao->cfgTiming(scanRateAo, int(scanRateAo*totalTime));
    if(ao->isError()) {
       cleanup();
       return false;
