@@ -19,6 +19,9 @@ public:
    bool waitCmd();
    bool abortCmd();
 
+private:
+
+   double zpos2voltage(double um);
 };//class, VolPiezo
 
 #endif

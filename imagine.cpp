@@ -1237,10 +1237,6 @@ void Imagine::on_tabWidgetCfg_currentChanged(int index)
    }
 }
 
-double Imagine::zpos2voltage(double um)
-{
-    return um/ui.doubleSpinBoxMaxDistance->value()*10; // *10: 0-10vol range for piezo
-}
 
 void Imagine::on_doubleSpinBoxCurPos_valueChanged(double newValue)
 {

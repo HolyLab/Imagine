@@ -37,7 +37,6 @@ using namespace std;
 
 Camera* pCamera;
 NiDaqDo * digOut=NULL;
-NiDaqAoWriteOne * aoOnce=NULL;
 
 //defined in imagine.cpp:
 extern vector<pair<int,int> > stimuli; //first: stim (valve), second: time (stack#)
