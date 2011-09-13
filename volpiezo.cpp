@@ -30,7 +30,20 @@ bool VolPiezo::moveTo(double to)
       
    }
 
-}
+}//moveTo(),
+
+
+bool VolPiezo::addMovement(double to, double duration, int trigger)
+{
+   bool result=Positioner::addMovement(to, duration, trigger);
+   if(!result) return result;
+
+   if(movements.size()==1){
+      Movement& m=movements[0];
+      m.duration+=0.06;
+   }
+   return result;
+}//addMovement(),
 
 
 bool VolPiezo::prepareCmd()
@@ -50,21 +63,16 @@ bool VolPiezo::prepareCmd()
    if(ao) cleanup();
    ao=new NiDaqAo(aoChannels);
 
-   double durationAo=nFramesPerStack*cycleTime; //in sec
-   if(triggerMode==Camera::eInternalTrigger){
-      durationAo+=0.1; 
-   }
-   else if(triggerMode==Camera::eExternalStart){
-      durationAo+=piezoPreTriggerTime;
-   }
 
-   double durationResetPosition=idleTimeBwtnStacks/2;
+
+   double durationAo=; //in sec
+
+   double durationResetPosition=;
    int nScansForReset=int(scanRateAo*durationResetPosition);
    ao->cfgTiming(scanRateAo, int(scanRateAo*durationAo)+nScansForReset); //+(): for reset position
    if(ao->isError()) {
-      delete ao;
-      emit newStatusMsgReady("error when configure AO timing");
-      return;
+      cleanup();
+      return false;
    }
 
    //get buffer address and generate waveform:
