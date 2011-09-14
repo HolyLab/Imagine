@@ -76,6 +76,11 @@ bool VolPiezo::prepareCmd()
       return false;
    }
 
+   for(unsigned idx=0; idx<movements.size(); ++idx){
+      Movement& m=movements[idx];
+
+   }//for, each movement
+
    //get buffer address and generate waveform:
    int aoStartValue=ao->toDigUnit(piezoStartPos);
    int aoStopValue=ao->toDigUnit(piezoStopPos);
