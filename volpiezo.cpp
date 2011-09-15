@@ -76,9 +76,11 @@ bool VolPiezo::prepareCmd()
       return false;
    }
 
+   double piezoStartPos, piezoStopPos;
    for(unsigned idx=0; idx<movements.size(); ++idx){
       Movement& m=movements[idx];
-
+      if(idx==0) piezoStartPos=from;
+      else piezoStartPos=piezoStopPos;//todo: what if last "to" is nan
    }//for, each movement
 
    //get buffer address and generate waveform:
