@@ -76,26 +76,33 @@ bool VolPiezo::prepareCmd()
       return false;
    }
 
-   double piezoStartPos, piezoStopPos;
+   double piezoStartPos, piezoStopPos, preStop=from;
+   uInt16 * bufAo=ao->getOutputBuf();
+   uInt16 * buf=bufAo-1;
    for(unsigned idx=0; idx<movements.size(); ++idx){
       Movement& m=movements[idx];
-      if(idx==0) piezoStartPos=from;
-      else piezoStartPos=piezoStopPos;//todo: what if last "to" is nan
+      piezoStartPos=preStop;
+      if(_isnan(m.to)) piezoStopPos=preStop;
+      else piezoStopPos=zpos2voltage(m.to);
+      
+      preStop=piezoStopPos;
+
+      //get buffer address and generate waveform:
+      int aoStartValue=ao->toDigUnit(piezoStartPos);
+      int aoStopValue=ao->toDigUnit(piezoStopPos);
+
+      int nScansNow=int(scanRateAo*m.duration/1e6);
+      if(idx==movements.size()-1){
+         nScansNow=ao->nScans-(buf-bufAo+1);
+      }//if, need roundup correction
+      for(int i=0;i<nScansNow;i++){
+         *++buf = uInt16( double(i)/nScansNow*(aoStopValue-aoStartValue)+aoStartValue );
+      }
+      if(nScansNow>0 || (nScansNow==0 && idx!=0)){//todo: if nScansNow==0 && idx==0, do this at end of for loop
+         *buf=aoStopValue; //precisely set the last sample; or if move in 0 sec, rewrite last move's last sample
+      }
+
    }//for, each movement
-
-   //get buffer address and generate waveform:
-   int aoStartValue=ao->toDigUnit(piezoStartPos);
-   int aoStopValue=ao->toDigUnit(piezoStopPos);
-
-   uInt16 * bufAo=ao->getOutputBuf();
-   for(int i=0;i<ao->nScans-nScansForReset;i++){
-      bufAo[i] = uInt16( double(i)/(ao->nScans-nScansForReset)*(aoStopValue-aoStartValue)+aoStartValue );
-   }
-   int firstScanNumberForReset=ao->nScans-nScansForReset;
-   for(int i=firstScanNumberForReset; i<ao->nScans; ++i){
-      bufAo[i] = uInt16( double(i-firstScanNumberForReset)/(nScansForReset)*(aoStartValue-aoStopValue)+aoStopValue );
-   }
-   bufAo[ao->nScans-1]=bufAo[0]; //the last sample resets piezo's position exactly
 
    if(triggerMode==Camera::eExternalStart){
       bufAo+=ao->nScans;
