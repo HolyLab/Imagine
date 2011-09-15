@@ -64,7 +64,7 @@ bool VolPiezo::prepareCmd()
    ao=new NiDaqAo(aoChannels);
 
    double totalTime=0;
-   for(unsigned idx=0; idx<movements.size(); ++idx) totalTime+=movements[idx].duration;
+   for(unsigned idx=0; idx<movements.size(); ++idx) totalTime+=movements[idx].duration/1e6; //macrosec to sec
 
    double durationAo=; //in sec
    double durationResetPosition=;
