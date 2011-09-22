@@ -641,7 +641,7 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
       image->setColor(255, qRgb(255, 255, 255));
    }
 
-   AndorCamera::PixelValue * frame=(Camera::PixelValue * )data16.constData();
+   Camera::PixelValue * frame=(Camera::PixelValue * )data16.constData();
 
    //upate histogram plot
    int histSamplingRate=3; //that is, calc histgram every 3 updating
