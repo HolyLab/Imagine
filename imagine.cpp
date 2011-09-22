@@ -549,7 +549,7 @@ void Imagine::updateImage()
 }
 
 int counts[1<<16];
-void Imagine::updateHist(const AndorCamera::PixelValue * frame, 
+void Imagine::updateHist(const Camera::PixelValue * frame, 
                          const int imageW, const int imageH)
 {
    //initialize the counts to all 0's
