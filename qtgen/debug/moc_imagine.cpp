@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'imagine.h'
 **
-** Created: Wed Aug 3 12:48:46 2011
+** Created: Thu Sep 22 14:26:48 2011
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.0)
 **
 ** WARNING! All changes made in this file will be lost!

@@ -587,7 +587,7 @@ void Imagine::updateHist(const Camera::PixelValue * frame,
 
 }//updateHist(),
 
-void Imagine::updateIntenCurve(const AndorCamera::PixelValue * frame, 
+void Imagine::updateIntenCurve(const Camera::PixelValue * frame, 
                     const int imageW, const int imageH, const int frameIdx)
 {
    //TODO: if not visible, just return
