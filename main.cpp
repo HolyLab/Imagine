@@ -23,6 +23,8 @@
 #include "avt_g.hpp"
 #include "cooke.hpp"
 
+#include "volpiezo.hpp"
+
 
 extern Camera* pCamera;
 
@@ -41,6 +43,9 @@ int main(int argc, char *argv[])
       return 1;
 
    }
+
+   //todo: 
+   pPositioner=new VolPiezo;
 
    if(cameraVendor=="avt") pCamera=new AvtCamera;
    else if(cameraVendor=="andor") pCamera=new AndorCamera;
