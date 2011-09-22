@@ -101,17 +101,24 @@ bool VolPiezo::prepareCmd()
       if(nScansNow>0 || (nScansNow==0 && idx!=0)){//todo: if nScansNow==0 && idx==0, do this at end of for loop
          *buf=aoStopValue; //precisely set the last sample; or if move in 0 sec, rewrite last move's last sample
       }
-
    }//for, each movement
 
-   if(triggerMode==Camera::eExternalStart){
-      bufAo+=ao->nScans;
-      int aoTTLHigh=ao->toDigUnit(5.0);            
-      int aoTTLLow=ao->toDigUnit(0);
-      for(int i=0;i<ao->nScans;i++){
-         bufAo[i] = aoTTLLow; 
+   /// now the trigger
+   int aoTTLHigh=ao->toDigUnit(5.0);            
+   int aoTTLLow=ao->toDigUnit(0);
+   bufAo+=ao->nScans;
+   buf=bufAo;
+   for(int i=0;i<ao->nScans;i++){
+      bufAo[i] = aoTTLLow; 
+   }
+   for(unsigned idx=0; idx<movements.size(); ++idx){
+      Movement& m=movements[idx];
+      int nScansNow=int(scanRateAo*m.duration/1e6);
+
+      if(m.trigger==1){
+         buf[0]=aoTTLHigh; //the sample that starts camera
       }
-      bufAo[int(piezoPreTriggerTime*scanRateAo)]=aoTTLHigh; //the sample that starts camera
+      buf+=nScansNow;
    }
 
    ao->updateOutputBuf();
