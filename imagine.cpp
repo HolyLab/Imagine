@@ -970,12 +970,8 @@ void Imagine::on_btnApply_clicked()
    }
    dataAcqThread.triggerMode=triggerMode;
 
-   dataAcqThread.scanRateAo=ui.spinBoxAoScanrate->value();
-   dataAcqThread.piezoPreTriggerTime=ui.doubleSpinBoxPiezoPreTriggerTime->value()/1000.0; // /1000.0: ms -> sec
    dataAcqThread.piezoStartPosUm=ui.doubleSpinBoxStartPos->value();
    dataAcqThread.piezoStopPosUm =ui.doubleSpinBoxStopPos->value();
-   dataAcqThread.piezoStartPos=zpos2voltage(dataAcqThread.piezoStartPosUm);
-   dataAcqThread.piezoStopPos =zpos2voltage(dataAcqThread.piezoStopPosUm);
 
    dataAcqThread.nStacks=ui.spinBoxNumOfStacks->value();
    dataAcqThread.nFramesPerStack=ui.spinBoxFramesPerStack->value();

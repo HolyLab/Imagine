@@ -3,12 +3,12 @@
 bool Positioner::setFrom(double from)
 {
    this->from=from; //todo: maybe we should set it only when its value is valid
-   return from>=min() && from<=max();
+   return from>=minPos() && from<=maxPos();
 }
 
 bool Positioner::addMovement(double to, double duration, int trigger)
 {
-   if(to>=min() && to<=max()){
+   if(to>=minPos() && to<=maxPos()){
       movements.push_back(Movement(to,duration,trigger));
       return true;
    }

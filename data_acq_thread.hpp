@@ -55,11 +55,8 @@ public:
     //real params used by the camera:
     double cycleTime; //in sec
 
-    //ao(piezo) params:
-    int scanRateAo;
-    double piezoPreTriggerTime; //in sec
-    double piezoStartPos, piezoStopPos; //NOTE: voltage
-    double piezoStartPosUm, piezoStopPosUm; //NOTE: in um. For the purpose of saving in the header only
+    //piezo params:
+    double piezoStartPosUm, piezoStopPosUm; //NOTE: in um
 
     //stimulus:
     QString stimFileContent;

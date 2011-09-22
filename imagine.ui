@@ -774,41 +774,6 @@
            <double>400.000000000000000</double>
           </property>
          </widget>
-         <widget class="QLabel" name="label_10">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>211</y>
-            <width>81</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>output rate(Hz):</string>
-          </property>
-         </widget>
-         <widget class="QSpinBox" name="spinBoxAoScanrate">
-          <property name="geometry">
-           <rect>
-            <x>120</x>
-            <y>211</y>
-            <width>61</width>
-            <height>22</height>
-           </rect>
-          </property>
-          <property name="minimum">
-           <number>100</number>
-          </property>
-          <property name="maximum">
-           <number>99999</number>
-          </property>
-          <property name="singleStep">
-           <number>1000</number>
-          </property>
-          <property name="value">
-           <number>10000</number>
-          </property>
-         </widget>
          <widget class="QPushButton" name="btnSetCurPosAsStart">
           <property name="geometry">
            <rect>

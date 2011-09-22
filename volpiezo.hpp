@@ -3,14 +3,16 @@
 
 #include "positioner.hpp"
 
+#include "ni_daq_g.hpp"
+
 class VolPiezo: public Positioner {
 
 public:
-   VolPiezo(){}
-   ~VolPiezo(){}
+   VolPiezo(){aoOnce=nullptr; ao=nullptr;}
+   ~VolPiezo(){delete aoOnce; delete ao;}
 
-   double min(){return 0;}
-   double max(){return 400; }
+   double minPos(){return 0;}
+   double maxPos(){return 400; }
 
    bool moveTo(double to);
 
@@ -22,6 +24,8 @@ public:
    bool abortCmd();
 
 private:
+   NiDaqAoWriteOne * aoOnce;
+   NiDaqAo* ao;
 
    double zpos2voltage(double um);
    void cleanup();

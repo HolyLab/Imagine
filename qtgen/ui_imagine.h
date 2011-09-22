@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'imagine.ui'
 **
-** Created: Fri Sep 9 15:01:30 2011
+** Created: Thu Sep 22 12:42:01 2011
 **      by: Qt User Interface Compiler version 4.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -143,9 +143,6 @@ public:
     QLabel *label_9;
     QDoubleSpinBox *doubleSpinBoxStartPos;
     QDoubleSpinBox *doubleSpinBoxStopPos;
-    QLabel *label_10;
-    QSpinBox *spinBoxAoScanrate;
-    QLabel *label_23;
     QPushButton *btnSetCurPosAsStart;
     QPushButton *btnSetCurPosAsStop;
     QLabel *label_20;
@@ -618,20 +615,6 @@ public:
         doubleSpinBoxStopPos->setGeometry(QRect(120, 160, 62, 22));
         doubleSpinBoxStopPos->setMaximum(400);
         doubleSpinBoxStopPos->setValue(400);
-        label_10 = new QLabel(tabPiezo);
-        label_10->setObjectName(QString::fromUtf8("label_10"));
-        label_10->setGeometry(QRect(10, 211, 81, 16));
-        spinBoxAoScanrate = new QSpinBox(tabPiezo);
-        spinBoxAoScanrate->setObjectName(QString::fromUtf8("spinBoxAoScanrate"));
-        spinBoxAoScanrate->setGeometry(QRect(120, 211, 61, 22));
-        spinBoxAoScanrate->setMinimum(100);
-        spinBoxAoScanrate->setMaximum(99999);
-        spinBoxAoScanrate->setSingleStep(1000);
-        spinBoxAoScanrate->setValue(10000);
-        label_23 = new QLabel(tabPiezo);
-        label_23->setObjectName(QString::fromUtf8("label_23"));
-        label_23->setGeometry(QRect(10, 241, 81, 31));
-        label_23->setWordWrap(true);
         btnSetCurPosAsStart = new QPushButton(tabPiezo);
         btnSetCurPosAsStart->setObjectName(QString::fromUtf8("btnSetCurPosAsStart"));
         btnSetCurPosAsStart->setGeometry(QRect(190, 40, 51, 23));
@@ -849,8 +832,6 @@ public:
         label_19->setText(QApplication::translate("ImagineClass", "min-max distance(um):", 0, QApplication::UnicodeUTF8));
         label_8->setText(QApplication::translate("ImagineClass", "start position:", 0, QApplication::UnicodeUTF8));
         label_9->setText(QApplication::translate("ImagineClass", "stop position:", 0, QApplication::UnicodeUTF8));
-        label_10->setText(QApplication::translate("ImagineClass", "output rate(Hz):", 0, QApplication::UnicodeUTF8));
-        label_23->setText(QApplication::translate("ImagineClass", "start ealier than trigger by (ms):", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
         btnSetCurPosAsStart->setToolTip(QApplication::translate("ImagineClass", "set as start position", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP

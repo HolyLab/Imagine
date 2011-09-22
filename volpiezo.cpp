@@ -2,10 +2,7 @@
 
 #include <Windows.h>
 
-#include "ni_daq_g.hpp"
-
-NiDaqAoWriteOne * aoOnce=NULL; //todo: move it inside the class
-NiDaqAo* ao=nullptr;
+#include "volpiezo.hpp"
 
 double VolPiezo::zpos2voltage(double um)
 {
@@ -66,9 +63,7 @@ bool VolPiezo::prepareCmd()
    double totalTime=0;
    for(unsigned idx=0; idx<movements.size(); ++idx) totalTime+=movements[idx].duration/1e6; //macrosec to sec
 
-   double durationAo=; //in sec
-   double durationResetPosition=;
-   int nScansForReset=int(scanRateAo*durationResetPosition);
+   int scanRateAo=10000; //TODO: hard coded
 
    ao->cfgTiming(scanRateAo, int(scanRateAo*totalTime));
    if(ao->isError()) {
