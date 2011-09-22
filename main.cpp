@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 
    }
 
-   //todo: 
+   //todo: adjust per cfg
    pPositioner=new VolPiezo;
 
    if(cameraVendor=="avt") pCamera=new AvtCamera;
