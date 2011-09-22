@@ -56,7 +56,7 @@ private:
     QwtPlotCurve *intenCurve;
     CurveData *intenCurveData;
 
-    void calcMinMaxValues(AndorCamera::PixelValue * frame, int imageW, int imageH);
+    void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
     void updateStatus(ImagineStatus newStatus, ImagineAction newAction);
     double zpos2voltage(double um); //z-position to piezo voltage
     void updateImage();

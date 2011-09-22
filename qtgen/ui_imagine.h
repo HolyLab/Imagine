@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'imagine.ui'
 **
-** Created: Thu Sep 22 12:42:01 2011
+** Created: Thu Sep 22 14:02:27 2011
 **      by: Qt User Interface Compiler version 4.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -152,6 +152,8 @@ public:
     QPushButton *btnIncPosAndMove;
     QPushButton *btnDecPosAndMove;
     QPushButton *btnFastDecPosAndMove;
+    QDoubleSpinBox *doubleSpinBoxMinDistance;
+    QLabel *label_23;
     QWidget *tabShutter;
     QLabel *label_11;
     QLabel *label_12;
@@ -593,57 +595,66 @@ public:
         tabPiezo->setObjectName(QString::fromUtf8("tabPiezo"));
         label_19 = new QLabel(tabPiezo);
         label_19->setObjectName(QString::fromUtf8("label_19"));
-        label_19->setGeometry(QRect(10, 10, 111, 20));
+        label_19->setGeometry(QRect(10, 50, 111, 20));
         doubleSpinBoxMaxDistance = new QDoubleSpinBox(tabPiezo);
         doubleSpinBoxMaxDistance->setObjectName(QString::fromUtf8("doubleSpinBoxMaxDistance"));
-        doubleSpinBoxMaxDistance->setGeometry(QRect(120, 10, 62, 22));
+        doubleSpinBoxMaxDistance->setGeometry(QRect(120, 50, 62, 22));
         doubleSpinBoxMaxDistance->setReadOnly(true);
         doubleSpinBoxMaxDistance->setMaximum(1000);
         doubleSpinBoxMaxDistance->setValue(400);
         label_8 = new QLabel(tabPiezo);
         label_8->setObjectName(QString::fromUtf8("label_8"));
-        label_8->setGeometry(QRect(10, 40, 81, 16));
+        label_8->setGeometry(QRect(10, 80, 81, 16));
         label_9 = new QLabel(tabPiezo);
         label_9->setObjectName(QString::fromUtf8("label_9"));
-        label_9->setGeometry(QRect(10, 160, 81, 16));
+        label_9->setGeometry(QRect(10, 200, 81, 16));
         doubleSpinBoxStartPos = new QDoubleSpinBox(tabPiezo);
         doubleSpinBoxStartPos->setObjectName(QString::fromUtf8("doubleSpinBoxStartPos"));
-        doubleSpinBoxStartPos->setGeometry(QRect(120, 40, 62, 22));
+        doubleSpinBoxStartPos->setGeometry(QRect(120, 80, 62, 22));
         doubleSpinBoxStartPos->setMaximum(400);
         doubleSpinBoxStopPos = new QDoubleSpinBox(tabPiezo);
         doubleSpinBoxStopPos->setObjectName(QString::fromUtf8("doubleSpinBoxStopPos"));
-        doubleSpinBoxStopPos->setGeometry(QRect(120, 160, 62, 22));
+        doubleSpinBoxStopPos->setGeometry(QRect(120, 200, 62, 22));
         doubleSpinBoxStopPos->setMaximum(400);
         doubleSpinBoxStopPos->setValue(400);
         btnSetCurPosAsStart = new QPushButton(tabPiezo);
         btnSetCurPosAsStart->setObjectName(QString::fromUtf8("btnSetCurPosAsStart"));
-        btnSetCurPosAsStart->setGeometry(QRect(190, 40, 51, 23));
+        btnSetCurPosAsStart->setGeometry(QRect(190, 80, 51, 23));
         btnSetCurPosAsStop = new QPushButton(tabPiezo);
         btnSetCurPosAsStop->setObjectName(QString::fromUtf8("btnSetCurPosAsStop"));
-        btnSetCurPosAsStop->setGeometry(QRect(190, 160, 51, 23));
+        btnSetCurPosAsStop->setGeometry(QRect(190, 200, 51, 23));
         label_20 = new QLabel(tabPiezo);
         label_20->setObjectName(QString::fromUtf8("label_20"));
-        label_20->setGeometry(QRect(10, 102, 91, 16));
+        label_20->setGeometry(QRect(10, 142, 91, 16));
         doubleSpinBoxCurPos = new QDoubleSpinBox(tabPiezo);
         doubleSpinBoxCurPos->setObjectName(QString::fromUtf8("doubleSpinBoxCurPos"));
-        doubleSpinBoxCurPos->setGeometry(QRect(120, 101, 62, 22));
+        doubleSpinBoxCurPos->setGeometry(QRect(120, 141, 62, 22));
         doubleSpinBoxCurPos->setMaximum(400);
         doubleSpinBoxCurPos->setValue(200);
         btnMovePiezo = new QPushButton(tabPiezo);
         btnMovePiezo->setObjectName(QString::fromUtf8("btnMovePiezo"));
-        btnMovePiezo->setGeometry(QRect(190, 101, 51, 23));
+        btnMovePiezo->setGeometry(QRect(190, 141, 51, 23));
         btnFastIncPosAndMove = new QPushButton(tabPiezo);
         btnFastIncPosAndMove->setObjectName(QString::fromUtf8("btnFastIncPosAndMove"));
-        btnFastIncPosAndMove->setGeometry(QRect(250, 70, 21, 23));
+        btnFastIncPosAndMove->setGeometry(QRect(250, 110, 21, 23));
         btnIncPosAndMove = new QPushButton(tabPiezo);
         btnIncPosAndMove->setObjectName(QString::fromUtf8("btnIncPosAndMove"));
-        btnIncPosAndMove->setGeometry(QRect(250, 90, 21, 23));
+        btnIncPosAndMove->setGeometry(QRect(250, 130, 21, 23));
         btnDecPosAndMove = new QPushButton(tabPiezo);
         btnDecPosAndMove->setObjectName(QString::fromUtf8("btnDecPosAndMove"));
-        btnDecPosAndMove->setGeometry(QRect(250, 110, 21, 23));
+        btnDecPosAndMove->setGeometry(QRect(250, 150, 21, 23));
         btnFastDecPosAndMove = new QPushButton(tabPiezo);
         btnFastDecPosAndMove->setObjectName(QString::fromUtf8("btnFastDecPosAndMove"));
-        btnFastDecPosAndMove->setGeometry(QRect(250, 130, 21, 23));
+        btnFastDecPosAndMove->setGeometry(QRect(250, 170, 21, 23));
+        doubleSpinBoxMinDistance = new QDoubleSpinBox(tabPiezo);
+        doubleSpinBoxMinDistance->setObjectName(QString::fromUtf8("doubleSpinBoxMinDistance"));
+        doubleSpinBoxMinDistance->setGeometry(QRect(120, 20, 62, 22));
+        doubleSpinBoxMinDistance->setReadOnly(true);
+        doubleSpinBoxMinDistance->setMaximum(1000);
+        doubleSpinBoxMinDistance->setValue(0);
+        label_23 = new QLabel(tabPiezo);
+        label_23->setObjectName(QString::fromUtf8("label_23"));
+        label_23->setGeometry(QRect(10, 20, 111, 20));
         tabWidgetCfg->addTab(tabPiezo, QString());
         tabShutter = new QWidget();
         tabShutter->setObjectName(QString::fromUtf8("tabShutter"));
@@ -829,7 +840,7 @@ public:
         label_13->setText(QApplication::translate("ImagineClass", "Stimulus file:", 0, QApplication::UnicodeUTF8));
         btnOpenStimFile->setText(QApplication::translate("ImagineClass", "...", 0, QApplication::UnicodeUTF8));
         tabWidgetCfg->setTabText(tabWidgetCfg->indexOf(tabStim), QApplication::translate("ImagineClass", "stimuli", 0, QApplication::UnicodeUTF8));
-        label_19->setText(QApplication::translate("ImagineClass", "min-max distance(um):", 0, QApplication::UnicodeUTF8));
+        label_19->setText(QApplication::translate("ImagineClass", "max distance(um):", 0, QApplication::UnicodeUTF8));
         label_8->setText(QApplication::translate("ImagineClass", "start position:", 0, QApplication::UnicodeUTF8));
         label_9->setText(QApplication::translate("ImagineClass", "stop position:", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
@@ -852,6 +863,7 @@ public:
         btnIncPosAndMove->setText(QApplication::translate("ImagineClass", "^", 0, QApplication::UnicodeUTF8));
         btnDecPosAndMove->setText(QApplication::translate("ImagineClass", "v", 0, QApplication::UnicodeUTF8));
         btnFastDecPosAndMove->setText(QApplication::translate("ImagineClass", "vv", 0, QApplication::UnicodeUTF8));
+        label_23->setText(QApplication::translate("ImagineClass", "min distance(um):", 0, QApplication::UnicodeUTF8));
         tabWidgetCfg->setTabText(tabWidgetCfg->indexOf(tabPiezo), QApplication::translate("ImagineClass", "piezo", 0, QApplication::UnicodeUTF8));
         label_11->setText(QApplication::translate("ImagineClass", "open time(offset 2):", 0, QApplication::UnicodeUTF8));
         label_12->setText(QApplication::translate("ImagineClass", "close time(offset 4):", 0, QApplication::UnicodeUTF8));

@@ -347,11 +347,17 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
 
    updateStatus(eIdle, eNoAction);
 
+   ///piezo stuff
+   ui.doubleSpinBoxMinDistance->setValue(pPositioner->minPos());
+   ui.doubleSpinBoxMaxDistance->setValue(pPositioner->maxPos());
+
    //set piezo position to 0 um
    QMessageBox::information(this, "Imagine", 
          "Please raise microscope.\nPiezo position is about to be set 0 um");
    ui.doubleSpinBoxCurPos->setValue(0);
    on_btnMovePiezo_clicked();
+
+   //
 
    QString buildDateStr=__DATE__;
    QDate date=QDate::fromString(buildDateStr, "MMM d yyyy");
@@ -489,7 +495,7 @@ void Imagine::appendLog(const QString& msg)
    nAppendingLog++;
 }
 
-void Imagine::calcMinMaxValues(AndorCamera::PixelValue * frame, int imageW, int imageH)
+void Imagine::calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH)
 {
    minPixelValue=maxPixelValue=frame[0];
    for(int i=1; i<imageW*imageH; i++){
@@ -634,7 +640,7 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
       image->setColor(255, qRgb(255, 255, 255));
    }
 
-   AndorCamera::PixelValue * frame=(AndorCamera::PixelValue * )data16.constData();
+   AndorCamera::PixelValue * frame=(Camera::PixelValue * )data16.constData();
 
    //upate histogram plot
    int histSamplingRate=3; //that is, calc histgram every 3 updating
@@ -658,7 +664,7 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
    double factor;
    if(ui.actionNoAutoScale->isChecked()){
       minPixelValue=maxPixelValue=0;
-      factor=1.0/(1<<6); //i.e. /(2^14)*(2^8). note: not >>8 b/c it's 14-bit camera
+      factor=1.0/(1<<6); //i.e. /(2^14)*(2^8). note: not >>8 b/c it's 14-bit camera. TODO: take care of 16 bit camera?
    }//if, no contrast adjustment
    else {
       if(ui.actionAutoScaleOnFirstFrame->isChecked()){
