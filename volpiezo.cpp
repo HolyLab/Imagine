@@ -141,6 +141,8 @@ bool VolPiezo::waitCmd()
    //stop ao task:
    ao->stop();
    cleanup();
+
+   return true;
 }
 
 
@@ -149,6 +151,8 @@ bool VolPiezo::abortCmd()
    //stop ao task:
    ao->stop();
    cleanup();
+
+   return true;
 }
 
 
