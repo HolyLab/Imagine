@@ -6,7 +6,7 @@
 
 double VolPiezo::zpos2voltage(double um)
 {
-    return um/this->max()*10; // *10: 0-10vol range for piezo
+    return um/this->maxPos()*10; // *10: 0-10vol range for piezo
 }
 
 
@@ -24,9 +24,10 @@ bool VolPiezo::moveTo(double to)
       assert(aoOnce->writeOne(sampleValue));
    }
    catch(...){
-      
+      return false;
    }
 
+   return true;
 }//moveTo(),
 
 
@@ -120,6 +121,7 @@ bool VolPiezo::prepareCmd()
    //todo: check error like
    // if(ao->isError()) goto exitpoint;
 
+   return true;
 }//prepareCmd(),
 
 
@@ -128,6 +130,7 @@ bool VolPiezo::runCmd()
    //start piezo movement (and may also trigger the camera):
    ao->start(); //todo: check error
 
+   return true;
 }
 
 

@@ -27,7 +27,7 @@
 
 
 extern Camera* pCamera;
-
+extern Positioner* pPositioner;
 
 
 int main(int argc, char *argv[])

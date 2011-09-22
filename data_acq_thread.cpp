@@ -113,7 +113,7 @@ bool DataAcqThread::saveHeader(QString filename, NiDaqAi* ai)
 
    header<<"piezo=start position: "<<piezoStartPosUm<<" um"
       <<";stop position: "<<piezoStopPosUm<<" um"
-      <<";output scan rate: "<<scanRateAo
+      <<";output scan rate: "<<10000 //todo: hard coded
       <<endl<<endl; 
 
    //ai related:
