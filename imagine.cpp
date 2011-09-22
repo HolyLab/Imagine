@@ -499,6 +499,7 @@ void Imagine::calcMinMaxValues(Camera::PixelValue * frame, int imageW, int image
 {
    minPixelValue=maxPixelValue=frame[0];
    for(int i=1; i<imageW*imageH; i++){
+      if(frame[i]==1<<16) continue; //todo: this is a tmp fix for dead pixels
       if(frame[i]>maxPixelValue) maxPixelValue=frame[i];
       else if(frame[i]<minPixelValue) minPixelValue=frame[i];
    }//for, each pixel
