@@ -294,7 +294,7 @@ void DataAcqThread::run_acq_and_save()
    pPositioner->setFrom(piezoStartPosUm);
    pPositioner->addMovement(piezoStopPosUm, nFramesPerStack*cycleTime, 1);
    pPositioner->addMovement(piezoStartPosUm, min(idleTimeBwtnStacks/2, 0.5), -1);//move back
-   pPositioner->addMovement(NaN, 0, 0); //stop the trigger
+   pPositioner->addMovement(numeric_limits<double>::quiet_NaN(), 0, 0); //stop the trigger
    pPositioner->prepareCmd();
 
    //prepare for AI:
