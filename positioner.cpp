@@ -2,7 +2,7 @@
 
 bool Positioner::addMovement(double from, double to, double duration, int trigger)
 {
-   if(to>=minPos() && to<=maxPos() && from>=minPos()&&from<=maxPos()){
+   if(_isnan(from)||_isnan(to)||to>=minPos() && to<=maxPos() && from>=minPos()&&from<=maxPos()){
       movements.push_back(new Movement(from, to,duration,trigger));
       return true;
    }
