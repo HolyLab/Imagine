@@ -31,13 +31,13 @@ bool VolPiezo::moveTo(double to)
 }//moveTo(),
 
 
-bool VolPiezo::addMovement(double to, double duration, int trigger)
+bool VolPiezo::addMovement(double from, double to, double duration, int trigger)
 {
-   bool result=Positioner::addMovement(to, duration, trigger);
+   bool result=Positioner::addMovement(from, to, duration, trigger);
    if(!result) return result;
 
    if(movements.size()==1){
-      Movement& m=movements[0];
+      Movement& m=*movements[0];
       m.duration+=0.06;
    }
    return result;
@@ -62,7 +62,7 @@ bool VolPiezo::prepareCmd()
    ao=new NiDaqAo(aoChannels);
 
    double totalTime=0;
-   for(unsigned idx=0; idx<movements.size(); ++idx) totalTime+=movements[idx].duration/1e6; //macrosec to sec
+   for(unsigned idx=0; idx<movements.size(); ++idx) totalTime+=movements[idx]->duration/1e6; //macrosec to sec
 
    int scanRateAo=10000; //TODO: hard coded
 
@@ -76,7 +76,7 @@ bool VolPiezo::prepareCmd()
    uInt16 * bufAo=ao->getOutputBuf();
    uInt16 * buf=bufAo-1;
    for(unsigned idx=0; idx<movements.size(); ++idx){
-      Movement& m=movements[idx];
+      Movement& m=*movements[idx];
       piezoStartPos=preStop;
       if(_isnan(m.to)) piezoStopPos=preStop;
       else piezoStopPos=zpos2voltage(m.to);
@@ -108,7 +108,7 @@ bool VolPiezo::prepareCmd()
       bufAo[i] = aoTTLLow; 
    }
    for(unsigned idx=0; idx<movements.size(); ++idx){
-      Movement& m=movements[idx];
+      Movement& m=*movements[idx];
       int nScansNow=int(scanRateAo*m.duration/1e6);
 
       if(m.trigger==1){
