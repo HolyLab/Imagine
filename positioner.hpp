@@ -9,27 +9,26 @@ using std::vector;
 class Positioner {
 protected:
    struct Movement {
-      double to,
+      double from, to,
          duration;
       int trigger;
-      Movement(double to, double duration, int trigger){
-         this->to=to; this->duration=duration; this->trigger=trigger;
+      Movement(double from, double to, double duration, int trigger){
+         this->from=from; this->to=to; this->duration=duration; this->trigger=trigger;
       }
+      virtual ~Movement(){}
    };
-   double from;
-   vector<Movement> movements;
+   vector<Movement* > movements;
 
 public:
    Positioner(){}
-   virtual ~Positioner(){}
+   virtual ~Positioner(){ clearCmd(); }
 
    virtual double minPos()=0; // the min value of the position
    virtual double maxPos()=0; // the max value of the position. NOTE: the unit is macro
    virtual bool moveTo(double to)=0; //move as quick as possible
 
    //// cmd related:
-   virtual bool setFrom(double from); // set the initial position of the movement sequence
-   virtual bool addMovement(double to, double duration, int trigger); //to: when NaN, don't move; trigger: 1 on, 0 off, otherwise no change
+   virtual bool addMovement(double from, double to, double duration, int trigger); //to: when NaN, don't move; trigger: 1 on, 0 off, otherwise no change
    virtual void clearCmd(); // clear the movement sequence
 
    virtual bool prepareCmd()=0; // after prepare, runCmd() will move it in real

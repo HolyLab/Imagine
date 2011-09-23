@@ -1,15 +1,9 @@
 #include "positioner.hpp"
 
-bool Positioner::setFrom(double from)
+bool Positioner::addMovement(double from, double to, double duration, int trigger)
 {
-   this->from=from; //todo: maybe we should set it only when its value is valid
-   return from>=minPos() && from<=maxPos();
-}
-
-bool Positioner::addMovement(double to, double duration, int trigger)
-{
-   if(to>=minPos() && to<=maxPos()){
-      movements.push_back(Movement(to,duration,trigger));
+   if(to>=minPos() && to<=maxPos() && from>=minPos()&&from<=maxPos()){
+      movements.push_back(new Movement(from, to,duration,trigger));
       return true;
    }
    else return false;
@@ -17,5 +11,6 @@ bool Positioner::addMovement(double to, double duration, int trigger)
 
 void Positioner::clearCmd()
 {
+   for(unsigned i=0; i<movements.size();++i)delete movements[i];
    movements.clear();
 }
