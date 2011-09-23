@@ -76,7 +76,7 @@ bool VolPiezo::prepareCmd()
    uInt16 * bufAo=ao->getOutputBuf();
    uInt16 * buf=bufAo-1;
    for(unsigned idx=0; idx<movements.size(); ++idx){
-      Movement& m=*movements[idx];
+      const Movement& m=*movements[idx];
       piezoStartPos=preStop;
       if(_isnan(m.to)) piezoStopPos=preStop;
       else piezoStopPos=zpos2voltage(m.to);
@@ -108,7 +108,7 @@ bool VolPiezo::prepareCmd()
       bufAo[i] = aoTTLLow; 
    }
    for(unsigned idx=0; idx<movements.size(); ++idx){
-      Movement& m=*movements[idx];
+      const Movement& m=*movements[idx];
       int nScansNow=int(scanRateAo*m.duration/1e6);
 
       if(m.trigger==1){
