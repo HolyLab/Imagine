@@ -78,16 +78,17 @@ int main(int argc, char *argv[])
 
    }
 
-   //todo: adjust per cfg
-   pPositioner=new VolPiezo;
+   if(positionerType=="volpiezo") pPositioner=new VolPiezo;
+   else {
+      QMessageBox::critical(0, "Imagine", "Unsupported positioner."
+         , QMessageBox::Ok, QMessageBox::NoButton);
+
+      return 1;
+   }
 
    if(cameraVendor=="avt") pCamera=new AvtCamera;
    else if(cameraVendor=="andor") pCamera=new AndorCamera;
    else if(cameraVendor=="cooke") pCamera=new CookeCamera;
-   else {
-      //todo: error msg
-      return 1;
-   }
 
    //show splash windows and init camera:
    //see: QSplashScreen class ref
