@@ -37,6 +37,35 @@ extern Camera* pCamera;
 extern Positioner* pPositioner;
 extern QScriptEngine* se;
 
+bool loadScript(const QString &filename)
+{
+   if(!QFile::exists(filename)) {
+      QMessageBox::critical(0, "Imagine", QString("couldn't find script %1.").arg(filename)
+         , QMessageBox::Ok, QMessageBox::NoButton);
+      return false;
+   }
+   QFile file(filename);
+   if (!file.open(QFile::ReadOnly | QFile::Text)) {
+      QMessageBox::critical(0, "Imagine", "couldn't read imagine.js."
+         , QMessageBox::Ok, QMessageBox::NoButton);
+      return false;
+   }
+   QTextStream in(&file);
+   QString jscode=in.readAll();
+   QScriptProgram sp(jscode);
+   QScriptValue jsobj=se->evaluate(sp);
+   if(se->hasUncaughtException()){
+      QMessageBox::critical(0, "Imagine",
+         QString("There's problem when evaluating %1:\n%2\n%3.")
+         .arg(filename)
+         .arg(QString("   ... at line %1").arg(se->uncaughtExceptionLineNumber()))
+         .arg(QString("   ... error msg: %1").arg(se->uncaughtException().toString())));
+      return false;
+   }
+
+   return true;
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -44,28 +73,8 @@ int main(int argc, char *argv[])
 
    se=new QScriptEngine();
 
-   QString filename=QString::fromStdString("imagine.js");
-   if(!QFile::exists(filename)) {
-      QMessageBox::critical(0, "Imagine", "couldn't find imagine.js in the working directory."
-         , QMessageBox::Ok, QMessageBox::NoButton);
-      return 1;
-   }
-   QFile file(filename);
-   if (!file.open(QFile::ReadOnly | QFile::Text)) {
-      QMessageBox::critical(0, "Imagine", "couldn't load imagine.js."
-         , QMessageBox::Ok, QMessageBox::NoButton);
-      return 1;
-   }
-   QTextStream in(&file);
-   QString jscode=in.readAll();
-   QScriptValue jsobj=se->evaluate(jscode);
-   if(se->hasUncaughtException()){
-      QMessageBox::critical(0, "Imagine",
-         QString("There's problem when evaluating %1:\n%2\n%3.")
-         .arg(filename)
-         .arg(QString("   ... at line %1").arg(se->uncaughtExceptionLineNumber()))
-         .arg(QString("   ... error msg: %1").arg(se->uncaughtException().toString())));
-      return 1;
+   if(!loadScript(QString::fromStdString("imagine.js"))){
+      return 1;  
    }
    QString cameraVendor=se->globalObject().property("camera").toString();
    QString positionerType=se->globalObject().property("positioner").toString();
@@ -77,6 +86,8 @@ int main(int argc, char *argv[])
       return 1;
 
    }
+
+
 
    if(positionerType=="volpiezo") pPositioner=new VolPiezo;
    else {
