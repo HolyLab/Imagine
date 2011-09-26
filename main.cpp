@@ -87,6 +87,9 @@ int main(int argc, char *argv[])
 
    }
 
+   if(!loadScript(cameraVendor+".js")){
+      return 1;  
+   }
 
 
    if(positionerType=="volpiezo") pPositioner=new VolPiezo;
