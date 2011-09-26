@@ -939,6 +939,9 @@ void Imagine::on_btnApply_clicked()
    Camera& camera=*pCamera;
 
    if(!checkRoi()){
+      QMessageBox::critical(this, "Imagine", "ROI spec is wrong."
+         , QMessageBox::Ok, QMessageBox::NoButton);
+
       return;
    }
 
