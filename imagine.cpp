@@ -65,6 +65,7 @@ ImagineAction curAction;
 //todo: 
 extern Camera* pCamera;
 extern Positioner* pPositioner;
+extern QScriptEngine* se;
 
 
 class CurveData: public QwtData
@@ -915,46 +916,19 @@ bool Imagine::checkRoi()
 {
    Camera& camera=*pCamera;
 
-   QString filename=QString::fromStdString(camera.vendor+"_roi.js");
-
-   if(!QFile::exists(filename)) return true;
-   
-   QFile file(filename);
-   if (!file.open(QFile::ReadOnly | QFile::Text)) {
-      QMessageBox::warning(this, tr("Imagine"),
-         tr("Cannot read roi checking script %1:\n%2.")
-         .arg(filename)
-         .arg(file.errorString()));
-      return false;
-   }
-   QTextStream in(&file);
-   QString jscode=in.readAll();
-
-   QScriptEngine se;
-   QScriptProgram sp(jscode);
-   QScriptValue jsobj=se.evaluate(sp);
-   if(se.hasUncaughtException()){
-      QMessageBox::warning(this, tr("Imagine"),
-         tr("There's problem when evaluating roi checking script %1:\n%2\n%3.")
-         .arg(filename)
-         .arg(QString("   ... at line %1").arg(se.uncaughtExceptionLineNumber()))
-         .arg(QString("   ... error msg: %1").arg(se.uncaughtException().toString())));
-      return false;
-   }
-   
    //set the roi def
-   jsobj.setProperty("hstart",ui.spinBoxHstart->value());
-   jsobj.setProperty("hend",ui.spinBoxHend->value());
-   jsobj.setProperty("vstart",ui.spinBoxVstart->value());
-   jsobj.setProperty("vend",ui.spinBoxVend->value());
+   se->globalObject().setProperty("hstart",ui.spinBoxHstart->value());
+   se->globalObject().setProperty("hend",ui.spinBoxHend->value());
+   se->globalObject().setProperty("vstart",ui.spinBoxVstart->value());
+   se->globalObject().setProperty("vend",ui.spinBoxVend->value());
 
    //set the window reference
-   QScriptValue qtwin=se.newQObject(this);
-   jsobj.setProperty("window", qtwin);
+   QScriptValue qtwin=se->newQObject(this);
+   se->globalObject().setProperty("window", qtwin);
 
-   QScriptValue checkFunc=jsobj.property("check");
+   QScriptValue checkFunc=se->globalObject().property("checkRoi");
 
-   bool result=checkFunc.call(jsobj).toBool();
+   bool result=checkFunc.call().toBool();
 
    return result;
 }
