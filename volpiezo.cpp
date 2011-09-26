@@ -72,13 +72,14 @@ bool VolPiezo::prepareCmd()
       return false;
    }
 
-   double piezoStartPos, piezoStopPos, preStop=from;
+   double piezoStartPos, piezoStopPos, preStop;
    uInt16 * bufAo=ao->getOutputBuf();
    uInt16 * buf=bufAo-1;
    for(unsigned idx=0; idx<movements.size(); ++idx){
       const Movement& m=*movements[idx];
-      piezoStartPos=preStop;
-      if(_isnan(m.to)) piezoStopPos=preStop;
+      if(_isnan(m.from)) piezoStartPos=preStop;
+      else piezoStartPos=zpos2voltage(m.from);
+      if(_isnan(m.to)) piezoStopPos=piezoStartPos;
       else piezoStopPos=zpos2voltage(m.to);
       
       preStop=piezoStopPos;

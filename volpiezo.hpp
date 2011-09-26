@@ -16,7 +16,7 @@ public:
 
    bool moveTo(double to);
 
-   bool addMovement(double to, double duration, int trigger);
+   bool addMovement(double from, double to, double duration, int trigger);
 
    bool prepareCmd();
    bool runCmd();
