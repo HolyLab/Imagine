@@ -1,8 +1,4 @@
-//cooke roi checking script
-
-var obj = new Object;
-obj.what = "check ROI values";
-obj.check = function () {
+var checkRoi = function () {
    var hstart = this.hstart;
    var hend = this.hend;
    var vstart = this.vstart;
@@ -12,5 +8,3 @@ obj.check = function () {
        (hstart-1)%160==0 && (2560-hend)%160==0 &&
        vstart-1 == 2160-vend;
 };
-
-obj;
