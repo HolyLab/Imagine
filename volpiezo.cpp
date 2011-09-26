@@ -141,7 +141,9 @@ bool VolPiezo::waitCmd()
    ao->wait(-1); //wait forever
    //stop ao task:
    ao->stop();
-   cleanup();
+
+   //wait 200ms to have Piezo settled (so ai thread can record its final position)
+   Sleep(0.2*1000); // *1000: sec -> ms
 
    return true;
 }
@@ -151,18 +153,14 @@ bool VolPiezo::abortCmd()
 {
    //stop ao task:
    ao->stop();
-   cleanup();
 
    return true;
 }
-
 
 void VolPiezo::cleanup()
 {
    delete ao;
    ao=nullptr;
 
-   //wait 200ms to have Piezo settled (so ai thread can record its final position)
-   Sleep(0.2*1000); // *1000: sec -> ms
 }
 

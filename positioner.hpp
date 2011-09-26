@@ -32,7 +32,7 @@ public:
    virtual void clearCmd(); // clear the movement sequence
 
    virtual bool prepareCmd()=0; // after prepare, runCmd() will move it in real
-   virtual bool runCmd()=0;
+   virtual bool runCmd()=0;  //NOTE: this is repeatable (i.e. once prepared, you can run same cmd more than once)
    virtual bool waitCmd()=0; // wait forever until the movement sequence finishes
    virtual bool abortCmd()=0;// stop it as soon as possible
 };//class, Positioner
