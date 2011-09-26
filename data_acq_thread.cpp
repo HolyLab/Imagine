@@ -25,6 +25,11 @@ using namespace std;
 
 #include <QDateTime>
 
+#include <QScriptEngine>
+#include <QScriptProgram>
+#include <QScriptable>
+#include <QMetaType>
+
 #include "data_acq_thread.hpp"
 
 #include "andor_g.hpp"
@@ -38,6 +43,7 @@ using namespace std;
 
 Camera* pCamera=nullptr;
 Positioner* pPositioner=nullptr;
+QScriptEngine* se;
 
 NiDaqDo * digOut=NULL;
 

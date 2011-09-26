@@ -16,6 +16,13 @@
 #include <QtGui/QApplication>
 #include <QSplashScreen>
 #include <QMessageBox>
+#include <QTextStream>
+#include <QFile>
+#include <QScriptEngine>
+#include <QScriptProgram>
+#include <QScriptable>
+#include <QMetaType>
+
 
 #include "imagine.h"
 
@@ -28,16 +35,43 @@
 
 extern Camera* pCamera;
 extern Positioner* pPositioner;
+extern QScriptEngine* se;
 
 
 int main(int argc, char *argv[])
 {
    QApplication a(argc, argv);
 
-   QString cameraVendor="cooke";
-   if(argc>1) cameraVendor=argv[1];
+   se=new QScriptEngine();
+
+   QString filename=QString::fromStdString("imagine.js");
+   if(!QFile::exists(filename)) {
+      QMessageBox::critical(0, "Imagine", "couldn't find imagine.js in the working directory."
+         , QMessageBox::Ok, QMessageBox::NoButton);
+      return 1;
+   }
+   QFile file(filename);
+   if (!file.open(QFile::ReadOnly | QFile::Text)) {
+      QMessageBox::critical(0, "Imagine", "couldn't load imagine.js."
+         , QMessageBox::Ok, QMessageBox::NoButton);
+      return 1;
+   }
+   QTextStream in(&file);
+   QString jscode=in.readAll();
+   QScriptValue jsobj=se->evaluate(jscode);
+   if(se->hasUncaughtException()){
+      QMessageBox::critical(0, "Imagine",
+         QString("There's problem when evaluating %1:\n%2\n%3.")
+         .arg(filename)
+         .arg(QString("   ... at line %1").arg(se->uncaughtExceptionLineNumber()))
+         .arg(QString("   ... error msg: %1").arg(se->uncaughtException().toString())));
+      return 1;
+   }
+   QString cameraVendor=se->globalObject().property("camera").toString();
+   QString positionerType=se->globalObject().property("positioner").toString();
+
    if(cameraVendor!="avt" && cameraVendor!="andor" && cameraVendor!="cooke"){
-      QMessageBox::critical(0, "Imagine", "please specify the camera (andor, avt or cooke) on the command line."
+      QMessageBox::critical(0, "Imagine", "Unsupported camera."
          , QMessageBox::Ok, QMessageBox::NoButton);
 
       return 1;
