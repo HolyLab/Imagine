@@ -74,6 +74,10 @@ QScriptValue runWrapper(QScriptContext *context, QScriptEngine *se)
 {
     QString x = context->argument(0).toString();
     return QScriptValue(se, run(x));
+    //QScriptValue result=se->newObject();
+    //result.setProperty("status", QScriptValue(se, ...));
+    //result.setProperty("msg", QScriptValue(se, ...));
+    //return result;
 }
 
 
