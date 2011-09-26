@@ -9,8 +9,8 @@ using std::vector;
 class Positioner {
 protected:
    struct Movement {
-      double from, to,
-         duration;
+      double from, to, //in um
+         duration;     //in us
       int trigger;
       Movement(double from, double to, double duration, int trigger){
          this->from=from; this->to=to; this->duration=duration; this->trigger=trigger;

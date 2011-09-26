@@ -291,8 +291,8 @@ void DataAcqThread::run_acq_and_save()
    cycleTime=camera.getCycleTime();
 
    pPositioner->clearCmd();
-   pPositioner->addMovement(piezoStartPosUm, piezoStopPosUm, nFramesPerStack*cycleTime, 1);
-   pPositioner->addMovement(piezoStopPosUm, piezoStartPosUm, min(idleTimeBwtnStacks/2, 0.5), -1);//move back
+   pPositioner->addMovement(piezoStartPosUm, piezoStopPosUm, nFramesPerStack*cycleTime*1e6, 1);
+   pPositioner->addMovement(piezoStopPosUm, piezoStartPosUm, min(idleTimeBwtnStacks/2, 0.5)*1e6, -1);//move back
    pPositioner->addMovement(piezoStartPosUm, numeric_limits<double>::quiet_NaN(), 0, 0); //stop the trigger
    pPositioner->prepareCmd();
 
