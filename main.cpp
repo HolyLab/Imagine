@@ -66,6 +66,16 @@ bool loadScript(const QString &filename)
    return true;
 }
 
+bool run(const QString& cmd)
+{
+   return -1!=system(cmd.toAscii());
+}
+QScriptValue runWrapper(QScriptContext *context, QScriptEngine *se)
+{
+    QString x = context->argument(0).toString();
+    return QScriptValue(se, run(x));
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -90,6 +100,9 @@ int main(int argc, char *argv[])
    if(!loadScript(cameraVendor+".js")){
       return 1;  
    }
+
+   QScriptValue svRun = se->newFunction(runWrapper);
+   se->globalObject().setProperty("system", svRun); 
 
 
    if(positionerType=="volpiezo") pPositioner=new VolPiezo;
