@@ -348,6 +348,8 @@ nextStack:
    //open laser shutter
    digOut->updateOutputBuf(4,true);
    digOut->write();
+   QScriptValue jsFunc=se->globalObject().property("onShutterOpen");
+   if(jsFunc.isFunction()) jsFunc.call();
 
    //TODO: may need delay for shutter open time
 
