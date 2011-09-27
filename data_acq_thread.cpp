@@ -348,8 +348,10 @@ nextStack:
    //open laser shutter
    digOut->updateOutputBuf(4,true);
    digOut->write();
+   {
    QScriptValue jsFunc=se->globalObject().property("onShutterOpen");
    if(jsFunc.isFunction()) jsFunc.call();
+   }
 
    //TODO: may need delay for shutter open time
 
@@ -411,6 +413,10 @@ nextStack:
    //close laser shutter
    digOut->updateOutputBuf(4,false);
    digOut->write();
+   {
+   QScriptValue jsFunc=se->globalObject().property("onShutterClose");
+   if(jsFunc.isFunction()) jsFunc.call();
+   }
 
    //update stimulus if necessary:  idxCurStack
    if(applyStim 

@@ -797,6 +797,11 @@ void Imagine::on_actionOpenShutter_triggered()
    //open laser shutter
    digOut->updateOutputBuf(4,true);
    digOut->write();
+   {
+   QScriptValue jsFunc=se->globalObject().property("onShutterOpen");
+   if(jsFunc.isFunction()) jsFunc.call();
+   }
+
 }
 
 void Imagine::on_actionCloseShutter_triggered()
@@ -804,6 +809,11 @@ void Imagine::on_actionCloseShutter_triggered()
    //close laser shutter
    digOut->updateOutputBuf(4,false);
    digOut->write();
+   {
+   QScriptValue jsFunc=se->globalObject().property("onShutterClose");
+   if(jsFunc.isFunction()) jsFunc.call();
+   }
+
 }
 
 
