@@ -928,7 +928,8 @@ bool Imagine::checkRoi()
 
    QScriptValue checkFunc=se->globalObject().property("checkRoi");
 
-   bool result=checkFunc.call().toBool();
+   bool result=true;
+   if(checkFunc.isFunction()) result=checkFunc.call().toBool();
 
    return result;
 }
