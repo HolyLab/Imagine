@@ -68,7 +68,7 @@ bool loadScript(const QString &filename)
 
 bool run(const QString& cmd)
 {
-   return -1!=system(cmd.toAscii());
+   return 0==system(cmd.toAscii());
 }
 QScriptValue runWrapper(QScriptContext *context, QScriptEngine *se)
 {
@@ -86,6 +86,8 @@ int main(int argc, char *argv[])
    QApplication a(argc, argv);
 
    se=new QScriptEngine();
+   QScriptValue svRun = se->newFunction(runWrapper);
+   se->globalObject().setProperty("system", svRun); 
 
    if(!loadScript(QString::fromStdString("imagine.js"))){
       return 1;  
@@ -104,9 +106,6 @@ int main(int argc, char *argv[])
    if(!loadScript(cameraVendor+".js")){
       return 1;  
    }
-
-   QScriptValue svRun = se->newFunction(runWrapper);
-   se->globalObject().setProperty("system", svRun); 
 
 
    if(positionerType=="volpiezo") pPositioner=new VolPiezo;
