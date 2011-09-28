@@ -110,6 +110,7 @@ int main(int argc, char *argv[])
 
 
    if(positionerType=="volpiezo") pPositioner=new VolPiezo;
+   else if(positionerType=="pi") pPositioner=new Piezo_Controller;
    else {
       QMessageBox::critical(0, "Imagine", "Unsupported positioner."
          , QMessageBox::Ok, QMessageBox::NoButton);
