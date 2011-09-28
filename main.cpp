@@ -31,6 +31,7 @@
 #include "cooke.hpp"
 
 #include "volpiezo.hpp"
+#include "pi_piezo\Piezo_Controller.hpp"
 
 
 extern Camera* pCamera;
