@@ -10,7 +10,7 @@ var checkRoi = function () {
 };
 
 var onShutterOpen = function () {
-   var result = system("E:\\zsguo\\laserctrl\\debug\\laserctrl.exe openShutter");
+   var result = system("E:\\zsguo\\laserctrl\\debug\\laserctrl.exe openShutter 1");
    if (result) print("open shutter: ok");
    else print("open shutter: failed ");
    return result;
@@ -18,12 +18,9 @@ var onShutterOpen = function () {
 
 
 var onShutterClose = function () {
-   var result = system("E:\\zsguo\\laserctrl\\debug\\laserctrl.exe closeShutter");
+   var result = system("E:\\zsguo\\laserctrl\\debug\\laserctrl.exe closeShutter 1");
    if (result) print("close shutter: ok");
    else print("close shutter: failed");
    return result;
 };
 
-var result = system("E:\\zsguo\\laserctrl\\ddebug\\laserctrl.exe openShutter");
-if (result) print("open shutter: ok");
-else print("open shutter: failed ");
