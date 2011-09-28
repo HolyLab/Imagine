@@ -147,6 +147,9 @@
     <ClCompile Include="volpiezo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pi_piezo\Piezo_Controller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Atmcd32d.h">
@@ -198,6 +201,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="volpiezo.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pi_piezo\Piezo_Controller.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

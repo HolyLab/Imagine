@@ -53,7 +53,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>qtgen;$(QTDIR)\include;.\qtgen\Release;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;.\;$(QTDIR)\include\QtScript;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>qtgen;$(QTDIR)\include;.\qtgen\Release;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;.\;$(QTDIR)\include\QtScript;.\pi_piezo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
       </DebugInformationFormat>
@@ -70,15 +70,15 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>qtgen;$(QTDIR)\include;.\qtgen\Debug;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;E:\zsguo\qwt\qwt-5.2\src;.\;$(QTDIR)\include\QtScript;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>qtgen;$(QTDIR)\include;.\qtgen\Debug;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;E:\zsguo\qwt\qwt-5.2\src;.\;$(QTDIR)\include\QtScript;C:\Program Files\boost\boost_1_47;.\pi_piezo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DEBUG_AI;QT_DLL;QT_SCRIPT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmaind.lib;QtCored4.lib;QtGuid4.lib;Atmcd32m.lib;nidaqmx.lib;qwtd5.lib;PvAPI.lib;SC2_Cam.lib;QtScriptd4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;QtCored4.lib;QtGuid4.lib;Atmcd32m.lib;nidaqmx.lib;qwtd5.lib;PvAPI.lib;SC2_Cam.lib;QtScriptd4.lib;pi_piezo\PI_GCS2_DLL.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>$(QTDIR)\lib;E:\zsguo\cooke_sample_new\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\boost\boost_1_47\lib;$(QTDIR)\lib;E:\zsguo\cooke_sample_new\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <HeapReserveSize>0</HeapReserveSize>
@@ -91,7 +91,7 @@
     </Link>
     <ClCompile>
       <PreprocessorDefinitions>QT_DLL;QT_SCRIPT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.\qtgen;.\;$(QTDIR)\include\QtScript;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\qtgen;.\;$(QTDIR)\include\QtScript;.\pi_piezo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -100,6 +100,7 @@
     <ClCompile Include="avt_g.cpp" />
     <ClCompile Include="camera_g.cpp" />
     <ClCompile Include="cooke.cpp" />
+    <ClCompile Include="pi_piezo\Piezo_Controller.cpp" />
     <ClCompile Include="positioner.cpp" />
     <ClCompile Include="spoolthread.cpp" />
     <ClCompile Include="cookeworkerthread.cpp" />
@@ -189,14 +190,15 @@
     <ClCompile Include="volpiezo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="pi_piezo\Piezo_Controller.hpp" />
     <ClInclude Include="volpiezo.hpp" />
     <CustomBuild Include="ai_thread.hpp">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing ai_thread.hpp...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "ai_thread.hpp" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I." "-I." "-I." "-I." "-I." "ai_thread.hpp" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\ai_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\Debug\moc_ai_thread.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing ai_thread.hpp...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "ai_thread.hpp" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I." "-I." "-I." "-I." "-I." "ai_thread.hpp" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\ai_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\Release\moc_ai_thread.cpp;%(Outputs)</Outputs>
     </CustomBuild>
@@ -217,21 +219,21 @@
     <ClInclude Include="Atmcd32d.h" />
     <CustomBuild Include="data_acq_thread.hpp">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing data_acq_thread.hpp...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "data_acq_thread.hpp" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I." "-I." "-I." "-I." "-I." "data_acq_thread.hpp" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\data_acq_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\Debug\moc_data_acq_thread.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing data_acq_thread.hpp...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "data_acq_thread.hpp" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I." "-I." "-I." "-I." "-I." "data_acq_thread.hpp" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\data_acq_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\Release\moc_data_acq_thread.cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <CustomBuild Include="fanctrldialog.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing fanctrldialog.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "fanctrldialog.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I." "-I." "-I." "-I." "-I." "fanctrldialog.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\fanctrldialog.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\$(Configuration)\moc_fanctrldialog.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing fanctrldialog.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "fanctrldialog.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I." "-I." "-I." "-I." "-I." "fanctrldialog.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\fanctrldialog.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\$(Configuration)\moc_fanctrldialog.cpp;%(Outputs)</Outputs>
     </CustomBuild>
@@ -243,49 +245,49 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "cookeworkerthread.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I." "-I." "-I." "-I." "-I." "cookeworkerthread.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "cookeworkerthread.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I." "-I." "-I." "-I." "-I." "cookeworkerthread.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB  "-I." "-I.\qtgen" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "cookeworkerthread.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB  "-I." "-I.\qtgen" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I." "-I." "-I." "cookeworkerthread.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
     <CustomBuild Include="spoolthread.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"  -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710 "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I."</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I." "-I." "-I." "-I." "-I." "spoolthread.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"  -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710 "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I."</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I." "-I." "-I." "-I." "-I." "spoolthread.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"  -DQT_DLL -DQT_SCRIPT_LIB "-I." "-I.\qtgen" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I."</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB  "-I." "-I.\qtgen" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I." "-I." "-I." "spoolthread.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
     <ClInclude Include="fast_ofstream.hpp" />
     <ClInclude Include="histogram_item.h" />
     <CustomBuild Include="imagelabel.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing imagelabel.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "imagelabel.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I." "-I." "-I." "-I." "-I." "imagelabel.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\imagelabel.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\Debug\moc_imagelabel.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing imagelabel.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "imagelabel.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I." "-I." "-I." "-I." "-I." "imagelabel.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\imagelabel.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\Release\moc_imagelabel.cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <CustomBuild Include="imagine.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing imagine.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "imagine.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I." "-I." "-I." "-I." "-I." "imagine.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\imagine.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\Debug\moc_imagine.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing imagine.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "imagine.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I." "-I." "-I." "-I." "-I." "imagine.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\imagine.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\Release\moc_imagine.cpp;%(Outputs)</Outputs>
     </CustomBuild>
@@ -322,11 +324,11 @@
     </CustomBuild>
     <CustomBuild Include="temperaturedialog.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing temperaturedialog.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "temperaturedialog.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-IE:\zsguo\qwt\qwt-5.2\src" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I." "-I." "-I." "-I." "-I." "temperaturedialog.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\temperaturedialog.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\Debug\moc_temperaturedialog.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing temperaturedialog.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I." "-I." "-I." "-I." "-I." "temperaturedialog.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I." "-I." "-I." "-I." "-I." "temperaturedialog.h" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\temperaturedialog.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\Release\moc_temperaturedialog.cpp;%(Outputs)</Outputs>
     </CustomBuild>

@@ -1,7 +1,7 @@
 #ifndef PIEZO_CONTROLLER_HPP
 #define PIEZO_CONTROLLER_HPP
 
-#include "../positioner.hpp"
+#include "positioner.hpp"
 #include <windows.h>
 #include <stdio.h>
 #include <time.h>
