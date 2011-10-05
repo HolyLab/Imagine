@@ -398,6 +398,8 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
 Imagine::~Imagine()
 {
    delete digOut;
+   delete pPositioner;
+   delete pCamera;
 }
 
 bool zoom_isMouseDown=false;
