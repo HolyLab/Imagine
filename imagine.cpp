@@ -355,7 +355,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    //set piezo position to 0 um
    QMessageBox::information(this, "Imagine", 
          "Please raise microscope.\nPiezo position is about to be set 0 um");
-   ui.doubleSpinBoxCurPos->setValue(0);
+   ui.doubleSpinBoxCurPos->setValue(pPositioner->minPos());
    on_btnMovePiezo_clicked();
 
    //
