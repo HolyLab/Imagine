@@ -778,8 +778,8 @@
           <property name="geometry">
            <rect>
             <x>190</x>
-            <y>80</y>
-            <width>51</width>
+            <y>120</y>
+            <width>101</width>
             <height>23</height>
            </rect>
           </property>
@@ -787,15 +787,15 @@
            <string>set as start position</string>
           </property>
           <property name="text">
-           <string>Set</string>
+           <string>Set as start pos</string>
           </property>
          </widget>
          <widget class="QPushButton" name="btnSetCurPosAsStop">
           <property name="geometry">
            <rect>
             <x>190</x>
-            <y>200</y>
-            <width>51</width>
+            <y>160</y>
+            <width>101</width>
             <height>23</height>
            </rect>
           </property>
@@ -803,7 +803,7 @@
            <string>set as stop position</string>
           </property>
           <property name="text">
-           <string>Set</string>
+           <string>Set as stop pos</string>
           </property>
          </widget>
          <widget class="QLabel" name="label_20">
@@ -843,7 +843,7 @@
            <rect>
             <x>190</x>
             <y>141</y>
-            <width>51</width>
+            <width>101</width>
             <height>23</height>
            </rect>
           </property>
@@ -857,7 +857,7 @@
          <widget class="QPushButton" name="btnFastIncPosAndMove">
           <property name="geometry">
            <rect>
-            <x>250</x>
+            <x>300</x>
             <y>110</y>
             <width>21</width>
             <height>23</height>
@@ -870,7 +870,7 @@
          <widget class="QPushButton" name="btnIncPosAndMove">
           <property name="geometry">
            <rect>
-            <x>250</x>
+            <x>300</x>
             <y>130</y>
             <width>21</width>
             <height>23</height>
@@ -883,7 +883,7 @@
          <widget class="QPushButton" name="btnDecPosAndMove">
           <property name="geometry">
            <rect>
-            <x>250</x>
+            <x>300</x>
             <y>150</y>
             <width>21</width>
             <height>23</height>
@@ -896,7 +896,7 @@
          <widget class="QPushButton" name="btnFastDecPosAndMove">
           <property name="geometry">
            <rect>
-            <x>250</x>
+            <x>300</x>
             <y>170</y>
             <width>21</width>
             <height>23</height>

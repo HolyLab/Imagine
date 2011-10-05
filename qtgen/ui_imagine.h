@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'imagine.ui'
 **
-** Created: Wed Oct 5 12:47:37 2011
+** Created: Wed Oct 5 13:03:53 2011
 **      by: Qt User Interface Compiler version 4.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -619,10 +619,10 @@ public:
         doubleSpinBoxStopPos->setValue(400);
         btnSetCurPosAsStart = new QPushButton(tabPiezo);
         btnSetCurPosAsStart->setObjectName(QString::fromUtf8("btnSetCurPosAsStart"));
-        btnSetCurPosAsStart->setGeometry(QRect(190, 80, 51, 23));
+        btnSetCurPosAsStart->setGeometry(QRect(190, 120, 101, 23));
         btnSetCurPosAsStop = new QPushButton(tabPiezo);
         btnSetCurPosAsStop->setObjectName(QString::fromUtf8("btnSetCurPosAsStop"));
-        btnSetCurPosAsStop->setGeometry(QRect(190, 200, 51, 23));
+        btnSetCurPosAsStop->setGeometry(QRect(190, 160, 101, 23));
         label_20 = new QLabel(tabPiezo);
         label_20->setObjectName(QString::fromUtf8("label_20"));
         label_20->setGeometry(QRect(10, 142, 91, 16));
@@ -633,19 +633,19 @@ public:
         doubleSpinBoxCurPos->setValue(200);
         btnMovePiezo = new QPushButton(tabPiezo);
         btnMovePiezo->setObjectName(QString::fromUtf8("btnMovePiezo"));
-        btnMovePiezo->setGeometry(QRect(190, 141, 51, 23));
+        btnMovePiezo->setGeometry(QRect(190, 141, 101, 23));
         btnFastIncPosAndMove = new QPushButton(tabPiezo);
         btnFastIncPosAndMove->setObjectName(QString::fromUtf8("btnFastIncPosAndMove"));
-        btnFastIncPosAndMove->setGeometry(QRect(250, 110, 21, 23));
+        btnFastIncPosAndMove->setGeometry(QRect(300, 110, 21, 23));
         btnIncPosAndMove = new QPushButton(tabPiezo);
         btnIncPosAndMove->setObjectName(QString::fromUtf8("btnIncPosAndMove"));
-        btnIncPosAndMove->setGeometry(QRect(250, 130, 21, 23));
+        btnIncPosAndMove->setGeometry(QRect(300, 130, 21, 23));
         btnDecPosAndMove = new QPushButton(tabPiezo);
         btnDecPosAndMove->setObjectName(QString::fromUtf8("btnDecPosAndMove"));
-        btnDecPosAndMove->setGeometry(QRect(250, 150, 21, 23));
+        btnDecPosAndMove->setGeometry(QRect(300, 150, 21, 23));
         btnFastDecPosAndMove = new QPushButton(tabPiezo);
         btnFastDecPosAndMove->setObjectName(QString::fromUtf8("btnFastDecPosAndMove"));
-        btnFastDecPosAndMove->setGeometry(QRect(250, 170, 21, 23));
+        btnFastDecPosAndMove->setGeometry(QRect(300, 170, 21, 23));
         doubleSpinBoxMinDistance = new QDoubleSpinBox(tabPiezo);
         doubleSpinBoxMinDistance->setObjectName(QString::fromUtf8("doubleSpinBoxMinDistance"));
         doubleSpinBoxMinDistance->setGeometry(QRect(120, 20, 62, 22));
@@ -846,11 +846,11 @@ public:
 #ifndef QT_NO_TOOLTIP
         btnSetCurPosAsStart->setToolTip(QApplication::translate("ImagineClass", "set as start position", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
-        btnSetCurPosAsStart->setText(QApplication::translate("ImagineClass", "Set", 0, QApplication::UnicodeUTF8));
+        btnSetCurPosAsStart->setText(QApplication::translate("ImagineClass", "Set as start pos", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
         btnSetCurPosAsStop->setToolTip(QApplication::translate("ImagineClass", "set as stop position", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
-        btnSetCurPosAsStop->setText(QApplication::translate("ImagineClass", "Set", 0, QApplication::UnicodeUTF8));
+        btnSetCurPosAsStop->setText(QApplication::translate("ImagineClass", "Set as stop pos", 0, QApplication::UnicodeUTF8));
         label_20->setText(QApplication::translate("ImagineClass", "move to position:", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
         doubleSpinBoxCurPos->setToolTip(QApplication::translate("ImagineClass", "Use page up/dow key for fast change", 0, QApplication::UnicodeUTF8));

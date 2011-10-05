@@ -1,2 +1,2 @@
 var camera = "cooke";
-var positioner = "pi";
+var positioner = "volpiezo";
