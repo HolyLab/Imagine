@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'imagine.ui'
 **
-** Created: Mon Sep 26 11:11:13 2011
+** Created: Wed Oct 5 12:47:37 2011
 **      by: Qt User Interface Compiler version 4.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -600,7 +600,7 @@ public:
         doubleSpinBoxMaxDistance->setObjectName(QString::fromUtf8("doubleSpinBoxMaxDistance"));
         doubleSpinBoxMaxDistance->setGeometry(QRect(120, 50, 62, 22));
         doubleSpinBoxMaxDistance->setReadOnly(true);
-        doubleSpinBoxMaxDistance->setMaximum(1000);
+        doubleSpinBoxMaxDistance->setMaximum(1e+06);
         doubleSpinBoxMaxDistance->setValue(400);
         label_8 = new QLabel(tabPiezo);
         label_8->setObjectName(QString::fromUtf8("label_8"));
@@ -611,11 +611,11 @@ public:
         doubleSpinBoxStartPos = new QDoubleSpinBox(tabPiezo);
         doubleSpinBoxStartPos->setObjectName(QString::fromUtf8("doubleSpinBoxStartPos"));
         doubleSpinBoxStartPos->setGeometry(QRect(120, 80, 62, 22));
-        doubleSpinBoxStartPos->setMaximum(400);
+        doubleSpinBoxStartPos->setMaximum(1e+06);
         doubleSpinBoxStopPos = new QDoubleSpinBox(tabPiezo);
         doubleSpinBoxStopPos->setObjectName(QString::fromUtf8("doubleSpinBoxStopPos"));
         doubleSpinBoxStopPos->setGeometry(QRect(120, 200, 62, 22));
-        doubleSpinBoxStopPos->setMaximum(400);
+        doubleSpinBoxStopPos->setMaximum(1e+06);
         doubleSpinBoxStopPos->setValue(400);
         btnSetCurPosAsStart = new QPushButton(tabPiezo);
         btnSetCurPosAsStart->setObjectName(QString::fromUtf8("btnSetCurPosAsStart"));
@@ -629,7 +629,7 @@ public:
         doubleSpinBoxCurPos = new QDoubleSpinBox(tabPiezo);
         doubleSpinBoxCurPos->setObjectName(QString::fromUtf8("doubleSpinBoxCurPos"));
         doubleSpinBoxCurPos->setGeometry(QRect(120, 141, 62, 22));
-        doubleSpinBoxCurPos->setMaximum(400);
+        doubleSpinBoxCurPos->setMaximum(1e+06);
         doubleSpinBoxCurPos->setValue(200);
         btnMovePiezo = new QPushButton(tabPiezo);
         btnMovePiezo->setObjectName(QString::fromUtf8("btnMovePiezo"));
@@ -650,7 +650,7 @@ public:
         doubleSpinBoxMinDistance->setObjectName(QString::fromUtf8("doubleSpinBoxMinDistance"));
         doubleSpinBoxMinDistance->setGeometry(QRect(120, 20, 62, 22));
         doubleSpinBoxMinDistance->setReadOnly(true);
-        doubleSpinBoxMinDistance->setMaximum(1000);
+        doubleSpinBoxMinDistance->setMaximum(1e+06);
         doubleSpinBoxMinDistance->setValue(0);
         label_23 = new QLabel(tabPiezo);
         label_23->setObjectName(QString::fromUtf8("label_23"));
@@ -773,7 +773,7 @@ public:
 
         retranslateUi(ImagineClass);
 
-        tabWidgetCfg->setCurrentIndex(0);
+        tabWidgetCfg->setCurrentIndex(4);
 
 
         QMetaObject::connectSlotsByName(ImagineClass);
