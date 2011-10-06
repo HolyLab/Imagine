@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'imagine.ui'
 **
-** Created: Wed Oct 5 13:03:53 2011
+** Created: Thu Oct 6 12:00:38 2011
 **      by: Qt User Interface Compiler version 4.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!

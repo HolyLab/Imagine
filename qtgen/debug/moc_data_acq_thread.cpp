@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'data_acq_thread.hpp'
 **
-** Created: Wed Sep 28 15:09:52 2011
+** Created: Thu Oct 6 12:00:37 2011
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.0)
 **
 ** WARNING! All changes made in this file will be lost!
