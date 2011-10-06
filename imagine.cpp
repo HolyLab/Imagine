@@ -29,6 +29,7 @@
 #include <QDate>
 #include <QScriptEngine>
 #include <QScriptProgram>
+#include <QApplication>
 
 #include <qwt_plot.h>
 #include <qwt_plot_grid.h>
@@ -38,6 +39,7 @@
 #include <qwt_data.h>
 #include <qwt_symbol.h>
 #include <qwt_plot_curve.h>
+#include <QDesktopWidget>
 
 #include "histogram_item.h"
 
@@ -393,6 +395,12 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
 
    connect(ui.labelImage, SIGNAL(mouseReleased(QMouseEvent*)),
                this, SLOT(zoom_onMouseReleased(QMouseEvent*)));
+
+   QRect rect = QApplication::desktop()->screenGeometry();
+   int x = (rect.width()-this->width()) / 2;
+   int y = (rect.height()-this->height()) / 2;
+   this->move(x, y);
+
 }
 
 Imagine::~Imagine()
