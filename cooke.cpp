@@ -3,6 +3,7 @@
 
 #include <assert.h>
 
+#include "SC2_SDKAddendum.h"
 
 
 bool CookeCamera::init()
@@ -150,6 +151,15 @@ bool CookeCamera::setAcqParams(int emGain,
    //todo: should we set Ram Segment settings. SEE: the api's "storage ctrl" section?
    // should we clear the active segment?
 
+   PCO_SC2_CL_TRANSFER_PARAM clparams;
+
+   errorCode = PCO_GetTransferParameter(hCamera, &clparams, sizeof(PCO_SC2_CL_TRANSFER_PARAM));
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to call PCO_GetTransferParameter()";
+      return false;
+   }
+
+
    //arm the camera to validate the settings
    //NOTE: you have to arm the camera again in setAcqModeAndTime() due to the trigger setting (i.e. set PCO_SetAcquireMode() again)
    errorCode = PCO_ArmCamera(hCamera);
@@ -174,6 +184,19 @@ bool CookeCamera::setAcqParams(int emGain,
    errorCode = PCO_CamLinkSetImageParameters(hCamera, wXResAct, wYResAct);
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to call PCO_CamLinkSetImageParameters()";
+      return false;
+   }
+
+   clparams.DataFormat=PCO_CL_DATAFORMAT_5x12L;
+   errorCode=PCO_SetTransferParameter(hCamera, &clparams,sizeof(PCO_SC2_CL_TRANSFER_PARAM)); 
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to call PCO_GetTransferParameter()";
+      return false;
+   }
+
+   errorCode = PCO_GetTransferParameter(hCamera, &clparams, sizeof(PCO_SC2_CL_TRANSFER_PARAM));
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to call PCO_GetTransferParameter()";
       return false;
    }
 
