@@ -293,6 +293,9 @@ bool CookeCamera::startAcq()
    //camera's internal frame counter can be reset by ARM which is too costly we maintain our own counter
    firstFrameCounter=-1;
 
+   //
+   totalGap=0;
+
    ///alloc the ring buffer for data transfer from card to pc
    mBufIndex[0]=mBufIndex[1] = -1;
    mEvent[0]= mEvent[1]= NULL;
@@ -364,6 +367,7 @@ bool CookeCamera::stopAcq()
    delete workerThread;
    workerThread=nullptr;
 
+   cout<<"total # of black frames: "<<totalGap<<endl;
 
    return true;
 }//stopAcq(),

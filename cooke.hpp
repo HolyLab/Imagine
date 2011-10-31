@@ -40,6 +40,8 @@ class CookeCamera: public Camera {
    PixelValue* pBlackImage;
 
    long firstFrameCounter; //first first frame's counter value
+   long totalGap;
+
    long nAcquiredFrames;
    //lock used to coordinate accessing to nAcquiredFrames & pLiveImage
    QMutex* mpLock; 

@@ -113,6 +113,7 @@ public:
             gapWidth++;
          }
          if(gapWidth) cout<<"fill "<<gapWidth<<" frames with black images (start at frame idx="<<camera->nAcquiredFrames<<")"<<endl;
+         camera->totalGap+=gapWidth;
 
          //fill the frame array and live image
          if(curFrameIdx<camera->nFrames){
