@@ -28,7 +28,7 @@ private:
 	int USBID; // ID of the E-861 controller USB port
 	char szAxis[4]; // Axis information of the piezo stage
 
-	struct actMovement // Actual "from & to" of each movement 
+	struct actMovement // Actual "from & to" of each current movement 
 	{
 		double actFrom,
 			actTo;
