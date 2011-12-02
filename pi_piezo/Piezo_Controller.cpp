@@ -494,8 +494,10 @@ void Piezo_Controller::runMovements()
 				return;
 			}
 		}
-		boost::this_thread::interruption_point(); // abort the current movement if requested
+		if (boost::this_thread::interruption_requested()) break; // check whether the interruption is requested
 	}
+	
+	boost::this_thread::interruption_point(); // abort the current movement if requested
 }
 
 bool Piezo_Controller::prepare(const int i)
@@ -580,8 +582,15 @@ bool Piezo_Controller::wait(const int i)
 				}
 			}
 		}
-		boost::this_thread::interruption_point(); // abort the current waiting process if requested
+		if (boost::this_thread::interruption_requested()) {
+			if(!haltAxisMotion()) {
+				printf("ERROR: The axis is STILL moving. \n");
+				return false;
+			}
+			break;
+		}
 	}
+	// boost::this_thread::interruption_point(); // abort the current waiting process if requested
 
 	if(!MovingStatus)
 	{
