@@ -66,25 +66,13 @@
     <ClCompile Include="qtgen\debug\moc_fanctrldialog.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="qtgen\release\moc_fanctrldialog.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="qtgen\debug\moc_imagelabel.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\release\moc_imagelabel.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\release\moc_imagine.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="qtgen\debug\moc_imagine.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="qtgen\debug\moc_temperaturedialog.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\release\moc_temperaturedialog.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="qtgen\qrc_imagine.cpp">
@@ -99,16 +87,10 @@
     <ClCompile Include="avt_g.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="qtgen\release\moc_ai_thread.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="qtgen\debug\moc_ai_thread.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="qtgen\debug\moc_data_acq_thread.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\release\moc_data_acq_thread.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="misc.cpp">
