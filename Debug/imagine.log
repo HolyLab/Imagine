@@ -1,0 +1,99 @@
+﻿Build started 12/6/2011 2:57:53 PM.
+     1>Project "E:\temp_test\imagine2\imagine.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Touching "Debug\imagine2.unsuccessfulbuild".
+       CustomBuild:
+         Moc'ing ai_thread.hpp...
+         Moc'ing data_acq_thread.hpp...
+         Moc'ing fanctrldialog.h...
+         Moc'ing cookeworkerthread.h...
+         Moc'ing spoolthread.h...
+         Moc'ing imagelabel.h...
+         Moc'ing imagine.h...
+         Moc'ing temperaturedialog.h...
+         Uic'ing E:\temp_test\imagine2\fanctrldialog.ui...
+         Uic'ing imagine.ui...
+     1>CUSTOMBUILD : warning : name dockWidgetContents is already used
+     1>CUSTOMBUILD : warning : name dockWidgetContents is already used
+         Uic'ing temperaturedialog.ui...
+         Compiling Qt resource file: .\imagine.qrc...
+         Creating windows resources...
+         Microsoft (R) Windows (R) Resource Compiler Version 6.1.7600.16385
+         
+         Copyright (C) Microsoft Corporation.  All rights reserved.
+         
+         
+       ClCompile:
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /Iqtgen /IC:\Qt\4.6.3\include /I.\qtgen\Debug /IC:\Qt\4.6.3\include\QtCore /IC:\Qt\4.6.3\include\QtGui /I"E:\zsguo\qwt\qwt-5.2\src" /I.\ /IC:\Qt\4.6.3\include\QtScript /I"C:\Program Files\boost\boost_1_47" /I.\pi_piezo /Zi /nologo /W1 /WX- /Od /Oy- /D DEBUG_AI /D QT_DLL /D QT_SCRIPT_LIB /D _VC80_UPGRADE=0x0710 /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ai_thread.cpp andor_g.cpp avt_g.cpp camera_g.cpp cooke.cpp pi_piezo\Piezo_Controller.cpp positioner.cpp spoolthread.cpp cookeworkerthread.cpp data_acq_thread.cpp fanctrldialog.cpp histogram_item.cpp imagelabel.cpp imagine.cpp main.cpp misc.cpp qtgen\Debug\moc_cookeworkerthread.cpp qtgen\Debug\moc_spoolthread.cpp temperaturedialog.cpp qtgen\debug\moc_fanctrldialog.cpp qtgen\debug\moc_imagelabel.cpp qtgen\debug\moc_imagine.cpp qtgen\debug\moc_temperaturedialog.cpp qtgen\qrc_imagine.cpp volpiezo.cpp
+         ai_thread.cpp
+         andor_g.cpp
+         avt_g.cpp
+         camera_g.cpp
+         cooke.cpp
+         Piezo_Controller.cpp
+         positioner.cpp
+         spoolthread.cpp
+         cookeworkerthread.cpp
+         data_acq_thread.cpp
+         fanctrldialog.cpp
+         histogram_item.cpp
+         imagelabel.cpp
+         imagine.cpp
+         main.cpp
+         misc.cpp
+         moc_cookeworkerthread.cpp
+         moc_spoolthread.cpp
+         temperaturedialog.cpp
+         moc_fanctrldialog.cpp
+         Generating Code...
+         Compiling...
+         moc_imagelabel.cpp
+         moc_imagine.cpp
+         moc_temperaturedialog.cpp
+         qrc_imagine.cpp
+         volpiezo.cpp
+         Generating Code...
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /Iqtgen /IC:\Qt\4.6.3\include /I.\qtgen\Debug /IC:\Qt\4.6.3\include\QtCore /IC:\Qt\4.6.3\include\QtGui /I"E:\zsguo\qwt\qwt-5.2\src" /I.\ /IC:\Qt\4.6.3\include\QtScript /I"C:\Program Files\boost\boost_1_47" /I.\pi_piezo /Zi /nologo /W1 /WX- /Od /Oy- /D DEBUG_AI /D QT_DLL /D QT_SCRIPT_LIB /D _VC80_UPGRADE=0x0710 /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\moc_ai_thread1.obj" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt qtgen\debug\moc_ai_thread.cpp
+         moc_ai_thread.cpp
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /Iqtgen /IC:\Qt\4.6.3\include /I.\qtgen\Debug /IC:\Qt\4.6.3\include\QtCore /IC:\Qt\4.6.3\include\QtGui /I"E:\zsguo\qwt\qwt-5.2\src" /I.\ /IC:\Qt\4.6.3\include\QtScript /I"C:\Program Files\boost\boost_1_47" /I.\pi_piezo /Zi /nologo /W1 /WX- /Od /Oy- /D DEBUG_AI /D QT_DLL /D QT_SCRIPT_LIB /D _VC80_UPGRADE=0x0710 /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\moc_data_acq_thread1.obj" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt qtgen\debug\moc_data_acq_thread.cpp
+         moc_data_acq_thread.cpp
+       Link:
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\temp_test\imagine2\Debug\imagine2.exe" /NOLOGO /LIBPATH:"C:\Program Files\boost\boost_1_47\lib" /LIBPATH:C:\Qt\4.6.3\lib /LIBPATH:E:\zsguo\cooke_sample_new\lib qtmaind.lib QtCored4.lib QtGuid4.lib Atmcd32m.lib nidaqmx.lib qwtd5.lib PvAPI.lib SC2_Cam.lib QtScriptd4.lib pi_piezo\PI_GCS2_DLL.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\imagine2.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"E:\temp_test\imagine2\Debug\imagine2.pdb" /SUBSYSTEM:CONSOLE /HEAP:"0" /STACK:"0" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\temp_test\imagine2\Debug\imagine2.lib" /MACHINE:X86 imagine.res
+         Debug\ai_thread.obj
+         Debug\andor_g.obj
+         Debug\avt_g.obj
+         Debug\camera_g.obj
+         Debug\cooke.obj
+         Debug\Piezo_Controller.obj
+         Debug\positioner.obj
+         Debug\spoolthread.obj
+         Debug\cookeworkerthread.obj
+         Debug\data_acq_thread.obj
+         Debug\fanctrldialog.obj
+         Debug\histogram_item.obj
+         Debug\imagelabel.obj
+         Debug\imagine.obj
+         Debug\main.obj
+         Debug\misc.obj
+         Debug\moc_cookeworkerthread.obj
+         Debug\moc_spoolthread.obj
+         Debug\temperaturedialog.obj
+         Debug\moc_fanctrldialog.obj
+         Debug\moc_imagelabel.obj
+         Debug\moc_imagine.obj
+         Debug\moc_temperaturedialog.obj
+         Debug\qrc_imagine.obj
+         Debug\volpiezo.obj
+         Debug\moc_ai_thread1.obj
+         Debug\moc_data_acq_thread1.obj
+         imagine.vcxproj -> E:\temp_test\imagine2\Debug\imagine2.exe
+       Manifest:
+         C:\Program Files\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"E:\temp_test\imagine2\Debug\imagine2.exe;#1" /manifest Debug\imagine2.exe.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "Debug\imagine2.unsuccessfulbuild".
+         Touching "Debug\imagine2.lastbuildstate".
+     1>Done Building Project "E:\temp_test\imagine2\imagine.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:30.71
