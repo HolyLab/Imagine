@@ -12,6 +12,6 @@
     <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin%3b$(PATH)</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup>
-    <QTDIR>C:\Qt\4.6.3</QTDIR>
+    <QTDIR>C:\Qt\4.8.0</QTDIR>
   </PropertyGroup>
 </Project>

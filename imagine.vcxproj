@@ -398,7 +398,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties QtVersion="4.3.1" QtVersion_x0020_Win32="$(DefaultQtVersion)" />
+      <UserProperties QtVersion="4.8.0" QtVersion_x0020_Win32="4.8.0" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
