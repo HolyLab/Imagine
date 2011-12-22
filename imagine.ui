@@ -955,6 +955,9 @@
           </property>
          </widget>
          <widget class="QDoubleSpinBox" name="doubleSpinBoxPiezoTravelBackTime">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="geometry">
            <rect>
             <x>130</x>
@@ -970,7 +973,7 @@
            <double>10000.000000000000000</double>
           </property>
           <property name="value">
-           <double>3.000000000000000</double>
+           <double>1.500000000000000</double>
           </property>
          </widget>
          <widget class="QCheckBox" name="cbAutoSetPiezoTravelBackTime">
