@@ -41,6 +41,7 @@ public:
        nFramesPerStack;
     double exposureTime, //in sec
        idleTimeBwtnStacks; //in sec
+    double piezoTravelBackTime; //in sec
     int emGain;
     int preAmpGainIdx;
     int horShiftSpeedIdx;
