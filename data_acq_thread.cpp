@@ -378,6 +378,11 @@ nextStack:
 
    pPositioner->runCmd();
 
+   //TMP: trigger camera
+   digOut->updateOutputBuf(5,true);
+   digOut->write();
+
+
    emit newStatusMsgReady(QString("Camera: started acq: %1")
       .arg(camera.getErrorMsg().c_str()));
 
@@ -456,6 +461,11 @@ nextStack:
    ofsAi->flush();
 
    pPositioner->waitCmd();
+
+   //TMP: trigger off camera
+   digOut->updateOutputBuf(5,false);
+   digOut->write();
+
 
    idxCurStack++;  //post: it is #stacks we got so far
    if(idxCurStack<this->nStacks && !stopRequested){
