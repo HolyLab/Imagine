@@ -1257,6 +1257,13 @@ void Imagine::on_doubleSpinBoxBoxIdleTimeBtwnStacks_valueChanged(double newValue
 
 }
 
+void Imagine::on_cbAutoSetPiezoTravelBackTime_stateChanged ( int /* state */ ) 
+{
+   ui.doubleSpinBoxPiezoTravelBackTime->setEnabled(!ui.cbAutoSetPiezoTravelBackTime->isChecked());
+
+}
+
+
 void Imagine::on_btnSetCurPosAsStart_clicked()
 {
    ui.doubleSpinBoxStartPos->setValue(ui.doubleSpinBoxCurPos->value());
