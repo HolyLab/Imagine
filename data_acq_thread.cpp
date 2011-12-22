@@ -298,7 +298,7 @@ void DataAcqThread::run_acq_and_save()
 
    pPositioner->clearCmd();
    pPositioner->addMovement(piezoStartPosUm, piezoStopPosUm, nFramesPerStack*cycleTime*1e6, 1);
-   pPositioner->addMovement(piezoStopPosUm, piezoStartPosUm, idleTimeBwtnStacks/2*1e6, -1);//move back
+   pPositioner->addMovement(piezoStopPosUm, piezoStartPosUm, piezoTravelBackTime*1e6, -1);//move back
    pPositioner->addMovement(piezoStartPosUm, numeric_limits<double>::quiet_NaN(), 0, 0); //stop the trigger
    pPositioner->prepareCmd();
 
