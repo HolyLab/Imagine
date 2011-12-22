@@ -703,7 +703,7 @@
          <widget class="QDoubleSpinBox" name="doubleSpinBoxMaxDistance">
           <property name="geometry">
            <rect>
-            <x>120</x>
+            <x>130</x>
             <y>50</y>
             <width>62</width>
             <height>22</height>
@@ -748,7 +748,7 @@
          <widget class="QDoubleSpinBox" name="doubleSpinBoxStartPos">
           <property name="geometry">
            <rect>
-            <x>120</x>
+            <x>130</x>
             <y>80</y>
             <width>62</width>
             <height>22</height>
@@ -761,7 +761,7 @@
          <widget class="QDoubleSpinBox" name="doubleSpinBoxStopPos">
           <property name="geometry">
            <rect>
-            <x>120</x>
+            <x>130</x>
             <y>200</y>
             <width>62</width>
             <height>22</height>
@@ -777,7 +777,7 @@
          <widget class="QPushButton" name="btnSetCurPosAsStart">
           <property name="geometry">
            <rect>
-            <x>190</x>
+            <x>200</x>
             <y>120</y>
             <width>101</width>
             <height>23</height>
@@ -793,7 +793,7 @@
          <widget class="QPushButton" name="btnSetCurPosAsStop">
           <property name="geometry">
            <rect>
-            <x>190</x>
+            <x>200</x>
             <y>160</y>
             <width>101</width>
             <height>23</height>
@@ -822,7 +822,7 @@
          <widget class="QDoubleSpinBox" name="doubleSpinBoxCurPos">
           <property name="geometry">
            <rect>
-            <x>120</x>
+            <x>130</x>
             <y>141</y>
             <width>62</width>
             <height>22</height>
@@ -841,7 +841,7 @@
          <widget class="QPushButton" name="btnMovePiezo">
           <property name="geometry">
            <rect>
-            <x>190</x>
+            <x>200</x>
             <y>141</y>
             <width>101</width>
             <height>23</height>
@@ -857,7 +857,7 @@
          <widget class="QPushButton" name="btnFastIncPosAndMove">
           <property name="geometry">
            <rect>
-            <x>300</x>
+            <x>310</x>
             <y>110</y>
             <width>21</width>
             <height>23</height>
@@ -870,7 +870,7 @@
          <widget class="QPushButton" name="btnIncPosAndMove">
           <property name="geometry">
            <rect>
-            <x>300</x>
+            <x>310</x>
             <y>130</y>
             <width>21</width>
             <height>23</height>
@@ -883,7 +883,7 @@
          <widget class="QPushButton" name="btnDecPosAndMove">
           <property name="geometry">
            <rect>
-            <x>300</x>
+            <x>310</x>
             <y>150</y>
             <width>21</width>
             <height>23</height>
@@ -896,7 +896,7 @@
          <widget class="QPushButton" name="btnFastDecPosAndMove">
           <property name="geometry">
            <rect>
-            <x>300</x>
+            <x>310</x>
             <y>170</y>
             <width>21</width>
             <height>23</height>
@@ -909,7 +909,7 @@
          <widget class="QDoubleSpinBox" name="doubleSpinBoxMinDistance">
           <property name="geometry">
            <rect>
-            <x>120</x>
+            <x>130</x>
             <y>20</y>
             <width>62</width>
             <height>22</height>
@@ -936,6 +936,57 @@
           </property>
           <property name="text">
            <string>min distance(um):</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_10">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>250</y>
+            <width>111</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="lineWidth">
+           <number>3</number>
+          </property>
+          <property name="text">
+           <string>time for moving back(s):</string>
+          </property>
+         </widget>
+         <widget class="QDoubleSpinBox" name="doubleSpinBoxPiezoTravelBackTime">
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>250</y>
+            <width>61</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="maximum">
+           <double>10000.000000000000000</double>
+          </property>
+          <property name="value">
+           <double>3.000000000000000</double>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="cbAutoSetPiezoTravelBackTime">
+          <property name="geometry">
+           <rect>
+            <x>200</x>
+            <y>250</y>
+            <width>90</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Auto</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </widget>
