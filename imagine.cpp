@@ -977,6 +977,7 @@ void Imagine::on_btnApply_clicked()
 
    dataAcqThread.piezoStartPosUm=ui.doubleSpinBoxStartPos->value();
    dataAcqThread.piezoStopPosUm =ui.doubleSpinBoxStopPos->value();
+   dataAcqThread.piezoTravelBackTime=ui.doubleSpinBoxPiezoTravelBackTime->value();
 
    dataAcqThread.nStacks=ui.spinBoxNumOfStacks->value();
    dataAcqThread.nFramesPerStack=ui.spinBoxFramesPerStack->value();
@@ -1245,6 +1246,15 @@ void Imagine::on_tabWidgetCfg_currentChanged(int index)
 void Imagine::on_doubleSpinBoxCurPos_valueChanged(double newValue)
 {
    //do nothing for now
+}
+
+
+void Imagine::on_doubleSpinBoxBoxIdleTimeBtwnStacks_valueChanged(double newValue)
+{
+   if(ui.cbAutoSetPiezoTravelBackTime->isChecked()){
+      ui.doubleSpinBoxPiezoTravelBackTime->setValue(newValue/2);
+   }
+
 }
 
 void Imagine::on_btnSetCurPosAsStart_clicked()

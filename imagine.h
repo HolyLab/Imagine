@@ -97,6 +97,7 @@ private slots:
         //void on_actionColorizeSaturatedPixels_triggered();
         void on_tabWidgetCfg_currentChanged(int index);
         void on_doubleSpinBoxCurPos_valueChanged(double newValue);
+        void on_doubleSpinBoxBoxIdleTimeBtwnStacks_valueChanged(double newValue);
         void readPiezoCurPos();
 
         void updateStatus(const QString &str);
