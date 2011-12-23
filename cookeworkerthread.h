@@ -74,7 +74,7 @@ public:
       while(true){
          if(shouldStop) break;
          ///wait for events
-         int waitResult=WaitForMultipleObjects(2, camera->mEvent, false, 500);
+         int waitResult=WaitForMultipleObjects(2, camera->mEvent, false, 5000);
          switch(waitResult){
             case WAIT_OBJECT_0 + 0:
             case WAIT_OBJECT_0 + 1:
