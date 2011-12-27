@@ -164,7 +164,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidgetCfg">
         <property name="currentIndex">
-         <number>4</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -830,6 +830,9 @@
           </property>
           <property name="toolTip">
            <string>Use page up/dow key for fast change</string>
+          </property>
+          <property name="minimum">
+           <double>-1.000000000000000</double>
           </property>
           <property name="maximum">
            <double>1000000.000000000000000</double>
