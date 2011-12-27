@@ -13,7 +13,7 @@ public:
 
    double minPos(){return 0;}
    double maxPos(){return 400; }
-
+   bool curPos(double* pos);
    bool moveTo(double to);
 
    bool addMovement(double from, double to, double duration, int trigger);

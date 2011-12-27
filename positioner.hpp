@@ -30,6 +30,7 @@ public:
 
    virtual double minPos()=0; // the min value of the position
    virtual double maxPos()=0; // the max value of the position. NOTE: the unit is macro
+   virtual bool curPos(double* pos)=0; // current position in um
    virtual bool moveTo(double to)=0; //move as quick as possible
 
    //// cmd related:

@@ -1221,12 +1221,9 @@ void Imagine::updateStatus(ImagineStatus newStatus, ImagineAction newAction)
 
 void Imagine::readPiezoCurPos()
 {
-   NiDaqAiReadOne ai(0); //channel 0: piezo
-   int16 reading;
-   ai.readOne(reading); //TODO: check error
-   double vol=ai.toPhyUnit(reading);
-   double um=vol/10*ui.doubleSpinBoxMaxDistance->value();
-   ui.doubleSpinBoxCurPos->setValue(um);
+   double um;
+   if(pPositioner->curPos(&um)) ui.doubleSpinBoxCurPos->setValue(um);
+   else ui.doubleSpinBoxCurPos->setValue(-1);
 }
 
 void Imagine::on_tabWidgetCfg_currentChanged(int index)
