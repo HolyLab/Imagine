@@ -1231,7 +1231,6 @@ void Imagine::on_tabWidgetCfg_currentChanged(int index)
    static bool hasRead=false;
 
    if(ui.tabWidgetCfg->currentWidget()==ui.tabPiezo){
-      //QMessageBox::information(this, "test", "test");
       if(!hasRead){
          readPiezoCurPos();
          hasRead=true;
