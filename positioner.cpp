@@ -6,7 +6,10 @@ bool Positioner::addMovement(double from, double to, double duration, int trigge
       movements.push_back(new Movement(from, to,duration,trigger));
       return true;
    }
-   else return false;
+   else {
+      lastErrorMsg="addMovment: out of range";
+      return false;
+   }
 }
 
 void Positioner::clearCmd()

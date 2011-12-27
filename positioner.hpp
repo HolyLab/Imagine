@@ -2,7 +2,9 @@
 #define POSITIONER_HPP
 
 #include <vector>
+#include <string>
 using std::vector;
+using std::string;
 
 //this is the base class of the specific positioners' classes
 
@@ -18,10 +20,13 @@ protected:
       virtual ~Movement(){}
    };
    vector<Movement* > movements;
+   string lastErrorMsg;
 
 public:
    Positioner(){}
    virtual ~Positioner(){ clearCmd(); }
+
+   virtual string getLastErrorMsg(){return lastErrorMsg;}
 
    virtual double minPos()=0; // the min value of the position
    virtual double maxPos()=0; // the max value of the position. NOTE: the unit is macro

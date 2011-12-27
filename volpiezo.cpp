@@ -69,6 +69,7 @@ bool VolPiezo::prepareCmd()
    ao->cfgTiming(scanRateAo, int(scanRateAo*totalTime));
    if(ao->isError()) {
       cleanup();
+      lastErrorMsg="prepareCmd: failed to configure timing";
       return false;
    }
 
