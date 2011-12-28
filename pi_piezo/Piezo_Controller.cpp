@@ -311,6 +311,19 @@ bool Piezo_Controller::abortCmd()
 	return true;
 }
 
+bool Piezo_Controller::curPos(double* pos) // current position in um
+{
+	if(PI_qPOS(this->USBID, &this->szAxis[0], pos)) // Inquire the current piezo stage position
+	{			
+		return true;		
+	}
+	else
+	{
+		this->lastErrorMsg="error in curPos";
+		return false;
+	}
+}
+
 int Piezo_Controller::getMovementsSize()
 {
 	return this->movements.size();
@@ -334,6 +347,7 @@ bool Piezo_Controller::haltAxisMotion()
 		{
 			if(!PI_HLT(this->USBID, &this->szAxis[0])) // Halt the motion of axis smoothly
 			{
+				this->lastErrorMsg="Halt the motion of axis fails.";
 				return false; 
 			}
 			else
@@ -348,13 +362,21 @@ bool Piezo_Controller::haltAxisMotion()
 			return true;
 		}
 	}
-	else return false;
+	else 
+	{
+		this->lastErrorMsg="Halt the motion of axis fails.";
+		return false;
+	}
 }
 
 bool Piezo_Controller::setVelocity(const double vel)
 {
 	double newVelocity;
-	if(!(vel > 0.0)) return false;
+	if(!(vel > 0.0)) 
+	{
+		this->lastErrorMsg="Velocity is less than 0.0.";
+		return false;
+	}
 	if(vel < maxVel())
 	{
 		newVelocity = vel/this->micro;
@@ -366,7 +388,7 @@ bool Piezo_Controller::setVelocity(const double vel)
 
 	if(!PI_VEL(this->USBID, &this->szAxis[0], &newVelocity)) // Set up the new piezo stage velocity
 	{
-		// printf(" The setting of new piezo velocity fails \n");
+		printf(" The setting of new piezo velocity fails \n");
 		return false;
 	}
 
@@ -376,14 +398,14 @@ bool Piezo_Controller::setVelocity(const double vel)
 		// printf(" The current piezo stage velocity is %f \n", curVelocity);
 		if(abs(curVelocity-newVelocity)/newVelocity > 0.01)
 		{
-			// printf(" The setting of the new piezo stage velocity fails. \n");
+			printf(" The setting of the new piezo stage velocity fails. \n");
 			return false;
 		}
 		else return true;
 	}
 	else
 	{
-		// printf(" The inquire of current piezo stage velocity fails. \n");
+		printf(" The inquire of current piezo stage velocity fails. \n");
 		return false;
 	}
 }
@@ -402,7 +424,7 @@ bool Piezo_Controller::setAcceleration(const double acc)
 
 	if(!PI_ACC(this->USBID, &this->szAxis[0], &newAcceleration)) // Set up the new piezo stage acceleration
 	{
-		// printf(" The setting of new piezo stage acceleration fails \n");
+		printf(" The setting of new piezo stage acceleration fails \n");
 		return false;
 	}
 
@@ -412,14 +434,14 @@ bool Piezo_Controller::setAcceleration(const double acc)
 		// printf(" The current piezo stage acceleration is %f \n", curAcceleration);
 		if(abs(curAcceleration-newAcceleration)/newAcceleration > 0.01)
 		{
-			// printf(" The setting of the new piezo stage acceleration fails \n");
+			printf(" The setting of the new piezo stage acceleration fails \n");
 			return false;
 		}
 		else return true;
 	}
 	else
 	{
-		// printf(" The inquire of current piezo stage acceleration fails \n");
+		printf(" The inquire of current piezo stage acceleration fails \n");
 		return false;
 	}
 }
@@ -438,7 +460,7 @@ bool Piezo_Controller::setDeceleration(const double dec)
 
 	if(!PI_DEC(this->USBID, &this->szAxis[0], &newDeceleration)) // Set up the new piezo stage deceleration
 	{
-		// printf(" The setting of new piezo stage deceleration fails \n");
+		printf(" The setting of new piezo stage deceleration fails \n");
 		return false;
 	}
 
@@ -448,14 +470,14 @@ bool Piezo_Controller::setDeceleration(const double dec)
 		// printf(" The current piezo stage deceleration is %f \n", curDeceleration);
 		if(abs(curDeceleration-newDeceleration)/newDeceleration > 0.01)
 		{
-			// printf(" The setting of the new piezo stage deceleration fails \n");
+			printf(" The setting of the new piezo stage deceleration fails \n");
 			return false;
 		}
 		else return true;
 	}
 	else
 	{
-		// printf(" The inquire of current piezo stage deceleration fails \n");
+		printf(" The inquire of current piezo stage deceleration fails \n");
 		return false;
 	}
 }
@@ -650,13 +672,13 @@ bool Piezo_Controller::moving(const double to)
 		}
 		else 
 		{
-			// printf(" The inquire of the current position fails \n");
+			printf(" The inquire of the current position fails \n");
 			return false;
 		}
 	}
 	else
 	{
-		// printf(" The destination is out of bound \n");
+		printf(" The destination is out of bound \n");
 		return false;
 	}
 }
@@ -667,10 +689,12 @@ bool Piezo_Controller::Triggering(const int i)
 	// printf(" Inside of Triggering: %d %f %d \n", i, duration, trigger);
 	if(trigger == 1)
 	{
+		this->lastErrorMsg="triggering fails.";
 		if(!setTrigger(1)) return false;
 	}
 	else if(trigger == 0)
 	{
+		this->lastErrorMsg="triggering fails.";
 		if(!setTrigger(0)) return false;
 	}
 
@@ -697,6 +721,7 @@ bool Piezo_Controller::setTrigger(const int trigger)
 		const int ArraySize = 1;
 		if(!PI_DIO(this->USBID, OutputChannel, ChannelVol, ArraySize)) 
 		{
+			this->lastErrorMsg="set trigger fails.";
 			return false;
 		}
 		else

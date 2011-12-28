@@ -54,6 +54,8 @@ public:
 	bool waitCmd(); // wait all movements to complete
 	bool abortCmd(); // abort the movements
 	
+	bool curPos(double* pos); // current position in um
+
 protected:
 	int getMovementsSize(); // get the size of the movements
 
