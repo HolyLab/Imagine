@@ -1222,8 +1222,8 @@ void Imagine::updateStatus(ImagineStatus newStatus, ImagineAction newAction)
 void Imagine::readPiezoCurPos()
 {
    double um;
-   if(pPositioner->curPos(&um)) ui.doubleSpinBoxCurPos->setValue(um);
-   else ui.doubleSpinBoxCurPos->setValue(-1);
+   if(pPositioner->curPos(&um)) ui.labelCurPos->setText(QString::number(um, 'f', 2));
+   else ui.labelCurPos->setText("Unknown");
 }
 
 void Imagine::on_tabWidgetCfg_currentChanged(int index)
