@@ -76,6 +76,7 @@ private slots:
         void on_btnIncPosAndMove_clicked();
         void on_btnFastIncPosAndMove_clicked();
         void on_btnMovePiezo_clicked();
+        void on_btnRefreshPos_clicked();
         void on_btnSetCurPosAsStop_clicked();
         void on_btnSetCurPosAsStart_clicked();
         void on_btnSelectFile_clicked();

@@ -1277,6 +1277,11 @@ void Imagine::on_btnMovePiezo_clicked()
 }
 
 
+void Imagine::on_btnRefreshPos_clicked()
+{
+   readPiezoCurPos();
+}
+
 void Imagine::on_btnFastIncPosAndMove_clicked()
 {
    ui.doubleSpinBoxCurPos->stepBy(10);
