@@ -164,7 +164,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidgetCfg">
         <property name="currentIndex">
-         <number>0</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -778,7 +778,7 @@
           <property name="geometry">
            <rect>
             <x>200</x>
-            <y>120</y>
+            <y>90</y>
             <width>101</width>
             <height>23</height>
            </rect>
@@ -794,7 +794,7 @@
           <property name="geometry">
            <rect>
             <x>200</x>
-            <y>160</y>
+            <y>130</y>
             <width>101</width>
             <height>23</height>
            </rect>
@@ -810,7 +810,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>142</y>
+            <y>112</y>
             <width>91</width>
             <height>16</height>
            </rect>
@@ -823,7 +823,7 @@
           <property name="geometry">
            <rect>
             <x>130</x>
-            <y>141</y>
+            <y>111</y>
             <width>62</width>
             <height>22</height>
            </rect>
@@ -845,7 +845,7 @@
           <property name="geometry">
            <rect>
             <x>200</x>
-            <y>141</y>
+            <y>111</y>
             <width>101</width>
             <height>23</height>
            </rect>
@@ -861,7 +861,7 @@
           <property name="geometry">
            <rect>
             <x>310</x>
-            <y>110</y>
+            <y>80</y>
             <width>21</width>
             <height>23</height>
            </rect>
@@ -874,7 +874,7 @@
           <property name="geometry">
            <rect>
             <x>310</x>
-            <y>130</y>
+            <y>100</y>
             <width>21</width>
             <height>23</height>
            </rect>
@@ -887,7 +887,7 @@
           <property name="geometry">
            <rect>
             <x>310</x>
-            <y>150</y>
+            <y>120</y>
             <width>21</width>
             <height>23</height>
            </rect>
@@ -900,7 +900,7 @@
           <property name="geometry">
            <rect>
             <x>310</x>
-            <y>170</y>
+            <y>140</y>
             <width>21</width>
             <height>23</height>
            </rect>
@@ -993,6 +993,48 @@
           </property>
           <property name="checked">
            <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_27">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>165</y>
+            <width>91</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>current position:</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelCurPos">
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>165</y>
+            <width>70</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>              </string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="btnRefreshPos">
+          <property name="geometry">
+           <rect>
+            <x>200</x>
+            <y>160</y>
+            <width>101</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>Move piezo according to user's input</string>
+          </property>
+          <property name="text">
+           <string>Refresh</string>
           </property>
          </widget>
         </widget>
