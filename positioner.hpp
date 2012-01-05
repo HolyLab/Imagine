@@ -21,12 +21,16 @@ protected:
    };
    vector<Movement* > movements;
    string lastErrorMsg;
+   int dim; //dim that minPos, maxPos, curPos, moveTo, addMovement work on. 0 is x-axis.
 
 public:
-   Positioner(){}
+   Positioner(){setDim(0);}
    virtual ~Positioner(){ clearCmd(); }
 
    virtual string getLastErrorMsg(){return lastErrorMsg;}
+
+   virtual int getDim(){return dim;}               //get cur dimension
+   virtual bool setDim(int d){dim=d; return true;} //this will affect the dimension next 5 methods work on.
 
    virtual double minPos()=0; // the min value of the position
    virtual double maxPos()=0; // the max value of the position. NOTE: the unit is macro
