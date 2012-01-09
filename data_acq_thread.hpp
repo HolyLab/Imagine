@@ -22,6 +22,8 @@
 
 #include "andor_g.hpp"
 
+extern QString positionerType;
+
 class QImage;
 class NiDaqAi;
 

@@ -37,6 +37,7 @@
 
 extern Camera* pCamera;
 extern Positioner* pPositioner;
+extern QString positionerType;
 extern QScriptEngine* se;
 
 bool loadScript(const QString &filename)
@@ -95,7 +96,7 @@ int main(int argc, char *argv[])
       return 1;  
    }
    QString cameraVendor=se->globalObject().property("camera").toString();
-   QString positionerType=se->globalObject().property("positioner").toString();
+   positionerType=se->globalObject().property("positioner").toString();
 
    if(cameraVendor!="avt" && cameraVendor!="andor" && cameraVendor!="cooke"){
       QMessageBox::critical(0, "Imagine", "Unsupported camera."

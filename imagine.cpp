@@ -354,6 +354,8 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    ui.doubleSpinBoxMinDistance->setValue(pPositioner->minPos());
    ui.doubleSpinBoxMaxDistance->setValue(pPositioner->maxPos());
 
+   ui.comboBoxAxis->setEnabled(positionerType=="thor");
+
    //set piezo position to 0 um
    QMessageBox::information(this, "Imagine", 
          "Please raise microscope.\nPiezo position is about to be set 0 um");
@@ -1273,6 +1275,7 @@ void Imagine::on_btnSetCurPosAsStop_clicked()
 void Imagine::on_btnMovePiezo_clicked()
 {
    double um=ui.doubleSpinBoxCurPos->value();
+   pPositioner->setDim(ui.comboBoxAxis->currentIndex());
    pPositioner->moveTo(um);
 }
 
