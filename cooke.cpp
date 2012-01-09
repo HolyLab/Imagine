@@ -200,6 +200,7 @@ bool CookeCamera::setAcqParams(int emGain,
       return false;
    }
 
+   //PCO_SetInterfaceOutputFormat, p6, 20
 
    return true;
 }//setAcqParams(),
