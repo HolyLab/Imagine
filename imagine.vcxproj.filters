@@ -276,6 +276,6 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="pi_actuator\APTAPI.lib" />
+    <Library Include="pi_actuator\APT.lib" />
   </ItemGroup>
 </Project>
