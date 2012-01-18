@@ -8,10 +8,15 @@ int main()
 	test->setDim(0);
 	test->moveTo(40.0E3); // Move to 40.00mm on the X axis
 	test->moveTo(20.0E3);
+	double pos;
+	test->curPos(&pos);
+	printf("current pos: %f \n", pos);
 
 	test->setDim(1);
 	test->moveTo(30.0E3); // Move to 30.00mm on the Y axis
 	test->moveTo(10.0E3);
+	test->curPos(&pos);
+	printf("current pos: %f \n", pos);
 
 	test->clearCmd();
 	// Variables:     from, to, duration, trigger

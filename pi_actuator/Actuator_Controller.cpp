@@ -83,8 +83,8 @@ double Actuator_Controller::minPos()
 }
 double Actuator_Controller::maxPos()
 {
-	if(dim == 0) return 70000.0;
-	if(dim == 1) return this->upPosLimit;
+	if(getDim() == 0) return 70000.0;
+	if(getDim() == 1) return this->upPosLimit;
 }
 double Actuator_Controller::maxVel()
 {
@@ -98,20 +98,19 @@ double Actuator_Controller::maxAcc()
 bool Actuator_Controller::curPos(double* pos) // current position in um
 {
 	long lSerialNum;
-	if(dim == 0) lSerialNum = this->plSerialNum[CHAN1_INDEX];
-	if(dim == 1) lSerialNum = this->plSerialNum[CHAN2_INDEX];
+	if(getDim() == 0) lSerialNum = this->plSerialNum[CHAN1_INDEX];
+	if(getDim() == 1) lSerialNum = this->plSerialNum[CHAN2_INDEX];
 	HANDLE_ERROR(InitHWDevice(lSerialNum));
 	float CurrentPos;
 	HANDLE_ERROR(MOT_GetPosition(lSerialNum, &CurrentPos)); // Get the current position
-	*pos = static_cast<double>(CurrentPos);
+	*pos = static_cast<double>(CurrentPos) * this->micro;
 	return true;
 }
-
 bool Actuator_Controller::moveTo(const double to)
 {
-	if(dim == 0) { 
+	if(getDim() == 0) { 
 		moveToX(to);
-	} else if(dim == 1) {
+	} else if(getDim() == 1) {
 		long lSerialNum = this->plSerialNum[CHAN2_INDEX];
 		HANDLE_ERROR(InitHWDevice(lSerialNum)); // Initialize the X axis HWUnit before using
 
@@ -136,7 +135,7 @@ bool Actuator_Controller::moveTo(const double to)
 bool Actuator_Controller::prepareCmd()
 {
 	if(!haltAxisMotion()) {
-		printf("ERROR: The channel 2 axis is STILL moving. \n");
+		printf("ERROR: The channel axis is STILL moving. \n");
 		return false;
 	} else {
 		return true;
@@ -171,7 +170,9 @@ int Actuator_Controller::getMovementsSize()
 }
 bool Actuator_Controller::haltAxisMotion()
 {
-	long lSerialNum = this->plSerialNum[CHAN2_INDEX];
+	long lSerialNum;
+	if(getDim() == 0) lSerialNum = this->plSerialNum[CHAN1_INDEX];
+	if(getDim() == 1) lSerialNum = this->plSerialNum[CHAN2_INDEX];
 	HANDLE_ERROR(InitHWDevice(lSerialNum));
 	HANDLE_ERROR(MOT_StopProfiled(lSerialNum));
 	return true;
