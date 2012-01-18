@@ -209,7 +209,7 @@ bool AvtCamera::setAcqParams(int emGain,
     unsigned long CenterX,CenterY;
     PvAttrUint32Get(cameraHandle,"Width",&rWidth);
     PvAttrUint32Get(cameraHandle,"Height",&rHeight);
-    cout<<"new width/height"<<rWidth<<"/"<<rHeight<<endl;
+    cout<<"new width/height: "<<rWidth<<"/"<<rHeight<<endl;
 
 
    return true;
@@ -231,7 +231,7 @@ void _STDCALL FrameDoneCB(tPvFrame* pFrame)
 void  __stdcall onFrameDone(tPvFrame* pFrame)
 {
    // if the frame was completed we re-enqueue it
-   cout<<"frame #"<<pFrame->FrameCount<<endl;
+   cout<<"pFrame->FrameCount=="<<pFrame->FrameCount<<endl;
    AvtCamera* pCamera=(AvtCamera*)pFrame->Context[0];
    int frameIdx=(int)pFrame->Context[1];
    int nPixels=pCamera->getImageHeight()*pCamera->getImageWidth();
