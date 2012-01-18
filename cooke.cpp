@@ -107,6 +107,12 @@ bool CookeCamera::setAcqParams(int emGain,
       return false;
    }
 
+   errorCode=PCO_ResetSettingsToDefault(hCamera);
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to reset camera settings";
+      return false;
+   }
+
    //for this cooke camera no binning is possible
    //so skip SetBinning
 
@@ -148,6 +154,25 @@ bool CookeCamera::setAcqParams(int emGain,
       return false;
    }
 
+   DWORD dwPixelRate;
+   errorCode=PCO_GetPixelRate(hCamera, &dwPixelRate);
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to call PCO_GetPixelRate()";
+      return false;
+   }
+
+   errorCode=PCO_SetPixelRate(hCamera, dwPixelRate); 
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to call PCO_SetPixelRate()";
+      return false;
+   }
+
+   errorCode = PCO_ArmCamera(hCamera);
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to arm the camera";
+      return false;
+   }
+
    //todo: should we set Ram Segment settings. SEE: the api's "storage ctrl" section?
    // should we clear the active segment?
 
@@ -173,13 +198,14 @@ bool CookeCamera::setAcqParams(int emGain,
    }
    assert(wXResAct==hend-hstart+1 && wYResAct==vend-vstart+1);
 
-   errorCode = PCO_CamLinkSetImageParameters(hCamera, wXResAct, wYResAct);
+   //
+   errorCode=PCO_GetPixelRate(hCamera, &dwPixelRate);
    if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_CamLinkSetImageParameters()";
+      errorMsg="failed to call PCO_GetPixelRate()";
       return false;
    }
 
-   //
+
    WORD wDestInterface=2,wFormat, wRes1, wRes2;
    errorCode=PCO_GetInterfaceOutputFormat(hCamera, &wDestInterface, &wFormat, &wRes1, &wRes2);
    if(errorCode!=PCO_NOERROR) {
@@ -208,7 +234,25 @@ bool CookeCamera::setAcqParams(int emGain,
    }
 
    //PCO_SetInterfaceOutputFormat, p6, 20
-   WORD wIdentifier, wParameter;
+   WORD wFormat2;
+   errorCode=PCO_GetDoubleImageMode(hCamera, &wFormat2);
+
+   char Description[256]; BYTE bInputWidth,bOutputWidth; 
+   WORD wNumberOfLuts, wDescLen, wIdentifier;
+   errorCode=PCO_GetLookupTableInfo(hCamera, 0, &wNumberOfLuts, 0, 0, 0, 0, 0, 0);
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to get #LUTs";
+      return false;
+   }
+   int nLuts=wNumberOfLuts;
+   for(int i=0; i<nLuts; ++i){
+      errorCode=PCO_GetLookupTableInfo(hCamera, i, &wNumberOfLuts, Description, 256, &wIdentifier, &bInputWidth, &bOutputWidth, &wFormat2);
+      if(errorCode!=PCO_NOERROR) cout<<"error when get lut "<<i<<"'s info"<<endl;
+      //else cout<<"lut "<<i<<": '"<<Description<<"'"<<
+   }
+
+
+   WORD wParameter;
    errorCode =PCO_GetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to call PCO_GetActiveLookupTable()";
@@ -228,6 +272,12 @@ bool CookeCamera::setAcqParams(int emGain,
    errorCode = PCO_ArmCamera(hCamera);
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to arm the camera";
+      return false;
+   }
+
+   errorCode = PCO_CamLinkSetImageParameters(hCamera, wXResAct, wYResAct);
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to call PCO_CamLinkSetImageParameters()";
       return false;
    }
 
