@@ -160,14 +160,6 @@ bool CookeCamera::setAcqParams(int emGain,
    }
 
 
-   //arm the camera to validate the settings
-   //NOTE: you have to arm the camera again in setAcqModeAndTime() due to the trigger setting (i.e. set PCO_SetAcquireMode() again)
-   errorCode = PCO_ArmCamera(hCamera);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to arm the camera";
-      return false;
-   }
-
    //get size
    WORD wXResAct=-1; // Actual X Resolution
    WORD wYResAct = -1; // Actual Y Resolution
@@ -187,6 +179,21 @@ bool CookeCamera::setAcqParams(int emGain,
       return false;
    }
 
+   //
+   WORD wDestInterface=2,wFormat, wRes1, wRes2;
+   errorCode=PCO_GetInterfaceOutputFormat(hCamera, &wDestInterface, &wFormat, &wRes1, &wRes2);
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to call PCO_GetInterfaceOutputFormat()";
+      return false;
+   }
+
+   wRes1=wRes2=0;
+   errorCode=PCO_SetInterfaceOutputFormat(hCamera, wDestInterface, wFormat, wRes1, wRes2);
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to call PCO_SetInterfaceOutputFormat()";
+      return false;
+   }
+
    clparams.DataFormat=PCO_CL_DATAFORMAT_5x12L;
    errorCode=PCO_SetTransferParameter(hCamera, &clparams,sizeof(PCO_SC2_CL_TRANSFER_PARAM)); 
    if(errorCode!=PCO_NOERROR) {
@@ -201,6 +208,28 @@ bool CookeCamera::setAcqParams(int emGain,
    }
 
    //PCO_SetInterfaceOutputFormat, p6, 20
+   WORD wIdentifier, wParameter;
+   errorCode =PCO_GetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to call PCO_GetActiveLookupTable()";
+      return false;
+   }
+
+   //
+   errorCode =PCO_SetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to call PCO_SetActiveLookupTable()";
+      return false;
+   }
+
+
+   //arm the camera to validate the settings
+   //NOTE: you have to arm the camera again in setAcqModeAndTime() due to the trigger setting (i.e. set PCO_SetAcquireMode() again)
+   errorCode = PCO_ArmCamera(hCamera);
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to arm the camera";
+      return false;
+   }
 
    return true;
 }//setAcqParams(),
