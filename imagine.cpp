@@ -355,6 +355,10 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    ui.doubleSpinBoxMaxDistance->setValue(pPositioner->maxPos());
 
    ui.comboBoxAxis->setEnabled(positionerType=="thor");
+   if(positionerType=="thor"){
+	   pPositioner->setDim(1);
+	   ui.comboBoxAxis->setCurrentIndex(1);
+   }
 
    //set piezo position to 0 um
    QMessageBox::information(this, "Imagine", 
