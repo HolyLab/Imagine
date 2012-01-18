@@ -2,3 +2,8 @@
 /_UpgradeReport_Files
 /ipch
 /.stacks
+*~
+*.suo
+*.*sdf
+*scc
+/qtgen
