@@ -70,7 +70,6 @@ private:
 private slots:
         void on_actionHeatsinkFan_triggered();
         void on_actionExit_triggered();
-        void on_btnGetPiezoCurPos_clicked();
         void on_btnFastDecPosAndMove_clicked();
         void on_btnDecPosAndMove_clicked();
         void on_btnIncPosAndMove_clicked();

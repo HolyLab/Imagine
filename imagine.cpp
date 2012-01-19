@@ -1314,11 +1314,6 @@ void Imagine::on_btnFastDecPosAndMove_clicked()
 }
 
 
-void Imagine::on_btnGetPiezoCurPos_clicked()
-{
-   readPiezoCurPos();
-}
-
 void Imagine::on_actionExit_triggered()
 {
    close();
