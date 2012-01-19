@@ -70,7 +70,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>qtgen;$(QTDIR)\include;.\qtgen\Debug;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;.\3rd_party\qwt;.\;$(QTDIR)\include\QtScript;C:\Program Files\boost\boost_1_47;.\pi_piezo;.\pi_actuator;C:\Program Files\Digital Camera Toolbox\pco.sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>qtgen;$(QTDIR)\include;.\qtgen\Debug;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;.\3rd_party\qwt;.\;$(QTDIR)\include\QtScript;C:\Program Files\boost\boost_1_47;.\pi_piezo;.\pi_actuator;C:\Program Files\Digital Camera Toolbox\pco.sdk\include;.\3rd_party\andor;.\3rd_party\avt;.\3rd_party\ni;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DEBUG_AI;QT_DLL;QT_SCRIPT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -196,7 +196,7 @@
     <ClInclude Include="volpiezo.hpp" />
     <CustomBuild Include="ai_thread.hpp">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing ai_thread.hpp...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\andor" "-I.\3rd_party\avt" "-I.\3rd_party\ni" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\ai_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\Debug\moc_ai_thread.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing ai_thread.hpp...</Message>
@@ -221,7 +221,7 @@
     <ClInclude Include="Atmcd32d.h" />
     <CustomBuild Include="data_acq_thread.hpp">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing data_acq_thread.hpp...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\andor" "-I.\3rd_party\avt" "-I.\3rd_party\ni" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\data_acq_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\Debug\moc_data_acq_thread.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing data_acq_thread.hpp...</Message>
@@ -231,7 +231,7 @@
     </CustomBuild>
     <CustomBuild Include="fanctrldialog.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing fanctrldialog.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\andor" "-I.\3rd_party\avt" "-I.\3rd_party\ni" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\fanctrldialog.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\$(Configuration)\moc_fanctrldialog.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing fanctrldialog.h...</Message>
@@ -247,7 +247,7 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\andor" "-I.\3rd_party\avt" "-I.\3rd_party\ni" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
@@ -261,7 +261,7 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\andor" "-I.\3rd_party\avt" "-I.\3rd_party\ni" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
@@ -275,7 +275,7 @@
     <ClInclude Include="histogram_item.h" />
     <CustomBuild Include="imagelabel.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing imagelabel.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\andor" "-I.\3rd_party\avt" "-I.\3rd_party\ni" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\imagelabel.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\Debug\moc_imagelabel.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing imagelabel.h...</Message>
@@ -285,7 +285,7 @@
     </CustomBuild>
     <CustomBuild Include="imagine.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing imagine.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\andor" "-I.\3rd_party\avt" "-I.\3rd_party\ni" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\imagine.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\Debug\moc_imagine.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing imagine.h...</Message>
@@ -326,7 +326,7 @@
     </CustomBuild>
     <CustomBuild Include="temperaturedialog.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing temperaturedialog.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\andor" "-I.\3rd_party\avt" "-I.\3rd_party\ni" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\temperaturedialog.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\Debug\moc_temperaturedialog.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing temperaturedialog.h...</Message>
