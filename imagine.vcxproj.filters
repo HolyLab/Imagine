@@ -275,7 +275,4 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
-  <ItemGroup>
-    <Library Include="pi_actuator\APT.lib" />
-  </ItemGroup>
 </Project>
