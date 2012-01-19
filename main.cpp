@@ -98,6 +98,9 @@ int main(int argc, char *argv[])
    QString cameraVendor=se->globalObject().property("camera").toString();
    positionerType=se->globalObject().property("positioner").toString();
 
+   cout<<"using "<<cameraVendor.toStdString()<<" camera and "
+      <<positionerType.toStdString()<<" positioner."<<endl;
+
    if(cameraVendor!="avt" && cameraVendor!="andor" && cameraVendor!="cooke"){
       QMessageBox::critical(0, "Imagine", "Unsupported camera."
          , QMessageBox::Ok, QMessageBox::NoButton);
