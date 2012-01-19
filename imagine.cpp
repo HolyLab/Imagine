@@ -356,8 +356,8 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
 
    ui.comboBoxAxis->setEnabled(positionerType=="thor");
    if(positionerType=="thor"){
-	   pPositioner->setDim(1);
-	   ui.comboBoxAxis->setCurrentIndex(1);
+      pPositioner->setDim(1);
+      ui.comboBoxAxis->setCurrentIndex(1);
    }
 
    //set piezo position to 0 um
@@ -1283,6 +1283,13 @@ void Imagine::on_btnMovePiezo_clicked()
    pPositioner->moveTo(um);
 }
 
+void Imagine::on_comboBoxAxis_currentIndexChanged(int index)
+{
+   pPositioner->setDim(index);
+   ui.doubleSpinBoxMinDistance->setValue(pPositioner->minPos());
+   ui.doubleSpinBoxMaxDistance->setValue(pPositioner->maxPos());
+   on_btnRefreshPos_clicked();
+}
 
 void Imagine::on_btnRefreshPos_clicked()
 {
