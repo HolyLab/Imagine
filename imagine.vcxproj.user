@@ -13,5 +13,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <QTDIR>C:\Qt\4.8.0</QTDIR>
+    <LocalDebuggerWorkingDirectory Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
 </Project>
