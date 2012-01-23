@@ -38,6 +38,8 @@ public:
     void startAcq();
     void stopAcq(); //note: this func call is non-blocking
 
+    bool preparePositioner();
+
     //intended camera params:
     int nStacks, 
        nFramesPerStack;

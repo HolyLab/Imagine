@@ -180,6 +180,25 @@ void DataAcqThread::fireStimulus(int valve)
    digOut->write();
 }//fireStimulus(),
 
+
+bool DataAcqThread::preparePositioner()
+{
+   pPositioner->clearCmd();
+   int oldAxis=pPositioner->getDim();
+   if(positionerType=="thor") pPositioner->setDim(1); //y axis. Todo: make it a param in cfg file
+   pPositioner->addMovement(piezoStartPosUm, piezoStopPosUm, nFramesPerStack*cycleTime*1e6, 1);
+   pPositioner->addMovement(piezoStopPosUm, piezoStartPosUm, piezoTravelBackTime*1e6, -1);//move back
+   pPositioner->addMovement(piezoStartPosUm, numeric_limits<double>::quiet_NaN(), 0, 0); //stop the trigger
+   if(positionerType=="thor") pPositioner->setDim(oldAxis);
+
+   if(pPositioner->testCmd())  pPositioner->prepareCmd();
+   else return false;
+
+   return true;
+
+}
+
+
 void DataAcqThread::run()
 {
    if(isLive) run_live();
@@ -297,14 +316,8 @@ void DataAcqThread::run_acq_and_save()
    //get the real params used by the camera:
    cycleTime=camera.getCycleTime();
 
-   pPositioner->clearCmd();
-   int oldAxis=pPositioner->getDim();
-   if(positionerType=="thor") pPositioner->setDim(1); //y axis. Todo: make it a param in cfg file
-   pPositioner->addMovement(piezoStartPosUm, piezoStopPosUm, nFramesPerStack*cycleTime*1e6, 1);
-   pPositioner->addMovement(piezoStopPosUm, piezoStartPosUm, piezoTravelBackTime*1e6, -1);//move back
-   pPositioner->addMovement(piezoStartPosUm, numeric_limits<double>::quiet_NaN(), 0, 0); //stop the trigger
-   if(positionerType=="thor") pPositioner->setDim(oldAxis);
-   pPositioner->prepareCmd();
+   //todo: call preparePositioner() once if it's never called. (user never clicked "apply")
+
 
    //prepare for AI:
    AiThread * aiThread=new AiThread(); //TODO: set buf size and scan rate here

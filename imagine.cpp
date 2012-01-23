@@ -1022,6 +1022,12 @@ void Imagine::on_btnApply_clicked()
                        );
    updateStatus(QString("Camera: applied params: ")+camera.getErrorMsg().c_str());
 
+   //get the real params used by the camera:
+   dataAcqThread.cycleTime=camera.getCycleTime();
+   if(!dataAcqThread.preparePositioner()){
+      updateStatus(QString("Positioner: applied params failed: ")+pPositioner->getLastErrorMsg().c_str());
+   }
+
    //set filenames:
    QString headerFilename=ui.lineEditFilename->text();
    dataAcqThread.headerFilename=headerFilename; 
