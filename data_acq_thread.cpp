@@ -371,16 +371,20 @@ nextStack:
       ((AndorCamera*)(&camera))->enableSpool((char*)(stemName.toStdString().c_str()), 10);
    }
 
-   camera.startAcq();
 
    //for external start, put 100ms delay here to wait camera's readiness for trigger
    if(triggerMode==Camera::eExternalStart){
+      camera.startAcq();
       double timeToWait=0.1;
       //TODO: maybe I should use busy waiting?
       QThread::msleep(timeToWait*1000); // *1000: sec -> ms
+      pPositioner->runCmd();
+   }
+   else {
+      pPositioner->runCmd();
+      camera.startAcq();
    }
 
-   pPositioner->runCmd();
 
    //TMP: trigger camera
    digOut->updateOutputBuf(5,true);
