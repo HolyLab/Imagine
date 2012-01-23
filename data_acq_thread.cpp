@@ -371,6 +371,7 @@ nextStack:
       ((AndorCamera*)(&camera))->enableSpool((char*)(stemName.toStdString().c_str()), 10);
    }
 
+   pPositioner->optimizeCmd();
 
    //for external start, put 100ms delay here to wait camera's readiness for trigger
    if(triggerMode==Camera::eExternalStart){
