@@ -40,8 +40,12 @@ public:
    //// cmd related:
    virtual bool addMovement(double from, double to, double duration, int trigger); //to: when NaN, don't move; trigger: 1 on, 0 off, otherwise no change
    virtual void clearCmd(); // clear the movement sequence
+   //todo: for now, testCmd() and optimizeCmd() are not pure virtual so compiler is happy
+   //   but they should be pure virtual once the changes to subclasses are done
+   virtual bool testCmd(){return true;}  // check if the movement sequence is valid (e.g., the timging)
 
    virtual bool prepareCmd()=0; // after prepare, runCmd() will move it in real
+   virtual void optimizeCmd(){} // reduce the delay between runCmd() and the time when the positioner reaches the start position
    virtual bool runCmd()=0;  //NOTE: this is repeatable (i.e. once prepared, you can run same cmd more than once)
    virtual bool waitCmd()=0; // wait forever until the movement sequence finishes
    virtual bool abortCmd()=0;// stop it as soon as possible
