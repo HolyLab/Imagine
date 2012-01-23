@@ -258,8 +258,11 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    ui.comboBoxTriggerMode->addItem("External Start");
    ui.comboBoxTriggerMode->addItem("Internal");
 
-   //todo: even on cooke, use external start
    ui.comboBoxTriggerMode->setCurrentIndex(pCamera->vendor=="cooke");
+   if(positionerType=="thor"){
+      ui.comboBoxTriggerMode->setEnabled(false);
+      ui.comboBoxTriggerMode->setCurrentIndex(1);
+   }
 
    Camera& camera=*pCamera;
 
