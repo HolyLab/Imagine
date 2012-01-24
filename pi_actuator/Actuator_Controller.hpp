@@ -44,7 +44,9 @@ private:
 		
 public:
 	double minPos(); // Return the lower limit of the range
-	double maxPos(); // Return the upper limit of the range
+	double maxPos(); // Return the upper limit of the range, for addMovements
+	double minPos2(); // for moveTo()
+	double maxPos2();
 	double maxVel(); // Return the maximum possible velocity
 	double maxAcc(); // Return the maximum possible acceleration
 	

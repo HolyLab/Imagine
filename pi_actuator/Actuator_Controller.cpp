@@ -1,6 +1,6 @@
 #include "Actuator_Controller.hpp"
 
-Actuator_Controller::Actuator_Controller() : lowPosLimit(0.0), upPosLimit(50000.0), maxVelocity(4000.0),maxAcceleration(10000.0), micro(1000.0)
+Actuator_Controller::Actuator_Controller() : lowPosLimit(5000.0), upPosLimit(45000.0), maxVelocity(4000.0),maxAcceleration(10000.0), micro(1000.0)
 {
 	HANDLE_ERROR(APTInit()); // Initialize and set up the connection to the actuator controller
 
@@ -86,6 +86,20 @@ double Actuator_Controller::maxPos()
 	if(getDim() == 0) return 70000.0;
 	if(getDim() == 1) return this->upPosLimit;
 }
+
+double Actuator_Controller::minPos2()
+{
+	double local_lowPosLimit = 0.0;
+	return local_lowPosLimit;
+}
+double Actuator_Controller::maxPos2()
+{
+	if(getDim() == 0) return 70000.0;
+	double local_upPosLimit = 50000.0;
+	if(getDim() == 1) local_upPosLimit;
+}
+
+
 double Actuator_Controller::maxVel()
 {
 	return this->maxVelocity;
@@ -120,7 +134,7 @@ bool Actuator_Controller::moveTo(const double to)
 		HANDLE_ERROR(MOT_SetVelParams(lSerialNum, fMinVel, fAccn, fMaxVel)); // Set up default params
 
 		float fAbsPos = static_cast<float>(to);
-		if ((fAbsPos >= minPos()) && (fAbsPos <= maxPos())) {
+		if ((fAbsPos >= minPos2()) && (fAbsPos <= maxPos2())) {
 			fAbsPos /= static_cast<float>(micro);
 			bool bWait = true;
 			HANDLE_ERROR(MOT_MoveAbsoluteEx(lSerialNum, fAbsPos, bWait)); // Move to the absolute pos & wait for complete
@@ -278,7 +292,7 @@ bool Actuator_Controller::run(const int i)
 	long lSerialNum = this->plSerialNum[CHAN2_INDEX];
 
 	float fAbsPos = static_cast<float>(actTo);
-	if ((fAbsPos >= minPos()) && (fAbsPos <= maxPos())) {
+	if ((fAbsPos >= minPos2()) && (fAbsPos <= maxPos2())) {
 		fAbsPos /= static_cast<float>(micro);
 		bool bWait = false;
 		HANDLE_ERROR(MOT_MoveAbsoluteEx(lSerialNum, fAbsPos, bWait)); // Move to the absolute pos: to
