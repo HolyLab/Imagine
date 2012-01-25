@@ -69,6 +69,9 @@ public:
 	bool run(const int i);
 	bool wait(const int i);
 
+	bool setReturnFlag(const bool i);
+	bool getReturnFlag();
+
 	bool Triggering(const int i); // Pure triggering, dummy function
 };
 

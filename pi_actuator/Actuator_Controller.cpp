@@ -1,6 +1,6 @@
 #include "Actuator_Controller.hpp"
 
-Actuator_Controller::Actuator_Controller() : lowPosLimit(5000.0), upPosLimit(45000.0), maxVelocity(4000.0),maxAcceleration(10000.0), micro(1000.0)
+Actuator_Controller::Actuator_Controller() : lowPosLimit(10000.0), upPosLimit(40000.0), maxVelocity(4000.0),maxAcceleration(10000.0), micro(1000.0)
 {
 	HANDLE_ERROR(APTInit()); // Initialize and set up the connection to the actuator controller
 
@@ -77,7 +77,7 @@ bool Actuator_Controller::moveToX(const double to) // Alert: wait the movement d
 	}
 }
 
-double Actuator_Controller::minPos()
+double Actuator_Controller::minPos() // small range
 { 
 	return this->lowPosLimit;
 }
@@ -86,8 +86,7 @@ double Actuator_Controller::maxPos()
 	if(getDim() == 0) return 70000.0;
 	if(getDim() == 1) return this->upPosLimit;
 }
-
-double Actuator_Controller::minPos2()
+double Actuator_Controller::minPos2() // large range
 {
 	double local_lowPosLimit = 0.0;
 	return local_lowPosLimit;
@@ -96,9 +95,8 @@ double Actuator_Controller::maxPos2()
 {
 	if(getDim() == 0) return 70000.0;
 	double local_upPosLimit = 50000.0;
-	if(getDim() == 1) local_upPosLimit;
+	if(getDim() == 1) return local_upPosLimit;
 }
-
 
 double Actuator_Controller::maxVel()
 {
@@ -157,12 +155,12 @@ bool Actuator_Controller::prepareCmd()
 }
 bool Actuator_Controller::runCmd()
 {
-	this->returnFlag = false;
+	setReturnFlag(false);
 	this->workerThread = boost::thread(&Actuator_Controller::runMovements, this); // create & initialize the workThread
 	// printf(" The workerThread ID is %d \n", this->workerThread.get_id());
 	do {
-		timewait(100);
-	} while (!this->returnFlag);
+		timewait(5);
+	} while (!getReturnFlag());
 	// printf("workerThread returned \n");
 	return true;
 }
@@ -266,7 +264,7 @@ bool Actuator_Controller::prepare(const int i)
 	double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit micrometre / second
 	double Acceleration = maxAcc(); // unit: micrometer / second^2
 
-	double Length = 2.0 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
+	double Length = 4.0 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
 	double actFrom, actTo; // The actual from & to of each movement
 
 	if(from <= to) {		
@@ -317,19 +315,19 @@ bool Actuator_Controller::wait(const int i)
 		HANDLE_ERROR(MOT_GetPosition(lSerialNum, &CurrentPos)); // Get the current position
 		CurrentPos *= static_cast<float>(micro);
 		if ((CurrentPos < to && CurrentPos > from) || (CurrentPos > to && CurrentPos < from)) {
-			if (i == 0) this->returnFlag = true;
+			if (i == 0) setReturnFlag(true);
 		}
 
 		if (abs((CurrentPos - actTo) / actTo) < 1.0E-3) { // Detect the end of the motion
-			timewait(500);
+			timewait(300);
 			if (!haltAxisMotion()) printf("Error in haltAxisMotion(). \n");
-			timewait(500);
+			timewait(300);
 			break;
 		}
 
 		if(boost::this_thread::interruption_requested()) {
 			if (!haltAxisMotion()) printf("Error in haltAxisMotion(). \n"); // Halt the motion before terminating the thread
-			timewait(500);
+			timewait(300);
 			break;
 		}
 	} while (true);
@@ -339,6 +337,15 @@ bool Actuator_Controller::wait(const int i)
 	}
 
 	return true;
+}
+
+bool Actuator_Controller::setReturnFlag(const bool i) {
+	this->returnFlag = i;
+	return true;
+}
+
+bool Actuator_Controller::getReturnFlag() {
+	return this->returnFlag;
 }
 
 bool Actuator_Controller::Triggering(const int i)
