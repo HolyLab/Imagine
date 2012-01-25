@@ -1,6 +1,6 @@
 #include "Actuator_Controller.hpp"
 
-Actuator_Controller::Actuator_Controller() : lowPosLimit(10000.0), upPosLimit(40000.0), maxVelocity(4000.0),maxAcceleration(10000.0), micro(1000.0)
+Actuator_Controller::Actuator_Controller() : lowPosLimit(10000.0), upPosLimit(40000.0), maxVelocity(1100.0),maxAcceleration(1000.0), micro(1000.0)
 {
 	HANDLE_ERROR(APTInit()); // Initialize and set up the connection to the actuator controller
 
