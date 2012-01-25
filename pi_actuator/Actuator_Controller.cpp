@@ -40,6 +40,9 @@ Actuator_Controller::Actuator_Controller() : lowPosLimit(10000.0), upPosLimit(40
 		// float pfPosition = -1.0;
 		// HANDLE_ERROR(MOT_GetPosition(lSerialNum, &pfPosition)); // Get the current position
 		// printf("The current position is %f \n", pfPosition);
+
+		// set the back slash length to 0.0
+		MOT_SetBLashDist(lSerialNum, 0.0);
 	}
 }
 Actuator_Controller::~Actuator_Controller() 

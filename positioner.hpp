@@ -42,7 +42,7 @@ public:
    virtual void clearCmd(); // clear the movement sequence
    //todo: for now, testCmd() and optimizeCmd() are not pure virtual so compiler is happy
    //   but they should be pure virtual once the changes to subclasses are done
-   virtual bool testCmd(){return true;}  // check if the movement sequence is valid (e.g., the timging)
+   virtual bool testCmd(){return true;}  // check if the movement sequence is valid (e.g., the timing)
 
    virtual bool prepareCmd()=0; // after prepare, runCmd() will move it in real
    virtual void optimizeCmd(){} // reduce the delay between runCmd() and the time when the positioner reaches the start position
