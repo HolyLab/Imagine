@@ -57,6 +57,8 @@ public:
     bool runCmd();
 	bool waitCmd(); // wait all movements to complete
 	bool abortCmd(); // abort the current set of movements
+
+	bool testCmd();
 	
 //protected:
 	int getMovementsSize(); // get the size of the movements

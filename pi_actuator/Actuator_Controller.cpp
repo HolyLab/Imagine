@@ -175,6 +175,45 @@ bool Actuator_Controller::abortCmd()
 	this->workerThread.join(); // the main thread joins the workerThread and waits it to terminate
 	return true;
 }
+bool Actuator_Controller::testCmd()
+{
+	for (int i = 0; i < getMovementsSize(); ++i) 
+	{
+		double from = (*this->movements[i]).from;
+		double to = (*this->movements[i]).to;
+		double duration = (*this->movements[i]).duration;
+		int trigger = (*this->movements[i]).trigger;
+
+		double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit micrometre / second
+		if (Velocity > maxVel()) {
+			printf("Error in the velocity requirement of movement %d \n", i);
+			return false;
+		}
+		
+		double Acceleration = maxAcc(); // unit: micrometer / second^2
+
+		double Length = 4.0 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
+		double actFrom, actTo; // The actual from & to of each movement
+
+		if(from <= to) {		
+			actFrom = from - Length;
+			actTo = to + Length;
+		} else if(from > to) {
+			actFrom = from + Length;
+			actTo = to - Length;
+		}
+		if ((from >= minPos2()) && (from <= maxPos2())
+			&& (to >= minPos2()) && (to <= maxPos2())) {
+		}
+		else {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
 
 int Actuator_Controller::getMovementsSize()
 {
