@@ -316,8 +316,7 @@ void DataAcqThread::run_acq_and_save()
    //get the real params used by the camera:
    cycleTime=camera.getCycleTime();
 
-   //todo: call preparePositioner() once if it's never called. (user never clicked "apply")
-
+   preparePositioner(); //nec for volpiezo
 
    //prepare for AI:
    AiThread * aiThread=new AiThread(); //TODO: set buf size and scan rate here

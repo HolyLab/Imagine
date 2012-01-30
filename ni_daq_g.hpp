@@ -458,7 +458,10 @@ public:
       uInt16* buf=ao->getOutputBuf();
       buf[0]=valueToOutput;
       buf[1]=buf[0];
-      if(!ao->updateOutputBuf()) return false;
+      if(!ao->updateOutputBuf()) {
+         cout<<ao->getErrorMsg()<<endl;
+         return false;
+      }
       if(!ao->start()) return false;
       if(!ao->wait(-1)) return false; //wait forever
       if(!ao->stop()) return false;

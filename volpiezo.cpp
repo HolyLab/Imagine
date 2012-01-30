@@ -26,6 +26,7 @@ bool VolPiezo::moveTo(double to)
 {
    double vol=zpos2voltage(to);
    if(aoOnce==NULL){
+      cleanup();
       int aoChannelForPiezo=0; //TODO: put this configurable
       aoOnce=new NiDaqAoWriteOne(aoChannelForPiezo);
       Sleep(0.5*1000); //sleep 0.5s 
