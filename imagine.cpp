@@ -1025,7 +1025,10 @@ void Imagine::on_btnApply_clicked()
    //get the real params used by the camera:
    dataAcqThread.cycleTime=camera.getCycleTime();
    if(!dataAcqThread.preparePositioner()){
-      updateStatus(QString("Positioner: applied params failed: ")+pPositioner->getLastErrorMsg().c_str());
+      QString msg=QString("Positioner: applied params failed: ")+pPositioner->getLastErrorMsg().c_str();
+      updateStatus(msg);
+      QMessageBox::critical(0, "Imagine: Failed to setup piezo/stage.", msg
+         , QMessageBox::Ok, QMessageBox::NoButton);
    }
 
    //set filenames:
