@@ -19,7 +19,7 @@ using std::endl;
 //class Camera:
    int	errorCode;    //these two are paired. For andor's, errorCode meanings are defined by 
    string errorMsg;   //   atmcd32d.h. 
-   int nFrames=100; //# frames intended
+   int nFrames=10000000; //# frames intended
 
 //class CookeCamera:
 HANDLE hCamera;
@@ -481,6 +481,8 @@ int main()
       cerr<<"test failed: "<<errorMsg<<endl;
       return 1;
    }
+
+   cout<<"test succeeded!"<<endl;
 
    return 0;
 }
