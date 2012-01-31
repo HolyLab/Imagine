@@ -36,7 +36,7 @@ typedef unsigned short PixelValue;
 WORD mBufIndex[2]; 
 HANDLE mEvent[2];
 PixelValue* mRingBuf[2]; 
-long firstFrameCounter; //first first frame's counter value
+long firstFrameCounter; //first frame's counter value
 
 //CookeCamera::getCycleTime():
 double getCycleTime()
