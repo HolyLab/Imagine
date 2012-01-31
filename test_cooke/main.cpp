@@ -19,7 +19,6 @@ using std::endl;
 //class Camera:
    int	errorCode;    //these two are paired. For andor's, errorCode meanings are defined by 
    string errorMsg;   //   atmcd32d.h. 
-   int nFrames=10000000; //# frames intended
 
 //class CookeCamera:
 HANDLE hCamera;
@@ -64,8 +63,8 @@ long extractFrameCounter(PixelValue* rawData)
    return result;
 }
 
-
-bool test()
+//
+bool test(int nFrames, double exposure)
 {
    ///ctor:
    strGeneral.wSize = sizeof(strGeneral);// initialize all structure size members
@@ -139,8 +138,6 @@ bool test()
    int chipHeight=strSensor.strDescription.wMaxVertResStdDESC;
    int chipWidth=strSensor.strDescription.wMaxHorzResStdDESC;
 
-   int nPixels=chipWidth*chipHeight;
-
    errorMsg="";
 
    ///setAcqParams():
@@ -195,16 +192,16 @@ bool test()
       return false;
    }
 
-   DWORD dwPixelRate;
-   errorCode=PCO_GetPixelRate(hCamera, &dwPixelRate);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetPixelRate()";
-      return false;
-   }
-
+   DWORD dwPixelRate=286000000;
    errorCode=PCO_SetPixelRate(hCamera, dwPixelRate); 
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to call PCO_SetPixelRate()";
+      return false;
+   }
+
+   errorCode=PCO_GetPixelRate(hCamera, &dwPixelRate);
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to call PCO_GetPixelRate()";
       return false;
    }
 
@@ -214,9 +211,6 @@ bool test()
       return false;
    }
 
-   //todo: should we set Ram Segment settings. SEE: the api's "storage ctrl" section?
-   // should we clear the active segment?
-
    PCO_SC2_CL_TRANSFER_PARAM clparams;
 
    errorCode = PCO_GetTransferParameter(hCamera, &clparams, sizeof(PCO_SC2_CL_TRANSFER_PARAM));
@@ -224,7 +218,6 @@ bool test()
       errorMsg="failed to call PCO_GetTransferParameter()";
       return false;
    }
-
 
    //get size
    WORD wXResAct=-1; // Actual X Resolution
@@ -238,13 +231,6 @@ bool test()
       return false;
    }
 
-   errorCode=PCO_GetPixelRate(hCamera, &dwPixelRate);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetPixelRate()";
-      return false;
-   }
-
-
    WORD wDestInterface=2,wFormat, wRes1, wRes2;
    errorCode=PCO_GetInterfaceOutputFormat(hCamera, &wDestInterface, &wFormat, &wRes1, &wRes2);
    if(errorCode!=PCO_NOERROR) {
@@ -253,6 +239,7 @@ bool test()
    }
 
    wRes1=wRes2=0;
+   wFormat=SCCMOS_FORMAT_TOP_CENTER_BOTTOM_CENTER;
    errorCode=PCO_SetInterfaceOutputFormat(hCamera, wDestInterface, wFormat, wRes1, wRes2);
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to call PCO_SetInterfaceOutputFormat()";
@@ -260,6 +247,8 @@ bool test()
    }
 
    clparams.DataFormat=PCO_CL_DATAFORMAT_5x12L;
+   clparams.baudrate=115200;
+   clparams.Transmit=1;
    errorCode=PCO_SetTransferParameter(hCamera, &clparams,sizeof(PCO_SC2_CL_TRANSFER_PARAM)); 
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to call PCO_GetTransferParameter()";
@@ -272,9 +261,8 @@ bool test()
       return false;
    }
 
-   //PCO_SetInterfaceOutputFormat, p6, 20
-   WORD wFormat2;
-   errorCode=PCO_GetDoubleImageMode(hCamera, &wFormat2);
+   //WORD wFormat2;
+   //errorCode=PCO_GetDoubleImageMode(hCamera, &wFormat2);
 
    char Description[256]; BYTE bInputWidth,bOutputWidth; 
    WORD wNumberOfLuts, wDescLen, wIdentifier;
@@ -287,7 +275,6 @@ bool test()
    for(int i=0; i<nLuts; ++i){
       errorCode=PCO_GetLookupTableInfo(hCamera, i, &wNumberOfLuts, Description, 256, &wIdentifier, &bInputWidth, &bOutputWidth, &wFormat2);
       if(errorCode!=PCO_NOERROR) cout<<"error when get lut "<<i<<"'s info"<<endl;
-      //else cout<<"lut "<<i<<": '"<<Description<<"'"<<
    }
 
 
@@ -475,9 +462,20 @@ bool test()
    return true;
 }//test(),
 
-int main()
+int main(int argc, char* argv[])
 {
-   if(!test()){
+   int nFrames; 
+   double exposure;
+   if(argc!=3) {
+      cerr<<"usage: "<<argv[0]<<" #frames exposure"<<endl;
+      cerr<<"Now use the default: 1000000 frames w/ 0.05s exposure"<<endl;
+      exposure=0.05; nFrames=1000000;
+   }
+   else {
+      nFrames=atoi(argv[1]);
+      exposure=atof(argv[2]);
+   }
+   if(!test(nFrames, exposure)){
       cerr<<"test failed: "<<errorMsg<<endl;
       return 1;
    }
