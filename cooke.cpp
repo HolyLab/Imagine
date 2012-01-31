@@ -107,11 +107,13 @@ bool CookeCamera::setAcqParams(int emGain,
       return false;
    }
 
+   // /*
    errorCode=PCO_ResetSettingsToDefault(hCamera);
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to reset camera settings";
       return false;
    }
+   // */
 
    //for this cooke camera no binning is possible
    //so skip SetBinning
@@ -252,20 +254,19 @@ bool CookeCamera::setAcqParams(int emGain,
    }
 
 
-   WORD wParameter;
-   errorCode =PCO_GetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetActiveLookupTable()";
-      return false;
-   }
-
-   //
+   WORD wParameter=0;
+   wIdentifier=5650; 
    errorCode =PCO_SetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to call PCO_SetActiveLookupTable()";
       return false;
    }
 
+   errorCode =PCO_GetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to call PCO_GetActiveLookupTable()";
+      return false;
+   }
 
    //arm the camera to validate the settings
    //NOTE: you have to arm the camera again in setAcqModeAndTime() due to the trigger setting (i.e. set PCO_SetAcquireMode() again)
