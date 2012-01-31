@@ -154,16 +154,16 @@ bool CookeCamera::setAcqParams(int emGain,
       return false;
    }
 
-   DWORD dwPixelRate;
-   errorCode=PCO_GetPixelRate(hCamera, &dwPixelRate);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetPixelRate()";
-      return false;
-   }
-
+   DWORD dwPixelRate=286000000;
    errorCode=PCO_SetPixelRate(hCamera, dwPixelRate); 
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to call PCO_SetPixelRate()";
+      return false;
+   }
+
+   errorCode=PCO_GetPixelRate(hCamera, &dwPixelRate);
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to call PCO_GetPixelRate()";
       return false;
    }
 
