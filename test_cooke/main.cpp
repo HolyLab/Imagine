@@ -261,37 +261,13 @@ bool test(int nFrames, double exposure)
       return false;
    }
 
-   //WORD wFormat2;
-   //errorCode=PCO_GetDoubleImageMode(hCamera, &wFormat2);
-
-   char Description[256]; BYTE bInputWidth,bOutputWidth; 
-   WORD wNumberOfLuts, wDescLen, wIdentifier;
-   errorCode=PCO_GetLookupTableInfo(hCamera, 0, &wNumberOfLuts, 0, 0, 0, 0, 0, 0);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to get #LUTs";
-      return false;
-   }
-   int nLuts=wNumberOfLuts;
-   for(int i=0; i<nLuts; ++i){
-      errorCode=PCO_GetLookupTableInfo(hCamera, i, &wNumberOfLuts, Description, 256, &wIdentifier, &bInputWidth, &bOutputWidth, &wFormat2);
-      if(errorCode!=PCO_NOERROR) cout<<"error when get lut "<<i<<"'s info"<<endl;
-   }
-
-
-   WORD wParameter;
-   errorCode =PCO_GetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetActiveLookupTable()";
-      return false;
-   }
-
-   //
+   WORD wParameter=0;
+   WORD wIdentifier=5650; //sqrt(256*x)v(x>256)
    errorCode =PCO_SetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to call PCO_SetActiveLookupTable()";
       return false;
    }
-
 
    //arm the camera to validate the settings
    //NOTE: you have to arm the camera again in setAcqModeAndTime() due to the trigger setting (i.e. set PCO_SetAcquireMode() again)
@@ -320,7 +296,7 @@ bool test(int nFrames, double exposure)
    ///exposure time
    errorCode = PCO_SetDelayExposureTime(hCamera, // Timebase: 0-ns; 1-us; 2-ms  
       0,		// DWORD dwDelay
-      (DWORD)(0.05*1000),
+      (DWORD)(exposure*1000),
       0,		// WORD wTimeBaseDelay,
       2);	// WORD wTimeBaseExposure (2: ms)
    if(errorCode!=PCO_NOERROR) {
@@ -411,8 +387,6 @@ bool test(int nFrames, double exposure)
       }
       if(gapWidth) cout<<"fill "<<gapWidth<<" frames with black images (start at frame idx="<<nAcquiredFrames<<")"<<endl;
       totalGap+=gapWidth;
-
-      //fill the frame array and live image
       nAcquiredFrames=curFrameIdx+1;
 
       //reset event
