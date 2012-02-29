@@ -223,7 +223,7 @@ bool CookeCamera::setAcqParams(int emGain,
       return false;
    }
 
-   clparams.DataFormat=PCO_CL_DATAFORMAT_5x12L;
+   clparams.DataFormat=PCO_CL_DATAFORMAT_5x12L | wFormat;
    errorCode=PCO_SetTransferParameter(hCamera, &clparams,sizeof(PCO_SC2_CL_TRANSFER_PARAM)); 
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to call PCO_SetTransferParameter()";
