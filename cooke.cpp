@@ -216,6 +216,7 @@ bool CookeCamera::setAcqParams(int emGain,
    }
 
    wRes1=wRes2=0;
+   wFormat=SCCMOS_FORMAT_TOP_CENTER_BOTTOM_CENTER;
    errorCode=PCO_SetInterfaceOutputFormat(hCamera, wDestInterface, wFormat, wRes1, wRes2);
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to call PCO_SetInterfaceOutputFormat()";
