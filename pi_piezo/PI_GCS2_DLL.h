@@ -23,7 +23,7 @@ extern "C" {
 #ifdef WIN32
 	#undef PI_FUNC_DECL
 	#ifdef PI_GCS2_DLL_STATIC
-		#define PI_FUNC_DECL 
+		#define PI_FUNC_DECL WINAPI
 	#else
 		#ifdef PI_DLL_EXPORTS
 			#ifndef UNKNOWN_GCS_DLL
@@ -52,6 +52,12 @@ extern "C" {
 	#ifndef FALSE
 	#define FALSE 0
 	#endif
+
+	#ifndef __int64
+		#define	__int64	int64_t
+	#endif
+
+
 #endif //WIN32
 
 
@@ -159,6 +165,7 @@ BOOL PI_FUNC_DECL PI_IFC(long ID, const char* szParameters, const char* szValues
 BOOL PI_FUNC_DECL PI_qIFC(long ID, const char* szParameters, char* szBuffer, int iBufferSize);
 BOOL PI_FUNC_DECL PI_IFS(long ID, const char* szPassword, const char* szParameters, const char* szValues);
 BOOL PI_FUNC_DECL PI_qIFS(long ID, const char* szParameters, char* szBuffer, int iBufferSize);
+BOOL PI_FUNC_DECL PI_qECO(long ID, const char* szSendString, char* szValues, int iBufferSize);
 
 BOOL PI_FUNC_DECL PI_MOV(long ID, const char* szAxes, const double* pdValueArray);
 BOOL PI_FUNC_DECL PI_qMOV(long ID, const char* szAxes, double* pdValueArray);
@@ -169,6 +176,7 @@ BOOL PI_FUNC_DECL PI_qPOS(long ID, const char* szAxes, double* pdValueArray);
 BOOL PI_FUNC_DECL PI_IsMoving(long ID, const char* szAxes, BOOL* pbValueArray);
 BOOL PI_FUNC_DECL PI_HLT(long ID, const char* szAxes);
 BOOL PI_FUNC_DECL PI_STP(long ID);
+BOOL PI_FUNC_DECL PI_StopAll(long ID);
 BOOL PI_FUNC_DECL PI_qONT(long ID, const char* szAxes, BOOL* pbValueArray);
 BOOL PI_FUNC_DECL PI_RTO(long ID, const char* szAxes);
 BOOL PI_FUNC_DECL PI_qRTO(long ID, const char* szAxes, int* piValueArray);
@@ -176,6 +184,9 @@ BOOL PI_FUNC_DECL PI_ATZ(long ID, const char* szAxes, const double* pdLowvoltage
 BOOL PI_FUNC_DECL PI_qATZ(long ID, const char* szAxes, int* piAtzResultArray);
 BOOL PI_FUNC_DECL PI_AOS(int ID, const char* szAxes, const double* pdValueArray);
 BOOL PI_FUNC_DECL PI_qAOS(int ID, const char* szAxes, double* pdValueArray);
+BOOL PI_FUNC_DECL PI_HasPosChanged(long ID, const char* szAxes, BOOL* pbValueArray);
+BOOL PI_FUNC_DECL PI_GetErrorStatus(long ID, BOOL* pbIsReferencedArray, BOOL* pbIsReferencing, BOOL* pbIsMovingArray, BOOL* pbIsMotionErrorArray);
+
 
 BOOL PI_FUNC_DECL PI_SVA(long ID, const char* szAxes, const double* pdValueArray);
 BOOL PI_FUNC_DECL PI_qSVA(long ID, const char* szAxes, double* pdValueArray);
@@ -197,11 +208,19 @@ BOOL PI_FUNC_DECL PI_qSMO(long ID, const char* szAxes, int* piValueArray);
 BOOL PI_FUNC_DECL PI_DCO(long ID, const char* szAxes, const BOOL* pbValueArray);
 BOOL PI_FUNC_DECL PI_qDCO(long ID, const char* szAxes, BOOL* pbValueArray);
 
+BOOL PI_FUNC_DECL PI_BRA(long ID, const char* szAxes, const BOOL* pbValueArray);
+BOOL PI_FUNC_DECL PI_qBRA(long ID, const char* szAxes, BOOL* pbValueArray);
+
 BOOL PI_FUNC_DECL PI_RON(long ID, const char* szAxes, const BOOL* pbValueArray);
 BOOL PI_FUNC_DECL PI_qRON(long ID, const char* szAxes, BOOL* pbValueArray);
 
 BOOL PI_FUNC_DECL PI_VEL(long ID, const char* szAxes, const double* pdValueArray);
 BOOL PI_FUNC_DECL PI_qVEL(long ID, const char* szAxes, double* pdValueArray);
+
+BOOL PI_FUNC_DECL PI_qTCV(long ID, const char* szAxes, double* pdValueArray);
+
+BOOL PI_FUNC_DECL PI_VLS(long ID, double dSystemVelocity);
+BOOL PI_FUNC_DECL PI_qVLS(long ID, double* pdSystemVelocity);
 
 BOOL PI_FUNC_DECL PI_ACC(long ID, const char* szAxes, const double* pdValueArray);
 BOOL PI_FUNC_DECL PI_qACC(long ID, const char* szAxes, double* pdValueArray);
@@ -222,6 +241,10 @@ BOOL PI_FUNC_DECL PI_SPA_String(long ID, const char* szAxes, const unsigned int*
 BOOL PI_FUNC_DECL PI_qSPA_String(long ID, const char* szAxes, const unsigned int* iParameterArray, char* szStrings, int iMaxNameSize);
 BOOL PI_FUNC_DECL PI_SEP_String(long ID, const char* szPassword, const char* szAxes, const unsigned int* iParameterArray, const char* szStrings);
 BOOL PI_FUNC_DECL PI_qSEP_String(long ID, const char* szAxes, unsigned int* iParameterArray, char* szStrings, int iMaxNameSize);
+BOOL PI_FUNC_DECL PI_SPA_int64(long ID, const char* szAxes, const unsigned int* iParameterArray, const __int64* piValueArray);
+BOOL PI_FUNC_DECL PI_qSPA_int64(long ID, const char* szAxes, unsigned int* iParameterArray, __int64* piValueArray);
+BOOL PI_FUNC_DECL PI_SEP_int64(long ID, const char* szPassword, const char* szAxes, const unsigned int* iParameterArray, const __int64* piValueArray);
+BOOL PI_FUNC_DECL PI_qSEP_int64(long ID, const char* szAxes, unsigned int* iParameterArray, __int64* piValueArray);
 
 BOOL PI_FUNC_DECL PI_STE(long ID, const char* szAxes, const double* dOffsetArray);
 BOOL PI_FUNC_DECL PI_qSTE(long ID, const char* szAxes, double* pdValueArray);
@@ -257,17 +280,30 @@ BOOL PI_FUNC_DECL PI_ATC(long ID, const int* piChannels, const int* piValueArray
 BOOL PI_FUNC_DECL PI_qATC(long ID, const int* piChannels, int* piValueArray, int iArraySize);
 BOOL PI_FUNC_DECL PI_qATS(long ID, const int* piChannels, const int* piOptions, int* piValueArray, int iArraySize);
 
+BOOL PI_FUNC_DECL PI_SPI(long ID, const char* szAxes, const double* pdValueArray);
+BOOL PI_FUNC_DECL PI_qSPI(long ID, const char* szAxes, double* pdValueArray);
+
+BOOL PI_FUNC_DECL PI_SCT(long ID, double dCycleTime);
+BOOL PI_FUNC_DECL PI_qSCT(long ID, double* pdCycleTime);
+
+BOOL PI_FUNC_DECL PI_SST(long ID, const char* szAxes, const double* pdValueArray);
+BOOL PI_FUNC_DECL PI_qSST(long ID, const char* szAxes, double* pdValueArray);
+
 /////////////////////////////////////////////////////////////////////////////
 // Macro commande
 BOOL PI_FUNC_DECL PI_IsRunningMacro(long ID, BOOL* pbRunningMacro);
 BOOL PI_FUNC_DECL PI_MAC_BEG(long ID, const char* szMacroName);
 BOOL PI_FUNC_DECL PI_MAC_START(long ID, const char* szMacroName);
 BOOL PI_FUNC_DECL PI_MAC_NSTART(long ID, const char* szMacroName, int nrRuns);
+
+BOOL PI_FUNC_DECL PI_MAC_START_Args(long ID, const char* szMacroName, const char* szArgs);
+BOOL PI_FUNC_DECL PI_MAC_NSTART_Args(long ID, const char* szMacroName, int nrRuns, const char* szArgs);
 BOOL PI_FUNC_DECL PI_MAC_END(long ID);
 BOOL PI_FUNC_DECL PI_MAC_DEL(long ID, const char* szMacroName);
 BOOL PI_FUNC_DECL PI_MAC_DEF(long ID, const char* szMacroName);
 BOOL PI_FUNC_DECL PI_MAC_qDEF(long ID, char* szBuffer, int iBufferSize);
 BOOL PI_FUNC_DECL PI_MAC_qERR(long ID, char* szBuffer, int iBufferSize);
+BOOL PI_FUNC_DECL PI_MAC_qFREE(long ID, long* iFreeSpace);
 BOOL PI_FUNC_DECL PI_qMAC(long ID, const char* szMacroName, char* szBuffer, int iBufferSize);
 BOOL PI_FUNC_DECL PI_qRMC(long ID, char* szBuffer, int iBufferSize);
 
@@ -295,6 +331,7 @@ BOOL PI_FUNC_DECL PI_PLM(long ID, const char* szAxes, const double* pdValueArray
 BOOL PI_FUNC_DECL PI_qPLM(long ID, const char* szAxes, double* pdValueArray);
 BOOL PI_FUNC_DECL PI_SSL(long ID, const char* szAxes, const BOOL* pbValueArray);
 BOOL PI_FUNC_DECL PI_qSSL(long ID, const char* szAxes, BOOL* pbValueArray);
+BOOL PI_FUNC_DECL PI_qVMO(int ID, const char* szAxes, const double* pdValarray, BOOL* pbMovePossible);
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -326,7 +363,7 @@ BOOL PI_FUNC_DECL PI_DDL(long ID, int iDdlTableId,  int iOffsetOfFirstPointInDdl
 BOOL PI_FUNC_DECL PI_qDDL_SYNC(long ID,  int iDdlTableId,  int iOffsetOfFirstPointInDdlTable,  int iNumberOfValues, double* pdValueArray);
 BOOL PI_FUNC_DECL PI_qDDL(long ID, const int* iDdlTableIdsArray, int iNumberOfDdlTables, int iOffset, int nrValues, double** pdValarray, char* szGcsArrayHeader, int iGcsArrayHeaderMaxSize);
 BOOL PI_FUNC_DECL PI_DPO(long ID, const char* szAxes);
-BOOL PI_FUNC_DECL PI_qWMS(long ID, const int* piWaveTableIds, int* iWaveTableMaimumSize, int iArraySize);
+BOOL PI_FUNC_DECL PI_qWMS(long ID, const int* piWaveTableIds, int* iWaveTableMaximumSize, int iArraySize);
 
 
 
@@ -336,7 +373,9 @@ BOOL PI_FUNC_DECL PI_TWC(long ID);
 BOOL PI_FUNC_DECL PI_TWS(long ID, const int* piTriggerChannelIdsArray, const int* piPointNumberArray, const int* piSwitchArray, int iArraySize);
 BOOL PI_FUNC_DECL PI_qTWS(long ID, const int* iTriggerChannelIdsArray, int iNumberOfTriggerChannels, int iOffset, int nrValues, double** pdValarray, char* szGcsArrayHeader, int iGcsArrayHeaderMaxSize);
 BOOL PI_FUNC_DECL PI_CTO(long ID, const int* piTriggerOutputIdsArray, const int* piTriggerParameterArray, const double* pdValueArray, int iArraySize);
+BOOL PI_FUNC_DECL PI_CTOString(long ID, const int* piTriggerOutputIdsArray, const int* piTriggerParameterArray, const char* szValueArray, int iArraySize);
 BOOL PI_FUNC_DECL PI_qCTO(long ID, const int* piTriggerOutputIdsArray, const int* piTriggerParameterArray, double* pdValueArray, int iArraySize);
+BOOL PI_FUNC_DECL PI_qCTOString(long ID, const int* piTriggerOutputIdsArray, const int* piTriggerParameterArray, char* szValueArray, int iArraySize, int maxBufLen);
 BOOL PI_FUNC_DECL PI_TRO(long ID, const long* piTriggerChannelIds, const BOOL* pbTriggerChannelEnabel, long iArraySize);
 BOOL PI_FUNC_DECL PI_qTRO(long ID, const long* piTriggerChannelIds, BOOL* pbTriggerChannelEnabel, long iArraySize);
 
@@ -422,9 +461,25 @@ BOOL PI_FUNC_DECL PI_qJLT(long ID, const int* iJoystickIDsArray, const int* iAxi
 BOOL PI_FUNC_DECL PI_JON(long ID, const int* iJoystickIDsArray, const BOOL* pbValueArray, int iArraySize);
 BOOL PI_FUNC_DECL PI_qJON(long ID, const int* iJoystickIDsArray, BOOL* pbValueArray, int iArraySize);
 
+/////////////////////////////////////////////////////////////////////////////
+// fast scan commands
+BOOL PI_FUNC_DECL PI_AAP(long ID, const char* szAxis1, double dLength1, const char* szAxis2, double dLength2, double dAlignStep, int iNrRepeatedPositions, int iAnalogInput);
+BOOL PI_FUNC_DECL PI_FIO(long ID, const char* szAxis1, double dLength1, const char* szAxis2, double dLength2, double dThreshold, double dLinearStep, double dAngleScan, int iAnalogInput);
+BOOL PI_FUNC_DECL PI_FLM(long ID, const char* szAxis, double dLength, double dThreshold, int iAnalogInput, int iDirection);
+BOOL PI_FUNC_DECL PI_FLS(long ID, const char* szAxis, double dLength, double dThreshold, int iAnalogInput, int iDirection);
+BOOL PI_FUNC_DECL PI_FSA(long ID, const char* szAxis1, double dLength1, const char* szAxis2, double dLength2, double dThreshold, double dDistance, double dAlignStep, int iAnalogInput);
+BOOL PI_FUNC_DECL PI_FSC(long ID, const char* szAxis1, double dLength1, const char* szAxis2, double dLength2, double dThreshold, double dDistance, int iAnalogInput);
+BOOL PI_FUNC_DECL PI_FSM(long ID, const char* szAxis1, double dLength1, const char* szAxis2, double dLength2, double dThreshold, double dDistance, int iAnalogInput);
+BOOL PI_FUNC_DECL PI_qFSS(long ID, int* piResult);
 
-
-
+/////////////////////////////////////////////////////////////////////////////
+// optical boards (hexapod)
+BOOL PI_FUNC_DECL PI_SGA(long ID, const int* piAnalogChannelIds, const int* piGainValues, long iArraySize);
+BOOL PI_FUNC_DECL PI_qSGA(long ID, const int* piAnalogChannelIds, int* piGainValues, long iArraySize);
+BOOL PI_FUNC_DECL PI_NAV(long ID, const int* piAnalogChannelIds, const int* piNrReadingsValues, long iArraySize);
+BOOL PI_FUNC_DECL PI_qNAV(long ID, const int* piAnalogChannelIds, int* piNrReadingsValues, long iArraySize);
+// more hexapod specific
+BOOL	PI_FUNC_DECL	PI_GetDynamicMoveBufferSize(long ID, long *iSize);
 /////////////////////////////////////////////////////////////////////////////
 // Spezial
 BOOL	PI_FUNC_DECL	PI_GetSupportedFunctions(long ID, long* piCommandLevelArray, const int iiBufferSize, char* szFunctionNames, const int iMaxFunctioNamesLength);
@@ -438,6 +493,8 @@ BOOL	PI_FUNC_DECL	PI_AddStage(long ID, const char* szAxes);
 BOOL	PI_FUNC_DECL	PI_RemoveStage(long ID, const char* szStageName);
 BOOL	PI_FUNC_DECL	PI_OpenUserStagesEditDialog(long ID);
 BOOL	PI_FUNC_DECL	PI_OpenPiStagesEditDialog(long ID);
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // for internal use
 BOOL	PI_FUNC_DECL	PI_DisableSingleStagesDatFiles(long ID,BOOL bDisable);
