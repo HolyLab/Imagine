@@ -307,6 +307,7 @@
     <ClCompile Include="volpiezo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="dummypiezo.hpp" />
     <ClInclude Include="pi_actuator\Actuator_Controller.hpp" />
     <ClInclude Include="pi_piezo\Piezo_Controller.hpp" />
     <ClInclude Include="volpiezo.hpp" />

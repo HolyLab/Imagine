@@ -33,7 +33,7 @@
 #include "volpiezo.hpp"
 #include "Piezo_Controller.hpp"
 #include "Actuator_Controller.hpp"
-
+#include "dummypiezo.hpp"
 
 extern Camera* pCamera;
 extern Positioner* pPositioner;
@@ -119,6 +119,7 @@ int main(int argc, char *argv[])
 #ifndef _WIN64
    else if(positionerType=="thor") pPositioner=new Actuator_Controller;
 #endif
+   else if(positionerType=="dummy") pPositioner=new DummyPiezo;
    else {
       QMessageBox::critical(0, "Imagine", "Unsupported positioner."
          , QMessageBox::Ok, QMessageBox::NoButton);
