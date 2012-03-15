@@ -4,6 +4,7 @@ var camera = "cooke";
 //var camera="andor";
 
 //piezo/stage:
-var positioner = "volpiezo";
+var positioner = "dummy";
+//var positioner = "volpiezo";
 //var positioner = "pi";
 //var positioner = "thor";
