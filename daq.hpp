@@ -30,13 +30,7 @@ using std::endl;
 
 #include "misc.hpp"
 
-class Daq {
-protected:
-   int maxDigitalValue;
-   int minDigitalValue;
-   double minPhyValue, maxPhyValue; //min/max value in vol
-   vector<int> channels;
-
+class ScannableDaq {
 public:
    typedef unsigned short sample_t;
 
@@ -58,18 +52,20 @@ public:
    class ENoEnoughMem {};
 
    //ctor: create task
-   Daq(vector<int> chs){
-      this->channels=chs;
-      if(channels.size()==0){
-         throw Daq::EInitDevice("exception: no channel");
-      }
+   ScannableDaq(){
       nScans=0;
-
    }//ctor,
 
    //dtor: clear task (i.e. release driver-allocated resources) 
-   virtual ~Daq(){
+   virtual ~ScannableDaq(){
    }//dtor,
+
+   void setChannels(vector<int> chs){
+      this->channels=chs;
+      if(channels.size()==0){
+         throw ScannableDaq::EInitDevice("exception: no channel");
+      }
+   }
 
    double toPhyUnit(double digValue){ //NOTE: cast int to double here
       return (digValue-minDigitalValue)/(maxDigitalValue-minDigitalValue)
@@ -105,15 +101,15 @@ public:
 
    //get error msg
    virtual string getErrorMsg()=0;
-};//class, Daq
+};//class, ScannableDaq
 
 //class: DAQ Analog Output
 //note: this class manages its output buffer itself.
-class DaqAo {
+class DaqAo : public ScannableDaq {
 public:
    //get output buffer address
    //NOTE: data is grouped by channel, i.e. all samples for a channel are close to each other
-   virtual Daq::sample_t * getOutputBuf()=0;
+   virtual ScannableDaq::sample_t * getOutputBuf()=0;
 
    //write waveform to driver's buffer
    virtual bool updateOutputBuf()=0;
@@ -124,11 +120,11 @@ public:
    //query if task is done
    virtual bool isDone()=0;
 
-};//class, NiDaqAo
+};//class, DaqAo
 
 
 //unlike AO, user need supply read buffer for AI
-class DaqAi {
+class DaqAi : public ScannableDaq{
 public:
    //read input from driver
    virtual bool read(int nScans, Daq::sample_t * buf)=0;

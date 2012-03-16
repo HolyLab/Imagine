@@ -33,14 +33,19 @@ using std::endl;
 #include "misc.hpp"
 #include "daq.hpp"
 
-class NiDaq : public Daq {
+class NiScannableDaq : public ScannableDaq {
 protected:
+   int maxDigitalValue;
+   int minDigitalValue;
+   double minPhyValue, maxPhyValue; //min/max value in vol
+   vector<int> channels;
+
    TaskHandle  taskHandle;
    int errorCode;  
 
 public:
    //ctor: create task
-   NiDaq(vector<int> channels):Daq(channels){
+   NiScannableDaq(){
       taskHandle=0;
       errorCode=0;
 
@@ -51,7 +56,7 @@ public:
    }//ctor,
 
    //dtor: clear task (i.e. release driver-allocated resources) 
-   virtual ~NiDaq(){
+   virtual ~NiScannableDaq(){
       DAQmxClearTask(taskHandle);
    }//dtor,
 
@@ -104,13 +109,15 @@ public:
 
 //class: NI DAQ Analog Output
 //note: this class manages its output buffer itself.
-class NiDaqAo: public NiDaq, public DaqAo {
+class NiDaqAo: public NiScannableDaq, public DaqAo {
    sample_t *    dataU16; 
 
 public:
    //create ao channel and add the channel to task
-   NiDaqAo(vector<int> channels):NiDaq(channels){
+   NiDaqAo(vector<int> channels){
       dataU16=0;
+
+      setChannels(channels);
 
       string dev="Dev1/ao";
       string chanList=dev+toString(channels[0]);
