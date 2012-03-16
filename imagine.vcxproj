@@ -178,7 +178,9 @@
     <ClCompile Include="avt_g.cpp" />
     <ClCompile Include="camera_g.cpp" />
     <ClCompile Include="cooke.cpp" />
-    <ClCompile Include="pi_actuator\Actuator_Controller.cpp" />
+    <ClCompile Include="pi_actuator\Actuator_Controller.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="pi_piezo\Piezo_Controller.cpp" />
     <ClCompile Include="positioner.cpp" />
     <ClCompile Include="spoolthread.cpp" />
@@ -307,8 +309,11 @@
     <ClCompile Include="volpiezo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="daq.hpp" />
     <ClInclude Include="dummypiezo.hpp" />
-    <ClInclude Include="pi_actuator\Actuator_Controller.hpp" />
+    <ClInclude Include="pi_actuator\Actuator_Controller.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="pi_piezo\Piezo_Controller.hpp" />
     <ClInclude Include="volpiezo.hpp" />
     <CustomBuild Include="ai_thread.hpp">
