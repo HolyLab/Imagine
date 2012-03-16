@@ -31,34 +31,16 @@ using std::endl;
 #include "NIDAQmx.h"
 
 #include "misc.hpp"
+#include "daq.hpp"
 
-class NiDaq {
+class NiDaq : public Daq {
 protected:
    TaskHandle  taskHandle;
-   int         errorCode;  
+   int errorCode;  
 
 public:
-   uInt32      sampleSize; //in bits
-   int maxDigitalValue;
-   int minDigitalValue;
-   double minPhyValue, maxPhyValue; //min/max value in vol
-   int scanRate;
-
-   //exception classes:
-
-   class EInitDevice {
-   public:
-      string msg;
-
-      EInitDevice(string msg){
-         this->msg=msg;
-      }
-   };//class, EInitDevice 
-
-   class ENoEnoughMem {};
-
    //ctor: create task
-   NiDaq(){
+   NiDaq(vector<int> channels):Daq(channels){
       taskHandle=0;
       errorCode=0;
 
@@ -73,20 +55,6 @@ public:
       DAQmxClearTask(taskHandle);
    }//dtor,
 
-   double toPhyUnit(double digValue){ //NOTE: cast int to double here
-      return (digValue-minDigitalValue)/(maxDigitalValue-minDigitalValue)
-         *(maxPhyValue-minPhyValue)+minPhyValue;
-   }//toPhyUnit()
-
-   int toDigUnit(double phyValue){
-      return (phyValue-minPhyValue)/(maxPhyValue-minPhyValue)
-         *(maxDigitalValue-minDigitalValue)+minDigitalValue;
-   }//toDigUnit()
-   
-   //for ai: size is input buf size,
-   //for ao: size is #scans to acquire
-   //todo: for DIO: size is ...
-   virtual bool cfgTiming(int scanRate, int size)=0;  
 
    //start task
    bool start(){
@@ -136,22 +104,14 @@ public:
 
 //class: NI DAQ Analog Output
 //note: this class manages its output buffer itself.
-class NiDaqAo: public NiDaq {
-   uInt16 *    dataU16; 
+class NiDaqAo: public NiDaq, public DaqAo {
+   sample_t *    dataU16; 
 
 public:
-   vector<int> channels;
-   int nScans;
-
    //create ao channel and add the channel to task
-   NiDaqAo(vector<int> channels){
+   NiDaqAo(vector<int> channels):NiDaq(channels){
       dataU16=0;
-      nScans=0;
 
-      if(channels.size()==0){
-         throw EInitDevice("exception: no output channel");
-      }
-      this->channels=channels;
       string dev="Dev1/ao";
       string chanList=dev+toString(channels[0]);
       for(unsigned int i=1; i<channels.size(); ++i){
@@ -173,7 +133,7 @@ public:
       //get the raw sample size, min/max digital values:
       float64 tt;
       errorCode=DAQmxGetAOResolution(taskHandle,"Dev1/ao0", &tt);
-      if(isError()){
+      if(NiDaq::isError()){
          throw EInitDevice("exception when call DAQmxGetAOResolution()");
       }
       sampleSize=(uInt32)tt;
@@ -257,21 +217,16 @@ public:
 
 
 //unlike AO, user need supply read buffer for AI
-class NiDaqAi: public NiDaq {
+class NiDaqAi: public NiDaq, public DaqAi {
    //uInt16 *    dataU16; //it is better that user supplies the read buf
    vector<int> channels;
 
 public:
    //create AI channels and add the channels to the task
-   NiDaqAi(vector<int> channels){
-      if(channels.size()==0){
-         throw EInitDevice("exception: no input channel");
-      }
-
+   NiDaqAi(vector<int> channels): NiDaq(channels){
       //todo: next line is unnecessary?
       //DAQmxErrChk(DAQmxCfgInputBuffer(taskHandle, buf_size) ); //jason: this change DEFAULT(?) input buffer size
 
-      this->channels=channels;
       string dev="Dev1/ai";
       string chanList=dev+toString(channels[0]);
       for(unsigned int i=1; i<channels.size(); ++i){
@@ -292,7 +247,7 @@ public:
       }
 
       //get the raw sample size:
-      errorCode=DAQmxGetAIRawSampSize(taskHandle, "Dev1/ai0", &sampleSize);
+      errorCode=DAQmxGetAIRawSampSize(taskHandle, "Dev1/ai0", (uInt32*)&sampleSize);
       if(isError()){
          throw EInitDevice("exception when call DAQmxGetAIRawSampSize()");
       }
@@ -352,14 +307,10 @@ public:
 
 };//class, NiDaqAi
 
-class NiDaqDo: public NiDaq {
-   uInt8       data[8];
-
+class NiDaqDo: public NiDaq, public DaqDo {
 public:
    //create DO channel and start the task
    NiDaqDo(){
-      for(int i=0; i<sizeof(data)/sizeof(data[0]); ++i) data[i]=0;
-
       errorCode=DAQmxCreateDOChan(taskHandle,"Dev1/port0/line0:7","",DAQmx_Val_ChanForAllLines);
       if(isError()){
          throw EInitDevice("exception when call DAQmxCreateDOChan()");
@@ -375,12 +326,6 @@ public:
       stop();
    }//dtor, ~NiDaqDo()
 
-   //set bool value to output
-   void updateOutputBuf(int lineIndex, bool newValue){
-      assert(lineIndex>=0 && lineIndex<=7);
-         
-      data[lineIndex]=newValue;
-   }//updateOutputBuf(),
 
    //output data to hardware
    bool write(){
@@ -403,10 +348,10 @@ public:
 };//class, NiDaqDo
 
 //read one sample
-class NiDaqAiReadOne {
+class NiDaqAiReadOne :public DaqAiReadOne {
    NiDaqAi * ai;
 public:
-   NiDaqAiReadOne(int channel){
+   NiDaqAiReadOne(int channel):DaqAiReadOne(channel){
       vector<int> chs;
       chs.push_back(channel);
       ai=new NiDaqAi(chs);
@@ -435,10 +380,10 @@ public:
 };//class, NiDaqAiReadOne
 
 //write one sample
-class NiDaqAoWriteOne {
+class NiDaqAoWriteOne : public DaqAoWriteOne{
    NiDaqAo* ao;
 public:
-   NiDaqAoWriteOne(int channel){
+   NiDaqAoWriteOne(int channel): DaqAoWriteOne(channel){
       vector<int> channels;
       channels.push_back(channel);
       ao=new NiDaqAo(channels);
@@ -474,9 +419,5 @@ public:
       return ao->toDigUnit(phyValue);
    }//toDigUnit(),
 };//class, NiDaqAoWriteOne 
-
-extern NiDaqDo * digOut;
-extern NiDaqAoWriteOne * aoOnce;
-
 
 #endif //NI_DAQ_G_HPP
