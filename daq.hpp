@@ -105,7 +105,7 @@ public:
 
 //class: DAQ Analog Output
 //note: this class manages its output buffer itself.
-class DaqAo : public ScannableDaq {
+class DaqAo : public virtual ScannableDaq {
 public:
    //get output buffer address
    //NOTE: data is grouped by channel, i.e. all samples for a channel are close to each other
@@ -124,7 +124,7 @@ public:
 
 
 //unlike AO, user need supply read buffer for AI
-class DaqAi : public ScannableDaq{
+class DaqAi : public virtual ScannableDaq{
 public:
    //read input from driver
    virtual bool read(int nScans, Daq::sample_t * buf)=0;

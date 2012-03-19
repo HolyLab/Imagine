@@ -33,7 +33,7 @@ using std::endl;
 #include "misc.hpp"
 #include "daq.hpp"
 
-class NiScannableDaq : public ScannableDaq {
+class NiScannableDaq : public virtual ScannableDaq {
 protected:
    int maxDigitalValue;
    int minDigitalValue;
