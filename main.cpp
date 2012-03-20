@@ -35,6 +35,7 @@
 #include "Actuator_Controller.hpp"
 #include "dummypiezo.hpp"
 #include "ni_daq_g.hpp"
+#include "dummy_daq.hpp"
 
 
 extern Camera* pCamera;
@@ -134,6 +135,9 @@ int main(int argc, char *argv[])
 
    if(daq=="ni") {
       digOut=new NiDaqDo();
+   }
+   else if(daq=="dummy"){
+      digOut=new DummyDaqDo();
    }
    else {
       QMessageBox::critical(0, "Imagine", "Unsupported daq."

@@ -347,10 +347,6 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    }
    */
 
-   //prepare for DO:
-   digOut=new NiDaqDo();
-   //TODO: check error of digOut
-
    updateStatus(eIdle, eNoAction);
 
    ///piezo stuff
