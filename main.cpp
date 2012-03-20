@@ -34,11 +34,14 @@
 #include "Piezo_Controller.hpp"
 #include "Actuator_Controller.hpp"
 #include "dummypiezo.hpp"
+#include "ni_daq_g.hpp"
+
 
 extern Camera* pCamera;
 extern Positioner* pPositioner;
 extern QString positionerType;
 extern QScriptEngine* se;
+extern DaqDo* digOut;
 
 bool loadScript(const QString &filename)
 {
@@ -97,9 +100,11 @@ int main(int argc, char *argv[])
    }
    QString cameraVendor=se->globalObject().property("camera").toString();
    positionerType=se->globalObject().property("positioner").toString();
+   QString daq=se->globalObject().property("daq").toString();
 
-   cout<<"using "<<cameraVendor.toStdString()<<" camera and "
-      <<positionerType.toStdString()<<" positioner."<<endl;
+   cout<<"using "<<cameraVendor.toStdString()<<" camera, "
+      <<positionerType.toStdString()<<" positioner, "
+      <<daq.toStdString()<<" daq."<<endl;
 
    if(cameraVendor!="avt" && cameraVendor!="andor" && cameraVendor!="cooke"){
       QMessageBox::critical(0, "Imagine", "Unsupported camera."
@@ -122,6 +127,16 @@ int main(int argc, char *argv[])
    else if(positionerType=="dummy") pPositioner=new DummyPiezo;
    else {
       QMessageBox::critical(0, "Imagine", "Unsupported positioner."
+         , QMessageBox::Ok, QMessageBox::NoButton);
+
+      return 1;
+   }
+
+   if(daq=="ni") {
+      digOut=new NiDaqDo();
+   }
+   else {
+      QMessageBox::critical(0, "Imagine", "Unsupported daq."
          , QMessageBox::Ok, QMessageBox::NoButton);
 
       return 1;

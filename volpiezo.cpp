@@ -13,7 +13,7 @@ double VolPiezo::zpos2voltage(double um)
 bool VolPiezo::curPos(double* pos)
 {
    NiDaqAiReadOne ai(0); //channel 0: piezo
-   int16 reading;
+   int reading;
    ai.readOne(reading); //TODO: check error
    double vol=ai.toPhyUnit(reading);
    *pos=vol/10*this->maxPos();

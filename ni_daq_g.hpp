@@ -107,7 +107,7 @@ class NiDaqAo: public NiDaq, public DaqAo {
 
 public:
    //create ao channel and add the channel to task
-   NiDaqAo(const vector<int> & chs): Daq(chs), NiDaq(chs){
+   NiDaqAo(const vector<int> & chs): Daq(chs), NiDaq(chs), DaqAo(chs){
       dataU16=0;
 
       string dev="Dev1/ao";
@@ -219,7 +219,7 @@ class NiDaqAi: public NiDaq, public DaqAi {
    //uInt16 *    dataU16; //it is better that user supplies the read buf
 public:
    //create AI channels and add the channels to the task
-   NiDaqAi(const vector<int> & chs): Daq(chs), NiDaq(chs){
+   NiDaqAi(const vector<int> & chs): Daq(chs), NiDaq(chs), DaqAi(chs){
       //todo: next line is unnecessary?
       //DAQmxErrChk(DAQmxCfgInputBuffer(taskHandle, buf_size) ); //jason: this change DEFAULT(?) input buffer size
 
@@ -336,6 +336,8 @@ public:
 
       return !isError();
    }//write(),
+
+   bool cfgTiming(int, int){ return true;} //do noting for Dig-out
 
 };//class, NiDaqDo
 

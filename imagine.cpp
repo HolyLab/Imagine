@@ -68,7 +68,7 @@ ImagineAction curAction;
 extern Camera* pCamera;
 extern Positioner* pPositioner;
 extern QScriptEngine* se;
-
+extern DaqDo* digOut;
 
 class CurveData: public QwtData
 {

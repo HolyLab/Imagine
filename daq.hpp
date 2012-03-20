@@ -32,8 +32,6 @@ using std::endl;
 
 class Daq {
 protected:
-   int minDigitalValue, maxDigitalValue;
-   double minPhyValue, maxPhyValue; //min/max value in vol
 
    vector<int> channels;
 public:
@@ -42,6 +40,8 @@ public:
    unsigned int  sampleSize; //in bits
    int scanRate;
    int nScans;
+   int minDigitalValue, maxDigitalValue;
+   double minPhyValue, maxPhyValue; //min/max value in vol
 
    //exception classes:
 
@@ -109,6 +109,9 @@ public:
 //note: this class manages its output buffer itself.
 class DaqAo : public virtual Daq {
 public:
+   DaqAo(const vector<int>& chs):Daq(chs){
+   }
+
    //get output buffer address
    //NOTE: data is grouped by channel, i.e. all samples for a channel are close to each other
    virtual sample_t * getOutputBuf()=0;
@@ -128,6 +131,9 @@ public:
 //unlike AO, user need supply read buffer for AI
 class DaqAi : public virtual Daq{
 public:
+   DaqAi(const vector<int>& chs):Daq(chs){
+   }
+
    //read input from driver
    virtual bool read(int nScans, sample_t * buf)=0;
 };//class, DaqAi

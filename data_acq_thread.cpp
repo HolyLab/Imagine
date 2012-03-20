@@ -45,8 +45,8 @@ Camera* pCamera=nullptr;
 Positioner* pPositioner=nullptr;
 QString positionerType; //todo: query Positioner instead
 QScriptEngine* se;
+DaqDo * digOut=nullptr;
 
-NiDaqDo * digOut=NULL;
 
 //defined in imagine.cpp:
 extern vector<pair<int,int> > stimuli; //first: stim (valve), second: time (stack#)
