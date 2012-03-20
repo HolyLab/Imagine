@@ -33,22 +33,15 @@ using std::endl;
 #include "misc.hpp"
 #include "daq.hpp"
 
-class NiScannableDaq : public virtual ScannableDaq {
-protected:
-   int maxDigitalValue;
-   int minDigitalValue;
-   double minPhyValue, maxPhyValue; //min/max value in vol
-   vector<int> channels;
 
+class NiDaq : public virtual Daq {
+protected:
    TaskHandle  taskHandle;
    int errorCode;  
-
 public:
    //ctor: create task
-   NiScannableDaq(){
+   NiDaq(const vector<int> & chs): Daq(chs){
       taskHandle=0;
-      errorCode=0;
-
       errorCode=DAQmxCreateTask("",&taskHandle);
       if(isError()){
          throw EInitDevice("exception when call DAQmxCreateTask()");
@@ -56,7 +49,7 @@ public:
    }//ctor,
 
    //dtor: clear task (i.e. release driver-allocated resources) 
-   virtual ~NiScannableDaq(){
+   virtual ~NiDaq(){
       DAQmxClearTask(taskHandle);
    }//dtor,
 
@@ -109,15 +102,13 @@ public:
 
 //class: NI DAQ Analog Output
 //note: this class manages its output buffer itself.
-class NiDaqAo: public NiScannableDaq, public DaqAo {
+class NiDaqAo: public NiDaq, public DaqAo {
    sample_t *    dataU16; 
 
 public:
    //create ao channel and add the channel to task
-   NiDaqAo(vector<int> channels){
+   NiDaqAo(const vector<int> & chs): Daq(chs), NiDaq(chs){
       dataU16=0;
-
-      setChannels(channels);
 
       string dev="Dev1/ao";
       string chanList=dev+toString(channels[0]);
@@ -140,7 +131,7 @@ public:
       //get the raw sample size, min/max digital values:
       float64 tt;
       errorCode=DAQmxGetAOResolution(taskHandle,"Dev1/ao0", &tt);
-      if(NiDaq::isError()){
+      if(isError()){
          throw EInitDevice("exception when call DAQmxGetAOResolution()");
       }
       sampleSize=(uInt32)tt;
@@ -226,11 +217,9 @@ public:
 //unlike AO, user need supply read buffer for AI
 class NiDaqAi: public NiDaq, public DaqAi {
    //uInt16 *    dataU16; //it is better that user supplies the read buf
-   vector<int> channels;
-
 public:
    //create AI channels and add the channels to the task
-   NiDaqAi(vector<int> channels): NiDaq(channels){
+   NiDaqAi(const vector<int> & chs): Daq(chs), NiDaq(chs){
       //todo: next line is unnecessary?
       //DAQmxErrChk(DAQmxCfgInputBuffer(taskHandle, buf_size) ); //jason: this change DEFAULT(?) input buffer size
 
@@ -317,7 +306,7 @@ public:
 class NiDaqDo: public NiDaq, public DaqDo {
 public:
    //create DO channel and start the task
-   NiDaqDo(){
+   NiDaqDo(): Daq(vector<int>()), NiDaq(vector<int>()){
       errorCode=DAQmxCreateDOChan(taskHandle,"Dev1/port0/line0:7","",DAQmx_Val_ChanForAllLines);
       if(isError()){
          throw EInitDevice("exception when call DAQmxCreateDOChan()");
@@ -348,10 +337,6 @@ public:
       return !isError();
    }//write(),
 
-   bool cfgTiming(int scanRate, int size){
-      //do nothing
-      return true;
-   }
 };//class, NiDaqDo
 
 //read one sample
@@ -364,7 +349,7 @@ public:
       ai=new NiDaqAi(chs);
 
       if(!ai->cfgTiming(10000, 10000)){
-         throw NiDaq::EInitDevice("exception when cfgTiming()");
+         throw Daq::EInitDevice("exception when cfgTiming()");
       }
    }//ctor,
 
@@ -373,10 +358,12 @@ public:
    }//dtor,
 
    //return true if success
-   bool readOne(int16 & reading){
+   bool readOne(int & reading){
+      int16 tReading;
       if(!ai->start()) return false;
-      if(!ai->read(1, (uInt16*)&reading)) return false;
+      if(!ai->read(1, (uInt16*)&tReading)) return false;
       if(!ai->stop()) return false;
+      reading=tReading;
 
       return true;
    }//readOne()
@@ -396,7 +383,7 @@ public:
       ao=new NiDaqAo(channels);
 
       if(!ao->cfgTiming(10000, 2)){ //for buffered writing, 2 samples at least. //SEE: DAQmxWriteBinaryU16()'s online help.
-         throw NiDaq::EInitDevice("exception when cfgTiming()");
+         throw Daq::EInitDevice("exception when cfgTiming()");
       }
    }//ctor,
 
@@ -405,7 +392,7 @@ public:
    }
 
    //return true if success
-   bool writeOne(uInt16 valueToOutput){
+   bool writeOne(int valueToOutput){
       cout<<"in  writeOne()"<<endl;
       uInt16* buf=ao->getOutputBuf();
       buf[0]=valueToOutput;
