@@ -26,7 +26,8 @@ using std::ofstream;
 #include <QThread>
 #include <QWaitCondition>
 
-#include "ni_daq_g.hpp"
+#include "daq.hpp"
+//#include "ni_daq_g.hpp"
 
 
 class AiThread : public QThread
@@ -34,7 +35,7 @@ class AiThread : public QThread
    Q_OBJECT
 
 public:
-   NiDaqAi* ai;
+   DaqAi* ai;
 
    //NOTE: readBufSize is in scan.
    AiThread(QObject *parent = 0, 
@@ -49,7 +50,7 @@ protected:
    void run();
 
 private:
-   vector<uInt16> data;  //TODO: may reserve space beforehand to speed up
+   vector<Daq::sample_t> data;  //TODO: may reserve space beforehand to speed up
    int readBufSize;  //note: not driver's input buffer size
    int driverBufSize;//driver's input buffer size
    volatile bool stopRequested;

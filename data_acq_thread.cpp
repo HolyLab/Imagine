@@ -46,6 +46,7 @@ Positioner* pPositioner=nullptr;
 QString positionerType; //todo: query Positioner instead
 QScriptEngine* se;
 DaqDo * digOut=nullptr;
+QString daq;
 
 
 //defined in imagine.cpp:
@@ -92,7 +93,7 @@ QString linize(QString lines)
 }
 
 const string headerMagic="IMAGINE";
-bool DataAcqThread::saveHeader(QString filename, NiDaqAi* ai)
+bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
 {
    Camera& camera=*pCamera;
 

@@ -22,6 +22,10 @@ using namespace std;
 
 #include "ai_thread.hpp"
 #include "scoped_ptr_g.hpp"
+#include "dummy_daq.hpp"
+#include "ni_daq_g.hpp"
+
+extern QString daq;
 
 
 AiThread::AiThread(QObject *parent, int readBufSize, int driverBufSize, int scanrate)
@@ -40,7 +44,13 @@ AiThread::AiThread(QObject *parent, int readBufSize, int driverBufSize, int scan
 
    ai=nullptr;
 
-   ai=new NiDaqAi(chanList);
+   if(daq=="ni") ai=new NiDaqAi(chanList);
+   else if(daq=="dummy") ai=new DummyDaqAi(chanList);
+   else {
+      throw Daq::EInitDevice("exception: the AI device is unsupported");
+   }
+
+
    ai->cfgTiming(scanrate, driverBufSize);
 
    //reserve space:

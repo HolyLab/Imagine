@@ -21,6 +21,7 @@
 #include <QWaitCondition>
 
 #include "andor_g.hpp"
+#include "daq.hpp"
 
 extern QString positionerType;
 
@@ -89,7 +90,7 @@ protected:
     void run_live();
 
 private:
-    bool saveHeader(QString filename, NiDaqAi* ai);
+    bool saveHeader(QString filename, DaqAi* ai);
     void fireStimulus(int valve);
 
     QMutex mutex;

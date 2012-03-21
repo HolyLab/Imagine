@@ -43,6 +43,7 @@ extern Positioner* pPositioner;
 extern QString positionerType;
 extern QScriptEngine* se;
 extern DaqDo* digOut;
+extern QString daq;
 
 bool loadScript(const QString &filename)
 {
@@ -101,7 +102,7 @@ int main(int argc, char *argv[])
    }
    QString cameraVendor=se->globalObject().property("camera").toString();
    positionerType=se->globalObject().property("positioner").toString();
-   QString daq=se->globalObject().property("daq").toString();
+   daq=se->globalObject().property("daq").toString();
 
    cout<<"using "<<cameraVendor.toStdString()<<" camera, "
       <<positionerType.toStdString()<<" positioner, "
