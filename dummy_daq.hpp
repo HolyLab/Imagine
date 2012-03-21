@@ -33,4 +33,15 @@ public:
 };//class, DummyDaqDo
 
 
+class DummyDaqAi : public DaqAi {
+public:
+   DummyDaqAi(const vector<int>& chs):Daq(chs), DaqAi(chs){
+   }
+
+   bool read(int nScans, sample_t* buf){
+      //do nothing
+      return true;
+   }
+
+};//class, DummyDaqAi
 #endif //DUMMY_DAQ_HPP
