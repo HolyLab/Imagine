@@ -36,6 +36,10 @@ public:
 class DummyDaqAi : public DaqAi {
 public:
    DummyDaqAi(const vector<int>& chs):Daq(chs), DaqAi(chs){
+      maxDigitalValue=2047; 
+      minDigitalValue=-2048;
+      maxPhyValue=10;
+      minPhyValue=-10;
    }
 
    bool read(int nScans, sample_t* buf){
@@ -43,5 +47,15 @@ public:
       return true;
    }
 
+   bool start(){return true;}
+   bool stop(){return true;}
+   bool isError(){return false;}
+   bool isSuc(){return true;}
+   string getErrorMsg(){return "no error";}
+
+   bool cfgTiming(int scanRate, int size){
+      //do nothing
+      return true;
+   }
 };//class, DummyDaqAi
 #endif //DUMMY_DAQ_HPP
