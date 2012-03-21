@@ -246,7 +246,7 @@ bool test(int nFrames, double exposure)
       return false;
    }
 
-   clparams.DataFormat=PCO_CL_DATAFORMAT_5x12L;
+   clparams.DataFormat=PCO_CL_DATAFORMAT_5x12L | SCCMOS_FORMAT_TOP_CENTER_BOTTOM_CENTER;
    clparams.baudrate=115200;
    clparams.Transmit=1;
    errorCode=PCO_SetTransferParameter(hCamera, &clparams,sizeof(PCO_SC2_CL_TRANSFER_PARAM)); 
