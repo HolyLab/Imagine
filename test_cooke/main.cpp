@@ -284,6 +284,9 @@ bool test(int nFrames, double exposure)
    }
    ///END: setAcqParams(),
 
+   int nRounds=3;
+nextRound:
+   cout<<"start a new round"<<endl;
    ///setAcqModeAndTime():
 
    ///set acqusition trigger mode
@@ -426,8 +429,9 @@ bool test(int nFrames, double exposure)
    PCO_FreeBuffer(hCamera, mBufIndex[0]);    // Frees the memory that was allocated for the buffer
    PCO_FreeBuffer(hCamera, mBufIndex[1]);    // Frees the memory that was allocated for the buffer
 
-   cout<<"total # of black frames: "<<totalGap<<endl;
+   cout<<"total # of black frames in this round: "<<totalGap<<endl;
 
+   if(--nRounds) goto nextRound;
 
    ///fini():
    PCO_CloseCamera(hCamera);
