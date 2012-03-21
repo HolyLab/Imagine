@@ -64,7 +64,7 @@ long extractFrameCounter(PixelValue* rawData)
 }
 
 //
-bool test(int nFrames, double exposure)
+bool test(int nFrames, double exposure, int nRounds)
 {
    ///ctor:
    strGeneral.wSize = sizeof(strGeneral);// initialize all structure size members
@@ -284,7 +284,6 @@ bool test(int nFrames, double exposure)
    }
    ///END: setAcqParams(),
 
-   int nRounds=3;
 nextRound:
    cout<<"start a new round"<<endl;
    ///setAcqModeAndTime():
@@ -444,16 +443,18 @@ int main(int argc, char* argv[])
 {
    int nFrames; 
    double exposure;
-   if(argc!=3) {
-      cerr<<"usage: "<<argv[0]<<" #frames exposure"<<endl;
-      cerr<<"Now use the default: 1000000 frames w/ 0.05s exposure"<<endl;
-      exposure=0.05; nFrames=1000000;
+   int nRounds;
+   if(argc!=4) {
+      cerr<<"usage: "<<argv[0]<<" #frames exposure #rounds"<<endl;
+      cerr<<"Now use the default: 1000000 frames w/ 0.05s exposure and 3 rounds"<<endl;
+      exposure=0.05; nFrames=1000000; nRounds=3;
    }
    else {
       nFrames=atoi(argv[1]);
       exposure=atof(argv[2]);
+      nRounds=atoi(argv[3]);
    }
-   if(!test(nFrames, exposure)){
+   if(!test(nFrames, exposure, nRounds)){
       cerr<<"test failed: "<<errorMsg<<endl;
       return 1;
    }
