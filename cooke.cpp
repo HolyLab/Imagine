@@ -399,12 +399,6 @@ bool CookeCamera::startAcq()
 
    workerThread=new WorkerThread(this);
 
-   errorCode = PCO_SetRecordingState(hCamera, 1); //1: run
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to start camera";
-      return false;
-   }
-
    //in fifo mode, frameIdxInCamRam are 0 for both buffers?
    int frameIdxInCamRam=0;
    errorCode = PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[0]);// Add buffer to the driver queue
@@ -420,6 +414,13 @@ bool CookeCamera::startAcq()
    }
 
    workerThread->start();
+
+   errorCode = PCO_SetRecordingState(hCamera, 1); //1: run
+   if(errorCode!=PCO_NOERROR) {
+      errorMsg="failed to start camera";
+      return false;
+   }
+
 
    return true;
 }//startAcq(),
