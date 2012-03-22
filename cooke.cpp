@@ -132,13 +132,13 @@ bool CookeCamera::setAcqParams(int emGain,
       return false;
    }
 
-   /*
+   // /*
    errorCode=PCO_SetStorageMode(hCamera, 1); //1: fifo mode
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to set storage mode";
       return false;
    }
-   */
+   // */
 
    errorCode=PCO_SetAcquireMode(hCamera, 0); //0: auto
    if(errorCode!=PCO_NOERROR) {
