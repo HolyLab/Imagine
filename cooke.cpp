@@ -428,6 +428,10 @@ bool CookeCamera::startAcq()
 
 bool CookeCamera::stopAcq()
 {
+   //not rely on the "wait abandon"!!!
+   workerThread->requestStop();
+   workerThread->wait();
+
    errorCode = PCO_SetRecordingState(hCamera, 0);// stop recording
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to stop camera";
@@ -441,10 +445,11 @@ bool CookeCamera::stopAcq()
       return false;
    }
 
-   workerThread->requestStop();
-   workerThread->wait();
 
    //reverse of PCO_AllocateBuffer()
+   //ResetEvent(mEvent[0]);
+   //ResetEvent(mEvent[1]);
+
    //TODO: what about the events associated w/ the 2 buffers
    PCO_FreeBuffer(hCamera, mBufIndex[0]);    // Frees the memory that was allocated for the buffer
    PCO_FreeBuffer(hCamera, mBufIndex[1]);    // Frees the memory that was allocated for the buffer

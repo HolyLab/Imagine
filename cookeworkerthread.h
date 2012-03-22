@@ -71,8 +71,9 @@ public:
 #if defined(_DEBUG)
       cerr<<"enter cooke worker thread run()"<<endl;
 #endif
+      bool abnormalExit=false;
       while(true){
-         if(shouldStop) break;
+         //if(shouldStop) break;
          ///wait for events
          int waitResult=WaitForMultipleObjects(2, camera->mEvent, false, 500000);
          switch(waitResult){
@@ -81,9 +82,9 @@ public:
                break; //break the switch
             default: //WAIT_ABANDONED, WAIT_TIMEOUT or WAIT_FAILED
                //todo: should we try to keep going? SEE: CSC2Class::SC2Thread()
-               shouldStop=true; //or goto
+               abnormalExit=true; //or goto
          }//switch,
-         if(shouldStop)break; //break the while
+         if(abnormalExit)break; //break the while
          int eventIdx=waitResult-WAIT_OBJECT_0;
          //todo: should we call GetBufferStatus() to double-check the status about transferring? SEE: demo.cpp
          
@@ -137,6 +138,8 @@ public:
          //reset event
          ResetEvent(camera->mEvent[eventIdx]);
       
+         if(shouldStop) break;
+
          ///then add back the buffer
          if(camera->nAcquiredFrames<camera->nFrames || camera->genericAcqMode==Camera::eLive){
             //in fifo mode, frameIdxInCamRam are 0 for both buffers?
