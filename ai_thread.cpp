@@ -91,6 +91,7 @@ void AiThread::run()
          QMutexLocker locker(&mutex);
          for(int i=0; i<readBufSize*chanList.size(); ++i){
             data.push_back(readBuf[i]);
+            //todo: save periodically to avoid data becomes too big
          }//for,
       }//local scope to make QMutexLocker work
    }//while, user not requested stop
