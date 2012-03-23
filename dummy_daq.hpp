@@ -23,6 +23,9 @@
 #include <vector>
 #include <iostream>
 
+#include <Windows.h>
+
+
 #include "daq.hpp"
 
 class DummyDaqDo: public DaqDo {
@@ -44,6 +47,9 @@ public:
 
    bool read(int nScans, sample_t* buf){
       //do nothing
+      double time2wait=nScans/(double)scanRate;
+      Sleep(time2wait*1000);
+
       return true;
    }
 
@@ -54,7 +60,9 @@ public:
    string getErrorMsg(){return "no error";}
 
    bool cfgTiming(int scanRate, int size){
-      //do nothing
+      //this->scanRate=scanRate;
+      this->scanRate=1000;
+
       return true;
    }
 };//class, DummyDaqAi
