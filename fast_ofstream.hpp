@@ -95,19 +95,33 @@ public:
       return *this;
    }//write(),
 
+   //todo: when datasize is not of x times of phy sector size (4k for "adv format")
    bool flush(){
       if(datasize==0 || !isGood) goto skip_write;
 
-      DWORD nWritten;
+      assert(datasize>0);
 
+      int nBytesWritten;
+      DWORD dwWritten; //NOTE: unsigned
+      char *pFrom=buf;
+
+write_more:
+      nWrites++; // #calls to WriteFile()
       double timerValue=timer.read();
-      if(!WriteFile(hFile, buf, datasize, &nWritten, NULL)){
-         isGood=false;
-      }
-      else   assert(datasize==nWritten);
+      isGood=WriteFile(hFile, pFrom, datasize, &dwWritten, NULL);
+      nBytesWritten=(int)dwWritten;
       times.push_back(timer.read()-timerValue);
-
-      nWrites++;
+      if(!isGood) goto skip_write;
+      
+      assert(nBytesWritten>=0);
+      assert(datasize>=nBytesWritten);
+      datasize-=nBytesWritten;
+      if(datasize>0){
+         pFrom+=nBytesWritten; //NOTE: pFrom should still be aligned
+         goto write_more;
+      }
+      //assert(datasize==nBytesWritten);
+      assert(datasize==0);
 
 skip_write:
       datasize=0;
