@@ -27,6 +27,9 @@ class FastOfstream {
    FastOfstream& operator=(const FastOfstream&);
 
 public:
+   class EOpenFile{};
+   class EAllocBuf{};
+
    //@param bufsize default 64M
    FastOfstream(const char* filename, int bufsize_in_kb=65536){
       unalignedbuf=0;
@@ -40,13 +43,14 @@ public:
       datasize=0;
       int alignment=1024*1024;
       unalignedbuf=new char[bufsize+alignment];
+      if(!unalignedbuf) throw EAllocBuf();
       buf=unalignedbuf+(alignment-(unsigned long)unalignedbuf%alignment);
 
       hFile=CreateFileA(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 
          FILE_ATTRIBUTE_NORMAL|FILE_FLAG_NO_BUFFERING,
          NULL);
       if(hFile==INVALID_HANDLE_VALUE){
-         return;
+         throw EOpenFile();
       }
 
       isGood=true;
