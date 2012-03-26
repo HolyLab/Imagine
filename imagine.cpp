@@ -964,13 +964,6 @@ void Imagine::on_btnApply_clicked()
 {
    Camera& camera=*pCamera;
 
-   if(!checkRoi()){
-      QMessageBox::critical(this, "Imagine", "ROI spec is wrong."
-         , QMessageBox::Ok, QMessageBox::NoButton);
-
-      return;
-   }
-
    QString triggerModeStr=ui.comboBoxTriggerMode->currentText();
    AndorCamera::TriggerMode triggerMode;
    if(triggerModeStr=="External Start") triggerMode=AndorCamera::eExternalStart;
@@ -1005,6 +998,23 @@ void Imagine::on_btnApply_clicked()
    dataAcqThread.hend  =camera.hend  =ui.spinBoxHend  ->value();
    dataAcqThread.vstart=camera.vstart=ui.spinBoxVstart->value();
    dataAcqThread.vend  =camera.vend  =ui.spinBoxVend  ->value();
+
+   //enforce #nBytesPerStack is x times of 4096
+   int nBytesPerStack=camera.getImageWidth()*camera.getImageHeight()*2 //todo: hardcoded 2
+      *dataAcqThread.nFramesPerStack; 
+   if(nBytesPerStack%4096) {
+      QMessageBox::critical(this, "Imagine", "ROI spec is wrong (#pixels per stack is not x times of 2048)."
+         , QMessageBox::Ok, QMessageBox::NoButton);
+
+      return;
+   }
+
+   if(!checkRoi()){
+      QMessageBox::critical(this, "Imagine", "ROI spec is wrong."
+         , QMessageBox::Ok, QMessageBox::NoButton);
+
+      return;
+   }
 
    //TODO: temp
    L=-1;
