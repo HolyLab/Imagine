@@ -54,6 +54,9 @@ public:
       this->itemSize=itemSize;
 
       int circBufCap=16;//todo: hard coded 16
+#ifdef _WIN64
+      circBufCap*=64;
+#endif
       circBuf=new CircularBuf(circBufCap); 
       circBufData=new char[size_t(itemSize)*circBuf->capacity()]; //todo: alignment
       tmpItem=new char[itemSize]; //todo: align
