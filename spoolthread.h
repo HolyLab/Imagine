@@ -44,6 +44,13 @@ public:
       this->ofsSpooling=ofsSpooling;
       circBuf=nullptr;
       tmpItem=nullptr;
+
+      //NOTE: to make sure fast_ofstream works, we enforce
+      // (the precise cond: #bytes2write_in_total is an integer multiple of phy sector size.
+      //  #bytes2write is itemSize * #items2write
+      // assert(itemSize%4096==0);
+      //NOTE: do it in upstream code instead
+
       this->itemSize=itemSize;
 
       int circBufCap=16;//todo: hard coded 16
