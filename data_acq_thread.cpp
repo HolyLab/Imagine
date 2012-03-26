@@ -525,13 +525,13 @@ nextStack:
    ofsAi->close();
    delete ofsAi;    //TODO: use scoped ptr
 
+   camera.stopAcq();
+
    ///disable spool
    if(isUseSpool){
       if(isAndor) ((AndorCamera*)(&camera))->enableSpool(NULL,10); //disable spooling
       else if(isCooke) camera.setSpooling(""); //disable spooling which also closes file
    }
-
-   camera.stopAcq();
 
    QString ttMsg="Acquisition is done";
    if(stopRequested) ttMsg+=" (User requested STOP)";
