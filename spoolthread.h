@@ -27,7 +27,7 @@ private:
    FastOfstream *ofsSpooling; //NOTE: SpoolThread is not the owner
 
    CircularBuf * circBuf;
-   int itemSize;
+   int itemSize; //todo: change to long long
    char * tmpItem;
    char * circBufData;
 
@@ -48,7 +48,7 @@ public:
 
       int circBufCap=16;//todo: hard coded 16
       circBuf=new CircularBuf(circBufCap); 
-      circBufData=new char[itemSize*circBuf->capacity()]; //todo: alignment
+      circBufData=new char[size_t(itemSize)*circBuf->capacity()]; //todo: alignment
       tmpItem=new char[itemSize]; //todo: align
 
       //todo: provide way to check out-of-mem etc.. e.g., if(circBufData==nullptr) isInGoodState=false;
@@ -82,7 +82,7 @@ public:
       }
       if(shouldStop)goto finishup;
       int idx=circBuf->put();
-      memcpy(circBufData+idx*itemSize, item, itemSize);
+      memcpy(circBufData+idx*size_t(itemSize), item, itemSize);
       bufNotEmpty.wakeAll();
 finishup:
       mpLock->unlock();
@@ -101,7 +101,7 @@ finishup:
          }
          if(shouldStop) goto finishup;
          int idx=circBuf->get();
-         memcpy(tmpItem, circBufData+idx*itemSize, itemSize);
+         memcpy(tmpItem, circBufData+idx*size_t(itemSize), itemSize);
          bufNotFull.wakeAll();
          mpLock->unlock();
 
@@ -111,7 +111,7 @@ finishup:
 finishup:
       while(!circBuf->empty()){
          int idx=circBuf->get();
-         memcpy(tmpItem, circBufData+idx*itemSize, itemSize);
+         memcpy(tmpItem, circBufData+idx*size_t(itemSize), itemSize);
          this->ofsSpooling->write(tmpItem, itemSize);
       }
       mpLock->unlock();
