@@ -129,7 +129,7 @@ public:
                append2seq(rawData, curFrameIdx, nPixelsPerFrame);
             }
             memcpy(camera->pLiveImage, rawData, sizeof(CookeCamera::PixelValue)*nPixelsPerFrame);
-            camera->nAcquiredFrames=curFrameIdx+1;
+            camera->nAcquiredFrames=max(curFrameIdx+1, camera->nAcquiredFrames); //don't got back
          }
          else {
             if(camera->genericAcqMode==Camera::eAcqAndSave){
