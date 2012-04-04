@@ -71,7 +71,6 @@ public:
 #if defined(_DEBUG)
       cerr<<"enter cooke worker thread run()"<<endl;
 #endif
-      bool abnormalExit=false;
       while(true){
          //if(shouldStop) break;
          ///wait for events
