@@ -46,9 +46,10 @@ class CookeCamera: public Camera {
    //lock used to coordinate accessing to nAcquiredFrames & pLiveImage
    QMutex* mpLock; 
 
-   WORD mBufIndex[2]; //m_wBufferNr
-   HANDLE mEvent[2];//m_hEvent
-   PixelValue* mRingBuf[2]; //m_pic12
+   static const int nBufs=2;
+   WORD mBufIndex[nBufs]; //m_wBufferNr
+   HANDLE mEvent[nBufs];//m_hEvent
+   PixelValue* mRingBuf[nBufs]; //m_pic12
 
    WorkerThread* workerThread;
 

@@ -381,38 +381,27 @@ bool CookeCamera::startAcq()
    totalGap=0;
 
    ///alloc the ring buffer for data transfer from card to pc
-   mBufIndex[0]=mBufIndex[1] = -1;
-   mEvent[0]= mEvent[1]= NULL;
-   mRingBuf[0]=mRingBuf[1] = NULL;
+   for(int i=0; i<nBufs; ++i){
+      mBufIndex[i]= -1;
+      mEvent[i]= NULL;
+      mRingBuf[i] = NULL;
 
-   errorCode = PCO_AllocateBuffer(hCamera, (SHORT*)&mBufIndex[0], chipWidth * chipHeight * sizeof(DWORD), &mRingBuf[0], &mEvent[0]);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to allocate buffer";
-      return false;
-   }
+      errorCode = PCO_AllocateBuffer(hCamera, (SHORT*)&mBufIndex[i], chipWidth * chipHeight * sizeof(DWORD), &mRingBuf[i], &mEvent[i]);
+      if(errorCode!=PCO_NOERROR) {
+         errorMsg="failed to allocate buffer";
+         return false;
+      }
 
-   errorCode = PCO_AllocateBuffer(hCamera, (SHORT*)&mBufIndex[1], chipWidth * chipHeight * sizeof(DWORD), &mRingBuf[1], &mEvent[1]);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to allocate buffer";
-      return false;
+      //in fifo mode, frameIdxInCamRam are 0 for all buffers?
+      int frameIdxInCamRam=0;
+      errorCode = PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i]);// Add buffer to the driver queue
+      if(errorCode!=PCO_NOERROR) {
+         errorMsg="failed to add buffer";
+         return false;
+      }
    }
 
    workerThread=new WorkerThread(this);
-
-   //in fifo mode, frameIdxInCamRam are 0 for both buffers?
-   int frameIdxInCamRam=0;
-   errorCode = PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[0]);// Add buffer to the driver queue
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to add buffer";
-      return false;
-   }
-
-   errorCode = PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[1]);// Add another buffer to the driver queue
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to add buffer";
-      return false;
-   }
-
    workerThread->start();
 
    errorCode = PCO_SetRecordingState(hCamera, 1); //1: run
@@ -445,14 +434,14 @@ bool CookeCamera::stopAcq()
       return false;
    }
 
+   for(int i=0; i<nBufs; ++i){
+      //reverse of PCO_AllocateBuffer()
+      //ResetEvent(mEvent[0]);
+      //ResetEvent(mEvent[1]);
 
-   //reverse of PCO_AllocateBuffer()
-   //ResetEvent(mEvent[0]);
-   //ResetEvent(mEvent[1]);
-
-   //TODO: what about the events associated w/ the 2 buffers
-   PCO_FreeBuffer(hCamera, mBufIndex[0]);    // Frees the memory that was allocated for the buffer
-   PCO_FreeBuffer(hCamera, mBufIndex[1]);    // Frees the memory that was allocated for the buffer
+      //TODO: what about the events associated w/ the buffers
+      PCO_FreeBuffer(hCamera, mBufIndex[i]);    // Frees the memory that was allocated for the buffer
+   }
 
    delete workerThread;
    workerThread=nullptr;
