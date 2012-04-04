@@ -209,9 +209,6 @@
     <ClInclude Include="pi_piezo\Piezo_Controller.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pi_actuator\Actuator_Controller.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="dummypiezo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -219,6 +216,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dummy_daq.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pi_actuator\Actuator_Controller.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

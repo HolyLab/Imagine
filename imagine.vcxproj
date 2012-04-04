@@ -104,16 +104,16 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>qtgen;$(QTDIR)\include;.\qtgen\Release;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;.\;$(QTDIR)\include\QtScript;.\pi_piezo;.\pi_actuator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>qtgen;$(QTDIR)\include;.\qtgen\Release;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;.\;$(QTDIR)\include\QtScript;.\pi_piezo;.\pi_actuator;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\include;C:\Program Files (x86)\boost\boost_1_47;.\3rd_party\include;.\3rd_party\include\qwt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <PreprocessorDefinitions>QT_DLL;QT_SCRIPT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmain.lib;QtCore4.lib;QtGui4.lib;QtScript4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmain.lib;QtCore4.lib;QtGui4.lib;QtScript4.lib;nidaqmx.lib;Atmcd64m.lib;qwtd5.lib;PvAPI.lib;SC2_Cam.lib;PI_GCS2_DLL_x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(QTDIR)\lib;C:\Program Files %28x86%29\boost\boost_1_47\lib64;.\3rd_party\64bit;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
@@ -180,6 +180,7 @@
     <ClCompile Include="cooke.cpp" />
     <ClCompile Include="pi_actuator\Actuator_Controller.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="pi_piezo\Piezo_Controller.cpp" />
     <ClCompile Include="positioner.cpp" />
@@ -314,6 +315,7 @@
     <ClInclude Include="dummy_daq.hpp" />
     <ClInclude Include="pi_actuator\Actuator_Controller.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="pi_piezo\Piezo_Controller.hpp" />
     <ClInclude Include="volpiezo.hpp" />
