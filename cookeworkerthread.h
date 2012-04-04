@@ -75,16 +75,11 @@ public:
       while(true){
          //if(shouldStop) break;
          ///wait for events
-         int waitResult=WaitForMultipleObjects(2, camera->mEvent, false, 500000);
-         switch(waitResult){
-            case WAIT_OBJECT_0 + 0:
-            case WAIT_OBJECT_0 + 1:
-               break; //break the switch
-            default: //WAIT_ABANDONED, WAIT_TIMEOUT or WAIT_FAILED
-               //todo: should we try to keep going? SEE: CSC2Class::SC2Thread()
-               abnormalExit=true; //or goto
-         }//switch,
-         if(abnormalExit)break; //break the while
+         int waitResult=WaitForMultipleObjects(camera->nBufs, camera->mEvent, false, 500000);
+         if(waitResult<WAIT_OBJECT_0 || waitResult>=WAIT_OBJECT_0+camera->nBufs) {
+            break; //break the while
+            //todo: should we try to keep going? SEE: CSC2Class::SC2Thread()
+         }//if, WAIT_ABANDONED, WAIT_TIMEOUT or WAIT_FAILED
          int eventIdx=waitResult-WAIT_OBJECT_0;
          //todo: should we call GetBufferStatus() to double-check the status about transferring? SEE: demo.cpp
          
