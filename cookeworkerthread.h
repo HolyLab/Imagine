@@ -69,6 +69,8 @@ public:
 
    void run(){
 #if defined(_DEBUG)
+      vector<int> nBlackFrames, blackFrameStartIndices, curFrameIndices;
+      curFrameIndices.reserve(camera->nFrames);
       cerr<<"enter cooke worker thread run()"<<endl;
 #endif
       while(true){
@@ -95,6 +97,10 @@ public:
          //todo: tmp
          //curFrameIdx=camera->nAcquiredFrames;
 
+#ifdef _DEBUG
+         curFrameIndices.push_back(curFrameIdx);
+#endif
+
 
          assert(curFrameIdx>=0);
          long nPixelsPerFrame=camera->getImageHeight()*camera->getImageWidth();
@@ -107,8 +113,14 @@ public:
             }
             gapWidth++;
          }
-         if(gapWidth) cout<<"fill "<<gapWidth<<" frames with black images (start at frame idx="<<camera->nAcquiredFrames<<")"<<endl;
-         camera->totalGap+=gapWidth;
+         if(gapWidth) {
+            cout<<"fill "<<gapWidth<<" frames with black images (start at frame idx="<<camera->nAcquiredFrames<<")"<<endl;
+            camera->totalGap+=gapWidth;
+#ifdef _DEBUG
+            nBlackFrames.push_back(gapWidth);
+            blackFrameStartIndices.push_back(camera->nAcquiredFrames);
+#endif
+         }
 
          //fill the frame array and live image
          if(curFrameIdx<camera->nFrames){
@@ -150,6 +162,12 @@ public:
       }//while,
 #if defined(_DEBUG)
       cerr<<"leave cooke worker thread run()"<<endl;
+      cerr<<"black frame info:"<<endl;
+      for(unsigned i=0; i<nBlackFrames.size(); ++i){
+         cerr<<nBlackFrames[i]<<"@"<<blackFrameStartIndices[i]<<" \t";
+         if(i%8==7) cerr<<endl;
+      }
+      cerr<<"end of black frame info"<<endl;
 #endif
    }//run(),
 };//class, CookeCamera::WorkerThread
