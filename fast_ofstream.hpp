@@ -90,7 +90,7 @@ public:
          if(!morecount) break;
       }//while,
       
-      cout<<"in write(), spent "<<timer.read()-timerValue<<endl;
+      //cout<<"in write(), spent "<<timer.read()-timerValue<<endl;
 
       return *this;
    }//write(),
