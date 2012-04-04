@@ -110,8 +110,14 @@ finishup:
             bufNotEmpty.wait(mpLock); //wait 4 not empty
          }
          if(shouldStop) goto finishup;
+getAgain:
+         int nEmptySlots=circBuf->capacity()-circBuf->size();
          int idx=circBuf->get();
          memcpy(tmpItem, circBufData+idx*size_t(itemSize), itemSize);
+         if(nEmptySlots<64){
+            this->ofsSpooling->write(tmpItem, itemSize);
+            goto getAgain;
+         }
          bufNotFull.wakeAll();
          mpLock->unlock();
 
