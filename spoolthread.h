@@ -113,22 +113,23 @@ finishup:
 getAgain:
          int nEmptySlots=circBuf->capacity()-circBuf->size();
          int idx=circBuf->get();
-         memcpy(tmpItem, circBufData+idx*size_t(itemSize), itemSize);
+         this->ofsSpooling->write(circBufData+idx*size_t(itemSize), itemSize);
          if(false && nEmptySlots<64){
-            this->ofsSpooling->write(tmpItem, itemSize);
             goto getAgain;
          }
          bufNotFull.wakeAll();
          mpLock->unlock();
 
-         //now save tmpItem
-         this->ofsSpooling->write(tmpItem, itemSize);
+         //now flush if nec. 
+         //todo: take care aggressive "get" above ( ... nEmptySlots < 64 ... )
+         if(this->ofsSpooling->remainingBufSize()<itemSize){
+            this->ofsSpooling->flush();
+         }
       }//while,
 finishup:
       while(!circBuf->empty()){
          int idx=circBuf->get();
-         memcpy(tmpItem, circBufData+idx*size_t(itemSize), itemSize);
-         this->ofsSpooling->write(tmpItem, itemSize);
+         this->ofsSpooling->write(circBufData+idx*size_t(itemSize), itemSize);
       }
       mpLock->unlock();
 

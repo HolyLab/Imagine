@@ -129,6 +129,10 @@ skip_write:
       return isGood;
    }
 
+   int remainingBufSize()const{
+      return bufsize-datasize;
+   }
+
    void close(){
       if(hFile==INVALID_HANDLE_VALUE) return;
 
