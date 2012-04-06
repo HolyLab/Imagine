@@ -489,7 +489,7 @@ bool CookeCamera::setSpooling(string filename)
    if(isSpooling()){
       int bufsize_in_4kb=5529600*2*8/(4*1024); //8 frames, about 80M in bytes
 #ifdef _WIN64
-      bufsize_in_kb*=2;
+      bufsize_in_4kb*=1;
 #endif
       ofsSpooling=new FastOfstream(filename.c_str(), bufsize_in_4kb);
       return *ofsSpooling;
