@@ -31,7 +31,7 @@ public:
    class EAllocBuf{};
 
    //@param bufsize default 64M
-   FastOfstream(const char* filename, int bufsize_in_kb=65536){
+   FastOfstream(const char* filename, int bufsize_in_4kb=65536/4){
       unalignedbuf=0;
       hFile=INVALID_HANDLE_VALUE;
       isGood=false;
@@ -39,7 +39,7 @@ public:
       nWrites=0;
       timer.start();
 
-      bufsize=bufsize_in_kb*1024;
+      bufsize=bufsize_in_4kb*4*1024;
       datasize=0;
       int alignment=1024*1024;
       unalignedbuf=new char[bufsize+alignment];
