@@ -141,11 +141,13 @@ skip_write:
       hFile=INVALID_HANDLE_VALUE;
 
       cout<<"#writes: "<<nWrites<<endl;
+      /*
       cout<<"time for writes: ";
       for(auto i=times.begin(); i!=times.end(); ++i){
          cout<<*i<<" \t";
       }
       cout<<endl;
+      */
    }
 
    ~FastOfstream(){
