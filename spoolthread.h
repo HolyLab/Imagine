@@ -58,9 +58,11 @@ public:
       circBufCap*=64;
 #endif
       circBuf=new CircularBuf(circBufCap); 
-      circBufData=new char[size_t(itemSize)*circBuf->capacity()]; //todo: alignment
+      circBufData=(char*)_aligned_malloc(size_t(itemSize)*circBuf->capacity(), 1024*64);
 #ifdef _WIN64
-      assert((unsigned long long)circBufData%16==0); //on 64bit, it should be 16-byte aligned
+      assert((unsigned long long)circBufData%(1024*64)==0);
+#else
+      assert((unsigned long)circBufData%(1024*64)==0);
 #endif
       tmpItem=new char[itemSize]; //todo: align
 
@@ -75,7 +77,7 @@ public:
 
    ~SpoolThread(){
       delete circBuf;
-      delete[] circBufData;
+      _aligned_free(circBufData);
       delete[] tmpItem;
       delete mpLock;
 
