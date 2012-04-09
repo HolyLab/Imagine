@@ -104,6 +104,7 @@ public:
       int nBytesWritten;
       DWORD dwWritten; //NOTE: unsigned
       char *pFrom=buf;
+      DWORD dwLastError;
 
 write_more:
       nWrites++; // #calls to WriteFile()
@@ -111,7 +112,12 @@ write_more:
       isGood=WriteFile(hFile, pFrom, datasize, &dwWritten, NULL);
       nBytesWritten=(int)dwWritten;
       times.push_back(timer.read()-timerValue);
-      if(!isGood) goto skip_write;
+      if(!isGood) {
+         dwLastError=GetLastError();
+         cerr<<"WriteFile() failed: "<<dwLastError<<endl;
+         __debugbreak();
+         goto skip_write;
+      }
       
       assert(nBytesWritten>=0);
       assert(datasize>=nBytesWritten);
