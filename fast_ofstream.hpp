@@ -44,7 +44,11 @@ public:
       int alignment=1024*1024;
       unalignedbuf=new char[bufsize+alignment];
       if(!unalignedbuf) throw EAllocBuf();
+#ifdef _WIN64
+      buf=unalignedbuf+(alignment-(unsigned long long)unalignedbuf%alignment);
+#else
       buf=unalignedbuf+(alignment-(unsigned long)unalignedbuf%alignment);
+#endif
 
       hFile=CreateFileA(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 
          FILE_ATTRIBUTE_NORMAL|FILE_FLAG_NO_BUFFERING,
