@@ -59,6 +59,9 @@ public:
 #endif
       circBuf=new CircularBuf(circBufCap); 
       circBufData=new char[size_t(itemSize)*circBuf->capacity()]; //todo: alignment
+#ifdef _WIN64
+      assert((unsigned long long)circBufData%16==0); //on 64bit, it should be 16-byte aligned
+#endif
       tmpItem=new char[itemSize]; //todo: align
 
       //todo: provide way to check out-of-mem etc.. e.g., if(circBufData==nullptr) isInGoodState=false;
