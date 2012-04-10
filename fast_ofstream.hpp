@@ -10,6 +10,7 @@
 using namespace std;
 
 #include "timer_g.hpp"
+#include "memcpy_g.h"
 
 class FastOfstream {
    char* unalignedbuf, *buf;
@@ -86,7 +87,7 @@ public:
          }
          */
          //alternative:
-         memcpy(buf+datasize, moredata, amount2cp);
+         memcpy_g(buf+datasize, moredata, amount2cp);
          datasize+=amount2cp;
          moredata+=amount2cp;
 

@@ -12,7 +12,7 @@ using std::endl;
 
 #include "fast_ofstream.hpp"
 #include "circbuf.hpp"
-
+#include "memcpy_g.h"
 
 #include <QThread>
 
@@ -97,7 +97,7 @@ public:
       }
       if(shouldStop)goto finishup;
       int idx=circBuf->put();
-      memcpy(circBufData+idx*size_t(itemSize), item, itemSize);
+      memcpy_g(circBufData+idx*size_t(itemSize), item, itemSize);
       bufNotEmpty.wakeAll();
 finishup:
       mpLock->unlock();
