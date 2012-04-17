@@ -64,7 +64,7 @@ long extractFrameCounter(PixelValue* rawData)
 }
 
 //
-bool test(int nFrames, double exposure, int nRounds)
+bool test(int nFrames, double exposure, int nRounds, void* buf)
 {
    ///ctor:
    strGeneral.wSize = sizeof(strGeneral);// initialize all structure size members
@@ -385,14 +385,19 @@ nextRound:
       assert(curFrameIdx>=0);
       int gapWidth=0;
       for(int frameIdx=nAcquiredFrames; frameIdx<min(nFrames, curFrameIdx); ++frameIdx){
+         memcpy(buf, rawData, 2560*2160*2);
          gapWidth++;
       }
       if(gapWidth) cout<<"fill "<<gapWidth<<" frames with black images (start at frame idx="<<nAcquiredFrames<<")"<<endl;
       totalGap+=gapWidth;
       nAcquiredFrames=curFrameIdx+1;
 
+      memcpy(buf, rawData, 2560*2160*2);
+
       //reset event
       ResetEvent(mEvent[eventIdx]);
+
+      memcpy(buf, rawData, 2560*2160*2);
 
       ///then add back the buffer
       if(nAcquiredFrames<nFrames){
@@ -454,7 +459,10 @@ int main(int argc, char* argv[])
       exposure=atof(argv[2]);
       nRounds=atoi(argv[3]);
    }
-   if(!test(nFrames, exposure, nRounds)){
+
+   void* buf=_aligned_malloc(2560*2160*2, 4*1024);
+
+   if(!test(nFrames, exposure, nRounds, buf)){
       cerr<<"test failed: "<<errorMsg<<endl;
       return 1;
    }
