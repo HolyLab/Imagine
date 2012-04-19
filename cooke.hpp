@@ -89,8 +89,11 @@ public:
    }
 
    ~CookeCamera(){
-      delete[] pLiveImage;
-      delete[] pBlackImage;
+      //delete[] pLiveImage;
+      //delete[] pBlackImage;
+      _aligned_free(pLiveImage);
+      _aligned_free(pBlackImage);
+
       delete mpLock;
    }
 

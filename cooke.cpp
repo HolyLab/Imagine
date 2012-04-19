@@ -69,9 +69,11 @@ bool CookeCamera::init()
    //todo: alignment
    int nPixels=chipWidth*chipHeight;
    
-   pLiveImage=new PixelValue[nPixels];
+   //pLiveImage=new PixelValue[nPixels];
+   pLiveImage=(PixelValue*)_aligned_malloc(sizeof(PixelValue)*nPixels, 4*1024);
 
-   pBlackImage=new PixelValue[nPixels];
+   //pBlackImage=new PixelValue[nPixels];
+   pBlackImage=(PixelValue*)_aligned_malloc(sizeof(PixelValue)*nPixels, 4*1024);
    memset(pBlackImage, 0, nPixels*sizeof(PixelValue)); //all zeros
 
 
@@ -469,7 +471,7 @@ bool CookeCamera::getLatestLiveImage(PixelValue * frame)
    if(nAcquiredFrames<=0)   return false;
 
    int nPixels=getImageHeight()*getImageWidth();
-   memcpy(frame, pLiveImage, nPixels*sizeof(PixelValue));
+   memcpy_g(frame, pLiveImage, nPixels*sizeof(PixelValue));
 
    return true;
 }
