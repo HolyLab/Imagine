@@ -346,7 +346,8 @@ void DataAcqThread::run_acq_and_save()
    int imageH=camera.getImageHeight();
 
    int nPixels=imageW*imageH;
-   Camera::PixelValue * frame=new Camera::PixelValue[nPixels];
+   //Camera::PixelValue * frame=new Camera::PixelValue[nPixels];
+   Camera::PixelValue * frame=(Camera::PixelValue*)_aligned_malloc(sizeof(Camera::PixelValue)*nPixels, 4*1024);
 
    idxCurStack=0;
    Timer_g timer;
@@ -511,7 +512,8 @@ nextStack:
       fireStimulus(postSeqStim);  
    }
 
-   delete frame;  //TODO: use scoped ptr
+   //delete frame;  //TODO: use scoped ptr
+   _aligned_free(frame);
 
    aiThread->stopAcq();
    aiThread->save(*ofsAi);
