@@ -66,6 +66,8 @@ long extractFrameCounter(PixelValue* rawData)
 //
 bool test(int nFrames, double exposure, int nRounds, void* buf)
 {
+   cout<<"#frames is "<<nFrames<<", exposure is "<<exposure<<", #rounds is "<<nRounds<<endl;
+
    ///ctor:
    strGeneral.wSize = sizeof(strGeneral);// initialize all structure size members
    strGeneral.strCamType.wSize = sizeof(strGeneral.strCamType);
@@ -468,6 +470,8 @@ int main(int argc, char* argv[])
    }
 
    cout<<"test succeeded!"<<endl;
+
+   getc(stdin);
 
    return 0;
 }
