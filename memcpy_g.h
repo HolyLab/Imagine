@@ -11,6 +11,7 @@ const bool __sse2_available=true;
 __forceinline void memcpy_g(void *Dest, const void *Src, size_t Size)
 {
    if (!__sse2_available || Size < 16 || ((size_t)Src & 15) != ((size_t)Dest & 15)) {
+      __debugbreak();
       memcpy(Dest, Src, Size);
    }
    else {
