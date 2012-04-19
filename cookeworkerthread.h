@@ -128,16 +128,16 @@ public:
             if(camera->genericAcqMode==Camera::eAcqAndSave){
                append2seq(rawData, curFrameIdx, nPixelsPerFrame);
             }
-            memcpy(camera->pLiveImage, rawData, sizeof(CookeCamera::PixelValue)*nPixelsPerFrame);
+            memcpy_g(camera->pLiveImage, rawData, sizeof(CookeCamera::PixelValue)*nPixelsPerFrame);
             camera->nAcquiredFrames=max(curFrameIdx+1, camera->nAcquiredFrames); //don't got back
          }
          else {
             if(camera->genericAcqMode==Camera::eAcqAndSave){
-               memcpy(camera->pLiveImage, camera->pBlackImage, sizeof(Camera::PixelValue)*nPixelsPerFrame);
+               memcpy_g(camera->pLiveImage, camera->pBlackImage, sizeof(Camera::PixelValue)*nPixelsPerFrame);
                camera->nAcquiredFrames=camera->nFrames;
             }
             else {
-               memcpy(camera->pLiveImage, rawData, sizeof(Camera::PixelValue)*nPixelsPerFrame);
+               memcpy_g(camera->pLiveImage, rawData, sizeof(Camera::PixelValue)*nPixelsPerFrame);
                camera->nAcquiredFrames=curFrameIdx+1;
             }
          }
