@@ -31,19 +31,30 @@
     <RootNamespace>imagine</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
     <ProjectName>imagine2</ProjectName>
+    <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -139,7 +150,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>qtgen;$(QTDIR)\include;.\qtgen\Debug;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;.\3rd_party\include\qwt;.\;$(QTDIR)\include\QtScript;C:\Program Files (x86)\boost\boost_1_47;.\pi_piezo;.\pi_actuator;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\include;.\3rd_party\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>qtgen;$(QTDIR)\include;.\qtgen\Debug;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;.\3rd_party\include\qwt;.\;$(QTDIR)\include\QtScript;E:/zsguo/dl/boost_1_49_0;.\pi_piezo;.\pi_actuator;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\include;.\3rd_party\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DEBUG_AI;QT_DLL;QT_SCRIPT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -147,7 +158,7 @@
     <Link>
       <AdditionalDependencies>qtmaind.lib;QtCored4.lib;QtGuid4.lib;Atmcd64m.lib;nidaqmx.lib;qwtd5.lib;PvAPI.lib;SC2_Cam.lib;QtScriptd4.lib;PI_GCS2_DLL_x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\boost\boost_1_47\lib64;$(QTDIR)\lib;.\3rd_party\64bit;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>E:\zsguo\dl\boost_1_49_0\stage\lib;$(QTDIR)\lib;.\3rd_party\64bit;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <HeapReserveSize>0</HeapReserveSize>
@@ -178,6 +189,7 @@
     <ClCompile Include="avt_g.cpp" />
     <ClCompile Include="camera_g.cpp" />
     <ClCompile Include="cooke.cpp" />
+    <ClCompile Include="fast_ofstream.cpp" />
     <ClCompile Include="pi_actuator\Actuator_Controller.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
