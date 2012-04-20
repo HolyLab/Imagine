@@ -153,6 +153,9 @@
     <ClCompile Include="pi_actuator\Actuator_Controller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="fast_ofstream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Atmcd32d.h">
