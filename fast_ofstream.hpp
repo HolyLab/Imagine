@@ -12,6 +12,43 @@ using namespace std;
 #include "timer_g.hpp"
 #include "memcpy_g.h"
 
+//todo: make it private method of FastOfstream
+inline bool realWrite(HANDLE hFile, char* buf, int datasize, int& nWrites, vector<double>& times, Timer_g& timer)
+{
+   assert(datasize>0);
+
+   int nBytesWritten;
+   DWORD dwWritten; //NOTE: unsigned
+   char *pFrom=buf;
+   DWORD dwLastError;
+
+write_more:
+   nWrites++; // #calls to WriteFile()
+   double timerValue=timer.read();
+   bool isGood=WriteFile(hFile, pFrom, datasize, &dwWritten, NULL);
+   nBytesWritten=(int)dwWritten;
+   times.push_back(timer.read()-timerValue);
+   if(!isGood) {
+      dwLastError=GetLastError();
+      cerr<<"WriteFile() failed: "<<dwLastError<<endl;
+      __debugbreak();
+      return false;
+   }
+
+   assert(nBytesWritten>=0);
+   assert(datasize>=nBytesWritten);
+   datasize-=nBytesWritten;
+   if(datasize>0){
+      pFrom+=nBytesWritten; //NOTE: pFrom should still be aligned
+      goto write_more;
+   }
+   //assert(datasize==nBytesWritten);
+   assert(datasize==0);
+
+   return true;
+}//realWrite(),
+
+
 class FastOfstream {
    char* unalignedbuf, *buf;
    int bufsize; // buf[]'s size
@@ -100,43 +137,14 @@ public:
       return *this;
    }//write(),
 
+
    //todo: when datasize is not of x times of phy sector size (4k for "adv format")
    bool flush(){
-      if(datasize==0 || !isGood) goto skip_write;
-
-      assert(datasize>0);
-
-      int nBytesWritten;
-      DWORD dwWritten; //NOTE: unsigned
-      char *pFrom=buf;
-      DWORD dwLastError;
-
-write_more:
-      nWrites++; // #calls to WriteFile()
-      double timerValue=timer.read();
-      isGood=WriteFile(hFile, pFrom, datasize, &dwWritten, NULL);
-      nBytesWritten=(int)dwWritten;
-      times.push_back(timer.read()-timerValue);
-      if(!isGood) {
-         dwLastError=GetLastError();
-         cerr<<"WriteFile() failed: "<<dwLastError<<endl;
-         __debugbreak();
-         goto skip_write;
+      if(datasize>0 && isGood) {
+         isGood=realWrite(hFile, buf, datasize, nWrites, times, timer);
       }
-      
-      assert(nBytesWritten>=0);
-      assert(datasize>=nBytesWritten);
-      datasize-=nBytesWritten;
-      if(datasize>0){
-         pFrom+=nBytesWritten; //NOTE: pFrom should still be aligned
-         goto write_more;
-      }
-      //assert(datasize==nBytesWritten);
-      assert(datasize==0);
-
-skip_write:
+       
       datasize=0;
-
       return isGood;
    }
 
