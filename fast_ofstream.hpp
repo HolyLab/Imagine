@@ -5,6 +5,8 @@
 
 #include <cassert>
 
+//#include <boost/thread/future.hpp>
+#include <future>
 #include <iostream>
 #include <vector>
 using namespace std;
@@ -12,54 +14,28 @@ using namespace std;
 #include "timer_g.hpp"
 #include "memcpy_g.h"
 
-//todo: make it private method of FastOfstream
-inline bool realWrite(HANDLE hFile, char* buf, int datasize, int& nWrites, vector<double>& times, Timer_g& timer)
-{
-   assert(datasize>0);
+//typedef boost::unique_future future;
 
-   int nBytesWritten;
-   DWORD dwWritten; //NOTE: unsigned
-   char *pFrom=buf;
-   DWORD dwLastError;
-
-write_more:
-   nWrites++; // #calls to WriteFile()
-   double timerValue=timer.read();
-   bool isGood=WriteFile(hFile, pFrom, datasize, &dwWritten, NULL);
-   nBytesWritten=(int)dwWritten;
-   times.push_back(timer.read()-timerValue);
-   if(!isGood) {
-      dwLastError=GetLastError();
-      cerr<<"WriteFile() failed: "<<dwLastError<<endl;
-      __debugbreak();
-      return false;
-   }
-
-   assert(nBytesWritten>=0);
-   assert(datasize>=nBytesWritten);
-   datasize-=nBytesWritten;
-   if(datasize>0){
-      pFrom+=nBytesWritten; //NOTE: pFrom should still be aligned
-      goto write_more;
-   }
-   //assert(datasize==nBytesWritten);
-   assert(datasize==0);
-
-   return true;
-}//realWrite(),
+class FastOfstream;
+bool realWrite(FastOfstream* stream, char* buf, int datasize);
 
 
 class FastOfstream {
-   char* unalignedbuf, *buf;
-   int bufsize; // buf[]'s size
+   char *allBuf;// 
+   char *buf;   //cur buf. when is 1st buf: == allBuf; when is 2nd buf: == allBuf+bufsize
+   int bufsize; //one buf's size
    int datasize;
    HANDLE hFile;
    bool isGood; //Status
+   //boost::unique_future<bool> async_future;
+   future<bool> async_future;
 
    //for debug
    int nWrites;
    vector<double> times;
    Timer_g timer;
+
+   friend bool realWrite(FastOfstream* stream, char* buf, int datasize);
 
    FastOfstream(const FastOfstream&);
    FastOfstream& operator=(const FastOfstream&);
@@ -70,7 +46,7 @@ public:
 
    //@param bufsize default 64M
    FastOfstream(const char* filename, int bufsize_in_4kb=65536/4){
-      unalignedbuf=0;
+      allBuf=nullptr;
       hFile=INVALID_HANDLE_VALUE;
       isGood=false;
 
@@ -79,14 +55,9 @@ public:
 
       bufsize=bufsize_in_4kb*4*1024;
       datasize=0;
-      int alignment=1024*1024;
-      unalignedbuf=new char[bufsize+alignment];
-      if(!unalignedbuf) throw EAllocBuf();
-#ifdef _WIN64
-      buf=unalignedbuf+(alignment-(unsigned long long)unalignedbuf%alignment);
-#else
-      buf=unalignedbuf+(alignment-(unsigned long)unalignedbuf%alignment);
-#endif
+      allBuf=(char*)_aligned_malloc(bufsize*2, 4*1024); //2 bufs
+      if(!allBuf) throw EAllocBuf();
+      buf=allBuf; //initially, cur buf is the first one
 
       hFile=CreateFileA(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 
          FILE_ATTRIBUTE_NORMAL|FILE_FLAG_NO_BUFFERING,
@@ -139,11 +110,25 @@ public:
 
 
    //todo: when datasize is not of x times of phy sector size (4k for "adv format")
+   //note: buf is switch to the other after flush()
    bool flush(){
-      if(datasize>0 && isGood) {
-         isGood=realWrite(hFile, buf, datasize, nWrites, times, timer);
+      if(isGood) {
+         ///wait for previous write's finish
+         if(async_future.valid()){
+            isGood=async_future.get();
+         }
+
+         if(datasize==0 || !isGood) goto skip_write;
+
+         //now still good and previous write is done and we do want to write sth
+         
+         async_future=async(launch::async, realWrite, this, buf, datasize);
+         ///switch buf
+         if(buf==allBuf) buf+=bufsize;
+         else buf=allBuf;
       }
-       
+
+skip_write:
       datasize=0;
       return isGood;
    }
@@ -171,7 +156,7 @@ public:
 
    ~FastOfstream(){
       close();
-      delete unalignedbuf;
+      _aligned_free(allBuf);
    }
 
 };//class, FastOfstream
