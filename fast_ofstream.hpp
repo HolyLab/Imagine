@@ -140,7 +140,8 @@ skip_write:
    void close(){
       if(hFile==INVALID_HANDLE_VALUE) return;
 
-      flush();
+      flush(); //write any pending
+      flush(); //wait 4 the async writing done
       CloseHandle(hFile);
       hFile=INVALID_HANDLE_VALUE;
 
