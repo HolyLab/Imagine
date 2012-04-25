@@ -164,7 +164,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidgetCfg">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -215,7 +215,11 @@
            </layout>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEditFilename"/>
+           <widget class="QLineEdit" name="lineEditFilename">
+            <property name="text">
+             <string>d:/test/t.imagine</string>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QLabel" name="label_2">
@@ -311,7 +315,7 @@
                 <double>0.001000000000000</double>
                </property>
                <property name="value">
-                <double>0.050000000000000</double>
+                <double>0.010500000000000</double>
                </property>
               </widget>
              </item>
@@ -324,7 +328,7 @@
                 <number>999999999</number>
                </property>
                <property name="value">
-                <number>2</number>
+                <number>1</number>
                </property>
               </widget>
              </item>
@@ -337,7 +341,7 @@
                 <number>999999999</number>
                </property>
                <property name="value">
-                <number>20</number>
+                <number>10000</number>
                </property>
               </widget>
              </item>
