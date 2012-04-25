@@ -16,23 +16,14 @@
 #ifndef TIMER_G_HPP
 #define TIMER_G_HPP
 
-//todo: use cpu counter instead
-//todo: event cpu counter may wrap, you need record its value when
-//      prog starts, and later when find the value becomes smaller,
-//      which means overwrap happened.
-
-//note: QTime has limitation:
-//      after 24 hr, overwrap happens.
-//      local time change (such as daytime saving on/off) affect it;
-//      acuracy is low.
-
-#include <QTime>
+#include <QElapsedTimer>
 
 class Timer_g {
-   QTime mTimer;
+   QElapsedTimer mTimer;
 
 public:
    Timer_g(){
+      assert(mTimer.clockType()==QElapsedTimer::PerformanceCounter);
       mTimer.start();
    }
 
@@ -44,8 +35,12 @@ public:
    }
 
    //return time in sec
-   double read(){
-      return mTimer.elapsed()/1000.0;
+   double read() const{
+      return mTimer.nsecsElapsed()/1e9;
+   }
+
+   long long readInNanoSec() const{
+      return mTimer.nsecsElapsed();
    }
 
 }; //class, Timer_g
