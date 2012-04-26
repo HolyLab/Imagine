@@ -20,6 +20,7 @@ using std::endl;
 #include <QThread>
 #include <QWaitCondition>
 
+#include "timer_g.hpp"
 
 class SpoolThread: public QThread {
    Q_OBJECT
@@ -34,6 +35,8 @@ private:
    QWaitCondition bufNotEmpty;
    QWaitCondition bufNotFull;
    QMutex* mpLock;
+
+   Timer_g timer;
 
    volatile bool shouldStop; //todo: do we need a lock to guard it?
 
@@ -72,6 +75,9 @@ public:
       mpLock=new QMutex;
  
       shouldStop=false;
+
+      timer.start();
+
    }//ctor,
 
 
@@ -109,8 +115,15 @@ finishup:
       cerr<<"enter cooke spooling thread run()"<<endl;
 #endif
 
+      long long timerReading;
+
       while(true){
-         mpLock->lock();
+lockAgain:
+         if(!mpLock->tryLock()){
+            timerReading=timer.readInNanoSec();
+            while(timer.readInNanoSec()-timerReading<1000*1000*7); //busy wait for 7ms
+            goto lockAgain;
+         }
          while(circBuf->empty() && !shouldStop){
             bufNotEmpty.wait(mpLock); //wait 4 not empty
          }
