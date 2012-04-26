@@ -468,13 +468,17 @@ long CookeCamera::extractFrameCounter(PixelValue* rawData)
 
 bool CookeCamera::getLatestLiveImage(PixelValue * frame)
 {
-   CLockGuard tGuard(mpLock);
+   if(!mpLock->tryLock()) return false;
 
-   if(nAcquiredFrames<=0)   return false;
+   if(nAcquiredFrames<=0)  {
+      mpLock->unlock();  
+      return false;
+   }
 
    int nPixels=getImageHeight()*getImageWidth();
    memcpy_g(frame, pLiveImage, nPixels*sizeof(PixelValue));
 
+   mpLock->unlock();
    return true;
 }
 
