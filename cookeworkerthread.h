@@ -115,6 +115,7 @@ public:
             gapWidth++;
          }
          if(gapWidth) {
+            //tmp: __debugbreak();
             cout<<"fill "<<gapWidth<<" frames with black images (start at frame idx="<<camera->nAcquiredFrames<<")"<<endl;
             camera->totalGap+=gapWidth;
 #ifdef _DEBUG
@@ -128,10 +129,15 @@ public:
             if(camera->genericAcqMode==Camera::eAcqAndSave){
                append2seq(rawData, curFrameIdx, nPixelsPerFrame);
             }
+
+            // CLockGuard tGuard(camera->mpLock); //need the lock on the camera only for live img & nAcquiredFrames
+            //tmp: 
             memcpy_g(camera->pLiveImage, rawData, sizeof(CookeCamera::PixelValue)*nPixelsPerFrame);
             camera->nAcquiredFrames=max(curFrameIdx+1, camera->nAcquiredFrames); //don't got back
          }
          else {
+            // CLockGuard tGuard(camera->mpLock); //need the lock on the camera only for live img & nAcquiredFrames
+
             if(camera->genericAcqMode==Camera::eAcqAndSave){
                memcpy_g(camera->pLiveImage, camera->pBlackImage, sizeof(Camera::PixelValue)*nPixelsPerFrame);
                camera->nAcquiredFrames=camera->nFrames;
