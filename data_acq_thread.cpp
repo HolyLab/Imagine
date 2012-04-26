@@ -415,6 +415,10 @@ nextStack:
    long nFramesGotForStackCur;
    while(true){
       nFramesGotForStackCur=camera.getAcquiredFrameCount();
+      if(nFramesGotForStackCur==-1){
+         Sleep(30);
+         continue;
+      }
       if(nFramesGotForStackCur==nFramesPerStack){
          break;
       }
@@ -423,11 +427,14 @@ nextStack:
          nFramesGotForStack=nFramesGotForStackCur;
 
          //get the latest frame:
-         camera.getLatestLiveImage(frame);
-         
+         if(!camera.getLatestLiveImage(frame)) {
+            Sleep(30);
+            continue;
+         }
          //copy data
          QByteArray data16((const char*)frame, imageW*imageH*2);
          emit imageDataReady(data16, nFramesGotForStack-1, imageW, imageH); //-1: due to 0-based indexing
+         Sleep(50);
       }
    }//while, camera is not idle
 
