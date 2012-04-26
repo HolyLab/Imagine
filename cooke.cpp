@@ -364,8 +364,10 @@ bool CookeCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 
 long CookeCamera::getAcquiredFrameCount()
 {
-   CLockGuard tGuard(mpLock);
-   return nAcquiredFrames;
+   if(!mpLock->tryLock()) return -1;
+   long result=nAcquiredFrames;
+   mpLock->unlock();
+   return result;
 }
 
 
