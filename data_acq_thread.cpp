@@ -244,12 +244,19 @@ void DataAcqThread::run_live()
    long nFramesGotCur;
    while(!stopRequested){
       nFramesGotCur=camera.getAcquiredFrameCount();
+      if(nFramesGotCur==-1){
+         Sleep(20);
+         continue;
+      }
 
       if(nFramesGot!=nFramesGotCur && !isUpdatingImage){
          nFramesGot=nFramesGotCur;
          
          //get the last frame:
-         camera.getLatestLiveImage(frame);
+         if(!camera.getLatestLiveImage(frame)){
+            Sleep(20);
+            continue;
+         }
 
          //copy data
          QByteArray data16((const char*)frame, imageW*imageH*2);
