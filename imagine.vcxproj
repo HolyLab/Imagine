@@ -150,7 +150,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>qtgen;$(QTDIR)\include;.\qtgen\Debug;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;.\3rd_party\include\qwt;.\;$(QTDIR)\include\QtScript;E:/zsguo/dl/boost_1_49_0;.\pi_piezo;.\pi_actuator;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\include;.\3rd_party\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>qtgen;$(QTDIR)\include;.\qtgen\Debug;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;.\3rd_party\include\qwt;.\;$(QTDIR)\include\QtScript;c:/boost_1_49_0;.\pi_piezo;.\pi_actuator;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\include;.\3rd_party\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DEBUG_AI;QT_DLL;QT_SCRIPT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -158,7 +158,7 @@
     <Link>
       <AdditionalDependencies>qtmaind.lib;QtCored4.lib;QtGuid4.lib;Atmcd64m.lib;nidaqmx.lib;qwtd5.lib;PvAPI.lib;SC2_Cam.lib;QtScriptd4.lib;PI_GCS2_DLL_x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>E:\zsguo\dl\boost_1_49_0\stage\lib;$(QTDIR)\lib;.\3rd_party\64bit;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>c:\boost_1_49_0\stage\lib;$(QTDIR)\lib;.\3rd_party\64bit;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <HeapReserveSize>0</HeapReserveSize>
