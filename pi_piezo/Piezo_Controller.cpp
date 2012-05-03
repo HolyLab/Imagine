@@ -307,7 +307,7 @@ bool Piezo_Controller::testCmd()
 		this->lastErrorMsg = "The end position is out of bound.";
 		return false;
 	}
-	if(Velocity > this->maxVel)
+	if(Velocity > this->maxVel())
 	{
 		this->lastErrorMsg = "The velocity will be out of limit.";
 		return false;
@@ -592,7 +592,7 @@ bool Piezo_Controller::prepare(const int i)
 		int trigger = (*this->movements[i]).trigger;
 
 		double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit micrometre / second			
-		this->magicAcc = 5.0; // acceleration rate during A->B
+		this->magicAcc = 5000.0; // acceleration rate during A->B
 		double Acceleration = this->magicAcc; // unit micrometre / second^2
 		double Deceleration = Acceleration;
 
