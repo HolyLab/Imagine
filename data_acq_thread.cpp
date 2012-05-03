@@ -187,9 +187,12 @@ bool DataAcqThread::preparePositioner()
    pPositioner->clearCmd();
    int oldAxis=pPositioner->getDim();
    if(positionerType=="thor") pPositioner->setDim(1); //y axis. Todo: make it a param in cfg file
+
+   // the piezo code only supports the following three lines calling pattern
    pPositioner->addMovement(piezoStartPosUm, piezoStopPosUm, nFramesPerStack*cycleTime*1e6, 1);
-   pPositioner->addMovement(piezoStopPosUm, piezoStartPosUm, piezoTravelBackTime*1e6, -1);//move back
-   pPositioner->addMovement(piezoStartPosUm, numeric_limits<double>::quiet_NaN(), 0, 0); //stop the trigger
+   pPositioner->addMovement(numeric_limits<double>::quiet_NaN(), piezoStartPosUm, piezoTravelBackTime*1e6, -1); //move back directly without prepare
+   pPositioner->addMovement(piezoStartPosUm, numeric_limits<double>::quiet_NaN(), 0, 0); //no movement, only stop the trigger
+
    if(positionerType=="thor") pPositioner->setDim(oldAxis);
 
    if(pPositioner->testCmd())  pPositioner->prepareCmd();
