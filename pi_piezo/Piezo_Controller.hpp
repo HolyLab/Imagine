@@ -28,6 +28,9 @@ private:
 	int USBID; // ID of the E-861 controller USB port
 	char szAxis[4]; // Axis information of the piezo stage
 
+	double magicActFrom;
+	double magicAcc;
+
 	struct actMovement // Actual "from & to" of each current movement 
 	{
 		double actFrom,
@@ -48,6 +51,7 @@ public:
 	double maxDec(); // Return the maximum possible deceleration
 	
 	bool moveTo(const double to); // move as quick as possible to "to"
+	bool testCmd(); // test the validaty of the first movement
 
 	bool prepareCmd(); // after prepare, runCmd() will move it in real.
     bool runCmd();
