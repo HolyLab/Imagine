@@ -180,40 +180,38 @@ bool Actuator_Controller::abortCmd()
 }
 bool Actuator_Controller::testCmd()
 {
-	for (int i = 0; i < getMovementsSize(); ++i) 
-	{
-		double from = (*this->movements[i]).from;
-		double to = (*this->movements[i]).to;
-		double duration = (*this->movements[i]).duration;
-		int trigger = (*this->movements[i]).trigger;
+	int i = 0; // only check the first movement
 
-		double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit micrometre / second
-		if (Velocity > maxVel()) {
-			printf("Error in the velocity requirement of movement %d \n", i);
-			return false;
-		}
-		
-		double Acceleration = maxAcc(); // unit: micrometer / second^2
+	double from = (*this->movements[i]).from;
+	double to = (*this->movements[i]).to;
+	double duration = (*this->movements[i]).duration;
+	int trigger = (*this->movements[i]).trigger;
 
-		double Length = 4.0 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
-		double actFrom, actTo; // The actual from & to of each movement
-
-		if(from <= to) {		
-			actFrom = from - Length;
-			actTo = to + Length;
-		} else if(from > to) {
-			actFrom = from + Length;
-			actTo = to - Length;
-		}
-		if ((from >= minPos2()) && (from <= maxPos2())
-			&& (to >= minPos2()) && (to <= maxPos2())) {
-		}
-		else {
-			return false;
-		}
+	double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit micrometre / second
+	if (Velocity > maxVel()) {
+		printf("Error in the velocity requirement of movement %d \n", i);
+		return false;
 	}
 
-	return true;
+	double Acceleration = maxAcc(); // unit: micrometer / second^2
+
+	double Length = 4.0 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
+	double actFrom, actTo; // The actual from & to of each movement
+
+	if(from <= to) {		
+		actFrom = from - Length;
+		actTo = to + Length;
+	} else if(from > to) {
+		actFrom = from + Length;
+		actTo = to - Length;
+	}
+	if ((from >= minPos2()) && (from <= maxPos2()) && (to >= minPos2()) && (to <= maxPos2())) {
+		return true;
+	}
+	else {
+		return false;
+	}
+	
 }
 
 
@@ -266,7 +264,7 @@ void Actuator_Controller::runMovements()
 		double to = (*this->movements[i]).to;
 
 		printf(" Inside of runMovement: %d %f %f %d %d %d \n", i, from, to, _isnan(from), _isnan(to), (*this->movements[i]).trigger);
-		if( _isnan(from) || _isnan(to) )
+		if( !_isnan(from) || _isnan(to) )
 		{
 			if(!Triggering(i))
 			{
@@ -298,37 +296,49 @@ void Actuator_Controller::runMovements()
 
 bool Actuator_Controller::prepare(const int i)
 {
-	double from = (*this->movements[i]).from;
-	double to = (*this->movements[i]).to;
-	double duration = (*this->movements[i]).duration;
-	int trigger = (*this->movements[i]).trigger;
+	if(i == 0) {
+		double from = (*this->movements[i]).from;
+		double to = (*this->movements[i]).to;
+		double duration = (*this->movements[i]).duration;
+		int trigger = (*this->movements[i]).trigger;
 
-	double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit micrometre / second
-	double Acceleration = maxAcc(); // unit: micrometer / second^2
+		double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit micrometre / second
+		double Acceleration = maxAcc(); // unit: micrometer / second^2
 
-	double Length = 4.0 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
-	double actFrom, actTo; // The actual from & to of each movement
+		double Length = 4.0 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
+		double actFrom, actTo; // The actual from & to of each movement
 
-	if(from <= to) {		
-		actFrom = from - Length;
-		actTo = to + Length;
-	} else if(from > to) {
-		actFrom = from + Length;
-		actTo = to - Length;
+		if(from <= to) {		
+			actFrom = from - Length;
+			actTo = to + Length;
+		} else if(from > to) {
+			actFrom = from + Length;
+			actTo = to - Length;
+		}
+		oneActMovement.actFrom = actFrom;
+		oneActMovement.actTo = actTo;
+		this->magicActFrom = actFrom;
+
+		// printf(" Movement: %d %f %f %f %f \n", i, from, to, actFrom, actTo);
+
+		if(!moveTo(actFrom)) return false; // Move to "actFrom"
+		if(!setVelParams(Velocity, Acceleration)) return false;
 	}
-	oneActMovement.actFrom = actFrom;
-	oneActMovement.actTo = actTo;
-
-	// printf(" Movement: %d %f %f %f %f \n", i, from, to, actFrom, actTo);
-
-	if(!moveTo(actFrom)) return false; // Move to "actFrom"
-	if(!setVelParams(Velocity, Acceleration)) return false;
+	else if(i == 1) {
+		double Velocity = this->maxVel();
+		double Acceleration = maxAcc(); // unit: micrometer / second^2
+		if(!setVelParams(Velocity, Acceleration)) return false;
+	}
 
 	return true;
 }
+
 bool Actuator_Controller::run(const int i)
 {
-	double actTo = oneActMovement.actTo;
+	double actTo;
+	if(i == 0) actTo = oneActMovement.actTo;
+	if(i == 1) actTo = this->magicActFrom;
+
 	long lSerialNum = this->plSerialNum[CHAN2_INDEX];
 
 	float fAbsPos = static_cast<float>(actTo);

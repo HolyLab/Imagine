@@ -35,6 +35,9 @@ private:
 	const double maxVelocity; // Maximum velocity
 	const double maxAcceleration; // Maximum acceleration
 	const double micro; // Const parameter for unit conversion
+
+	double magicActFrom;
+	double magicAcc;
 	
 	struct actMovement { // Actual "from & to" of each current movement 
 		double actFrom, actTo;
