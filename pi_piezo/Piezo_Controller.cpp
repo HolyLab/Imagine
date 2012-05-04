@@ -1,6 +1,6 @@
 #include "Piezo_Controller.hpp"
 
-Piezo_Controller::Piezo_Controller() : lowPosLimit(500.0), upPosLimit(18500.0), maxVelocity(1500.0),maxAcceleration(1000.0), maxDeceleration(1000.0), micro(1000.0)
+Piezo_Controller::Piezo_Controller() : lowPosLimit(500.0), upPosLimit(18500.0), maxVelocity(1500.0),maxAcceleration(10000.0), maxDeceleration(10000.0), micro(1000.0)
 {
 	//
 	// Inquire and set up the connection to the E-861 controller USB port
@@ -266,6 +266,66 @@ bool Piezo_Controller::moveTo(const double to)
 	else return true;
 }
 
+
+bool Piezo_Controller::testCmd()
+{
+	int i = 0;
+	
+	double from = (*this->movements[i]).from;
+	double to = (*this->movements[i]).to;
+	double duration = (*this->movements[i]).duration;
+	int trigger = (*this->movements[i]).trigger;
+
+	double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit micrometre / second			
+	this->magicAcc = 5.0; // acceleration rate during A->B
+	double Acceleration = this->magicAcc; // unit micrometre / second^2
+	double Deceleration = Acceleration;
+
+	double Length = 2.0 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
+	double actFrom, actTo; // The actual from & to of each movement
+
+	if(from <= to)
+	{		
+		actFrom = from - Length;
+		actTo = to + Length;
+	}
+	else if(from > to)
+	{
+		actFrom = from + Length;
+		actTo = to - Length;
+	}
+	oneActMovement.actFrom = actFrom;
+	oneActMovement.actTo = actTo;
+
+	if((from < this->lowPosLimit) || (from > this->upPosLimit))
+	{
+		this->lastErrorMsg = "The start position is out of bound.";
+		return false;
+	}
+	if((to < this->lowPosLimit) || (to > this->upPosLimit))
+	{
+		this->lastErrorMsg = "The end position is out of bound.";
+		return false;
+	}
+	if(Velocity > this->maxVel())
+	{
+		this->lastErrorMsg = "The velocity will be out of limit.";
+		return false;
+	}
+	if((actFrom < this->lowPosLimit) || (actFrom > this->upPosLimit))
+	{
+		this->lastErrorMsg = "The actFrom is out of bound";
+		return false;
+	}
+	if((actTo < this->lowPosLimit) || (actTo > this->upPosLimit))
+	{
+		this->lastErrorMsg = "The actTo is out of bound";
+		return false;
+	}
+
+	return true;
+}
+
 bool Piezo_Controller::prepareCmd()
 {
 	if(!checkControllerReady())
@@ -490,7 +550,7 @@ void Piezo_Controller::runMovements()
 		double to = (*this->movements[i]).to;
 
 		printf(" Inside of runMovement: %d %f %f %d %d %d \n", i, from, to, _isnan(from), _isnan(to), (*this->movements[i]).trigger);
-		if( _isnan(from) || _isnan(to) )
+		if(!_isnan(from) && _isnan(to))
 		{
 			if(!Triggering(i))
 			{
@@ -524,43 +584,66 @@ void Piezo_Controller::runMovements()
 
 bool Piezo_Controller::prepare(const int i)
 {
-	double from = (*this->movements[i]).from;
-	double to = (*this->movements[i]).to;
-	double duration = (*this->movements[i]).duration;
-	int trigger = (*this->movements[i]).trigger;
-
-	double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit micrometre / second
-	double Acceleration = maxAcc(); // unit micrometre / second^2
-	double Deceleration = maxDec();
-
-	double Length = 2.0 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
-	double actFrom, actTo; // The actual from & to of each movement
-	
-	if(from <= to)
-	{		
-		actFrom = from - Length;
-		actTo = to + Length;
-	}
-	else if(from > to)
+	if(i == 0)
 	{
-		actFrom = from + Length;
-		actTo = to - Length;
+		double from = (*this->movements[i]).from;
+		double to = (*this->movements[i]).to;
+		double duration = (*this->movements[i]).duration;
+		int trigger = (*this->movements[i]).trigger;
+
+		double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit micrometre / second			
+		this->magicAcc = 5000.0; // acceleration rate during A->B
+		double Acceleration = this->magicAcc; // unit micrometre / second^2
+		double Deceleration = Acceleration;
+
+		double Length = 0.5 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
+		double actFrom, actTo; // The actual from & to of each movement
+
+		if(from <= to)
+		{		
+			actFrom = from - Length;
+			actTo = to + Length;
+		}
+		else if(from > to)
+		{
+			actFrom = from + Length;
+			actTo = to - Length;
+		}
+		oneActMovement.actFrom = actFrom;
+		oneActMovement.actTo = actTo;
+
+		this->magicActFrom = actFrom;
+		if(!moveTo(actFrom)) return false; // Move to "actFrom"
+
+		if(!setVelocity(Velocity)) return false;
+		if(!setAcceleration(Acceleration)) return false;
+		if(!setDeceleration(Deceleration)) return false;
+
 	}
-	oneActMovement.actFrom = actFrom;
-	oneActMovement.actTo = actTo;
-
-	// printf(" Movement: %d %f %f %f %f \n", i, from, to, actFrom, actTo);
-
-	if(!moveTo(actFrom)) return false; // Move to "actFrom"
-
-	if(!setVelocity(Velocity)) return false;
-	if(!setAcceleration(Acceleration)) return false;
-	if(!setDeceleration(Deceleration)) return false;
+	else if(i == 1)
+	{
+		double Velocity = this->maxVel();
+		this->magicAcc = this->maxAcc(); // acceleration rate during B->A
+		double Acceleration = this->magicAcc; // unit micrometre / second^2
+		double Deceleration = Acceleration;
+		if(!setVelocity(Velocity)) return false;
+		if(!setAcceleration(Acceleration)) return false;
+		if(!setDeceleration(Deceleration)) return false;
+	}
+	
 	return true;
 }
 bool Piezo_Controller::run(const int i)
 {
-	double actTo = oneActMovement.actTo;
+	double actTo;
+	if(i == 0)
+	{
+		actTo = oneActMovement.actTo;
+	}
+	else if(i == 1)
+	{
+		actTo = this->magicActFrom;
+	}
 	if(Qmoving(actTo))  // Move to "actTo" and retun immediately
 	{
 		// printf(" The piezo is moving to %f \n", actTo);
