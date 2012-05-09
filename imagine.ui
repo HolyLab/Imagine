@@ -734,12 +734,12 @@
            <rect>
             <x>10</x>
             <y>100</y>
-            <width>81</width>
+            <width>91</width>
             <height>16</height>
            </rect>
           </property>
           <property name="text">
-           <string>start position:</string>
+           <string>start position(um):</string>
           </property>
          </widget>
          <widget class="QLabel" name="label_9">
@@ -747,12 +747,12 @@
            <rect>
             <x>10</x>
             <y>210</y>
-            <width>81</width>
+            <width>91</width>
             <height>16</height>
            </rect>
           </property>
           <property name="text">
-           <string>stop position:</string>
+           <string>stop position(um):</string>
           </property>
          </widget>
          <widget class="QDoubleSpinBox" name="doubleSpinBoxStartPos">
@@ -821,12 +821,12 @@
            <rect>
             <x>10</x>
             <y>152</y>
-            <width>91</width>
+            <width>111</width>
             <height>16</height>
            </rect>
           </property>
           <property name="text">
-           <string>move to position:</string>
+           <string>move to position(um):</string>
           </property>
          </widget>
          <widget class="QDoubleSpinBox" name="doubleSpinBoxCurPos">
@@ -1013,12 +1013,12 @@
            <rect>
             <x>10</x>
             <y>245</y>
-            <width>91</width>
+            <width>101</width>
             <height>16</height>
            </rect>
           </property>
           <property name="text">
-           <string>current position:</string>
+           <string>current position(um):</string>
           </property>
          </widget>
          <widget class="QLabel" name="labelCurPos">
