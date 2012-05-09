@@ -30,6 +30,7 @@
 #include <QScriptEngine>
 #include <QScriptProgram>
 #include <QApplication>
+#include <QInputDialog>
 
 #include <qwt_plot.h>
 #include <qwt_plot_grid.h>
@@ -170,6 +171,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    autoScaleActionGroup->addAction(ui.actionNoAutoScale);  //OR: ui.actionNoAutoScale->setActionGroup(autoScaleActionGroup);
    autoScaleActionGroup->addAction(ui.actionAutoScaleOnFirstFrame);
    autoScaleActionGroup->addAction(ui.actionAutoScaleOnAllFrames);
+   autoScaleActionGroup->addAction(ui.actionManualContrast);
    ui.actionAutoScaleOnFirstFrame->setChecked(true);
 
    ui.actionStimuli->setCheckable(true);
@@ -804,6 +806,20 @@ void Imagine::on_actionStartLive_triggered()
 void Imagine::on_actionAutoScaleOnFirstFrame_triggered()
 {
    minPixelValue=maxPixelValue=-1;
+}
+
+void Imagine::on_actionContrastMin_triggered()
+{
+   bool ok;
+   int value=QInputDialog::getInt(this, "please specify the min pixel value to cut off", "min", minPixelValueByUser, 0, 1<<16, 10, &ok);
+   if(ok) minPixelValueByUser=value;
+}
+
+void Imagine::on_actionContrastMax_triggered()
+{
+   bool ok;
+   int value=QInputDialog::getInt(this, "please specify the max pixel value to cut off", "max", maxPixelValueByUser, 0, 1<<16, 10, &ok);
+   if(ok) maxPixelValueByUser=value;
 }
 
 

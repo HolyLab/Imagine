@@ -1266,6 +1266,9 @@
     <addaction name="actionNoAutoScale"/>
     <addaction name="actionAutoScaleOnFirstFrame"/>
     <addaction name="actionAutoScaleOnAllFrames"/>
+    <addaction name="actionManualContrast"/>
+    <addaction name="actionContrastMin"/>
+    <addaction name="actionContrastMax"/>
     <addaction name="separator"/>
     <addaction name="actionStimuli"/>
     <addaction name="actionConfig"/>
@@ -1412,6 +1415,24 @@
   <action name="actionHeatsinkFan">
    <property name="text">
     <string>Heatsink Fan</string>
+   </property>
+  </action>
+  <action name="actionContrastMin">
+   <property name="text">
+    <string>                 min</string>
+   </property>
+  </action>
+  <action name="actionContrastMax">
+   <property name="text">
+    <string>                 max</string>
+   </property>
+  </action>
+  <action name="actionManualContrast">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Manual</string>
    </property>
   </action>
  </widget>

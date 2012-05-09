@@ -99,6 +99,8 @@ private slots:
         void on_actionCloseShutter_triggered();
         void on_actionTemperature_triggered();
         void on_actionAutoScaleOnFirstFrame_triggered();
+        void on_actionContrastMin_triggered();
+        void on_actionContrastMax_triggered();
         void on_actionStimuli_triggered();
         void on_actionConfig_triggered();
         void on_actionLog_triggered();
