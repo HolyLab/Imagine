@@ -164,7 +164,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidgetCfg">
         <property name="currentIndex">
-         <number>0</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -698,7 +698,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>80</y>
+            <y>70</y>
             <width>111</width>
             <height>20</height>
            </rect>
@@ -708,10 +708,13 @@
           </property>
          </widget>
          <widget class="QDoubleSpinBox" name="doubleSpinBoxMaxDistance">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <property name="geometry">
            <rect>
             <x>130</x>
-            <y>80</y>
+            <y>70</y>
             <width>62</width>
             <height>22</height>
            </rect>
@@ -730,7 +733,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>110</y>
+            <y>100</y>
             <width>81</width>
             <height>16</height>
            </rect>
@@ -743,7 +746,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>230</y>
+            <y>210</y>
             <width>81</width>
             <height>16</height>
            </rect>
@@ -756,7 +759,7 @@
           <property name="geometry">
            <rect>
             <x>130</x>
-            <y>110</y>
+            <y>100</y>
             <width>62</width>
             <height>22</height>
            </rect>
@@ -769,7 +772,7 @@
           <property name="geometry">
            <rect>
             <x>130</x>
-            <y>230</y>
+            <y>210</y>
             <width>62</width>
             <height>22</height>
            </rect>
@@ -785,7 +788,7 @@
           <property name="geometry">
            <rect>
             <x>200</x>
-            <y>120</y>
+            <y>130</y>
             <width>101</width>
             <height>23</height>
            </rect>
@@ -801,7 +804,7 @@
           <property name="geometry">
            <rect>
             <x>200</x>
-            <y>160</y>
+            <y>170</y>
             <width>101</width>
             <height>23</height>
            </rect>
@@ -817,7 +820,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>142</y>
+            <y>152</y>
             <width>91</width>
             <height>16</height>
            </rect>
@@ -830,7 +833,7 @@
           <property name="geometry">
            <rect>
             <x>130</x>
-            <y>141</y>
+            <y>151</y>
             <width>62</width>
             <height>22</height>
            </rect>
@@ -852,7 +855,7 @@
           <property name="geometry">
            <rect>
             <x>200</x>
-            <y>141</y>
+            <y>151</y>
             <width>101</width>
             <height>23</height>
            </rect>
@@ -868,7 +871,7 @@
           <property name="geometry">
            <rect>
             <x>310</x>
-            <y>110</y>
+            <y>120</y>
             <width>21</width>
             <height>23</height>
            </rect>
@@ -881,7 +884,7 @@
           <property name="geometry">
            <rect>
             <x>310</x>
-            <y>130</y>
+            <y>140</y>
             <width>21</width>
             <height>23</height>
            </rect>
@@ -894,7 +897,7 @@
           <property name="geometry">
            <rect>
             <x>310</x>
-            <y>150</y>
+            <y>160</y>
             <width>21</width>
             <height>23</height>
            </rect>
@@ -907,7 +910,7 @@
           <property name="geometry">
            <rect>
             <x>310</x>
-            <y>170</y>
+            <y>180</y>
             <width>21</width>
             <height>23</height>
            </rect>
@@ -917,10 +920,13 @@
           </property>
          </widget>
          <widget class="QDoubleSpinBox" name="doubleSpinBoxMinDistance">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <property name="geometry">
            <rect>
             <x>130</x>
-            <y>50</y>
+            <y>40</y>
             <width>62</width>
             <height>22</height>
            </rect>
@@ -939,7 +945,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>50</y>
+            <y>40</y>
             <width>111</width>
             <height>20</height>
            </rect>
@@ -1006,7 +1012,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>195</y>
+            <y>245</y>
             <width>91</width>
             <height>16</height>
            </rect>
@@ -1019,7 +1025,7 @@
           <property name="geometry">
            <rect>
             <x>130</x>
-            <y>195</y>
+            <y>245</y>
             <width>70</width>
             <height>16</height>
            </rect>
@@ -1032,7 +1038,7 @@
           <property name="geometry">
            <rect>
             <x>200</x>
-            <y>190</y>
+            <y>240</y>
             <width>101</width>
             <height>23</height>
            </rect>
@@ -1048,7 +1054,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>20</y>
+            <y>10</y>
             <width>111</width>
             <height>21</height>
            </rect>
@@ -1064,7 +1070,7 @@
           <property name="geometry">
            <rect>
             <x>130</x>
-            <y>20</y>
+            <y>10</y>
             <width>60</width>
             <height>22</height>
            </rect>
