@@ -365,7 +365,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    ui.doubleSpinBoxCurPos->setValue(pPositioner->minPos());
    on_btnMovePiezo_clicked();
 
-   //
+   piezoUiParams.resize(3);//3 axes at most. TODOL support querying #dims
 
    QString buildDateStr=__DATE__;
    QDate date=QDate::fromString(buildDateStr, "MMM d yyyy");
@@ -1303,10 +1303,22 @@ void Imagine::on_btnMovePiezo_clicked()
 
 void Imagine::on_comboBoxAxis_currentIndexChanged(int index)
 {
+   int oldDim=pPositioner->getDim();
    pPositioner->setDim(index);
    ui.doubleSpinBoxMinDistance->setValue(pPositioner->minPos());
    ui.doubleSpinBoxMaxDistance->setValue(pPositioner->maxPos());
    on_btnRefreshPos_clicked();
+   PiezoUiParam& oldP=piezoUiParams[oldDim];
+   PiezoUiParam& newP=piezoUiParams[pPositioner->getDim()];
+   oldP.valid=true;
+   oldP.start=ui.doubleSpinBoxStartPos->value();
+   oldP.stop=ui.doubleSpinBoxStopPos->value();
+   oldP.moveto=ui.doubleSpinBoxCurPos->value();
+   if(newP.valid){
+      ui.doubleSpinBoxStartPos->setValue(newP.start);
+      ui.doubleSpinBoxStopPos->setValue(newP.stop);
+      ui.doubleSpinBoxCurPos->setValue(newP.moveto);
+   }
 }
 
 void Imagine::on_btnRefreshPos_clicked()

@@ -33,6 +33,13 @@ class CurveData;
 enum ImagineStatus {eIdle=0, eRunning, eStopping};
 enum ImagineAction {eNoAction=0, eAcqAndSave, eLive};
 
+struct PiezoUiParam {
+   bool valid;
+   double start, stop, moveto;
+
+   PiezoUiParam(){valid=false;}
+};
+
 class Imagine : public QMainWindow
 {
     Q_OBJECT
@@ -55,6 +62,7 @@ private:
     QwtPlot *intenPlot;
     QwtPlotCurve *intenCurve;
     CurveData *intenCurveData;
+    vector<PiezoUiParam> piezoUiParams;
 
     void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
     void updateStatus(ImagineStatus newStatus, ImagineAction newAction);
