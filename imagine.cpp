@@ -120,6 +120,9 @@ public:
 Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
 : QMainWindow(parent, flags)
 {
+   minPixelValueByUser=0;
+   maxPixelValueByUser=1<<16;
+
    ui.setupUi(this);
 
    //to overcome qt designer's incapability
@@ -659,7 +662,7 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
 
    Camera::PixelValue * frame=(Camera::PixelValue * )data16.constData();
 
-   //upate histogram plot
+   //update histogram plot
    int histSamplingRate=3; //that is, calc histgram every 3 updating
    if(nUpdateImage%histSamplingRate==0){
       updateHist(frame, imageW, imageH);
@@ -677,7 +680,6 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
    }
 
    //copy and scale data
-   unsigned char * imageData=image->bits();
    double factor;
    if(ui.actionNoAutoScale->isChecked()){
       minPixelValue=maxPixelValue=0;
@@ -690,19 +692,23 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
             calcMinMaxValues(frame, imageW, imageH);
          }//if, need update min/max values. 
       }//if, min/max are from the first frame
-      else {
+      else if(ui.actionAutoScaleOnAllFrames->isChecked()){
          calcMinMaxValues(frame, imageW, imageH);
-      }//else, min/max are from each frame's own data
+      }//else if, min/max are from each frame's own data
+      else {
+         minPixelValue=minPixelValueByUser;
+         maxPixelValue=maxPixelValueByUser;
+      }//else, user supplied min/max
 
       factor=255.0/(maxPixelValue-minPixelValue);
       if(isColorizeSaturatedPixels) factor*=254/255.0;
    }//else, adjust contrast(i.e. scale data by min/max values)
 
-   AndorCamera::PixelValue * tp=frame;
+   Camera::PixelValue * tp=frame;
    for(int row=0; row<imageH; ++row){
       unsigned char * rowData=image->scanLine(row);
       for(int col=0; col<imageW; ++col){
-         AndorCamera::PixelValue inten= *tp++;
+         Camera::PixelValue inten= *tp++;
          int index;
          if(inten>=16383 && isColorizeSaturatedPixels) index=255;
          else {

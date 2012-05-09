@@ -57,6 +57,7 @@ private:
     QScrollArea* scrollArea;
     DataAcqThread dataAcqThread;
     int minPixelValue, maxPixelValue;
+    int minPixelValueByUser, maxPixelValueByUser;
     QwtPlot *histPlot;
     HistogramItem *histogram;
     QwtPlot *intenPlot;
