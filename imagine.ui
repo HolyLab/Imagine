@@ -709,7 +709,7 @@
          </widget>
          <widget class="QDoubleSpinBox" name="doubleSpinBoxMaxDistance">
           <property name="enabled">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="geometry">
            <rect>
@@ -921,7 +921,7 @@
          </widget>
          <widget class="QDoubleSpinBox" name="doubleSpinBoxMinDistance">
           <property name="enabled">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="geometry">
            <rect>
