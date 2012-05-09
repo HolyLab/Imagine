@@ -663,6 +663,22 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
    }
 
    Camera::PixelValue * frame=(Camera::PixelValue * )data16.constData();
+   if(ui.actionFlickerControl->isChecked()){
+      int oldMax=maxPixelValue;
+      calcMinMaxValues(frame, imageW, imageH);
+      if(maxPixelValue==0){
+         if(++nContinousBlackFrames<3){
+            maxPixelValue=oldMax;
+            goto done;
+         }
+         else nContinousBlackFrames=0;
+      }//if, black frame
+      else {
+         nContinousBlackFrames=0; //reset counter
+      }
+      maxPixelValue=oldMax;
+   }
+
 
    //update histogram plot
    int histSamplingRate=3; //that is, calc histgram every 3 updating
@@ -728,6 +744,8 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
    nUpdateImage++;
    appendLog(QString().setNum(nUpdateImage)
       +"-th updated frame(0-based)="+QString().setNum(idx));
+
+done:
    isUpdatingImage=false;
 }//updateDisplay(),
 

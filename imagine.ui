@@ -1275,6 +1275,8 @@
     <addaction name="actionLog"/>
     <addaction name="separator"/>
     <addaction name="actionColorizeSaturatedPixels"/>
+    <addaction name="separator"/>
+    <addaction name="actionFlickerControl"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Acquisition"/>
@@ -1433,6 +1435,14 @@
    </property>
    <property name="text">
     <string>Manual</string>
+   </property>
+  </action>
+  <action name="actionFlickerControl">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Flicker control</string>
    </property>
   </action>
  </widget>

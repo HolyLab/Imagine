@@ -58,6 +58,7 @@ private:
     DataAcqThread dataAcqThread;
     int minPixelValue, maxPixelValue;
     int minPixelValueByUser, maxPixelValueByUser;
+    int nContinousBlackFrames;
     QwtPlot *histPlot;
     HistogramItem *histogram;
     QwtPlot *intenPlot;
