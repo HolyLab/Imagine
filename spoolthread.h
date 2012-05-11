@@ -58,7 +58,7 @@ public:
 
       int circBufCap=16;//todo: hard coded 16
 #ifdef _WIN64
-      circBufCap*=64;
+      circBufCap*=4;
 #endif
       circBuf=new CircularBuf(circBufCap); 
       circBufData=(char*)_aligned_malloc(size_t(itemSize)*circBuf->capacity(), 1024*64);
