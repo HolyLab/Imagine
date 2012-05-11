@@ -93,6 +93,8 @@ int main(int argc, char *argv[])
 {
    QApplication a(argc, argv);
 
+   assert(qApp);
+
    se=new QScriptEngine();
    QScriptValue svRun = se->newFunction(runWrapper);
    se->globalObject().setProperty("system", svRun); 
