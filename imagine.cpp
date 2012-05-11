@@ -56,6 +56,7 @@ using namespace std;
 #include "temperaturedialog.h"
 #include "fanctrldialog.h"
 #include "positioner.hpp"
+#include "timer_g.hpp"
 
 
 vector<pair<int,int> > stimuli; //first: stim (valve), second: time (stack#)
@@ -64,6 +65,8 @@ TemperatureDialog * temperatureDialog=NULL;
 FanCtrlDialog* fanCtrlDialog=NULL;
 ImagineStatus curStatus;
 ImagineAction curAction;
+
+Timer_g gTimer;
 
 //todo: 
 extern Camera* pCamera;

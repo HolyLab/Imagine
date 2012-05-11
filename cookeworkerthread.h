@@ -30,11 +30,16 @@ private:
 public:
    WorkerThread(CookeCamera * camera, QObject *parent = 0)
       : QThread(parent){
+      Timer_g timer;
+      timer.start();
+
       this->camera=camera;
       
       if(camera->isSpooling()){
          spoolingThread=new SpoolThread(camera->ofsSpooling, 
             camera->getImageWidth()*camera->getImageHeight()*sizeof(CookeCamera::PixelValue));
+         cout<<"after new spoolthread: "<<timer.read()<<endl;
+
          spoolingThread->start();
       }
       else {
@@ -42,6 +47,8 @@ public:
       }
 
       shouldStop=false;
+
+      cout<<"at the end of workerThread->ctor(): "<<timer.read()<<endl;
    }
    ~WorkerThread(){
       if(spoolingThread){

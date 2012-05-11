@@ -361,7 +361,7 @@ void DataAcqThread::run_acq_and_save()
 
    idxCurStack=0;
    Timer_g timer;
-   timer.start();
+   gTimer.start();
 
    //start AI
    aiThread->startAcq();
@@ -373,6 +373,8 @@ void DataAcqThread::run_acq_and_save()
    }//if, first stimulus should be fired before stack_0
 
 nextStack:
+   cout<<"b4 open laser: "<<gTimer.read()<<endl;
+
    //open laser shutter
    digOut->updateOutputBuf(4,true);
    digOut->write();
@@ -385,7 +387,7 @@ nextStack:
 
    emit newLogMsgReady(QString("Acquiring stack (0-based)=%1 @time=%2 s")
       .arg(idxCurStack)
-      .arg(timer.read(), 10, 'f', 4) //width=10, fixed point, 4 decimal digits 
+      .arg(gTimer.read(), 10, 'f', 4) //width=10, fixed point, 4 decimal digits 
       );
 
    if(isAndor && isUseSpool) {
@@ -397,6 +399,8 @@ nextStack:
 
    pPositioner->optimizeCmd();
 
+   cout<<"b4 start camera: "<<gTimer.read()<<endl;
+
    //for external start, put 100ms delay here to wait camera's readiness for trigger
    if(triggerMode==Camera::eExternalStart){
       camera.startAcq();
@@ -407,9 +411,12 @@ nextStack:
    }
    else {
       pPositioner->runCmd();
+      cout<<"b4 camera.startacq: "<<gTimer.read()<<endl;
       camera.startAcq();
+      cout<<"after camera.startacq: "<<gTimer.read()<<endl;
    }
 
+   cout<<"after start camera: "<<gTimer.read()<<endl;
 
    //TMP: trigger camera
    digOut->updateOutputBuf(5,true);
@@ -455,6 +462,8 @@ nextStack:
       emit imageDataReady(data16, nFramesPerStack-1, imageW, imageH); //-1: due to 0-based indexing
    }
 
+   cout<<"b4 close laser: "<<timer.read()<<endl;
+
    //close laser shutter
    digOut->updateOutputBuf(4,false);
    digOut->write();
@@ -496,11 +505,15 @@ nextStack:
       //ofsCam->flush();
    }//if, save data to file and not using spool
 
+   cout<<"b4 flush ai data: "<<timer.read()<<endl;
+
    ///save ai data:
    aiThread->save(*ofsAi);
    ofsAi->flush();
 
+   cout<<"b4 wait piezo: "<<timer.read()<<endl;
    pPositioner->waitCmd();
+   cout<<"after wait piezo: "<<timer.read()<<endl;
 
    //TMP: trigger off camera
    digOut->updateOutputBuf(5,false);
@@ -518,7 +531,9 @@ nextStack:
          QThread::msleep(timeToWait*1000); // *1000: sec -> ms
       }//if, need wait more than 10ms
 
+      cout<<"b4 stop camera: "<<timer.read()<<endl;
       camera.stopAcq();
+      cout<<"after stop camera: "<<timer.read()<<endl;
       goto nextStack;
    }//if, there're more stacks and no stop requested
 
