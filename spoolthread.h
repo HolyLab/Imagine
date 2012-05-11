@@ -22,6 +22,9 @@ using std::endl;
 
 #include "timer_g.hpp"
 
+extern Timer_g gTimer;
+
+
 class SpoolThread: public QThread {
    Q_OBJECT
 private:
@@ -44,7 +47,6 @@ public:
    //PRE: itemsize: the size (in bytes) of each item in the circ buf
    SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *parent = 0)
       : QThread(parent){
-      timer.start();
       this->ofsSpooling=ofsSpooling;
       circBuf=nullptr;
       tmpItem=nullptr;
@@ -61,12 +63,12 @@ public:
 #ifdef _WIN64
       circBufCap*=4;
 #endif
-      cout<<"b4 new CircularBuf: "<<timer.read()<<endl;
+      cout<<"b4 new CircularBuf: "<<gTimer.read()<<endl;
 
       circBuf=new CircularBuf(circBufCap); 
-      cout<<"after new CircularBuf: "<<timer.read()<<endl;
+      cout<<"after new CircularBuf: "<<gTimer.read()<<endl;
       circBufData=(char*)_aligned_malloc(size_t(itemSize)*circBuf->capacity(), 1024*64);
-      cout<<"after _aligned_malloc: "<<timer.read()<<endl;
+      cout<<"after _aligned_malloc: "<<gTimer.read()<<endl;
 #ifdef _WIN64
       assert((unsigned long long)circBufData%(1024*64)==0);
 #else
@@ -81,9 +83,8 @@ public:
  
       shouldStop=false;
 
-      cout<<"b4 exit spoolthread->ctor: "<<timer.read()<<endl;
+      cout<<"b4 exit spoolthread->ctor: "<<gTimer.read()<<endl;
 
-      //keep following line!!
       timer.start();
 
    }//ctor,

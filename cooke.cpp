@@ -375,9 +375,6 @@ long CookeCamera::getAcquiredFrameCount()
 
 bool CookeCamera::startAcq()
 {
-   Timer_g timer;
-   timer.start();
-
    CLockGuard tGuard(mpLock);
    nAcquiredFrames=0; //todo: maybe too late if external trigger?
 
@@ -408,13 +405,13 @@ bool CookeCamera::startAcq()
       }
    }
 
-   cout<<"b4 new WorkerThread(): "<<timer.read()<<endl;
+   cout<<"b4 new WorkerThread(): "<<gTimer.read()<<endl;
 
    workerThread=new WorkerThread(this);
-   cout<<"after new WorkerThread(): "<<timer.read()<<endl;
+   cout<<"after new WorkerThread(): "<<gTimer.read()<<endl;
    workerThread->start();
 
-   cout<<"after workerThread->start(): "<<timer.read()<<endl;
+   cout<<"after workerThread->start(): "<<gTimer.read()<<endl;
 
    errorCode = PCO_SetRecordingState(hCamera, 1); //1: run
    if(errorCode!=PCO_NOERROR) {
@@ -422,7 +419,7 @@ bool CookeCamera::startAcq()
       return false;
    }
 
-   cout<<"after set rec state to 1/run: "<<timer.read()<<endl;
+   cout<<"after set rec state to 1/run: "<<gTimer.read()<<endl;
 
    return true;
 }//startAcq(),

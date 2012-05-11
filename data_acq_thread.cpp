@@ -48,6 +48,8 @@ QScriptEngine* se;
 DaqDo * digOut=nullptr;
 QString daq;
 
+extern Timer_g gTimer;
+
 
 //defined in imagine.cpp:
 extern vector<pair<int,int> > stimuli; //first: stim (valve), second: time (stack#)
@@ -360,7 +362,7 @@ void DataAcqThread::run_acq_and_save()
    Camera::PixelValue * frame=(Camera::PixelValue*)_aligned_malloc(sizeof(Camera::PixelValue)*nPixels, 4*1024);
 
    idxCurStack=0;
-   Timer_g timer;
+
    gTimer.start();
 
    //start AI
@@ -462,7 +464,7 @@ nextStack:
       emit imageDataReady(data16, nFramesPerStack-1, imageW, imageH); //-1: due to 0-based indexing
    }
 
-   cout<<"b4 close laser: "<<timer.read()<<endl;
+   cout<<"b4 close laser: "<<gTimer.read()<<endl;
 
    //close laser shutter
    digOut->updateOutputBuf(4,false);
@@ -495,25 +497,25 @@ nextStack:
    ///save camera's data:
    if(!isUseSpool){
       Camera::PixelValue * imageArray=camera.getImageArray();
-      double timerValue=timer.read();
+      double timerValue=gTimer.read();
       ofsCam->write((const char*)imageArray, 
          sizeof(Camera::PixelValue)*nFramesPerStack*imageW*imageH );
       if(!*ofsCam){
          //TODO: deal with the error
       }//if, error occurs when write camera data
-      cout<<"time for writing the stack: "<<timer.read()-timerValue<<endl;
+      cout<<"time for writing the stack: "<<gTimer.read()-timerValue<<endl;
       //ofsCam->flush();
    }//if, save data to file and not using spool
 
-   cout<<"b4 flush ai data: "<<timer.read()<<endl;
+   cout<<"b4 flush ai data: "<<gTimer.read()<<endl;
 
    ///save ai data:
    aiThread->save(*ofsAi);
    ofsAi->flush();
 
-   cout<<"b4 wait piezo: "<<timer.read()<<endl;
+   cout<<"b4 wait piezo: "<<gTimer.read()<<endl;
    pPositioner->waitCmd();
-   cout<<"after wait piezo: "<<timer.read()<<endl;
+   cout<<"after wait piezo: "<<gTimer.read()<<endl;
 
    //TMP: trigger off camera
    digOut->updateOutputBuf(5,false);
@@ -523,7 +525,7 @@ nextStack:
    idxCurStack++;  //post: it is #stacks we got so far
    if(idxCurStack<this->nStacks && !stopRequested){
       double timePerStack=nFramesPerStack*cycleTime+idleTimeBwtnStacks;
-      double timeToWait=timePerStack*idxCurStack-timer.read();
+      double timeToWait=timePerStack*idxCurStack-gTimer.read();
       if(timeToWait<0){
          emit newLogMsgReady("WARNING: overrun: idle time is too short.");
       }
@@ -531,9 +533,9 @@ nextStack:
          QThread::msleep(timeToWait*1000); // *1000: sec -> ms
       }//if, need wait more than 10ms
 
-      cout<<"b4 stop camera: "<<timer.read()<<endl;
+      cout<<"b4 stop camera: "<<gTimer.read()<<endl;
       camera.stopAcq();
-      cout<<"after stop camera: "<<timer.read()<<endl;
+      cout<<"after stop camera: "<<gTimer.read()<<endl;
       goto nextStack;
    }//if, there're more stacks and no stop requested
 
