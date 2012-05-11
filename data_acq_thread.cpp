@@ -380,11 +380,13 @@ nextStack:
    //open laser shutter
    digOut->updateOutputBuf(4,true);
    digOut->write();
+   cout<<"b4 open laser(js call): "<<gTimer.read()<<endl;
    {
    QScriptValue jsFunc=se->globalObject().property("onShutterOpen");
    if(jsFunc.isFunction()) jsFunc.call();
    }
 
+   cout<<"after open laser: "<<gTimer.read()<<endl;
    //TODO: may need delay for shutter open time
 
    emit newLogMsgReady(QString("Acquiring stack (0-based)=%1 @time=%2 s")
