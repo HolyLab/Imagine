@@ -168,7 +168,7 @@ bool AvtCamera::fini()
 }
 
 
-bool AvtCamera::setAcqParams(int emGain,
+bool AvtCamera::setAcqParams(int gain,
                      int preAmpGainIdx,
                      int horShiftSpeedIdx,
                      int verShiftSpeedIdx,
@@ -181,6 +181,13 @@ bool AvtCamera::setAcqParams(int emGain,
    ///pixel format
    errorCode=PvAttrEnumSet(cameraHandle,"PixelFormat","Mono16");
    if(errorCode!=ePvErrSuccess) return false;
+
+   ///gain:
+   errorCode=PvAttrEnumSet(cameraHandle,"GainMode","Manual");
+   if(errorCode!=ePvErrSuccess) return false;
+   errorCode=PvAttrUint32Set(cameraHandle,"GainValue",gain);
+   if(errorCode!=ePvErrSuccess) return false;
+
 
    ///set image dim
    ///TODO: check error code and make sure the start/end/etc are in bin-ed unit

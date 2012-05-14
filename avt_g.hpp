@@ -78,7 +78,7 @@ public:
    bool init();
    bool fini();
 
-   bool setAcqParams(int emGain,
+   bool setAcqParams(int gain,
                      int preAmpGainIdx,
                      int horShiftSpeedIdx,
                      int verShiftSpeedIdx,
