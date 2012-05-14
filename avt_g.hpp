@@ -114,6 +114,7 @@ public:
       return true;
    }
 
+   pair<int,int> getGainRange(){ return make_pair(0,34); }
 
    friend void  __stdcall onFrameDone(tPvFrame* pFrame);
 };
