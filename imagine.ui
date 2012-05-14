@@ -387,12 +387,12 @@
                <item row="2" column="0">
                 <widget class="QLabel" name="label_14">
                  <property name="text">
-                  <string>EM gain:</string>
+                  <string>Gain:</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QSpinBox" name="spinBoxEmGain">
+                <widget class="QSpinBox" name="spinBoxGain">
                  <property name="maximum">
                   <number>255</number>
                  </property>
