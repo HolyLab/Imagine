@@ -276,6 +276,11 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
 
    bool isAndor=camera.vendor=="andor";
 
+   //camera's gain:
+   auto gainRange=camera.getGainRange();
+   ui.spinBoxGain->setMinimum(gainRange.first);
+   ui.spinBoxGain->setMaximum(gainRange.second);
+
    if(isAndor){
       //TODO: get pre-amp gain and fill in the cfg window
       //fill in horizontal shift speed (i.e. read out rate):
@@ -1028,7 +1033,7 @@ void Imagine::on_btnApply_clicked()
 
    dataAcqThread.horShiftSpeedIdx=ui.comboBoxHorReadoutRate->currentIndex();
    dataAcqThread.preAmpGainIdx=ui.comboBoxPreAmpGains->currentIndex();
-   dataAcqThread.emGain=ui.spinBoxEmGain->value();
+   dataAcqThread.gain=ui.spinBoxGain->value();
    dataAcqThread.verShiftSpeedIdx=ui.comboBoxVertShiftSpeed->currentIndex();
    dataAcqThread.verClockVolAmp=ui.comboBoxVertClockVolAmp->currentIndex();
 
@@ -1062,7 +1067,7 @@ void Imagine::on_btnApply_clicked()
    //TODO: temp
    L=-1;
 
-   camera.setAcqParams(dataAcqThread.emGain,
+   camera.setAcqParams(dataAcqThread.gain,
                        dataAcqThread.preAmpGainIdx,
                        dataAcqThread.horShiftSpeedIdx,
                        dataAcqThread.verShiftSpeedIdx,

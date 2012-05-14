@@ -147,7 +147,7 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
       <<"nStacks="<<nStacks<<endl
       <<"idle time between stacks="<<idleTimeBwtnStacks<<" s"<<endl;
    header<<"pre amp gain="<<preAmpGain.toStdString()<<endl
-      <<"EM gain="<<emGain<<endl
+      <<"gain="<<gain<<endl
       <<"exposure time="<<exposureTime<<" s" <<endl
       <<"vertical shift speed="<<verShiftSpeed.toStdString()<<endl
       <<"vertical clock vol amp="<<verClockVolAmp<<endl

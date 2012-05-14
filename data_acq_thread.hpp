@@ -47,7 +47,7 @@ public:
     double exposureTime, //in sec
        idleTimeBwtnStacks; //in sec
     double piezoTravelBackTime; //in sec
-    int emGain;
+    int gain;
     int preAmpGainIdx;
     int horShiftSpeedIdx;
     int verShiftSpeedIdx;

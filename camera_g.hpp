@@ -1,5 +1,5 @@
 /*-------------------------------------------------------------------------
-** Copyright (C) 2005-2010 Timothy E. Holy and Zhongsheng Guo
+** Copyright (C) 2005-2012 Timothy E. Holy and Zhongsheng Guo
 **    All rights reserved.
 ** Author: All code authored by Zhongsheng Guo.
 ** License: This file may be used under the terms of the GNU General Public
@@ -18,8 +18,12 @@
 
 #include <string>
 #include <vector>
+#include <utility>
 using std::string;
 using std::vector;
+using std::pair;
+using std::make_pair;
+
 
 
 class Camera {
@@ -120,7 +124,7 @@ public:
 
    //params common to both live- and save-modes
    ///NOTE: roi/binning are also set here
-   virtual bool setAcqParams(int emGain,
+   virtual bool setAcqParams(int gain, //emGain for Andor
                      int preAmpGainIdx,
                      int horShiftSpeedIdx,
                      int verShiftSpeedIdx,
@@ -143,6 +147,8 @@ public:
    bool isSpooling() {return spoolingFilename!="";}
    //string getSpoolingFilename(){return spoolingFilename;}
    virtual bool setSpooling(string filename); //when filename is empty, disable the spooling
+
+   virtual pair<int,int> getGainRange(){ return make_pair(0,0); }//by default, no gain
 
 private:
    void   freeImageArray();

@@ -288,6 +288,7 @@ public:
       return true;
    }
 
+   pair<int,int> getGainRange(){ return make_pair(0,255); }
 };//class, AndorCamera
 
 //extern AndorCamera camera;
