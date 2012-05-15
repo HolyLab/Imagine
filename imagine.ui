@@ -164,11 +164,11 @@
       <item>
        <widget class="QTabWidget" name="tabWidgetCfg">
         <property name="currentIndex">
-         <number>1</number>
+         <number>7</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
-          <string>general</string>
+          <string>General</string>
          </attribute>
          <layout class="QVBoxLayout">
           <property name="spacing">
@@ -235,7 +235,7 @@
         </widget>
         <widget class="QWidget" name="tabCamera">
          <attribute name="title">
-          <string>camera</string>
+          <string>Camera</string>
          </attribute>
          <layout class="QVBoxLayout">
           <property name="spacing">
@@ -618,7 +618,7 @@
         </widget>
         <widget class="QWidget" name="tabStim">
          <attribute name="title">
-          <string>stimuli</string>
+          <string>Stimuli</string>
          </attribute>
          <layout class="QVBoxLayout">
           <property name="spacing">
@@ -692,7 +692,7 @@
         </widget>
         <widget class="QWidget" name="tabPiezo">
          <attribute name="title">
-          <string>piezo</string>
+          <string>Positioner</string>
          </attribute>
          <widget class="QLabel" name="label_19">
           <property name="geometry">
@@ -1089,7 +1089,7 @@
         </widget>
         <widget class="QWidget" name="tabShutter">
          <attribute name="title">
-          <string>shutter</string>
+          <string>Shutter</string>
          </attribute>
          <widget class="QLabel" name="label_11">
           <property name="geometry">
@@ -1147,6 +1147,52 @@
           <property name="text">
            <string>input range:</string>
           </property>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="tabDisplay">
+         <attribute name="title">
+          <string>Display</string>
+         </attribute>
+         <widget class="QWidget" name="">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>323</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QLabel" name="label_29">
+             <property name="toolTip">
+              <string/>
+             </property>
+             <property name="text">
+              <string>Display area size (% of acquired image size):</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="spinBoxDisplayAreaSize">
+             <property name="minimumSize">
+              <size>
+               <width>60</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>800</number>
+             </property>
+             <property name="value">
+              <number>100</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </widget>
        </widget>

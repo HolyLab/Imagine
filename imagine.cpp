@@ -542,7 +542,9 @@ void Imagine::updateImage()
    if(!image) return;
 
    //TODO: user should be able to adjust this param or fit to width/height
-   double maxWidth=500, maxHeight=500;
+   double displayAreaSize=ui.spinBoxDisplayAreaSize->value()/100.0;
+   double maxWidth=image->width()*displayAreaSize;
+   double maxHeight=image->height()*displayAreaSize;
    if(L==-1){
       L=T=0; H=image->height(); W=image->width();
    }//if, uninitialized edges
@@ -551,6 +553,7 @@ void Imagine::updateImage()
    //zoom
    double zoomFactor=min(maxWidth/W, maxHeight/H);
    //double ttLiveZoomFactor=0.5;
+
    QImage scaledImage=cropedImage.scaledToHeight(cropedImage.height()*zoomFactor);
    //QImage scaledImage=*image; //TODO: temp
 
