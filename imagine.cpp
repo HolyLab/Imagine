@@ -278,8 +278,11 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
 
    //camera's gain:
    auto gainRange=camera.getGainRange();
-   ui.spinBoxGain->setMinimum(gainRange.first);
-   ui.spinBoxGain->setMaximum(gainRange.second);
+   if(gainRange.second==gainRange.first) ui.spinBoxGain->setEnabled(false);
+   else {
+      ui.spinBoxGain->setMinimum(gainRange.first);
+      ui.spinBoxGain->setMaximum(gainRange.second);
+   }
 
    if(isAndor){
       //TODO: get pre-amp gain and fill in the cfg window
