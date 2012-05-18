@@ -156,7 +156,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmaind.lib;QtCored4.lib;QtGuid4.lib;Atmcd64m.lib;nidaqmx.lib;qwtd5.lib;PvAPI.lib;SC2_Cam.lib;QtScriptd4.lib;PI_GCS2_DLL_x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;QtCored4.lib;QtGuid4.lib;Atmcd64m.lib;nidaqmx.lib;qwtd5.lib;PvAPI.lib;SC2_Cam.lib;QtScriptd4.lib;PI_GCS2_DLL_x64.lib;qserialdevice.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>c:\boost_1_49_0\stage\lib;$(QTDIR)\lib;.\3rd_party\64bit;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -196,6 +196,7 @@
     </ClCompile>
     <ClCompile Include="pi_piezo\Piezo_Controller.cpp" />
     <ClCompile Include="positioner.cpp" />
+    <ClCompile Include="shutterctrl.cpp" />
     <ClCompile Include="spoolthread.cpp" />
     <ClCompile Include="cookeworkerthread.cpp" />
     <ClCompile Include="data_acq_thread.cpp" />
@@ -330,6 +331,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="pi_piezo\Piezo_Controller.hpp" />
+    <ClInclude Include="shutterctrl.h" />
     <ClInclude Include="volpiezo.hpp" />
     <CustomBuild Include="ai_thread.hpp">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing ai_thread.hpp...</Message>

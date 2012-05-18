@@ -156,6 +156,9 @@
     <ClCompile Include="fast_ofstream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="shutterctrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Atmcd32d.h">
@@ -222,6 +225,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pi_actuator\Actuator_Controller.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shutterctrl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
