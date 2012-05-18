@@ -363,6 +363,11 @@ void DataAcqThread::run_acq_and_save()
 
    idxCurStack=0;
 
+   {
+   QScriptValue jsFunc=se->globalObject().property("onShutterInit");
+   if(jsFunc.isFunction()) jsFunc.call();
+   }
+
    gTimer.start();
 
    //start AI
@@ -565,6 +570,11 @@ nextStack:
    delete ofsAi;    //TODO: use scoped ptr
 
    camera.stopAcq();
+
+   {
+   QScriptValue jsFunc=se->globalObject().property("onShutterFini");
+   if(jsFunc.isFunction()) jsFunc.call();
+   }
 
    ///disable spool
    if(isUseSpool){

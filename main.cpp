@@ -36,6 +36,7 @@
 #include "dummypiezo.hpp"
 #include "ni_daq_g.hpp"
 #include "dummy_daq.hpp"
+#include "shutterctrl.h"
 
 
 extern Camera* pCamera;
@@ -98,6 +99,14 @@ int main(int argc, char *argv[])
    se=new QScriptEngine();
    QScriptValue svRun = se->newFunction(runWrapper);
    se->globalObject().setProperty("system", svRun); 
+
+   //shutter ctrl
+   QScriptValue svRunOpendev = se->newFunction(openShutterDeviceWrapper);
+   se->globalObject().setProperty("openShutterDevice", svRunOpendev); 
+   QScriptValue svRunClosedev = se->newFunction(closeShutterDeviceWrapper);
+   se->globalObject().setProperty("closeShutterDevice", svRunClosedev); 
+   QScriptValue svRunSetShutter = se->newFunction(setShutterStatusWrapper);
+   se->globalObject().setProperty("setShutterStatus", svRunSetShutter); 
 
    if(!loadScript(QString::fromStdString("imagine.js"))){
       return 1;  
