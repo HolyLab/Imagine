@@ -10,7 +10,7 @@ var checkRoi = function () {
 };
 
 var onShutterInit = function () {
-   var result=openShutterDevice();
+   var result=openShutterDevice("COM1");
 
    if (result) print("open shutter device: ok");
    else print("open shutter device: failed ");
