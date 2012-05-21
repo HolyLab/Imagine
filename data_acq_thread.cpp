@@ -296,11 +296,15 @@ void DataAcqThread::run_acq_and_save()
 
    bool isAndor=camera.vendor=="andor";
    bool isCooke=camera.vendor=="cooke";
+   bool isAvt=camera.vendor=="avt";
    
    if(isAndor){
       isUseSpool=true;  //TODO: make ui aware this
    }
    else if(isCooke){
+      isUseSpool=true;
+   }
+   else if(isAvt){
       isUseSpool=true;
    }
    else {
@@ -313,8 +317,8 @@ void DataAcqThread::run_acq_and_save()
 
    camFilename=replaceExtName(headerFilename, "cam"); //NOTE: necessary if user overwrite files
 
-   //if cooke, seeSpooling() here!!! (to avoid out-of-mem when setAcqAndTime())
-   if(isCooke && isUseSpool){
+   //if cooke/avt, setSpooling() here!!! (to avoid out-of-mem when setAcqModeAndTime())
+   if((isCooke || isAvt) && isUseSpool){
       camera.setSpooling(camFilename.toStdString());
    }
 
@@ -579,7 +583,7 @@ nextStack:
    ///disable spool
    if(isUseSpool){
       if(isAndor) ((AndorCamera*)(&camera))->enableSpool(NULL,10); //disable spooling
-      else if(isCooke) camera.setSpooling(""); //disable spooling which also closes file
+      else if(isCooke||isAvt) camera.setSpooling(""); //disable spooling which also closes file
    }
 
    QString ttMsg="Acquisition is done";
