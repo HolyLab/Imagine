@@ -164,7 +164,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidgetCfg">
         <property name="currentIndex">
-         <number>7</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -328,7 +328,7 @@
                 <number>999999999</number>
                </property>
                <property name="value">
-                <number>1</number>
+                <number>5</number>
                </property>
               </widget>
              </item>
@@ -354,7 +354,7 @@
                 <double>999999999.000000000000000</double>
                </property>
                <property name="value">
-                <double>3.000000000000000</double>
+                <double>0.700000000000000</double>
                </property>
               </widget>
              </item>
@@ -1153,7 +1153,7 @@
          <attribute name="title">
           <string>Display</string>
          </attribute>
-         <widget class="QWidget" name="">
+         <widget class="QWidget" name="layoutWidget">
           <property name="geometry">
            <rect>
             <x>10</x>
