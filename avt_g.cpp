@@ -365,10 +365,11 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
    cout<<"frame rate is: "<<frameRate<<endl;
 
    ///take care of image array saving (in mem only)
-   if(!allocImageArray(nFrames,false)){
-      return false;
-   }//if, fail to alloc enough mem
-
+   if(genericAcqMode==Camera::eAcqAndSave && !isSpooling()){
+	   if(!allocImageArray(nFrames,false)){
+		   return false;
+	   }//if, fail to alloc enough mem
+   }
 
    return errorCode==ePvErrSuccess;
 }
