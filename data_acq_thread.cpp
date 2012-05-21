@@ -450,7 +450,7 @@ nextStack:
          Sleep(30);
          continue;
       }
-      if(nFramesGotForStackCur==nFramesPerStack){
+      if(nFramesGotForStackCur>=nFramesPerStack){
          break;
       }
 
