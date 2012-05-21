@@ -49,6 +49,7 @@ bool openShutterDevice(const QString& dev)
       }
 
       //Here, the new set parameters (for example)
+      /*
       qDebug() << "= New parameters =";
       qDebug() << "Device name            : " << port->deviceName();
       qDebug() << "Baud rate              : " << port->baudRate();
@@ -57,6 +58,7 @@ bool openShutterDevice(const QString& dev)
       qDebug() << "Stop bits              : " << port->stopBits();
       qDebug() << "Flow                   : " << port->flowControl();
       qDebug() << "Char timeout, msec     : " << port->charIntervalTimeout();
+      */
    }
 
    return true;
@@ -85,10 +87,10 @@ static int getShutterStatus()
    tx="02\r";
    int tmp=tx.length();
    int nWritten = port->write(tx);
-   qDebug() << "Writed is : " << nWritten << " bytes";
+   //qDebug() << "Writed is : " << nWritten << " bytes";
    port->waitForReadyRead(50);
    rx = port->readAll();
-   qDebug() << "Readed is : " << rx.size() << " bytes";
+   //qDebug() << "Readed is : " << rx.size() << " bytes";
 
    bool ok;
    int result=rx.mid(2,2).toInt(&ok, 16);
@@ -105,7 +107,7 @@ bool setShutterStatus(int line, bool isOpen)
    int newStatus=bs.to_ulong();
    QByteArray tx=QString("01%1\r").arg(newStatus, 2, 16, QChar('0')).toAscii();
    int nWritten = port->write(tx);
-   qDebug() << "Writed is : " << nWritten << " bytes";
+   //qDebug() << "Writed is : " << nWritten << " bytes";
 
    return true;
 }//setShutterStatus(),
