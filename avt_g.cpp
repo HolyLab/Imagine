@@ -1,5 +1,5 @@
 /*-------------------------------------------------------------------------
-** Copyright (C) 2005-2010 Timothy E. Holy and Zhongsheng Guo
+** Copyright (C) 2005-2012 Timothy E. Holy and Zhongsheng Guo
 **    All rights reserved.
 ** Author: All code authored by Zhongsheng Guo.
 ** License: This file may be used under the terms of the GNU General Public
@@ -260,16 +260,20 @@ void  __stdcall onFrameDone(tPvFrame* pFrame)
       pCamera->nAcquiredFrames++;
    }
 
-   ///the saved buf
+   ///the saved buf/file
    if(pCamera->genericAcqMode==Camera::eAcqAndSave){
       assert((pCamera->nAcquiredFrames-1)%pCamera->circBufSize==frameIdx);
 
       if(pCamera->nAcquiredFrames<=pCamera->nFrames){
-         memcpy(pCamera->pImageArray+(pCamera->nAcquiredFrames-1)*nPixels, 
-            src, 
-            sizeof(Camera::PixelValue)*nPixels
-            );
-
+         if(pCamera->isSpooling()){
+            pCamera->ofsSpooling->write((const char*)src, sizeof(Camera::PixelValue)*nPixels);
+         }
+         else {
+            memcpy(pCamera->pImageArray+(pCamera->nAcquiredFrames-1)*nPixels, 
+               src, 
+               sizeof(Camera::PixelValue)*nPixels
+               );
+         }
       }
    }
 
@@ -454,4 +458,21 @@ bool AvtCamera::isIdle()
 }
 */
 
+bool AvtCamera::setSpooling(string filename)
+{
+   if(ofsSpooling){
+      delete ofsSpooling; //the file is closed too
+      ofsSpooling=nullptr;
+   }
+
+   Camera::setSpooling(filename);
+
+   if(isSpooling()){
+      int bufsize_in_4kb=64*1024*1024/(4*1024); //64M
+      ofsSpooling=new FastOfstream(filename.c_str(), bufsize_in_4kb);
+      return *ofsSpooling;
+   }
+   else return true;
+
+}
 

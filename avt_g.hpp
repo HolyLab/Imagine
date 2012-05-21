@@ -8,6 +8,8 @@
 
 #include "PvApi.h"
 
+#include "fast_ofstream.hpp"
+
 
 void  __stdcall onFrameDone(tPvFrame* pFrame);
 
@@ -32,6 +34,8 @@ class AvtCamera: public Camera {
     //lock used to coordinate accessing to nAcquiredFrames
     QMutex* mpLock; 
 
+    FastOfstream *ofsSpooling;
+
 
 public:
    AvtCamera(){
@@ -41,6 +45,8 @@ public:
       pLiveImage=nullptr;
 
       pBlackImage=nullptr;
+
+      ofsSpooling=nullptr;
 
       nAcquiredFrames=0;
       mpLock=new QMutex;
@@ -113,6 +119,8 @@ public:
 
       return true;
    }
+
+   bool setSpooling(string filename);
 
    pair<int,int> getGainRange(){ return make_pair(0,34); }
 
