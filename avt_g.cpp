@@ -254,11 +254,14 @@ void  __stdcall onFrameDone(tPvFrame* pFrame)
       sizeof(Camera::PixelValue)*nPixels
       );
 
+   //if(pCamera->genericAcqMode==Camera::eAcqAndSave){
+   //	   if(pCamera->nAcquiredFrames>=pCamera->nFrames) return;
+   //}
 
-   if(pFrame->Status == ePvErrSuccess) pCamera->nAcquiredFrames=pFrame->FrameCount;
-   else {
+   //if(pFrame->Status == ePvErrSuccess) pCamera->nAcquiredFrames=pFrame->FrameCount;
+   //else {
       pCamera->nAcquiredFrames++;
-   }
+   //}
 
    ///the saved buf/file
    if(pCamera->genericAcqMode==Camera::eAcqAndSave){
@@ -277,8 +280,9 @@ void  __stdcall onFrameDone(tPvFrame* pFrame)
       }
    }
 
-   if((pCamera->nAcquiredFrames<pCamera->nFrames || pCamera->genericAcqMode==Camera::eLive)
-        && pFrame->Status != ePvErrUnplugged 
+   if(//(pCamera->nAcquiredFrames<pCamera->nFrames || pCamera->genericAcqMode==Camera::eLive)
+        //&& 
+		pFrame->Status != ePvErrUnplugged 
         && pFrame->Status != ePvErrCancelled
       ){
       PvCaptureQueueFrame(pCamera->cameraHandle,pFrame, onFrameDone);
