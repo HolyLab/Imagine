@@ -164,7 +164,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidgetCfg">
         <property name="currentIndex">
-         <number>1</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -972,7 +972,7 @@
          </widget>
          <widget class="QDoubleSpinBox" name="doubleSpinBoxPiezoTravelBackTime">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="geometry">
            <rect>
@@ -989,7 +989,7 @@
            <double>10000.000000000000000</double>
           </property>
           <property name="value">
-           <double>1.500000000000000</double>
+           <double>0.000000000000000</double>
           </property>
          </widget>
          <widget class="QCheckBox" name="cbAutoSetPiezoTravelBackTime">
@@ -1005,7 +1005,7 @@
            <string>Auto</string>
           </property>
           <property name="checked">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
          </widget>
          <widget class="QLabel" name="label_27">
