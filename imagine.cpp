@@ -275,6 +275,11 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    Camera& camera=*pCamera;
 
    bool isAndor=camera.vendor=="andor";
+   bool isAvt=camera.vendor=="avt";
+
+   if(isAvt){
+      ui.actionFlickerControl->setChecked(true);
+   }
 
    //camera's gain:
    auto gainRange=camera.getGainRange();
