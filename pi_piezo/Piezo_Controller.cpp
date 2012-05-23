@@ -184,6 +184,10 @@ Piezo_Controller::Piezo_Controller() : lowPosLimit(500.0), upPosLimit(18500.0), 
 		return;
 	}
 
+	// Initialize ParaLnth & ParaAccr
+	this->ParaLnth = 0.5;
+	this->ParaAccr = 5000.0;
+
 }
 Piezo_Controller::~Piezo_Controller() 
 {
@@ -277,11 +281,11 @@ bool Piezo_Controller::testCmd()
 	int trigger = (*this->movements[i]).trigger;
 
 	double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit micrometre / second			
-	this->magicAcc = 5000.0; // acceleration rate during A->B
+	this->magicAcc = this->ParaAccr; // acceleration rate during A->B
 	double Acceleration = this->magicAcc; // unit micrometre / second^2
 	double Deceleration = Acceleration;
 
-	double Length = 0.5 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
+	double Length = this->ParaLnth * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
 	double actFrom, actTo; // The actual from & to of each movement
 
 	if(from <= to)
@@ -592,11 +596,11 @@ bool Piezo_Controller::prepare(const int i)
 		int trigger = (*this->movements[i]).trigger;
 
 		double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit micrometre / second			
-		this->magicAcc = 5000.0; // acceleration rate during A->B
+		this->magicAcc = this->ParaAccr; // acceleration rate during A->B
 		double Acceleration = this->magicAcc; // unit micrometre / second^2
 		double Deceleration = Acceleration;
 
-		double Length = 0.5 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
+		double Length = this->ParaLnth * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
 		double actFrom, actTo; // The actual from & to of each movement
 
 		if(from <= to)

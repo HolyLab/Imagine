@@ -38,6 +38,9 @@ private:
 	} oneActMovement;
 
 	boost::thread workerThread; // workerThread for runCmd()
+
+	double ParaLnth; // Parameter for Acceleration Length
+	double ParaAccr; // Parameter for Acceleration Rate
 		
 public:
 	Piezo_Controller(); // Initialize the connection to the controller, set up the piezo stage
