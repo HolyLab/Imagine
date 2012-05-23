@@ -281,7 +281,7 @@ bool Piezo_Controller::testCmd()
 	double Acceleration = this->magicAcc; // unit micrometre / second^2
 	double Deceleration = Acceleration;
 
-	double Length = 2.0 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
+	double Length = 0.5 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
 	double actFrom, actTo; // The actual from & to of each movement
 
 	if(from <= to)
