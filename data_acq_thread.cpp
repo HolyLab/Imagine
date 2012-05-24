@@ -392,7 +392,6 @@ nextStack:
    //cout<<"b4 open laser(js call): "<<gTimer.read()<<endl;
    {
    QScriptValue jsFunc=se->globalObject().property("onShutterOpen");
-   //cout<<"b4 open laser(jsFunc call): "<<gTimer.read()<<endl;
    if(jsFunc.isFunction()) jsFunc.call();
    }
 
