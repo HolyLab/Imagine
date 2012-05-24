@@ -868,6 +868,9 @@ void Imagine::on_actionStop_triggered()
 
 void Imagine::on_actionOpenShutter_triggered()
 {
+   ui.actionOpenShutter->setEnabled(false);
+   ui.actionCloseShutter->setEnabled(false);
+
    //open laser shutter
    digOut->updateOutputBuf(4,true);
    digOut->write();
@@ -887,10 +890,15 @@ void Imagine::on_actionOpenShutter_triggered()
    if(jsFunc.isFunction()) jsFunc.call();
    }
 
+   ui.actionOpenShutter->setEnabled(true);
+   ui.actionCloseShutter->setEnabled(true);
 }
 
 void Imagine::on_actionCloseShutter_triggered()
 {
+   ui.actionOpenShutter->setEnabled(false);
+   ui.actionCloseShutter->setEnabled(false);
+
    //close laser shutter
    digOut->updateOutputBuf(4,false);
    digOut->write();
@@ -909,6 +917,8 @@ void Imagine::on_actionCloseShutter_triggered()
    if(jsFunc.isFunction()) jsFunc.call();
    }
 
+   ui.actionOpenShutter->setEnabled(true);
+   ui.actionCloseShutter->setEnabled(true);
 }
 
 
