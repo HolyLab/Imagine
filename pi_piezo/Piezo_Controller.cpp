@@ -375,10 +375,11 @@ bool Piezo_Controller::abortCmd()
 	return true;
 }
 
-bool Piezo_Controller::curPos(double* pos) // current position in um
+bool Piezo_Controller::curPos(double* pos) // current position in um (1.0E-6 meter)
 {
 	if(PI_qPOS(this->USBID, &this->szAxis[0], pos)) // Inquire the current piezo stage position
-	{			
+	{	
+		*pos = *pos * this->micro;
 		return true;		
 	}
 	else
