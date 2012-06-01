@@ -59,9 +59,9 @@ public:
    //ctor: create task
    Daq(const vector<int> & chs){
       this->channels=chs;
-      if(channels.size()==0){
-         throw EInitDevice("exception: no channel");
-      }
+      //if(channels.size()==0){
+      //   throw EInitDevice("exception: no channel");
+      //}
       nScans=0;
    }//ctor,
 
