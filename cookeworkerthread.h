@@ -96,7 +96,7 @@ public:
          if(camera->nAcquiredFrames==0) {
             camera->firstFrameCounter=counter;
             assert(counter>=0);
-            cout<<"first frame's counter is "<<counter<<endl;
+            cout<<"first frame's counter is "<<counter<<", at time: "<<gTimer.read()<<endl;
          }
          int curFrameIdx=counter-camera->firstFrameCounter;
 

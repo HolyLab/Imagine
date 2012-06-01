@@ -412,7 +412,7 @@ nextStack:
 
    pPositioner->optimizeCmd();
 
-   cout<<"b4 start camera: "<<gTimer.read()<<endl;
+   cout<<"b4 start camera & piezo: "<<gTimer.read()<<endl;
 
    //for external start, put 100ms delay here to wait camera's readiness for trigger
    if(triggerMode==Camera::eExternalStart){
@@ -420,7 +420,9 @@ nextStack:
       double timeToWait=0.1;
       //TODO: maybe I should use busy waiting?
       QThread::msleep(timeToWait*1000); // *1000: sec -> ms
+      cout<<"b4 pPositioner->runCmd: "<<gTimer.read()<<endl;
       pPositioner->runCmd();
+      cout<<"after pPositioner->runCmd: "<<gTimer.read()<<endl;
    }
    else {
       pPositioner->runCmd();
@@ -429,7 +431,7 @@ nextStack:
       cout<<"after camera.startacq: "<<gTimer.read()<<endl;
    }
 
-   cout<<"after start camera: "<<gTimer.read()<<endl;
+   cout<<"after start camera & piezo: "<<gTimer.read()<<endl;
 
    //TMP: trigger camera
    digOut->updateOutputBuf(5,true);
