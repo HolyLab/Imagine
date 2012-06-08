@@ -81,7 +81,7 @@ public:
       while(true){
          //if(shouldStop) break;
          ///wait for events
-         int waitResult=WaitForMultipleObjects(camera->nBufs, camera->mEvent, false, 500000);
+         int waitResult=WaitForMultipleObjects(camera->nBufs, camera->mEvent, false, 10000);
          if(waitResult<WAIT_OBJECT_0 || waitResult>=WAIT_OBJECT_0+camera->nBufs) {
             break; //break the while
             //todo: should we try to keep going? SEE: CSC2Class::SC2Thread()
