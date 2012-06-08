@@ -132,6 +132,10 @@ int main(int argc, char *argv[])
    }
 
 
+   if(!loadScript("preset.js")){
+      return 1;  
+   }
+
    if(positionerType=="volpiezo") pPositioner=new VolPiezo;
    else if(positionerType=="pi") pPositioner=new Piezo_Controller;
 #ifndef _WIN64
