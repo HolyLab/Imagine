@@ -1200,7 +1200,7 @@
       <item>
        <widget class="QPushButton" name="btnApply">
         <property name="text">
-         <string>Apply</string>
+         <string>Apply all</string>
         </property>
        </widget>
       </item>
