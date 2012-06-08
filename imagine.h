@@ -76,6 +76,7 @@ private:
        const int imageW, const int imageH, const int frameIdx);
 
     bool checkRoi();
+    bool loadPreset();
 
 private slots:
         void on_actionHeatsinkFan_triggered();

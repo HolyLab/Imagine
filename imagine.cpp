@@ -120,6 +120,29 @@ public:
    }
 };//class, CurveData
 
+bool Imagine::loadPreset()
+{
+   QScriptValue params=se->globalObject().property("params");
+
+   //piezo
+   QScriptValue sv=params.property("startPosition");
+   if(sv.isValid()) ui.doubleSpinBoxStartPos->setValue(sv->toNumber());
+   sv=params.property("stopPosition");
+   if(sv.isValid()) ui.doubleSpinBoxStopPos->setValue(sv->toNumber());
+   sv=params.property("travelBackTime");
+   if(sv.isValid()) ui.doubleSpinBoxPiezoTravelBackTime->setValue(sv->toNumber());
+   
+   ///camera
+   sv=params.property("numOfStacks");
+   if(sv.isValid()) ui.spinBoxNumOfStacks->setValue(sv->toNumber());
+   sv=params.property("framesPerStack");
+   if(sv.isValid()) ui.spinBoxFramesPerStack->setValue(sv->toNumber());
+   sv=params.property("exposureTime");
+   if(sv.isValid()) ui.doubleSpinBoxExpTime->setValue(sv->toNumber());
+   sv=params.property("idleTime");
+   if(sv.isValid()) ui.doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(sv->toNumber());
+   
+}
 
 Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
 : QMainWindow(parent, flags)
@@ -128,6 +151,9 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    maxPixelValueByUser=1<<16;
 
    ui.setupUi(this);
+
+   //load user's preference/preset from js
+   loadPreset();
 
    //to overcome qt designer's incapability
    addDockWidget(Qt::TopDockWidgetArea, ui.dwStim);
