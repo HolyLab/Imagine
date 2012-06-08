@@ -132,6 +132,7 @@ int main(int argc, char *argv[])
    }
 
 
+   //NOTE: the loading order of js files: imagine.js, camera_vendor.js, preset.js
    if(!loadScript("preset.js")){
       return 1;  
    }
