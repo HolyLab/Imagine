@@ -1,6 +1,6 @@
 //hold preset params when imagine initially load
 
-var params={
+var preset={
    ///positioner's
    startPosition:100,
    stopPosition:400,
