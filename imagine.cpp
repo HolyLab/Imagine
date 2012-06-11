@@ -122,26 +122,27 @@ public:
 
 bool Imagine::loadPreset()
 {
-   QScriptValue params=se->globalObject().property("params");
+   QScriptValue preset=se->globalObject().property("preset");
 
    //piezo
-   QScriptValue sv=params.property("startPosition");
-   if(sv.isValid()) ui.doubleSpinBoxStartPos->setValue(sv->toNumber());
-   sv=params.property("stopPosition");
-   if(sv.isValid()) ui.doubleSpinBoxStopPos->setValue(sv->toNumber());
-   sv=params.property("travelBackTime");
-   if(sv.isValid()) ui.doubleSpinBoxPiezoTravelBackTime->setValue(sv->toNumber());
+   QScriptValue sv=preset.property("startPosition");
+   if(sv.isValid()) ui.doubleSpinBoxStartPos->setValue(sv.toNumber());
+   sv=preset.property("stopPosition");
+   if(sv.isValid()) ui.doubleSpinBoxStopPos->setValue(sv.toNumber());
+   sv=preset.property("travelBackTime");
+   if(sv.isValid()) ui.doubleSpinBoxPiezoTravelBackTime->setValue(sv.toNumber());
    
    ///camera
-   sv=params.property("numOfStacks");
-   if(sv.isValid()) ui.spinBoxNumOfStacks->setValue(sv->toNumber());
-   sv=params.property("framesPerStack");
-   if(sv.isValid()) ui.spinBoxFramesPerStack->setValue(sv->toNumber());
-   sv=params.property("exposureTime");
-   if(sv.isValid()) ui.doubleSpinBoxExpTime->setValue(sv->toNumber());
-   sv=params.property("idleTime");
-   if(sv.isValid()) ui.doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(sv->toNumber());
+   sv=preset.property("numOfStacks");
+   if(sv.isValid()) ui.spinBoxNumOfStacks->setValue(sv.toNumber());
+   sv=preset.property("framesPerStack");
+   if(sv.isValid()) ui.spinBoxFramesPerStack->setValue(sv.toNumber());
+   sv=preset.property("exposureTime");
+   if(sv.isValid()) ui.doubleSpinBoxExpTime->setValue(sv.toNumber());
+   sv=preset.property("idleTime");
+   if(sv.isValid()) ui.doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(sv.toNumber());
    
+   return true;
 }
 
 Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
