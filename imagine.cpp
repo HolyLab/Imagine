@@ -462,6 +462,12 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
           this, SLOT(onModified()));
    }
 
+   auto comboboxes=ui.tabWidgetCfg->findChildren<QComboBox*>();
+   for(int i=0; i<comboboxes.size(); ++i){
+      connect(comboboxes[i], SIGNAL(currentIndexChanged(const QString&)),
+          this, SLOT(onModified()));
+   }
+
    QRect rect = QApplication::desktop()->screenGeometry();
    int x = (rect.width()-this->width()) / 2;
    int y = (rect.height()-this->height()) / 2;
