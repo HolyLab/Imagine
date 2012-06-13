@@ -74,52 +74,6 @@ extern Positioner* pPositioner;
 extern QScriptEngine* se;
 extern DaqDo* digOut;
 
-class CurveData: public QwtData
-{
-   QList<QPointF> data;
-   double width; //the length of x axis
-public:
-   CurveData(double width) {
-      this->width=width;
-   }
-
-   virtual QwtData *copy() const  {
-      CurveData* result= new CurveData(width);
-      result->data=data;
-
-      return result;
-   }
-
-   virtual size_t size() const {
-      return data.size();
-   }
-
-   virtual double x(size_t i) const {
-      return data[i].x();
-   }
-
-   virtual double y(size_t i) const {
-      return data[i].y();
-   }
-
-   //above are required for the virtual parent
-
-   double left(){ return data[0].x(); }
-   
-   double right(){
-      return data.last().x();
-   }
-
-   void clear(){
-      data.clear();
-   }
-
-   void append(double x, double y){
-      data.push_back(QPointF(x,y));
-      while(x-this->x(0)>width) data.pop_front();
-   }
-};//class, CurveData
-
 bool Imagine::loadPreset()
 {
    QScriptValue preset=se->globalObject().property("preset");
