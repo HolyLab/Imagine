@@ -1098,6 +1098,7 @@ bool Imagine::checkRoi()
 void Imagine::onModified()
 {
    modified=true;
+   ui.btnApply->setEnabled(modified);
 }
 
 void Imagine::on_btnApply_clicked()
@@ -1190,6 +1191,7 @@ void Imagine::on_btnApply_clicked()
    dataAcqThread.comment=ui.textEditComment->toPlainText();
 
    modified=false;
+   ui.btnApply->setEnabled(modified);
 }
 
 //TODO: put this func in misc.cpp
