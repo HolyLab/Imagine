@@ -449,6 +449,19 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    connect(ui.labelImage, SIGNAL(mouseReleased(QMouseEvent*)),
                this, SLOT(zoom_onMouseReleased(QMouseEvent*)));
 
+   //for detect param changes
+   auto lineedits=ui.tabWidgetCfg->findChildren<QLineEdit*>();
+   for(int i=0; i<lineedits.size(); ++i){
+      connect(linedits[i], SIGNAL(textChanged(const QString&)),
+          this, SLOT(onModified()));
+   }
+
+   auto spinboxes=ui.tabWidgetCfg->findChildren<QAbstractSpinBox*>();
+   for(int i=0; i<spinboxes.size(); ++i){
+      connect(spinboxes[i], SIGNAL(editingFinished()),
+          this, SLOT(onModified()));
+   }
+
    QRect rect = QApplication::desktop()->screenGeometry();
    int x = (rect.width()-this->width()) / 2;
    int y = (rect.height()-this->height()) / 2;
@@ -1076,6 +1089,10 @@ bool Imagine::checkRoi()
    return result;
 }
 
+void Imagine::onModified()
+{
+   modified=true;
+}
 
 void Imagine::on_btnApply_clicked()
 {
@@ -1165,6 +1182,8 @@ void Imagine::on_btnApply_clicked()
 
    dataAcqThread.stimFileContent=ui.textEditStimFileContent->toPlainText();
    dataAcqThread.comment=ui.textEditComment->toPlainText();
+
+   modified=false;
 }
 
 //TODO: put this func in misc.cpp

@@ -65,6 +65,7 @@ private:
     QwtPlotCurve *intenCurve;
     CurveData *intenCurveData;
     vector<PiezoUiParam> piezoUiParams;
+    bool modified;
 
     void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
     void updateStatus(ImagineStatus newStatus, ImagineAction newAction);
@@ -114,6 +115,7 @@ private slots:
         void on_doubleSpinBoxBoxIdleTimeBtwnStacks_valueChanged(double newValue);
         void on_cbAutoSetPiezoTravelBackTime_stateChanged ( int state ) ;
         void readPiezoCurPos();
+	void onModified();
 
         void updateStatus(const QString &str);
         void appendLog(const QString& msg);
