@@ -841,6 +841,17 @@ void Imagine::on_actionStartAcqAndSave_triggered()
 
 void Imagine::on_actionStartLive_triggered()
 {
+   //warn user if there are params changes pending:
+   if(modified &&
+      QMessageBox::question(
+      this,
+      "Apply pending change(s)? -- Imagine",
+      "Do you want to go ahead without applying them?",
+      "&Yes", "&No",
+      QString(), 0, 1)){
+         return;
+   }//if, 
+   
    nUpdateImage=0;
    minPixelValue=maxPixelValue=-1;
 
