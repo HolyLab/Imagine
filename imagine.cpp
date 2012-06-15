@@ -343,6 +343,8 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    ui.spinBoxHend->setValue(camera.getChipWidth());
    ui.spinBoxVend->setValue(camera.getChipHeight());
 
+   updateStatus(eIdle, eNoAction);
+
    //apply the camera setting:
    on_btnApply_clicked();
 
@@ -355,7 +357,6 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    }
    */
 
-   updateStatus(eIdle, eNoAction);
 
    ///piezo stuff
    ui.doubleSpinBoxMinDistance->setValue(pPositioner->minPos());
