@@ -413,13 +413,13 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
 
    auto spinboxes=ui.tabWidgetCfg->findChildren<QSpinBox*>();
    for(int i=0; i<spinboxes.size(); ++i){
-      connect(spinboxes[i], SIGNAL(valueChanged()),
+      connect(spinboxes[i], SIGNAL(valueChanged(const QString&)),
           this, SLOT(onModified()));
    }
 
    auto doublespinboxes=ui.tabWidgetCfg->findChildren<QDoubleSpinBox*>();
    for(int i=0; i<doublespinboxes.size(); ++i){
-      connect(doublespinboxes[i], SIGNAL(valueChanged()),
+      connect(doublespinboxes[i], SIGNAL(valueChanged(const QString&)),
           this, SLOT(onModified()));
    }
 
