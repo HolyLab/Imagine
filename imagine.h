@@ -78,6 +78,7 @@ private:
 
     bool checkRoi();
     bool loadPreset();
+    void preparePlots(Camera* pCamera);
 
 private slots:
         void on_actionHeatsinkFan_triggered();

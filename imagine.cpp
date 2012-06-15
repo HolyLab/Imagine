@@ -100,6 +100,63 @@ bool Imagine::loadPreset()
    return true;
 }
 
+void Imagine::preparePlots(Camera* pCamera)
+{
+   //the histgram
+   histPlot=new QwtPlot();
+   histPlot->setCanvasBackground(QColor(Qt::white));
+   ui.dwHist->setWidget(histPlot); //setWidget() causes the widget using all space
+   histPlot->setAxisScaleEngine(QwtPlot::yLeft, new QwtLog10ScaleEngine);
+
+   QwtPlotGrid *grid = new QwtPlotGrid;
+   grid->enableXMin(true);
+   grid->enableYMin(true);
+   grid->setMajPen(QPen(Qt::black, 0, Qt::DotLine));
+   grid->setMinPen(QPen(Qt::gray, 0 , Qt::DotLine));
+   grid->attach(histPlot);
+
+   histogram = new HistogramItem();
+   histogram->setColor(Qt::darkCyan);
+   histogram->attach(histPlot);
+
+   ///todo: make it more robust by query Camera class
+   if(pCamera->vendor=="andor"){
+      histPlot->setAxisScale(QwtPlot::yLeft, 1, 1000000.0);
+      histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1<<14);
+   }
+   else if(pCamera->vendor=="cooke"){
+      histPlot->setAxisScale(QwtPlot::yLeft, 1, 5000000.0);
+      histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1<<16);
+   }
+   else {
+      histPlot->setAxisScale(QwtPlot::yLeft, 1, 1000000.0);
+      histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1<<14);
+   }
+
+   //intensity curve
+   //TODO: make it ui aware
+   int curveWidth=500;
+   intenPlot=new QwtPlot();
+   ui.dwIntenCurve->setWidget(intenPlot);
+   intenPlot->setAxisTitle(QwtPlot::xBottom, "frame number"); //TODO: stack number too
+   intenPlot->setAxisTitle(QwtPlot::yLeft, "avg intensity");
+   intenCurve = new QwtPlotCurve("avg intensity");
+
+   QwtSymbol sym;
+   sym.setStyle(QwtSymbol::Cross);
+   sym.setPen(QColor(Qt::black));
+   sym.setSize(5);
+   intenCurve->setSymbol(sym);
+
+   intenCurve->setRenderHint(QwtPlotItem::RenderAntialiased);
+   intenCurve->setPen(QPen(Qt::red));
+   intenCurve->attach(intenPlot);
+
+   intenCurveData=new CurveData(curveWidth);
+   intenCurve->setData(*intenCurveData);
+
+}
+
 Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
 : QMainWindow(parent, flags)
 {
@@ -169,58 +226,6 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    ui.actionColorizeSaturatedPixels->setCheckable(true);
    ui.actionColorizeSaturatedPixels->setChecked(true);
 
-   //the histgram
-   histPlot=new QwtPlot();
-   histPlot->setCanvasBackground(QColor(Qt::white));
-   ui.dwHist->setWidget(histPlot); //setWidget() causes the widget using all space
-   histPlot->setAxisScaleEngine(QwtPlot::yLeft, new QwtLog10ScaleEngine);
-
-   QwtPlotGrid *grid = new QwtPlotGrid;
-   grid->enableXMin(true);
-   grid->enableYMin(true);
-   grid->setMajPen(QPen(Qt::black, 0, Qt::DotLine));
-   grid->setMinPen(QPen(Qt::gray, 0 , Qt::DotLine));
-   grid->attach(histPlot);
-
-   histogram = new HistogramItem();
-   histogram->setColor(Qt::darkCyan);
-   histogram->attach(histPlot);
-
-   ///todo: make it more robust by query Camera class
-   if(pCamera->vendor=="andor"){
-      histPlot->setAxisScale(QwtPlot::yLeft, 1, 1000000.0);
-      histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1<<14);
-   }
-   else if(pCamera->vendor=="cooke"){
-      histPlot->setAxisScale(QwtPlot::yLeft, 1, 5000000.0);
-      histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1<<16);
-   }
-   else {
-      histPlot->setAxisScale(QwtPlot::yLeft, 1, 1000000.0);
-      histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1<<14);
-   }
-
-   //intensity curve
-   //TODO: make it ui aware
-   int curveWidth=500;
-   intenPlot=new QwtPlot();
-   ui.dwIntenCurve->setWidget(intenPlot);
-   intenPlot->setAxisTitle(QwtPlot::xBottom, "frame number"); //TODO: stack number too
-   intenPlot->setAxisTitle(QwtPlot::yLeft, "avg intensity");
-   intenCurve = new QwtPlotCurve("avg intensity");
-
-   QwtSymbol sym;
-   sym.setStyle(QwtSymbol::Cross);
-   sym.setPen(QColor(Qt::black));
-   sym.setSize(5);
-   intenCurve->setSymbol(sym);
-
-   intenCurve->setRenderHint(QwtPlotItem::RenderAntialiased);
-   intenCurve->setPen(QPen(Qt::red));
-   intenCurve->attach(intenPlot);
-
-   intenCurveData=new CurveData(curveWidth);
-   intenCurve->setData(*intenCurveData);
 
    //see: QT demo -> widgets -> ImageViewer Example
    ui.labelImage->setBackgroundRole(QPalette::Base);
