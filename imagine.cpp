@@ -43,6 +43,7 @@
 #include <QDesktopWidget>
 
 #include "histogram_item.h"
+#include "curvedata.h"
 
 #include <vector>
 #include <utility>
