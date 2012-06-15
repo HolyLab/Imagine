@@ -407,7 +407,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    //for detect param changes
    auto lineedits=ui.tabWidgetCfg->findChildren<QLineEdit*>();
    for(int i=0; i<lineedits.size(); ++i){
-      connect(linedits[i], SIGNAL(textChanged(const QString&)),
+      connect(lineedits[i], SIGNAL(textChanged(const QString&)),
           this, SLOT(onModified()));
    }
 
