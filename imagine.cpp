@@ -226,6 +226,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    ui.actionColorizeSaturatedPixels->setCheckable(true);
    ui.actionColorizeSaturatedPixels->setChecked(true);
 
+   preparePlots(pCamera);
 
    //see: QT demo -> widgets -> ImageViewer Example
    ui.labelImage->setBackgroundRole(QPalette::Base);
