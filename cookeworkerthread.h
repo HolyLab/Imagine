@@ -74,6 +74,7 @@ public:
    }
 
    void run(){
+      long nEvents=0;
 #if defined(_DEBUG)
       vector<int> nBlackFrames, blackFrameStartIndices, curFrameIndices;
       curFrameIndices.reserve(camera->nFrames);
@@ -83,6 +84,7 @@ public:
          //if(shouldStop) break;
          ///wait for events
          int waitResult=WaitForMultipleObjects(camera->nBufs, camera->mEvent, false, 10000);
+         nEvents++;
          if(waitResult<WAIT_OBJECT_0 || waitResult>=WAIT_OBJECT_0+camera->nBufs) {
             break; //break the while
             //todo: should we try to keep going? SEE: CSC2Class::SC2Thread()
@@ -91,6 +93,12 @@ public:
          //todo: should we call GetBufferStatus() to double-check the status about transferring? SEE: demo.cpp
          
          CLockGuard tGuard(camera->mpLock);
+
+         ///work around sdk bug
+         if(nEvents==1 && camera->triggerMode==Camera::eExternalStart){
+            goto skipSponEvent;
+         }
+
 
          PixelValue* rawData=camera->mRingBuf[eventIdx];
          long counter=camera->extractFrameCounter(rawData);
@@ -154,6 +162,8 @@ public:
                camera->nAcquiredFrames=curFrameIdx+1;
             }
          }
+
+skipSponEvent:
 
          //reset event
          ResetEvent(camera->mEvent[eventIdx]);
