@@ -1093,6 +1093,13 @@ void Imagine::onModified()
 
 void Imagine::on_btnApply_clicked()
 {
+   if(curStatus!=eIdle){
+      QMessageBox::information(this, "Please wait --- Imagine",
+            "Please click 'apply' when the camera is idle.");
+
+      return;
+   }
+
    Camera& camera=*pCamera;
 
    QString triggerModeStr=ui.comboBoxTriggerMode->currentText();
@@ -1338,7 +1345,7 @@ void Imagine::updateStatus(ImagineStatus newStatus, ImagineAction newAction)
       enabledActions.push_back(ui.actionCloseShutter);
       enabledActions.push_back(ui.actionTemperature);
 
-      enabledWidgets.push_back(ui.btnApply);
+      //enabledWidgets.push_back(ui.btnApply);
 
       disabledActions.push_back(ui.actionStop);
 
@@ -1356,7 +1363,7 @@ void Imagine::updateStatus(ImagineStatus newStatus, ImagineAction newAction)
       //disabledActions.push_back(ui.actionCloseShutter);
       //disabledActions.push_back(ui.actionTemperature);
 
-      disabledWidgets.push_back(ui.btnApply);
+      //disabledWidgets.push_back(ui.btnApply);
 
       //change intensity plot xlabel
       if(curAction==eLive){
