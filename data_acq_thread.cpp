@@ -290,6 +290,17 @@ void DataAcqThread::run_live()
 }//run_live()
 
 
+void genSquareSpike(int duration)
+{
+   cout<<"enter gen spike @"<<gTimer.read()<<endl;
+   digOut->updateOutputBuf(5,true);
+   digOut->write();
+   Sleep(duration);
+   digOut->updateOutputBuf(5,false);
+   digOut->write();
+   cout<<"leave gen spike @"<<gTimer.read()<<endl;
+}
+
 void DataAcqThread::run_acq_and_save()
 {
    Camera& camera=*pCamera;
@@ -434,8 +445,8 @@ nextStack:
    cout<<"after start camera & piezo: "<<gTimer.read()<<endl;
 
    //TMP: trigger camera
-   digOut->updateOutputBuf(5,true);
-   digOut->write();
+   //digOut->updateOutputBuf(5,true);
+   //digOut->write();
 
 
    emit newStatusMsgReady(QString("Camera: started acq: %1")
@@ -527,12 +538,14 @@ nextStack:
    ofsAi->flush();
 
    cout<<"b4 wait piezo: "<<gTimer.read()<<endl;
+   genSquareSpike(50);
    pPositioner->waitCmd();
    cout<<"after wait piezo: "<<gTimer.read()<<endl;
+   genSquareSpike(70);
 
    //TMP: trigger off camera
-   digOut->updateOutputBuf(5,false);
-   digOut->write();
+   //digOut->updateOutputBuf(5,false);
+   //digOut->write();
 
 
    idxCurStack++;  //post: it is #stacks we got so far

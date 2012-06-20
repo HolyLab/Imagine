@@ -19,6 +19,7 @@ using std::endl;
 #include <QWaitCondition>
 
 extern Timer_g gTimer;
+void genSquareSpike(int);
 
 class CookeCamera::WorkerThread: public QThread {
    Q_OBJECT
@@ -97,6 +98,7 @@ public:
             camera->firstFrameCounter=counter;
             assert(counter>=0);
             cout<<"first frame's counter is "<<counter<<", at time: "<<gTimer.read()<<endl;
+            genSquareSpike(20);
          }
          int curFrameIdx=counter-camera->firstFrameCounter;
 
@@ -173,7 +175,8 @@ public:
          }
       }//while,
 #if defined(_DEBUG)
-      cerr<<"leave cooke worker thread run()"<<endl;
+	  cerr<<"leave cooke worker thread run() @ time "<<gTimer.read()<<endl;
+	  genSquareSpike(30);
       cerr<<"black frame info:"<<endl;
       for(unsigned i=0; i<nBlackFrames.size(); ++i){
          cerr<<nBlackFrames[i]<<"@"<<blackFrameStartIndices[i]<<" \t";
