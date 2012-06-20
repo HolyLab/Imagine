@@ -1097,8 +1097,8 @@ void Imagine::on_btnApply_clicked()
 
    QString triggerModeStr=ui.comboBoxTriggerMode->currentText();
    AndorCamera::TriggerMode triggerMode;
-   if(triggerModeStr=="External Start") triggerMode=AndorCamera::eExternalStart;
-   else if(triggerModeStr=="Internal")  triggerMode=AndorCamera::eInternalTrigger;
+   if(triggerModeStr=="External Start") triggerMode=Camera::eExternalStart;
+   else if(triggerModeStr=="Internal")  triggerMode=Camera::eInternalTrigger;
    else {
       assert(0); //if code goes here, it is a bug
    }
