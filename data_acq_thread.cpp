@@ -434,6 +434,7 @@ nextStack:
       //TODO: maybe I should use busy waiting?
       QThread::msleep(timeToWait*1000); // *1000: sec -> ms
       cout<<"b4 pPositioner->runCmd: "<<gTimer.read()<<endl;
+ 	  genSquareSpike(10);
       pPositioner->runCmd();
       cout<<"after pPositioner->runCmd: "<<gTimer.read()<<endl;
    }

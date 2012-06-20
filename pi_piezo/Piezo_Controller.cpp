@@ -786,10 +786,11 @@ bool Piezo_Controller::Triggering(const int i)
 		if(!setTrigger(0)) return false;
 	}
 
+	/*
 	clock_t endwait;
 	endwait = clock () + long(duration / this->micro / this->micro * double(CLOCKS_PER_SEC));
     while(clock() < endwait) {}
-	
+	*/
 	return true;
 }
 bool Piezo_Controller::setTrigger(const int trigger)
