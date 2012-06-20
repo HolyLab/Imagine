@@ -1150,14 +1150,25 @@ void Imagine::on_btnApply_clicked()
    //TODO: temp
    L=-1;
 
-   camera.setAcqParams(dataAcqThread.gain,
+   bool paramOK=camera.setAcqParams(dataAcqThread.gain,
                        dataAcqThread.preAmpGainIdx,
                        dataAcqThread.horShiftSpeedIdx,
                        dataAcqThread.verShiftSpeedIdx,
                        dataAcqThread.verClockVolAmp,
                        dataAcqThread.isBaselineClamp
                        );
+   if(!paramOK) {
+      updateStatus(QString("Camera: applied params: ")+camera.getErrorMsg().c_str());
+      goto skip;
+   }
+   
+   paramOK=camera.setAcqModeAndTime(Camera::eLive,
+                            dataAcqThread.exposureTime, 
+                            dataAcqThread.nFramesPerStack,
+                            Camera::eInternalTrigger  //use internal trigger
+                            );
    updateStatus(QString("Camera: applied params: ")+camera.getErrorMsg().c_str());
+   if(!paramOK) goto skip;
 
    //get the real params used by the camera:
    dataAcqThread.cycleTime=camera.getCycleTime();
@@ -1167,6 +1178,8 @@ void Imagine::on_btnApply_clicked()
       QMessageBox::critical(0, "Imagine: Failed to setup piezo/stage.", msg
          , QMessageBox::Ok, QMessageBox::NoButton);
    }
+
+skip:
 
    //set filenames:
    QString headerFilename=ui.lineEditFilename->text();
