@@ -66,6 +66,7 @@ private:
     CurveData *intenCurveData;
     vector<PiezoUiParam> piezoUiParams;
     bool modified;
+    bool paramOK;
 
     void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
     void updateStatus(ImagineStatus newStatus, ImagineAction newAction);

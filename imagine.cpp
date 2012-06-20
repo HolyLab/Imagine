@@ -801,6 +801,12 @@ void Imagine::updateStatus(const QString &str)
 
 void Imagine::on_actionStartAcqAndSave_triggered()
 {
+   if(!paramOK){
+      QMessageBox::information(this, "Wrong parameters --- Imagine",
+         "Please correct the parameters.");
+      return;
+   }
+
    if(dataAcqThread.headerFilename==""){
       if(ui.lineEditFilename->text()!=""){
          QMessageBox::information(this, "Forget to apply configuration --- Imagine",
@@ -855,6 +861,12 @@ void Imagine::on_actionStartAcqAndSave_triggered()
 
 void Imagine::on_actionStartLive_triggered()
 {
+   if(!paramOK){
+      QMessageBox::information(this, "Wrong parameters --- Imagine",
+         "Please correct the parameters.");
+      return;
+   }
+
    //warn user if there are params changes pending:
    if(modified &&
       QMessageBox::question(
@@ -1157,7 +1169,7 @@ void Imagine::on_btnApply_clicked()
    //TODO: temp
    L=-1;
 
-   bool paramOK=camera.setAcqParams(dataAcqThread.gain,
+   paramOK=camera.setAcqParams(dataAcqThread.gain,
                        dataAcqThread.preAmpGainIdx,
                        dataAcqThread.horShiftSpeedIdx,
                        dataAcqThread.verShiftSpeedIdx,
@@ -1180,6 +1192,7 @@ void Imagine::on_btnApply_clicked()
    //get the real params used by the camera:
    dataAcqThread.cycleTime=camera.getCycleTime();
    if(!dataAcqThread.preparePositioner()){
+      paramOK=false;
       QString msg=QString("Positioner: applied params failed: ")+pPositioner->getLastErrorMsg().c_str();
       updateStatus(msg);
       QMessageBox::critical(0, "Imagine: Failed to setup piezo/stage.", msg
