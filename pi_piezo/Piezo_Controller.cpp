@@ -644,6 +644,9 @@ bool Piezo_Controller::prepare(const int i)
 		std::cout<<"after moveTo() @ prepare(): "<<gTimer.read()<<std::endl;
 
 		if(!setVelocity(Velocity)) return false;
+
+		std::cout<<"after setVel @ prepare(): "<<gTimer.read()<<std::endl;
+		
 		if(!setAcceleration(Acceleration)) return false;
 		if(!setDeceleration(Deceleration)) return false;
 
@@ -658,6 +661,9 @@ bool Piezo_Controller::prepare(const int i)
 		double Acceleration = this->magicAcc; // unit micrometre / second^2
 		double Deceleration = Acceleration;
 		if(!setVelocity(Velocity)) return false;
+
+		std::cout<<"after setVel @ prepare(): "<<gTimer.read()<<std::endl;
+
 		if(!setAcceleration(Acceleration)) return false;
 		if(!setDeceleration(Deceleration)) return false;
 
@@ -776,10 +782,15 @@ bool Piezo_Controller::moving(const double to)
 		{
 			if(!PI_IsMoving(this->USBID, &this->szAxis[0], &MovingStatus)) return false;
 		}
+
+		/*
 		if(!MovingStatus)
 		{
 			// printf(" The moving to the new position %f is done \n", NewPos);
-		}	
+		}
+		*/
+
+		/*
 		if(PI_qPOS(this->USBID, &this->szAxis[0], &CurrentPos)) // Inquire the current piezo stage position
 		{
 			// printf(" The current piezo stage position is %f \n", CurrentPos);
@@ -791,6 +802,9 @@ bool Piezo_Controller::moving(const double to)
 			printf(" The inquire of the current position fails \n");
 			return false;
 		}
+		*/
+
+		return true;
 	}
 	else
 	{
