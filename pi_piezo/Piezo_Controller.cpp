@@ -462,6 +462,7 @@ bool Piezo_Controller::setVelocity(const double vel)
 		return false;
 	}
 
+	/*
 	double curVelocity;
 	if(PI_qVEL(this->USBID, & this->szAxis[0], &curVelocity)) // Inquire the current piezo stage velocity
 	{
@@ -478,6 +479,9 @@ bool Piezo_Controller::setVelocity(const double vel)
 		printf(" The inquire of current piezo stage velocity fails. \n");
 		return false;
 	}
+	*/
+
+	return true;
 }
 bool Piezo_Controller::setAcceleration(const double acc)
 {
@@ -498,6 +502,7 @@ bool Piezo_Controller::setAcceleration(const double acc)
 		return false;
 	}
 
+	/*
 	double curAcceleration;
 	if(PI_qACC(this->USBID, &this->szAxis[0], &curAcceleration)) // Inquire the current piezo stage acceleration
 	{
@@ -514,6 +519,9 @@ bool Piezo_Controller::setAcceleration(const double acc)
 		printf(" The inquire of current piezo stage acceleration fails \n");
 		return false;
 	}
+	*/
+
+	return true;
 }
 bool Piezo_Controller::setDeceleration(const double dec)
 {
@@ -534,6 +542,7 @@ bool Piezo_Controller::setDeceleration(const double dec)
 		return false;
 	}
 
+	/*
 	double curDeceleration;
 	if(PI_qDEC(this->USBID, & this->szAxis[0], &curDeceleration)) // Inquire the current piezo stage deceleration
 	{
@@ -550,6 +559,9 @@ bool Piezo_Controller::setDeceleration(const double dec)
 		printf(" The inquire of current piezo stage deceleration fails \n");
 		return false;
 	}
+	*/
+
+	return true;
 }
 
 void Piezo_Controller::runMovements()
