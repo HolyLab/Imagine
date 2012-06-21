@@ -1,7 +1,7 @@
 #include "Piezo_Controller.hpp"
 
 #include "timer_g.hpp"
-#include <fstream>
+#include <iostream>
 
 extern Timer_g gTimer;
 
@@ -594,10 +594,10 @@ void Piezo_Controller::runMovements()
 
 bool Piezo_Controller::prepare(const int i)
 {
-	cout<<"before prepare(): "<<gTimer.read()<<endl;
-
 	if(i == 0)
 	{
+		std::cout<<"before prepare(), i = 0 : "<<gTimer.read()<<std::endl;
+
 		double from = (*this->movements[i]).from;
 		double to = (*this->movements[i]).to;
 		double duration = (*this->movements[i]).duration;
@@ -624,20 +624,23 @@ bool Piezo_Controller::prepare(const int i)
 		oneActMovement.actFrom = actFrom;
 		oneActMovement.actTo = actTo;
 
-		cout<<"before moveTo() @ prepare(): "<<gTimer.read()<<endl;
+		std::cout<<"before moveTo() @ prepare(): "<<gTimer.read()<<std::endl;
 
 		this->magicActFrom = actFrom;
 		if(!moveTo(actFrom)) return false; // Move to "actFrom"
 
-		cout<<"after moveTo() @ prepare(): "<<gTimer.read()<<endl;
+		std::cout<<"after moveTo() @ prepare(): "<<gTimer.read()<<std::endl;
 
 		if(!setVelocity(Velocity)) return false;
 		if(!setAcceleration(Acceleration)) return false;
 		if(!setDeceleration(Deceleration)) return false;
 
+		std::cout<<"after prepare(), i = 0: "<<gTimer.read()<<std::endl;
 	}
 	else if(i == 1)
 	{
+		std::cout<<"before prepare(), i = 1: "<<gTimer.read()<<std::endl;
+
 		double Velocity = this->maxVel();
 		this->magicAcc = this->maxAcc(); // acceleration rate during B->A
 		double Acceleration = this->magicAcc; // unit micrometre / second^2
@@ -645,10 +648,10 @@ bool Piezo_Controller::prepare(const int i)
 		if(!setVelocity(Velocity)) return false;
 		if(!setAcceleration(Acceleration)) return false;
 		if(!setDeceleration(Deceleration)) return false;
+
+		std::cout<<"after prepare(), i = 1: "<<gTimer.read()<<std::endl;
 	}
 	
-	cout<<"after prepare(): "<<gTimer.read()<<endl;
-
 	return true;
 }
 bool Piezo_Controller::run(const int i)
