@@ -1,5 +1,10 @@
 #include "Piezo_Controller.hpp"
 
+#include "timer_g.hpp"
+#include <fstream>
+
+extern Timer_g gTimer;
+
 Piezo_Controller::Piezo_Controller() : lowPosLimit(500.0), upPosLimit(18500.0), maxVelocity(1500.0),maxAcceleration(10000.0), maxDeceleration(10000.0), micro(1000.0)
 {
 	//
@@ -589,6 +594,8 @@ void Piezo_Controller::runMovements()
 
 bool Piezo_Controller::prepare(const int i)
 {
+	cout<<"before prepare(): "<<gTimer.read()<<endl;
+
 	if(i == 0)
 	{
 		double from = (*this->movements[i]).from;
@@ -617,8 +624,12 @@ bool Piezo_Controller::prepare(const int i)
 		oneActMovement.actFrom = actFrom;
 		oneActMovement.actTo = actTo;
 
+		cout<<"before moveTo() @ prepare(): "<<gTimer.read()<<endl;
+
 		this->magicActFrom = actFrom;
 		if(!moveTo(actFrom)) return false; // Move to "actFrom"
+
+		cout<<"after moveTo() @ prepare(): "<<gTimer.read()<<endl;
 
 		if(!setVelocity(Velocity)) return false;
 		if(!setAcceleration(Acceleration)) return false;
@@ -636,6 +647,8 @@ bool Piezo_Controller::prepare(const int i)
 		if(!setDeceleration(Deceleration)) return false;
 	}
 	
+	cout<<"after prepare(): "<<gTimer.read()<<endl;
+
 	return true;
 }
 bool Piezo_Controller::run(const int i)
@@ -772,7 +785,7 @@ bool Piezo_Controller::moving(const double to)
 }
 bool Piezo_Controller::Triggering(const int i)
 {
-	double duration = (*this->movements[i]).duration;
+	// double duration = (*this->movements[i]).duration;
 	int trigger = (*this->movements[i]).trigger;
 	// printf(" Inside of Triggering: %d %f %d \n", i, duration, trigger);
 	if(trigger == 1)
@@ -791,6 +804,7 @@ bool Piezo_Controller::Triggering(const int i)
 	endwait = clock () + long(duration / this->micro / this->micro * double(CLOCKS_PER_SEC));
     while(clock() < endwait) {}
 	*/
+
 	return true;
 }
 bool Piezo_Controller::setTrigger(const int trigger)
