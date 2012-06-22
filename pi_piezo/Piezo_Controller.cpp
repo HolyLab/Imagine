@@ -579,19 +579,29 @@ void Piezo_Controller::runMovements()
 				printf("ERROR: The pure triggering() fails at movement %d \n", i);
 				return;
 			}
+
+			std::cout<<"%%%%%%%%  0 : "<<gTimer.read()<<std::endl;
 		}
 		else
 		{
+			if (i == 0) std::cout<<"%%%%%%%%  1 : "<<gTimer.read()<<std::endl;
+
 			if(!prepare(i)) 
 			{
 				printf("ERROR: The prepare() fails at movement %d \n", i);
 				return;
 			}
+
+			if (i == 0) std::cout<<"%%%%%%%%  4 : "<<gTimer.read()<<std::endl;
+
 			if(!run(i)) 
 			{
 				printf("ERROR: The run() fails at movement %d \n", i);
 				return;
 			}
+
+			if (i == 0) std::cout<<"%%%%%%%%  5 : "<<gTimer.read()<<std::endl;
+
 			if(!wait(i))
 			{
 				printf("ERROR: The wait() fails at movement %d \n", i);
@@ -599,6 +609,7 @@ void Piezo_Controller::runMovements()
 			}
 		}
 		if (boost::this_thread::interruption_requested()) break; // check whether the interruption is requested
+		std::cout<<"%%%%%%%%  0/1 : "<<gTimer.read()<<std::endl;
 	}
 	
 	boost::this_thread::interruption_point(); // abort the current movement if requested
@@ -608,7 +619,8 @@ bool Piezo_Controller::prepare(const int i)
 {
 	if(i == 0)
 	{
-		std::cout<<"before prepare(), i = 0 : "<<gTimer.read()<<std::endl;
+		//std::cout<<"before prepare(), i = 0 : "<<gTimer.read()<<std::endl;
+		std::cout<<"%%%%%%%%  2 : "<<gTimer.read()<<std::endl;
 
 		double from = (*this->movements[i]).from;
 		double to = (*this->movements[i]).to;
@@ -636,25 +648,26 @@ bool Piezo_Controller::prepare(const int i)
 		oneActMovement.actFrom = actFrom;
 		oneActMovement.actTo = actTo;
 
-		std::cout<<"before moveTo() @ prepare(): "<<gTimer.read()<<std::endl;
+		//std::cout<<"before moveTo() @ prepare(): "<<gTimer.read()<<std::endl;
 
 		this->magicActFrom = actFrom;
 		if(!moveTo(actFrom)) return false; // Move to "actFrom"
 
-		std::cout<<"after moveTo() @ prepare(): "<<gTimer.read()<<std::endl;
+		//std::cout<<"after moveTo() @ prepare(): "<<gTimer.read()<<std::endl;
 
 		if(!setVelocity(Velocity)) return false;
 
-		std::cout<<"after setVel @ prepare(): "<<gTimer.read()<<std::endl;
+		//std::cout<<"after setVel @ prepare(): "<<gTimer.read()<<std::endl;
 		
 		if(!setAcceleration(Acceleration)) return false;
 		if(!setDeceleration(Deceleration)) return false;
 
-		std::cout<<"after prepare(), i = 0: "<<gTimer.read()<<std::endl;
+		//std::cout<<"after prepare(), i = 0: "<<gTimer.read()<<std::endl;
+		std::cout<<"%%%%%%%%  3 : "<<gTimer.read()<<std::endl;
 	}
 	else if(i == 1)
 	{
-		std::cout<<"before prepare(), i = 1: "<<gTimer.read()<<std::endl;
+		//std::cout<<"before prepare(), i = 1: "<<gTimer.read()<<std::endl;
 
 		double Velocity = this->maxVel();
 		this->magicAcc = this->maxAcc(); // acceleration rate during B->A
@@ -662,12 +675,14 @@ bool Piezo_Controller::prepare(const int i)
 		double Deceleration = Acceleration;
 		if(!setVelocity(Velocity)) return false;
 
-		std::cout<<"after setVel @ prepare(): "<<gTimer.read()<<std::endl;
+		//std::cout<<"after setVel @ prepare(): "<<gTimer.read()<<std::endl;
 
 		if(!setAcceleration(Acceleration)) return false;
 		if(!setDeceleration(Deceleration)) return false;
 
-		std::cout<<"after prepare(), i = 1: "<<gTimer.read()<<std::endl;
+		//std::cout<<"after prepare(), i = 1: "<<gTimer.read()<<std::endl;
+
+		std::cout<<"% when prepare() is done : "<<gTimer.read()<<std::endl;
 	}
 	
 	return true;
@@ -683,6 +698,7 @@ bool Piezo_Controller::run(const int i)
 	{
 		actTo = this->magicActFrom;
 	}
+
 	if(Qmoving(actTo))  // Move to "actTo" and retun immediately
 	{
 		// printf(" The piezo is moving to %f \n", actTo);
@@ -717,6 +733,9 @@ bool Piezo_Controller::wait(const int i)
 					if(trigger == 1)
 					{
 						if(!setTrigger(1)) return false;
+
+						std::cout<<"%%%%%%%%  6 : "<<gTimer.read()<<std::endl;
+
 					}
 					else if(trigger == 0)
 					{
