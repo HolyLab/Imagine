@@ -348,6 +348,18 @@ bool Piezo_Controller::prepareCmd()
 		return false;
 	}
 
+	// Move the piezo stage to the "actFrom"
+	if(prepare(0))
+	{
+		double actFrom = this->magicActFrom;
+		if(!moveTo(actFrom)) return false;
+	}
+	else
+	{
+		printf("ERROR: The prepare in prepareCmd fails. \n");
+		return false;
+	}
+
 	return true;
 }
 bool Piezo_Controller::runCmd()
@@ -651,7 +663,7 @@ bool Piezo_Controller::prepare(const int i)
 		//std::cout<<"before moveTo() @ prepare(): "<<gTimer.read()<<std::endl;
 
 		this->magicActFrom = actFrom;
-		if(!moveTo(actFrom)) return false; // Move to "actFrom"
+		//if(!moveTo(actFrom)) return false; // Move to "actFrom"
 
 		//std::cout<<"after moveTo() @ prepare(): "<<gTimer.read()<<std::endl;
 
