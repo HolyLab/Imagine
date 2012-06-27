@@ -35,6 +35,9 @@ private:
    char * tmpItem;
    char * circBufData;
 
+   static char * memPool;
+   static long long memPoolSize;
+
    QWaitCondition bufNotEmpty;
    QWaitCondition bufNotFull;
    QMutex* mpLock;
@@ -44,6 +47,25 @@ private:
    volatile bool shouldStop; //todo: do we need a lock to guard it?
 
 public:
+   static bool allocMemPool(long long sz){
+      if(sz<0){
+#ifdef _WIN64
+         memPoolSize=5529600*2*600; //600 full frames. TODO: make this user-configuable
+#else
+         memPoolSize=5529600*2*30; //30 full frames
+#endif
+      }//if, use default
+      else memPoolSize=sz;
+
+      memPool=(char*)_aligned_malloc(memPoolSize, 1024*64);
+      return memPool;
+   }
+   static void freeMemPool(){
+      _aligned_free(memPool);
+      memPool=nullptr;
+      memPoolSize=0;
+   }
+
    //PRE: itemsize: the size (in bytes) of each item in the circ buf
    SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *parent = 0)
       : QThread(parent){
@@ -61,14 +83,21 @@ public:
 
       int circBufCap=16;//todo: hard coded 16
 #ifdef _WIN64
-      circBufCap*=4*2; //*=16 will be more stable but startAcq() is costly
+      circBufCap=512;
 #endif
       cout<<"b4 new CircularBuf: "<<gTimer.read()<<endl;
 
       circBuf=new CircularBuf(circBufCap); 
       cout<<"after new CircularBuf: "<<gTimer.read()<<endl;
-      circBufData=(char*)_aligned_malloc(size_t(itemSize)*circBuf->capacity(), 1024*64);
-      cout<<"after _aligned_malloc: "<<gTimer.read()<<endl;
+
+      long long circBufDataSize=size_t(itemSize)*circBuf->capacity();
+      if(circBufDataSize>memPoolSize){
+         freeMemPool();
+         allocMemPool(circBufDataSize);
+      }
+      circBufData=memPool;
+
+      //cout<<"after _aligned_malloc: "<<gTimer.read()<<endl;
 #ifdef _WIN64
       assert((unsigned long long)circBufData%(1024*64)==0);
 #else
@@ -92,7 +121,6 @@ public:
 
    ~SpoolThread(){
       delete circBuf;
-      _aligned_free(circBufData);
       delete[] tmpItem;
       delete mpLock;
 

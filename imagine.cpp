@@ -58,7 +58,7 @@ using namespace std;
 #include "fanctrldialog.h"
 #include "positioner.hpp"
 #include "timer_g.hpp"
-
+#include "spoolthread.h"
 
 vector<pair<int,int> > stimuli; //first: stim (valve), second: time (stack#)
 int curStimIndex;
@@ -441,12 +441,20 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    int y = (rect.height()-this->height()) / 2;
    this->move(x, y);
 
+   if(pCamera->vendor=="cooke"){
+      SpoolThread::allocMemPool(-1); //use default size
+   }
 }
 
 Imagine::~Imagine()
 {
    delete digOut;
    delete pPositioner;
+
+   if(pCamera->vendor=="cooke"){
+      SpoolThread::freeMemPool(); 
+   }
+
    delete pCamera;
 }
 
