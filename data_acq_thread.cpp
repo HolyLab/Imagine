@@ -540,6 +540,10 @@ nextStack:
    aiThread->save(*ofsAi);
    ofsAi->flush();
 
+   cout<<"b4 stop camera: "<<gTimer.read()<<endl;
+   camera.stopAcq();
+   cout<<"after stop camera: "<<gTimer.read()<<endl;
+
    cout<<"b4 wait piezo: "<<gTimer.read()<<endl;
    genSquareSpike(50);
    pPositioner->waitCmd();
@@ -562,9 +566,6 @@ nextStack:
          QThread::msleep(timeToWait*1000); // *1000: sec -> ms
       }//if, need wait more than 10ms
 
-      cout<<"b4 stop camera: "<<gTimer.read()<<endl;
-      camera.stopAcq();
-      cout<<"after stop camera: "<<gTimer.read()<<endl;
       goto nextStack;
    }//if, there're more stacks and no stop requested
 
@@ -590,7 +591,7 @@ nextStack:
    ofsAi->close();
    delete ofsAi;    //TODO: use scoped ptr
 
-   camera.stopAcq();
+   //camera.stopAcq();
 
    {
    QScriptValue jsFunc=se->globalObject().property("onShutterFini");
