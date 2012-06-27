@@ -430,9 +430,11 @@ nextStack:
    //for external start, put 100ms delay here to wait camera's readiness for trigger
    if(triggerMode==Camera::eExternalStart){
       camera.startAcq();
-      double timeToWait=0.1;
-      //TODO: maybe I should use busy waiting?
-      QThread::msleep(timeToWait*1000); // *1000: sec -> ms
+      if(positionerType!="pi"){
+         double timeToWait=0.1;
+         //TODO: maybe I should use busy waiting?
+         QThread::msleep(timeToWait*1000); // *1000: sec -> ms
+      }
       cout<<"b4 pPositioner->runCmd: "<<gTimer.read()<<endl;
  	  genSquareSpike(10);
       pPositioner->runCmd();
