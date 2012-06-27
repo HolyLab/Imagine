@@ -61,7 +61,7 @@ public:
 
       int circBufCap=16;//todo: hard coded 16
 #ifdef _WIN64
-      circBufCap*=4;
+      circBufCap*=4*2; //*=16 will be more stable but startAcq() is costly
 #endif
       cout<<"b4 new CircularBuf: "<<gTimer.read()<<endl;
 
