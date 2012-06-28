@@ -191,7 +191,7 @@ Piezo_Controller::Piezo_Controller() : lowPosLimit(500.0), upPosLimit(18500.0), 
 
 	// Initialize ParaLnth & ParaAccr
 	this->ParaLnth = 0.5;
-	this->ParaAccr = 5000.0;
+	this->ParaAccr = 10000.0;
 
 }
 Piezo_Controller::~Piezo_Controller() 
