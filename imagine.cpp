@@ -1157,11 +1157,10 @@ void Imagine::on_btnApply_clicked()
    dataAcqThread.vstart=camera.vstart=ui.spinBoxVstart->value();
    dataAcqThread.vend  =camera.vend  =ui.spinBoxVend  ->value();
 
-   //enforce #nBytesPerStack is x times of 4096
-   int nBytesPerStack=camera.getImageWidth()*camera.getImageHeight()*2 //todo: hardcoded 2
-      *dataAcqThread.nFramesPerStack; 
-   if(nBytesPerStack%4096) {
-      QMessageBox::critical(this, "Imagine", "ROI spec is wrong (#pixels per stack is not x times of 2048)."
+   //enforce #nBytesPerFrame is x times of 16
+   int nBytesPerFrame=camera.getImageWidth()*camera.getImageHeight()*2; //todo: hardcoded 2
+   if(nBytesPerFrame%16) {
+      QMessageBox::critical(this, "Imagine", "ROI spec is wrong (#pixels per frame is not x times of 8)."
          , QMessageBox::Ok, QMessageBox::NoButton);
 
       return;

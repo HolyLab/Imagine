@@ -50,7 +50,7 @@ public:
    static bool allocMemPool(long long sz){
       if(sz<0){
 #ifdef _WIN64
-         memPoolSize=5529600*2*600; //600 full frames. TODO: make this user-configuable
+         memPoolSize=(long long)5529600*2*600; //600 full frames. TODO: make this user-configuable
 #else
          memPoolSize=5529600*2*30; //30 full frames
 #endif
@@ -81,10 +81,7 @@ public:
 
       this->itemSize=itemSize;
 
-      int circBufCap=16;//todo: hard coded 16
-#ifdef _WIN64
-      circBufCap=512;
-#endif
+      int circBufCap=memPoolSize/itemSize;
       cout<<"b4 new CircularBuf: "<<gTimer.read()<<endl;
 
       circBuf=new CircularBuf(circBufCap); 
