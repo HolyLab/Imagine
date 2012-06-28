@@ -1,6 +1,7 @@
 #include "fast_ofstream.hpp"
 
 //todo: make it private method of FastOfstream
+//todo: when datasize is not dividable by 4k, WriteFile() might complain.
 bool realWrite(FastOfstream* stream, char* buf, int datasize)
 {
    assert(datasize>0);
