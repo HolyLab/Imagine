@@ -427,18 +427,20 @@ nextStack:
 
    cout<<"b4 start camera & piezo: "<<gTimer.read()<<endl;
 
-   //for external start, put 100ms delay here to wait camera's readiness for trigger
    if(triggerMode==Camera::eExternalStart){
-      camera.startAcq();
       if(positionerType!="pi"){
+         camera.startAcq();
          double timeToWait=0.1;
          //TODO: maybe I should use busy waiting?
          QThread::msleep(timeToWait*1000); // *1000: sec -> ms
       }
       cout<<"b4 pPositioner->runCmd: "<<gTimer.read()<<endl;
- 	  genSquareSpike(10);
+      genSquareSpike(10);
       pPositioner->runCmd();
       cout<<"after pPositioner->runCmd: "<<gTimer.read()<<endl;
+      if(positionerType=="pi"){
+         camera.startAcq();
+      }
    }
    else {
       pPositioner->runCmd();
