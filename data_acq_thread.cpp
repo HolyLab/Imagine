@@ -292,7 +292,7 @@ void DataAcqThread::run_live()
 
 void genSquareSpike(int duration)
 {
-   //return;
+   return;
 
    cout<<"enter gen spike @"<<gTimer.read()<<endl;
    digOut->updateOutputBuf(5,true);
