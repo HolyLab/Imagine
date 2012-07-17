@@ -385,8 +385,6 @@ void DataAcqThread::run_acq_and_save()
    if(jsFunc.isFunction()) jsFunc.call();
    }
 
-   gTimer.start();
-
    //start AI
    aiThread->startAcq();
 
@@ -395,6 +393,8 @@ void DataAcqThread::run_acq_and_save()
       curStimIndex=0;
       fireStimulus(stimuli[curStimIndex].first);
    }//if, first stimulus should be fired before stack_0
+
+   gTimer.start();
 
 nextStack:
    cout<<"b4 open laser: "<<gTimer.read()<<endl;
