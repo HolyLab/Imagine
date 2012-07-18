@@ -189,7 +189,10 @@ Piezo_Controller::Piezo_Controller() : lowPosLimit(500.0), upPosLimit(18500.0), 
 		return;
 	}
 
+	//
 	// Initialize ParaLnth & ParaAccr
+	//
+
 	this->ParaLnth = 0.5;
 	this->ParaAccr = 10000.0;
 
@@ -198,13 +201,21 @@ Piezo_Controller::Piezo_Controller() : lowPosLimit(500.0), upPosLimit(18500.0), 
 	//
 
 	int recordTableId[] = {1,2}; // Piezo internal record table ID
-	char recordSouceId[] = "11"; // Piezo record axis ID
-	int recordOptions[] = {2,0}; // Piezo record options
+	char recordSouceId[] = "1"; // Piezo record axis ID
+	int recordOptions[] = {2}; // Piezo record options
 	if (!PI_DRC(this->USBID, recordTableId, recordSouceId, recordOptions))
 	{
-		printf("ERROR: The settting of the position record options fails. \n");
+		printf("ERROR: The settting of the position record options for table 1 fails. \n");
 	}
 
+	recordTableId[0] = 2;
+	recordOptions[0] = 0;
+	if (!PI_DRC(this->USBID, recordTableId, recordSouceId, recordOptions))
+	{
+		printf("ERROR: The settting of the position record options for table 2 fails. \n");
+	}
+
+	recordTableId[0] = 1;
 	int triggerSouceId[] = {0, 0};
 	char pdValueArray[] = "00";
 	if (!PI_DRT(this->USBID, recordTableId, triggerSouceId, pdValueArray, 2))
