@@ -193,6 +193,33 @@ Piezo_Controller::Piezo_Controller() : lowPosLimit(500.0), upPosLimit(18500.0), 
 	this->ParaLnth = 0.5;
 	this->ParaAccr = 10000.0;
 
+	//
+	// Set the position recorder parameters
+	//
+
+	int recordTableId[] = {1,2}; // Piezo internal record table ID
+	char recordSouceId[] = "11"; // Piezo record axis ID
+	int recordOptions[] = {2,0}; // Piezo record options
+	if (!PI_DRC(this->USBID, recordTableId, recordSouceId, recordOptions))
+	{
+		printf("ERROR: The settting of the position record options fails. \n");
+	}
+
+	int triggerSouceId[] = {0, 0};
+	char pdValueArray[] = "00";
+	if (!PI_DRT(this->USBID, recordTableId, triggerSouceId, pdValueArray, 2))
+	{
+		printf("ERROR: The setting of the position record triggering option fails. \n");
+	}
+
+	int piRecorderRate = 50; // Piezo position recorder rate
+	if (!PI_RTR(this->USBID, piRecorderRate)) // Set the piezo position recorder rate
+	{
+		printf("ERROR: The setting of the position recorder rate fails. \n");
+	}
+
+
+
 }
 Piezo_Controller::~Piezo_Controller() 
 {

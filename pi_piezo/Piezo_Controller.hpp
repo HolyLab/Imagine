@@ -31,6 +31,15 @@ private:
 	double magicActFrom;
 	double magicAcc;
 
+	struct RecordedPositions { // Struct for storing the actualPositions recorded by PI Piezo
+		double actualPositions[1024];
+		RecordedPositions(const double inputPos[]) {
+			memcpy(this->actualPositions, inputPos, 1024*sizeof(double));
+		}
+		~RecordedPositions();
+	};
+	vector<RecordedPositions*> recdPos;
+
 	struct actMovement // Actual "from & to" of each current movement 
 	{
 		double actFrom,
