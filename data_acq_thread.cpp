@@ -394,10 +394,11 @@ void DataAcqThread::run_acq_and_save()
       fireStimulus(stimuli[curStimIndex].first);
    }//if, first stimulus should be fired before stack_0
 
-   gTimer.start();
+   gTimer.start(); //seq's start time is 0, the new ref pt
 
 nextStack:
-   cout<<"b4 open laser: "<<gTimer.read()<<endl;
+   double stackStartTime=gTimer.read();
+   cout<<"b4 open laser: "<<stackStartTime<<endl;
 
    //open laser shutter
    digOut->updateOutputBuf(4,true);
@@ -562,9 +563,13 @@ nextStack:
    idxCurStack++;  //post: it is #stacks we got so far
    if(idxCurStack<this->nStacks && !stopRequested){
       double timePerStack=nFramesPerStack*cycleTime+idleTimeBwtnStacks;
-      double timeToWait=timePerStack*idxCurStack-gTimer.read();
+      double stackEndingTime=gTimer.read();
+      double timeToWait=timePerStack*idxCurStack-stackEndingTime;
       if(timeToWait<0){
-         emit newLogMsgReady("WARNING: overrun: idle time is too short.");
+         emit newLogMsgReady("WARNING: overrun(overall progress): idle time is too short.");
+      }
+      if(stackEndingTime-stackStartTime>timePerStack){
+         emit newLogMsgReady("WARNING: overrun(current stack): idle time is too short.");
       }
       if(timeToWait>0.01){
          QThread::msleep(timeToWait*1000); // *1000: sec -> ms
