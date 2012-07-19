@@ -39,6 +39,7 @@ using namespace std;
 #include "scoped_ptr_g.hpp"
 #include "fast_ofstream.hpp"
 #include "positioner.hpp"
+#include "Piezo_Controller.hpp"
 
 
 Camera* pCamera=nullptr;
@@ -330,6 +331,9 @@ void DataAcqThread::run_acq_and_save()
 
    camFilename=replaceExtName(headerFilename, "cam"); //NOTE: necessary if user overwrite files
 
+   ///piezo feedback data file (only for PI piezo)
+   string positionerFeedbackFile=replaceExtName(headerFilename, "pos").toStdString();
+
    //if cooke/avt, setSpooling() here!!! (to avoid out-of-mem when setAcqModeAndTime())
    if((isCooke || isAvt) && isUseSpool){
       camera.setSpooling(camFilename.toStdString());
@@ -614,6 +618,11 @@ nextStack:
    if(isUseSpool){
       if(isAndor) ((AndorCamera*)(&camera))->enableSpool(NULL,10); //disable spooling
       else if(isCooke||isAvt) camera.setSpooling(""); //disable spooling which also closes file
+   }
+
+   if(positionerType=="pi"){
+      Piezo_Controller* p=dynamic_cast<Piezo_Controller*>(pPositioner);
+      if(p) p->dumpFeedbackData(positionerFeedbackFile);
    }
 
    QString ttMsg="Acquisition is done";
