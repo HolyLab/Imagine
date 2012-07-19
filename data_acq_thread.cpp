@@ -394,6 +394,8 @@ void DataAcqThread::run_acq_and_save()
       fireStimulus(stimuli[curStimIndex].first);
    }//if, first stimulus should be fired before stack_0
 
+   int nOverrunStacks=0;
+
    gTimer.start(); //seq's start time is 0, the new ref pt
 
 nextStack:
@@ -569,6 +571,7 @@ nextStack:
          emit newLogMsgReady("WARNING: overrun(overall progress): idle time is too short.");
       }
       if(stackEndingTime-stackStartTime>timePerStack){
+         nOverrunStacks++;
          emit newLogMsgReady("WARNING: overrun(current stack): idle time is too short.");
       }
       if(timeToWait>0.01){
@@ -616,4 +619,11 @@ nextStack:
    QString ttMsg="Acquisition is done";
    if(stopRequested) ttMsg+=" (User requested STOP)";
    emit newStatusMsgReady(ttMsg);
+
+   if(nOverrunStacks) ttMsg="Idle time is long enough, NO overrun.";
+   else {
+      ttMsg=QString("# of overrun stacks: %1").arg(nOverrunStacks);
+   }
+   emit newStatusMsgReady(ttMsg);
+
 }//run_acq_and_save()
