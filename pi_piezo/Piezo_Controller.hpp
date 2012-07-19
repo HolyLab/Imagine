@@ -36,9 +36,9 @@ private:
 		RecordedPositions(const double inputPos[]) {
 			memcpy(this->actualPositions, inputPos, 1024*sizeof(double));
 		}
-		~RecordedPositions();
+		//~RecordedPositions();
 	};
-	vector<RecordedPositions*> recdPos;
+	vector<RecordedPositions*> recordPositionVector;
 
 	struct actMovement // Actual "from & to" of each current movement 
 	{
@@ -71,6 +71,8 @@ public:
 	bool abortCmd(); // abort the movements
 	
 	bool curPos(double* pos); // current position in um
+
+	bool dumpFeedbackData(const string& filename); // save recordPositionVector to file
 
 protected:
 	int getMovementsSize(); // get the size of the movements

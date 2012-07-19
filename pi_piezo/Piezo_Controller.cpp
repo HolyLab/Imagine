@@ -197,34 +197,37 @@ Piezo_Controller::Piezo_Controller() : lowPosLimit(500.0), upPosLimit(18500.0), 
 	this->ParaAccr = 10000.0;
 
 	//
-	// Set the position recorder parameters
+	// Set the default position recorder parameters
 	//
 
-	int recordTableId[] = {1,2}; // Piezo internal record table ID
-	char recordSouceId[] = "1"; // Piezo record axis ID
-	int recordOptions[] = {2}; // Piezo record options
+	// set Table 1 to record the actual position
+	int recordTableId[] = {1}; // piezo internal record table ID
+	char recordSouceId[] = "1"; // piezo record source axis ID
+	int recordOptions[] = {2}; // piezo record options
 	if (!PI_DRC(this->USBID, recordTableId, recordSouceId, recordOptions))
 	{
 		printf("ERROR: The settting of the position record options for table 1 fails. \n");
 	}
 
+	// set Table 2 not to record any data
 	recordTableId[0] = 2;
 	recordOptions[0] = 0;
 	if (!PI_DRC(this->USBID, recordTableId, recordSouceId, recordOptions))
 	{
 		printf("ERROR: The settting of the position record options for table 2 fails. \n");
 	}
-
-	recordTableId[0] = 1;
-	int triggerSouceId[] = {0, 0};
-	char pdValueArray[] = "00";
-	if (!PI_DRT(this->USBID, recordTableId, triggerSouceId, pdValueArray, 2))
+	
+	// set the position data trigger to be type "1"
+	recordTableId[0] = 0;
+	int triggerSouceId[] = {1};
+	if (!PI_DRT(this->USBID, recordTableId, triggerSouceId, "0", 1))
 	{
 		printf("ERROR: The setting of the position record triggering option fails. \n");
 	}
 
-	int piRecorderRate = 50; // Piezo position recorder rate
-	if (!PI_RTR(this->USBID, piRecorderRate)) // Set the piezo position recorder rate
+	// Set the piezo position recorder rate
+	int recordRate = 50;
+	if (!PI_RTR(this->USBID, recordRate))
 	{
 		printf("ERROR: The setting of the position recorder rate fails. \n");
 	}
@@ -443,6 +446,37 @@ bool Piezo_Controller::curPos(double* pos) // current position in um (1.0E-6 met
 		return false;
 	}
 }
+
+bool Piezo_Controller::dumpFeedbackData(const string& filename)
+{
+	string thisFilename = filename;
+	FILE *thisfile = NULL;
+	thisfile = fopen(thisFilename.c_str(), "w");
+	if (thisfile == NULL)
+	{
+		printf("ERROR: Fails to open file for saving the recorded positions. \n");
+		return false;
+	}
+
+	for (int i = 0; i < this->recordPositionVector.size(); ++i) 
+	{
+		double *thisActualPos = (*this->recordPositionVector[i]).actualPositions;
+		for (int j = 0; j < 1024; ++j)
+		{
+			fprintf(thisfile, "%5d %5d %12.8f \n", i, j, thisActualPos[j]);
+		}
+	}
+
+	for (int i = 0; i < this->recordPositionVector.size(); ++i)
+	{
+		delete this->recordPositionVector[i];
+	}
+	this->recordPositionVector.clear();
+
+	fclose(thisfile);
+	return true;
+}
+
 
 int Piezo_Controller::getMovementsSize()
 {
@@ -805,9 +839,31 @@ bool Piezo_Controller::wait(const int i)
 	}
 	// boost::this_thread::interruption_point(); // abort the current waiting process if requested
 
-	if(!MovingStatus)
+	if(!MovingStatus && i == 0)
 	{
-		// printf(" The moving to the new position %f is done \n", CurrentPos);
+		// load the recorded position data and save into memory only when i == 0
+		int recordTableId[] = {1};
+		int numRecordTable = 1;
+		int startIdx = 1;
+		int numDatas = 1024;
+		double *recordData;
+		char recordHeader[301];
+		if (!PI_qDRR(this->USBID, recordTableId, numRecordTable, startIdx, numDatas, &recordData, recordHeader, 300))
+		{
+			printf("ERROR: The read of recorded position data fails. \n");
+		}
+		printf("GCS Header: \n %s \n", recordHeader);
+		
+		// verify that the recorded position data has been all read into memory
+		int arrIdx = -1;
+		while (arrIdx < (numDatas - 1))
+		{
+			arrIdx = PI_GetAsyncBufferIndex(this->USBID);
+			boost::this_thread::sleep(boost::posix_time::seconds(0.01));
+		}
+
+		// save the recorded position data
+		recordPositionVector.push_back(new RecordedPositions(recordData));
 	}
 	return true;
 }
