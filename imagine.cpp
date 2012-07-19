@@ -96,6 +96,11 @@ bool Imagine::loadPreset()
    if(sv.isValid()) ui.doubleSpinBoxExpTime->setValue(sv.toNumber());
    sv=preset.property("idleTime");
    if(sv.isValid()) ui.doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(sv.toNumber());
+   sv=preset.property("triggerMode");
+   if(sv.isValid()){
+      QString ttStr=sv.toString();
+      ui.comboBoxTriggerMode->setCurrentIndex(ttStr=="internal");
+   }
    
    return true;
 }
@@ -250,11 +255,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
       ui.labelImage->adjustSize();
    }
 
-   //fill in trigger mode combo box
-   ui.comboBoxTriggerMode->addItem("External Start");
-   ui.comboBoxTriggerMode->addItem("Internal");
-
-   ui.comboBoxTriggerMode->setCurrentIndex(pCamera->vendor=="cooke");
+   //trigger mode combo box
    if(positionerType=="thor"){
       ui.comboBoxTriggerMode->setEnabled(false);
       ui.comboBoxTriggerMode->setCurrentIndex(1);

@@ -10,6 +10,7 @@ var preset={
    numOfStacks:5,
    framesPerStack:89,
    exposureTime:0.0107,
-   idleTime:0.7
+   idleTime:0.7,
+   triggerMode: "internal", //internal or external
 };
 
