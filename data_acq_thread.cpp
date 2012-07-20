@@ -622,7 +622,11 @@ nextStack:
 
    if(positionerType=="pi"){
       Piezo_Controller* p=dynamic_cast<Piezo_Controller*>(pPositioner);
-      if(p) p->dumpFeedbackData(positionerFeedbackFile);
+      if(p) {
+         if(!p->dumpFeedbackData(positionerFeedbackFile)){
+            emit newStatusMsgReady("Failed to dump piezo feedback data");
+         }
+      }
    }
 
    QString ttMsg="Acquisition is done";
