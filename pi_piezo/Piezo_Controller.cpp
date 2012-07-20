@@ -846,24 +846,27 @@ bool Piezo_Controller::wait(const int i)
 		int numRecordTable = 1;
 		int startIdx = 1;
 		int numDatas = 1024;
-		double *recordData;
-		char recordHeader[301];
-		boost::this_thread::sleep(boost::posix_time::seconds(0.1));
-		if (!PI_qDRR(this->USBID, recordTableId, numRecordTable, startIdx, numDatas, &recordData, recordHeader, 300))
+		// double *recordData;
+		// char recordHeader[301];
+		// boost::this_thread::sleep(boost::posix_time::seconds(0.1));
+		// if (!PI_qDRR(this->USBID, recordTableId, numRecordTable, startIdx, numDatas, &recordData, recordHeader, 300))
+		std::cout<<"%%%%%%%%  7 : "<<gTimer.read()<<std::endl;
+		double recordData[1024];
+		if (!PI_qDRR_SYNC(this->USBID, 1, startIdx, numDatas, recordData))
 		{
 			printf("ERROR: The read of recorded position data fails. \n");
 		}
-		printf("GCS Header: \n %s \n", recordHeader);
+		// printf("GCS Header: \n %s \n", recordHeader);
 		
-		std::cout<<"%%%%%%%%  7 : "<<gTimer.read()<<std::endl;
-
 		// verify that the recorded position data has been all read into memory
+		/*
 		int arrIdx = -1;
 		while (arrIdx < (numDatas - 1))
 		{
 			arrIdx = PI_GetAsyncBufferIndex(this->USBID);
-			// boost::this_thread::sleep(boost::posix_time::seconds(0.1));
+			boost::this_thread::sleep(boost::posix_time::seconds(1.0));			
 		}
+		*/
 
 		std::cout<<"%%%%%%%%  8 : "<<gTimer.read()<<std::endl;
 
