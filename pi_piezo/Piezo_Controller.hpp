@@ -65,7 +65,7 @@ public:
 	bool moveTo(const double to); // move as quick as possible to "to"
 	bool testCmd(); // test the validaty of the first movement
 
-	bool prepareCmd(); // after prepare, runCmd() will move it in real.
+	bool prepareCmd(); // after prepareCmd(), runCmd() will move it in real.
     bool runCmd();
 	bool waitCmd(); // wait all movements to complete
 	bool abortCmd(); // abort the movements

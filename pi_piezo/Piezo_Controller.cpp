@@ -401,6 +401,18 @@ bool Piezo_Controller::prepareCmd()
 		return false;
 	}
 
+	//
+	// Set parameters for the piezo position recording
+	//
+
+	// Set the piezo position record rate
+	int duration = static_cast<int>((*this->movements[0]).duration); // time in micro second
+	int recordRate = duration / 50 / 1024;
+	if (!PI_RTR(this->USBID, recordRate))
+	{
+		printf("ERROR: The setting of the position recorder rate fails. \n");
+	}
+
 	return true;
 }
 bool Piezo_Controller::runCmd()
