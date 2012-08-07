@@ -1483,8 +1483,12 @@ void Imagine::on_comboBoxAxis_currentIndexChanged(int index)
    ui.doubleSpinBoxMinDistance->setValue(pPositioner->minPos());
    ui.doubleSpinBoxMaxDistance->setValue(pPositioner->maxPos());
    on_btnRefreshPos_clicked();
+
+   int tmpIdx=max(oldDim, index);
+   if(piezoUiParams.size()<=tmpIdx) piezoUiParams.resize(tmpIdx+1);
+
    PiezoUiParam& oldP=piezoUiParams[oldDim];
-   PiezoUiParam& newP=piezoUiParams[pPositioner->getDim()];
+   PiezoUiParam& newP=piezoUiParams[index];
    oldP.valid=true;
    oldP.start=ui.doubleSpinBoxStartPos->value();
    oldP.stop=ui.doubleSpinBoxStopPos->value();
