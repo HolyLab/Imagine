@@ -19,17 +19,17 @@ Actuator_Controller::Actuator_Controller() : lowPosLimit(10000.0), upPosLimit(40
 		long lSerialNum = this->plSerialNum[i];
 		HANDLE_ERROR(InitHWDevice(lSerialNum)); // Each time initialize the specific HWUnit before using
 
-		float fMinVel = 0.0, 
-			fAccn = 2.0, // unit: mm/s^2
-			fMaxVel = 2.0; // unit: mm/s
+		float fMinVel = 0.0f, 
+			fAccn = 2.0f, // unit: mm/s^2
+			fMaxVel = 2.0f; // unit: mm/s
 		HANDLE_ERROR(MOT_SetVelParams(lSerialNum, fMinVel, fAccn, fMaxVel)); 
 		// HANDLE_ERROR(MOT_GetVelParams(lSerialNum, &fMinVel, &fAccn, &fMaxVel)); // Set up & Get default params
 		// printf("The Vel parameters are %d %f %f %f. \n", i, fMinVel, fAccn, fMaxVel);
 
 		long plDirection = 2, 
 			plLimSwitch = 1;
-		float pfHomeVel = 2.0,
-			pfZeroOffset = 0.1;
+		float pfHomeVel = 2.0f,
+			pfZeroOffset = 0.1f;
 		HANDLE_ERROR(MOT_SetHomeParams(lSerialNum, plDirection, plLimSwitch, pfHomeVel, pfZeroOffset));
 		// HANDLE_ERROR(MOT_GetHomeParams(lSerialNum, &plDirection, &plLimSwitch, &pfHomeVel, &pfZeroOffset)); // Set up & Get default home params
 		// printf("The home Vel parameters are %d %d %d %f %f. \n", i, plDirection, plLimSwitch, pfHomeVel, pfZeroOffset);
@@ -61,17 +61,18 @@ bool Actuator_Controller::moveToX(const double to) // Alert: wait the movement d
 	long lSerialNum = this->plSerialNum[CHAN1_INDEX];
 	HANDLE_ERROR(InitHWDevice(lSerialNum)); // Initialize the X axis HWUnit before using
 
-	float fMinVel = 0.0, 
-		fAccn = 2.0, // unit: mm/s^2
-		fMaxVel = 2.0; // unit: mm/s
+	float fMinVel = 0.0f, 
+		fAccn = 2.0f, // unit: mm/s^2
+		fMaxVel = 2.0f; // unit: mm/s
 	HANDLE_ERROR(MOT_SetVelParams(lSerialNum, fMinVel, fAccn, fMaxVel)); // Set up default params
 
 	float fAbsPos = static_cast<float>(to);
-	const float lowLimit = 0.0;
-	const float upLimit = 70000.0;
+	const float lowLimit = 0.0f;
+	const float upLimit = 70000.0f;
 	if ((fAbsPos >= lowLimit) && (fAbsPos <= upLimit)) {
 		fAbsPos /= static_cast<float>(micro);
 		bool bWait = true;
+		haltAxisMotion();
 		HANDLE_ERROR(MOT_MoveAbsoluteEx(lSerialNum, fAbsPos, bWait)); // Move to the absolute pos & wait for complete
 		return true;
 	} else {
@@ -129,15 +130,16 @@ bool Actuator_Controller::moveTo(const double to)
 		long lSerialNum = this->plSerialNum[CHAN2_INDEX];
 		HANDLE_ERROR(InitHWDevice(lSerialNum)); // Initialize the X axis HWUnit before using
 
-		float fMinVel = 0.0, 
-			fAccn = 2.0, // unit: mm/s^2
-			fMaxVel = 2.0; // unit: mm/s
+		float fMinVel = 0.0f, 
+			fAccn = 2.0f, // unit: mm/s^2
+			fMaxVel = 2.0f; // unit: mm/s
 		HANDLE_ERROR(MOT_SetVelParams(lSerialNum, fMinVel, fAccn, fMaxVel)); // Set up default params
 
 		float fAbsPos = static_cast<float>(to);
 		if ((fAbsPos >= minPos2()) && (fAbsPos <= maxPos2())) {
 			fAbsPos /= static_cast<float>(micro);
 			bool bWait = true;
+			haltAxisMotion();
 			HANDLE_ERROR(MOT_MoveAbsoluteEx(lSerialNum, fAbsPos, bWait)); // Move to the absolute pos & wait for complete
 			return true;
 		} else {
@@ -249,7 +251,7 @@ bool Actuator_Controller::setVelParams(const double vel, const double acc)
 
 	long lSerialNum = this->plSerialNum[CHAN2_INDEX];
 	HANDLE_ERROR(InitHWDevice(lSerialNum));
-	float fMinVel = 0.0;
+	float fMinVel = 0.0f;
 	float fAccn = newAcceleration;
 	float fMaxVel = newVelocity;
 	HANDLE_ERROR(MOT_SetVelParams(lSerialNum, fMinVel, fAccn, fMaxVel));
@@ -345,6 +347,7 @@ bool Actuator_Controller::run(const int i)
 	if ((fAbsPos >= minPos2()) && (fAbsPos <= maxPos2())) {
 		fAbsPos /= static_cast<float>(micro);
 		bool bWait = false;
+		haltAxisMotion();
 		HANDLE_ERROR(MOT_MoveAbsoluteEx(lSerialNum, fAbsPos, bWait)); // Move to the absolute pos: to
 		return true;
 	} else {
@@ -354,20 +357,31 @@ bool Actuator_Controller::run(const int i)
 }
 bool Actuator_Controller::wait(const int i)
 {	
-	double from = (*this->movements[i]).from;
-	double to = (*this->movements[i]).to;
-	double actFrom = oneActMovement.actFrom;
-	double actTo = oneActMovement.actTo;
+	double from;
+	double to;
+//	double actFrom = oneActMovement.actFrom;
+	double actTo;
+	if(i == 0) {
+		from = (*this->movements[i]).from;
+		to = (*this->movements[i]).to;
+		actTo = oneActMovement.actTo;
+	}
+	else
+		actTo = oneActMovement.actFrom;
+	
 	int trigger = (*this->movements[i]).trigger;
 
 	long lSerialNum = this->plSerialNum[CHAN2_INDEX];
 	float CurrentPos;
 	// int trigStatus = 0; // 0 for not trigged yet, 1 for already trigged
 	do {
+		timewait(300);
 		HANDLE_ERROR(MOT_GetPosition(lSerialNum, &CurrentPos)); // Get the current position
 		CurrentPos *= static_cast<float>(micro);
-		if ((CurrentPos < to && CurrentPos > from) || (CurrentPos > to && CurrentPos < from)) {
-			if (i == 0) setReturnFlag(true);
+
+		if (i == 0) {
+			if ((CurrentPos < to && CurrentPos > from) || (CurrentPos > to && CurrentPos < from))
+				setReturnFlag(true);
 		}
 
 		if (abs((CurrentPos - actTo) / actTo) < 1.0E-3) { // Detect the end of the motion
