@@ -264,7 +264,7 @@ void Actuator_Controller::runMovements()
 		double to = (*this->movements[i]).to;
 
 		printf(" Inside of runMovement: %d %f %f %d %d %d \n", i, from, to, _isnan(from), _isnan(to), (*this->movements[i]).trigger);
-		if( !_isnan(from) || _isnan(to) )
+		if( !_isnan(from) && _isnan(to) )
 		{
 			if(!Triggering(i))
 			{
