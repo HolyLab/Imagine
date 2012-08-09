@@ -260,11 +260,13 @@ void Actuator_Controller::runMovements()
 		printf(" Inside of runMovement: %d %f %f %d %d %d \n", i, from, to, _isnan(from), _isnan(to), (*this->movements[i]).trigger);
 		if( !_isnan(from) && _isnan(to) )
 		{
+			/* No triggering function for Thorlabs bsc102
 			if(!Triggering(i))
 			{
 				printf("ERROR: The pure triggering() did nothing at movement %d \n", i);
 				return;
 			}
+			*/
 		}
 		else
 		{
