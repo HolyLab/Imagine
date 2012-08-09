@@ -3,48 +3,35 @@
 Actuator_Controller::Actuator_Controller() : lowPosLimit(10000.0), upPosLimit(40000.0), maxVelocity(1100.0),maxAcceleration(1000.0), micro(1000.0)
 {
 	HANDLE_ERROR(APTInit()); // Initialize and set up the connection to the actuator controller
-
 	long lHWType = HWTYPE_SCC001;
-	HANDLE_ERROR(GetNumHWUnitsEx(lHWType, &this->plNumUnits)); // Get the number of HWUnits 
-	// printf("The number of HWUnits is %d \n", this->plNumUnits);
-
+	HANDLE_ERROR(GetNumHWUnitsEx(lHWType, &this->plNumUnits)); // Get the number of HWUnits
 	long lIndex = CHAN1_INDEX;
-	HANDLE_ERROR(GetHWSerialNumEx(lHWType, lIndex, &this->plSerialNum[0])); // Get the serial number of the X axis HWUnit 
-	// printf("The serical number of the X axis HWUnit is %d \n", this->plSerialNum[0]); 
+	HANDLE_ERROR(GetHWSerialNumEx(lHWType, lIndex, &this->plSerialNum[0])); // Get the serial number of the X axis HWUnit
 	lIndex = CHAN2_INDEX;
 	HANDLE_ERROR(GetHWSerialNumEx(lHWType, lIndex, &this->plSerialNum[1])); // Get the serial number of the Y axis HWUnit
-	// printf("The serical number of the Y axis HWUnit is %d \n", this->plSerialNum[1]);
 
-	for (int i = 0; i < 2; ++i) {
+	for (int i = 0; i < 2; ++i) { // Move the two axis back to home
 		long lSerialNum = this->plSerialNum[i];
 		HANDLE_ERROR(InitHWDevice(lSerialNum)); // Each time initialize the specific HWUnit before using
 
-		float fMinVel = 0.0f, 
+		float fMinVel = 0.0f,
 			fAccn = 2.0f, // unit: mm/s^2
 			fMaxVel = 2.0f; // unit: mm/s
-		HANDLE_ERROR(MOT_SetVelParams(lSerialNum, fMinVel, fAccn, fMaxVel)); 
-		// HANDLE_ERROR(MOT_GetVelParams(lSerialNum, &fMinVel, &fAccn, &fMaxVel)); // Set up & Get default params
-		// printf("The Vel parameters are %d %f %f %f. \n", i, fMinVel, fAccn, fMaxVel);
+		HANDLE_ERROR(MOT_SetVelParams(lSerialNum, fMinVel, fAccn, fMaxVel));
 
 		long plDirection = 2, 
 			plLimSwitch = 1;
 		float pfHomeVel = 2.0f,
 			pfZeroOffset = 0.1f;
 		HANDLE_ERROR(MOT_SetHomeParams(lSerialNum, plDirection, plLimSwitch, pfHomeVel, pfZeroOffset));
-		// HANDLE_ERROR(MOT_GetHomeParams(lSerialNum, &plDirection, &plLimSwitch, &pfHomeVel, &pfZeroOffset)); // Set up & Get default home params
-		// printf("The home Vel parameters are %d %d %d %f %f. \n", i, plDirection, plLimSwitch, pfHomeVel, pfZeroOffset);
 
 		BOOL bWait = true;
 		HANDLE_ERROR(MOT_MoveHome(lSerialNum, bWait)); // Move to Home & wait till complete
 
-		// float pfPosition = -1.0;
-		// HANDLE_ERROR(MOT_GetPosition(lSerialNum, &pfPosition)); // Get the current position
-		// printf("The current position is %f \n", pfPosition);
-
-		// set the back slash length to 0.0
-		MOT_SetBLashDist(lSerialNum, 0.0);
+		MOT_SetBLashDist(lSerialNum, 0.0f); // Set the back slash length to 0.0f
 	}
 }
+
 Actuator_Controller::~Actuator_Controller() 
 {
 	for(int i=0; i<2; ++i) {
@@ -53,10 +40,10 @@ Actuator_Controller::~Actuator_Controller()
 		HANDLE_ERROR(MOT_StopProfiled(lSerialNum)); // Halt the axis motion		
 	}
 	HANDLE_ERROR(APTCleanUp()); // Disconnect from the actuator controller
-	clearCmd(); // Clean up the movements
+	clearCmd(); // Clean up the movements vector
 }
 
-bool Actuator_Controller::moveToX(const double to) // Alert: wait the movement done before other actions
+bool Actuator_Controller::moveToX(const double to) // Alert: Must wait this movement done before other actions
 {	
 	long lSerialNum = this->plSerialNum[CHAN1_INDEX];
 	HANDLE_ERROR(InitHWDevice(lSerialNum)); // Initialize the X axis HWUnit before using
@@ -67,12 +54,12 @@ bool Actuator_Controller::moveToX(const double to) // Alert: wait the movement d
 	HANDLE_ERROR(MOT_SetVelParams(lSerialNum, fMinVel, fAccn, fMaxVel)); // Set up default params
 
 	float fAbsPos = static_cast<float>(to);
-	const float lowLimit = 0.0f;
+	const float lowLimit = 0.0f; // hard-coded lower- & upper- position limit
 	const float upLimit = 70000.0f;
 	if ((fAbsPos >= lowLimit) && (fAbsPos <= upLimit)) {
 		fAbsPos /= static_cast<float>(micro);
 		bool bWait = true;
-		haltAxisMotion();
+		haltAxisMotion(); // Safe protection, halt any motion
 		HANDLE_ERROR(MOT_MoveAbsoluteEx(lSerialNum, fAbsPos, bWait)); // Move to the absolute pos & wait for complete
 		return true;
 	} else {
@@ -90,6 +77,7 @@ double Actuator_Controller::maxPos()
 	if(getDim() == 0) return 70000.0;
 	if(getDim() == 1) return this->upPosLimit;
 }
+
 double Actuator_Controller::minPos2() // large range
 {
 	double local_lowPosLimit = 0.0;
@@ -122,11 +110,13 @@ bool Actuator_Controller::curPos(double* pos) // current position in um
 	*pos = static_cast<double>(CurrentPos) * this->micro;
 	return true;
 }
+
 bool Actuator_Controller::moveTo(const double to)
 {
 	if(getDim() == 0) { 
 		moveToX(to);
-	} else if(getDim() == 1) {
+	}
+	else if(getDim() == 1) {
 		long lSerialNum = this->plSerialNum[CHAN2_INDEX];
 		HANDLE_ERROR(InitHWDevice(lSerialNum)); // Initialize the X axis HWUnit before using
 
@@ -162,24 +152,27 @@ bool Actuator_Controller::runCmd()
 {
 	setReturnFlag(false);
 	this->workerThread = boost::thread(&Actuator_Controller::runMovements, this); // create & initialize the workThread
-	// printf(" The workerThread ID is %d \n", this->workerThread.get_id());
+	
 	do {
 		timewait(5);
 	} while (!getReturnFlag());
-	// printf("workerThread returned \n");
+	
 	return true;
 }
+
 bool Actuator_Controller::waitCmd()
 {
 	this->workerThread.join();	// the main thread joins the worker thread and sleeps
 	return true;
 }
+
 bool Actuator_Controller::abortCmd()
 {
 	this->workerThread.interrupt(); // send request to interrupt the workerThread
 	this->workerThread.join(); // the main thread joins the workerThread and waits it to terminate
 	return true;
 }
+
 bool Actuator_Controller::testCmd()
 {
 	int i = 0; // only check the first movement
@@ -200,28 +193,26 @@ bool Actuator_Controller::testCmd()
 	double Length = 4.0 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
 	double actFrom, actTo; // The actual from & to of each movement
 
-	if(from <= to) {		
+	if (from <= to) {		
 		actFrom = from - Length;
 		actTo = to + Length;
-	} else if(from > to) {
+	} 
+	else if (from > to) {
 		actFrom = from + Length;
 		actTo = to - Length;
 	}
 	if ((from >= minPos2()) && (from <= maxPos2()) && (to >= minPos2()) && (to <= maxPos2())) {
 		return true;
 	}
-	else {
+	else
 		return false;
-	}
-	
 }
-
-
 
 int Actuator_Controller::getMovementsSize()
 {
 	return this->movements.size();
 }
+
 bool Actuator_Controller::haltAxisMotion()
 {
 	long lSerialNum;
@@ -231,6 +222,7 @@ bool Actuator_Controller::haltAxisMotion()
 	HANDLE_ERROR(MOT_StopProfiled(lSerialNum));
 	return true;
 }
+
 bool Actuator_Controller::setVelParams(const double vel, const double acc)
 {
 	float newVelocity;
@@ -271,7 +263,7 @@ void Actuator_Controller::runMovements()
 			if(!Triggering(i))
 			{
 				printf("ERROR: The pure triggering() did nothing at movement %d \n", i);
-				//return;
+				return;
 			}
 		}
 		else
@@ -293,7 +285,6 @@ void Actuator_Controller::runMovements()
 			}
 		}		
 	}
-	return;
 }
 
 bool Actuator_Controller::prepare(const int i)
@@ -320,8 +311,6 @@ bool Actuator_Controller::prepare(const int i)
 		oneActMovement.actFrom = actFrom;
 		oneActMovement.actTo = actTo;
 		this->magicActFrom = actFrom;
-
-		// printf(" Movement: %d %f %f %f %f \n", i, from, to, actFrom, actTo);
 
 		if(!moveTo(actFrom)) return false; // Move to "actFrom"
 		if(!setVelParams(Velocity, Acceleration)) return false;
@@ -355,25 +344,27 @@ bool Actuator_Controller::run(const int i)
 		return false;
 	}
 }
+
 bool Actuator_Controller::wait(const int i)
 {	
-	double from;
-	double to;
-//	double actFrom = oneActMovement.actFrom;
-	double actTo;
+	double from, to, actFrom, actTo;
+
 	if(i == 0) {
 		from = (*this->movements[i]).from;
 		to = (*this->movements[i]).to;
+		actFrom = oneActMovement.actFrom;
 		actTo = oneActMovement.actTo;
 	}
-	else
+	else {
+		actFrom = oneActMovement.actTo;
 		actTo = oneActMovement.actFrom;
+	}
 	
 	int trigger = (*this->movements[i]).trigger;
 
 	long lSerialNum = this->plSerialNum[CHAN2_INDEX];
 	float CurrentPos;
-	// int trigStatus = 0; // 0 for not trigged yet, 1 for already trigged
+
 	do {
 		timewait(300);
 		HANDLE_ERROR(MOT_GetPosition(lSerialNum, &CurrentPos)); // Get the current position
@@ -384,7 +375,7 @@ bool Actuator_Controller::wait(const int i)
 				setReturnFlag(true);
 		}
 
-		if (abs((CurrentPos - actTo) / actTo) < 1.0E-3) { // Detect the end of the motion
+		if (abs((CurrentPos - actTo) / (actFrom - actTo)) < 1.0E-3) { // Detect the end of the motion
 			timewait(300);
 			if (!haltAxisMotion()) printf("Error in haltAxisMotion(). \n");
 			timewait(300);
@@ -398,9 +389,8 @@ bool Actuator_Controller::wait(const int i)
 		}
 	} while (true);
 
-	if(boost::this_thread::interruption_requested()) {
+	if(boost::this_thread::interruption_requested())
 		boost::this_thread::interruption_point(); // abort the current waiting process if requested
-	}
 
 	return true;
 }
