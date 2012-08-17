@@ -260,13 +260,7 @@ void Actuator_Controller::runMovements()
 		printf(" Inside of runMovement: %d %f %f %d %d %d \n", i, from, to, _isnan(from), _isnan(to), (*this->movements[i]).trigger);
 		if( !_isnan(from) && _isnan(to) )
 		{
-			/* No triggering function for Thorlabs bsc102
-			if(!Triggering(i))
-			{
-				printf("ERROR: The pure triggering() did nothing at movement %d \n", i);
-				return;
-			}
-			*/
+			// No triggering function for Thorlabs bsc102 
 		}
 		else
 		{
@@ -404,13 +398,4 @@ bool Actuator_Controller::setReturnFlag(const bool i) {
 
 bool Actuator_Controller::getReturnFlag() {
 	return this->returnFlag;
-}
-
-bool Actuator_Controller::Triggering(const int i)
-{
-	double duration = (*this->movements[i]).duration;
-	clock_t endwait;
-	endwait = clock () + long(duration / this->micro / this->micro * double(CLOCKS_PER_SEC));
-	while(clock() < endwait) {}	
-	return false; // Triggering can not be actually executed
 }

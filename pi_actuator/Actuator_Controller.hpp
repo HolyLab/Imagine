@@ -77,7 +77,6 @@ public:
 	bool setReturnFlag(const bool i);
 	bool getReturnFlag();
 
-	bool Triggering(const int i); // Pure triggering, dummy function
 };
 
 #endif // ACTUATOR_CONTROLLER_HPP
