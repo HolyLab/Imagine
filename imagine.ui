@@ -733,6 +733,9 @@
             <height>22</height>
            </rect>
           </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
           <property name="readOnly">
            <bool>true</bool>
           </property>
@@ -778,6 +781,9 @@
             <height>22</height>
            </rect>
           </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
           <property name="maximum">
            <double>1000000.000000000000000</double>
           </property>
@@ -790,6 +796,9 @@
             <width>100</width>
             <height>22</height>
            </rect>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
           <property name="maximum">
            <double>1000000.000000000000000</double>
@@ -854,6 +863,9 @@
           </property>
           <property name="toolTip">
            <string>Use page up/dow key for fast change</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
           <property name="minimum">
            <double>-1.000000000000000</double>
@@ -945,6 +957,9 @@
             <height>22</height>
            </rect>
           </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
           <property name="readOnly">
            <bool>true</bool>
           </property>
@@ -995,6 +1010,9 @@
             <width>100</width>
             <height>20</height>
            </rect>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
           <property name="decimals">
            <number>3</number>
