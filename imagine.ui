@@ -164,7 +164,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidgetCfg">
         <property name="currentIndex">
-         <number>0</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -729,7 +729,7 @@
            <rect>
             <x>130</x>
             <y>70</y>
-            <width>62</width>
+            <width>100</width>
             <height>22</height>
            </rect>
           </property>
@@ -774,7 +774,7 @@
            <rect>
             <x>130</x>
             <y>100</y>
-            <width>62</width>
+            <width>100</width>
             <height>22</height>
            </rect>
           </property>
@@ -787,7 +787,7 @@
            <rect>
             <x>130</x>
             <y>210</y>
-            <width>62</width>
+            <width>100</width>
             <height>22</height>
            </rect>
           </property>
@@ -801,9 +801,9 @@
          <widget class="QPushButton" name="btnSetCurPosAsStart">
           <property name="geometry">
            <rect>
-            <x>200</x>
-            <y>130</y>
-            <width>101</width>
+            <x>240</x>
+            <y>129</y>
+            <width>70</width>
             <height>23</height>
            </rect>
           </property>
@@ -811,15 +811,15 @@
            <string>set as start position</string>
           </property>
           <property name="text">
-           <string>Set as start pos</string>
+           <string>Set as start</string>
           </property>
          </widget>
          <widget class="QPushButton" name="btnSetCurPosAsStop">
           <property name="geometry">
            <rect>
-            <x>200</x>
-            <y>170</y>
-            <width>101</width>
+            <x>240</x>
+            <y>173</y>
+            <width>70</width>
             <height>23</height>
            </rect>
           </property>
@@ -827,7 +827,7 @@
            <string>set as stop position</string>
           </property>
           <property name="text">
-           <string>Set as stop pos</string>
+           <string>Set as stop</string>
           </property>
          </widget>
          <widget class="QLabel" name="label_20">
@@ -848,7 +848,7 @@
            <rect>
             <x>130</x>
             <y>151</y>
-            <width>62</width>
+            <width>100</width>
             <height>22</height>
            </rect>
           </property>
@@ -868,9 +868,9 @@
          <widget class="QPushButton" name="btnMovePiezo">
           <property name="geometry">
            <rect>
-            <x>200</x>
+            <x>240</x>
             <y>151</y>
-            <width>101</width>
+            <width>70</width>
             <height>23</height>
            </rect>
           </property>
@@ -941,7 +941,7 @@
            <rect>
             <x>130</x>
             <y>40</y>
-            <width>62</width>
+            <width>100</width>
             <height>22</height>
            </rect>
           </property>
@@ -992,7 +992,7 @@
            <rect>
             <x>130</x>
             <y>280</y>
-            <width>61</width>
+            <width>100</width>
             <height>20</height>
            </rect>
           </property>
@@ -1009,9 +1009,9 @@
          <widget class="QCheckBox" name="cbAutoSetPiezoTravelBackTime">
           <property name="geometry">
            <rect>
-            <x>200</x>
+            <x>240</x>
             <y>280</y>
-            <width>90</width>
+            <width>70</width>
             <height>17</height>
            </rect>
           </property>
@@ -1051,14 +1051,14 @@
          <widget class="QPushButton" name="btnRefreshPos">
           <property name="geometry">
            <rect>
-            <x>200</x>
+            <x>240</x>
             <y>240</y>
-            <width>101</width>
+            <width>70</width>
             <height>23</height>
            </rect>
           </property>
           <property name="toolTip">
-           <string>Move piezo according to user's input</string>
+           <string/>
           </property>
           <property name="text">
            <string>Refresh</string>
@@ -1085,7 +1085,7 @@
            <rect>
             <x>130</x>
             <y>10</y>
-            <width>60</width>
+            <width>101</width>
             <height>22</height>
            </rect>
           </property>
