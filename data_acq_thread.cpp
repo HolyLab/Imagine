@@ -633,7 +633,7 @@ nextStack:
    if(stopRequested) ttMsg+=" (User requested STOP)";
    emit newStatusMsgReady(ttMsg);
 
-   if(nOverrunStacks) ttMsg="Idle time is long enough, NO overrun.";
+   if(!nOverrunStacks) ttMsg="Idle time is OK (NO overrun).";
    else {
       ttMsg=QString("# of overrun stacks: %1").arg(nOverrunStacks);
    }
