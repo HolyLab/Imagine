@@ -326,7 +326,7 @@ bool Piezo_Controller::testCmd()
 	double duration = (*this->movements[i]).duration;
 	int trigger = (*this->movements[i]).trigger;
 
-	double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit micrometre / second			
+	double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit micrometre / second
 	this->magicAcc = this->ParaAccr; // acceleration rate during A->B
 	double Acceleration = this->magicAcc; // unit micrometre / second^2
 	double Deceleration = Acceleration;

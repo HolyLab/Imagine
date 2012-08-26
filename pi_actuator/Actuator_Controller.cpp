@@ -175,16 +175,26 @@ bool Actuator_Controller::abortCmd()
 
 bool Actuator_Controller::testCmd()
 {
-	int i = 0; // only check the first movement
+	int i = 0; // only need to check the first forward movement parameters.
 
 	double from = (*this->movements[i]).from;
 	double to = (*this->movements[i]).to;
 	double duration = (*this->movements[i]).duration;
-	int trigger = (*this->movements[i]).trigger;
+
+	if ((from > this->maxPos2()) || (from < this->minPos2())) {
+		printf("Error: the STARTING position is out-of-bound. \n");
+		return false;
+	}
+	if ((to > this->maxPos2()) || (to < this->minPos2())) {
+		printf("Error: the ENDING position is out-of-bound. \n");
+		return false;
+	}
 
 	double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit micrometre / second
 	if (Velocity > maxVel()) {
-		printf("Error in the velocity requirement of movement %d \n", i);
+		printf("Error: The calculated stage movement velocity is greater than 1.1 mm/s, the maximal allowed velocity. " 
+			   "The stage velocity is equal to (the travel length / the travel time). "
+			   "Please change the camera & position settings accordingly. \n");
 		return false;
 	}
 
@@ -201,11 +211,25 @@ bool Actuator_Controller::testCmd()
 		actFrom = from + Length;
 		actTo = to - Length;
 	}
-	if ((from >= minPos2()) && (from <= maxPos2()) && (to >= minPos2()) && (to <= maxPos2())) {
+	if ((actFrom >= minPos2()) && (actFrom <= maxPos2()) && (actTo >= minPos2()) && (actTo <= maxPos2())) {
 		return true;
 	}
-	else
+	else if ((actFrom < minPos2()) || (actFrom > maxPos2())) {
+		printf("Error: The stage movement requires adding an extra acceleration length to the STARTING position "
+			   "so as to make sure that the stage is moving at a constant speed in the required range. "
+			   "This extra acceleration length is equal to (4.0 * velocity^2 / acceleration). "
+			   "IN THIS CASE -- the extra acceleration length can not be satisfied. "
+			   "Please change camera & position settings accordingly. \n");
 		return false;
+	}
+	else if ((actTo < minPos2()) || (actTo > maxPos2())) {
+		printf("Error: The stage movement requires adding an extra acceleration length to the ENDING position "
+			   "so as to make sure that the stage is moving at a constant speed in the required range. "
+			   "The extra acceleration length is equal to (4.0 * velocity^2 / acceleration). "
+			   "IN THIS CASE -- the extra acceleration length can not be satisfied. "
+			   "Please change camera & position settings accordingly. \n");
+		return false;
+	}
 }
 
 int Actuator_Controller::getMovementsSize()
