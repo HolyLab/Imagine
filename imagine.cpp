@@ -101,6 +101,8 @@ bool Imagine::loadPreset()
       QString ttStr=sv.toString();
       ui.comboBoxTriggerMode->setCurrentIndex(ttStr=="internal");
    }
+   sv=preset.property("gain");
+   if(sv.isValid()) ui.spinBoxGain->setValue(sv.toNumber());
    
    return true;
 }

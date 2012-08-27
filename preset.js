@@ -13,6 +13,7 @@ if(rig=="hs-ocpi"){
       exposureTime:0.0107,
       idleTime:0.7,
       triggerMode: "internal", //internal or external
+      gain:0,
    };
 }
 
@@ -29,6 +30,7 @@ if(rig=="bakewell"){
       exposureTime:0.02,
       idleTime:0.7,
       triggerMode: "internal", //internal or external
+      gain:24,
    };
 }
 
@@ -45,6 +47,7 @@ if(rig=="ocpi-1"){
       exposureTime:0.03,
       idleTime:0.7,
       triggerMode: "external", //internal or external
+      gain:0,
    };
 }
 
