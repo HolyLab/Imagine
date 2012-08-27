@@ -175,32 +175,44 @@ bool Actuator_Controller::abortCmd()
 
 bool Actuator_Controller::testCmd()
 {
-	int i = 0; // only need to check the first forward movement parameters.
+    // only need to check the first forward movement parameters
 
-	double from = (*this->movements[i]).from;
-	double to = (*this->movements[i]).to;
-	double duration = (*this->movements[i]).duration;
+	double from = (*this->movements[0]).from;
+	double to = (*this->movements[0]).to;
+	double duration = (*this->movements[0]).duration;
 
 	if ((from > this->maxPos2()) || (from < this->minPos2())) {
-		printf("Error: the STARTING position is out-of-bound. \n");
+		printf("Error: the START position is out-of-bound. \n");
 		return false;
 	}
 	if ((to > this->maxPos2()) || (to < this->minPos2())) {
-		printf("Error: the ENDING position is out-of-bound. \n");
+		printf("Error: the STOP position is out-of-bound. \n");
 		return false;
 	}
+	if (abs(to - from) < 1.0) {
+		printf("Warning: the distance between the START & STOP positons are less than 1 um. "
+			   "The stage is in no-movement scanning setting. \n");
+		return true;
+	}
 
-	double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit micrometre / second
+
+	double Velocity = abs(to - from) / (duration / this->micro / this->micro); // unit: micrometre / second
 	if (Velocity > maxVel()) {
 		printf("Error: The calculated stage movement velocity is greater than 1.1 mm/s, the maximal allowed velocity. " 
 			   "The stage velocity is equal to (the travel length / the travel time). "
 			   "Please change the camera & position settings accordingly. \n");
 		return false;
 	}
+	else if (Velocity < 100.0) { // the lower limit of Bakewell Stage velocity, 0.1 mm/s
+		printf("Error: The calculated stage movement velocity is less than 0.1 mm/s, the minimum allowed velocity. "
+			   "The stage velocity is equal to (the travel length / the travel time). "
+			   "Please change the camear & position settings accordingly. \n");
+		return false;
+	}
 
 	double Acceleration = maxAcc(); // unit: micrometer / second^2
 
-	double Length = 4.0 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
+	double Length = 4.0 * Velocity * Velocity / Acceleration; // Extra travel length for acceleration & deceleration
 	double actFrom, actTo; // The actual from & to of each movement
 
 	if (from <= to) {		
@@ -215,7 +227,7 @@ bool Actuator_Controller::testCmd()
 		return true;
 	}
 	else if ((actFrom < minPos2()) || (actFrom > maxPos2())) {
-		printf("Error: The stage movement requires adding an extra acceleration length to the STARTING position "
+		printf("Error: The stage movement requires adding an extra acceleration length to the START position "
 			   "so as to make sure that the stage is moving at a constant speed in the required range. "
 			   "This extra acceleration length is equal to (4.0 * velocity^2 / acceleration). "
 			   "IN THIS CASE -- the extra acceleration length can not be satisfied. "
@@ -223,7 +235,7 @@ bool Actuator_Controller::testCmd()
 		return false;
 	}
 	else if ((actTo < minPos2()) || (actTo > maxPos2())) {
-		printf("Error: The stage movement requires adding an extra acceleration length to the ENDING position "
+		printf("Error: The stage movement requires adding an extra acceleration length to the STOP position "
 			   "so as to make sure that the stage is moving at a constant speed in the required range. "
 			   "The extra acceleration length is equal to (4.0 * velocity^2 / acceleration). "
 			   "IN THIS CASE -- the extra acceleration length can not be satisfied. "
