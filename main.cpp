@@ -149,6 +149,14 @@ int main(int argc, char *argv[])
       return 1;  
    }
 
+   //show splash windows and init positioner/daq/camera:
+   //see: QSplashScreen class ref
+   QPixmap pixmap("splash.jpg");
+   QSplashScreen *splash = new QSplashScreen(pixmap);
+   splash->show();
+
+   splash->showMessage(QString("Initialize the %1 actuator ...").arg(positionerType), 
+      Qt::AlignLeft|Qt::AlignBottom, Qt::red);
    if(positionerType=="volpiezo") pPositioner=new VolPiezo;
    else if(positionerType=="pi") pPositioner=new Piezo_Controller;
 #ifndef _WIN64
@@ -162,6 +170,8 @@ int main(int argc, char *argv[])
       return 1;
    }
 
+   splash->showMessage(QString("Initialize the %1 daq ...").arg(daq), 
+      Qt::AlignLeft|Qt::AlignBottom, Qt::red);
    if(daq=="ni") {
       digOut=new NiDaqDo();
    }
@@ -175,18 +185,11 @@ int main(int argc, char *argv[])
       return 1;
    }
 
+   splash->showMessage(QString("Initialize the %1 camera ...").arg(cameraVendor), 
+      Qt::AlignLeft|Qt::AlignBottom, Qt::red);
    if(cameraVendor=="avt") pCamera=new AvtCamera;
    else if(cameraVendor=="andor") pCamera=new AndorCamera;
    else if(cameraVendor=="cooke") pCamera=new CookeCamera;
-
-   //show splash windows and init camera:
-   //see: QSplashScreen class ref
-   QPixmap pixmap("splash.jpg");
-   QSplashScreen *splash = new QSplashScreen(pixmap);
-   splash->show();
-   splash->showMessage(QString("Initialize the %1 camera ...").arg(QString::fromStdString(pCamera->vendor)), 
-      Qt::AlignLeft|Qt::AlignBottom, Qt::red);
-
    //qApp->processEvents();
    if(!pCamera->init()){
       splash->showMessage("Failed to initialize the camera.", 
@@ -197,6 +200,8 @@ int main(int argc, char *argv[])
 
       return 1;
    }
+
+
    delete splash;
 
 
