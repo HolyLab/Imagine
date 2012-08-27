@@ -372,9 +372,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
       ui.comboBoxAxis->setCurrentIndex(1);
    }
 
-   //set piezo position to 0 um
-   QMessageBox::information(this, "Imagine", 
-         "Please raise microscope.\nPiezo position is about to be set 0 um");
+   //set piezo position to min position
    ui.doubleSpinBoxCurPos->setValue(pPositioner->minPos());
    on_btnMovePiezo_clicked();
 

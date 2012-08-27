@@ -155,6 +155,9 @@ int main(int argc, char *argv[])
    QSplashScreen *splash = new QSplashScreen(pixmap);
    splash->show();
 
+   QMessageBox::information(0, "Imagine", 
+         "Please raise microscope.");
+
    splash->showMessage(QString("Initialize the %1 actuator ...").arg(positionerType), 
       Qt::AlignLeft|Qt::AlignBottom, Qt::red);
    if(positionerType=="volpiezo") pPositioner=new VolPiezo;
@@ -187,6 +190,7 @@ int main(int argc, char *argv[])
 
    splash->showMessage(QString("Initialize the %1 camera ...").arg(cameraVendor), 
       Qt::AlignLeft|Qt::AlignBottom, Qt::red);
+   qApp->processEvents();
    if(cameraVendor=="avt") pCamera=new AvtCamera;
    else if(cameraVendor=="andor") pCamera=new AndorCamera;
    else if(cameraVendor=="cooke") pCamera=new CookeCamera;
