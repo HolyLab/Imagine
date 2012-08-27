@@ -94,9 +94,21 @@ int main(int argc, char *argv[])
 {
    QApplication a(argc, argv);
 
+   string rig="hs-ocpi";
+   if(argc==2) {
+      rig=argv[1];
+      cout<<"The rig is: "<<rig<<endl;
+   }
+   else {
+      cout<<"The rig is default to: "<<rig<<endl;
+   }
+
    assert(qApp);
 
    se=new QScriptEngine();
+
+   se->globalObject().setProperty("rig", QString::fromStdString(rig));
+
    QScriptValue svRun = se->newFunction(runWrapper);
    se->globalObject().setProperty("system", svRun); 
 
