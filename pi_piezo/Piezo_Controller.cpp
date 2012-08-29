@@ -378,6 +378,8 @@ bool Piezo_Controller::testCmd()
 
 bool Piezo_Controller::prepareCmd()
 {
+	std::cout<<"----------------------  before prepareCmd() : "<<gTimer.read()<<std::endl;
+
 	if(!checkControllerReady())
 	{
 		printf("ERROR: The controller is NOT ready. \n");
@@ -412,6 +414,8 @@ bool Piezo_Controller::prepareCmd()
 	{
 		printf("ERROR: The setting of the position recorder rate fails. \n");
 	}
+
+	std::cout<<"---------------------- after prepareCmd() : "<<gTimer.read()<<std::endl;
 
 	return true;
 }
