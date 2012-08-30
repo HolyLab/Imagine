@@ -1474,7 +1474,12 @@ void Imagine::on_btnMovePiezo_clicked()
 {
    double um=ui.doubleSpinBoxCurPos->value();
    pPositioner->setDim(ui.comboBoxAxis->currentIndex());
+
+   this->statusBar()->showMessage("Moving the actuator. Please wait ...");
+
    pPositioner->moveTo(um);
+
+   this->statusBar()->showMessage("Moving the actuator. Please wait ... Done");
 }
 
 void Imagine::on_comboBoxAxis_currentIndexChanged(int index)
