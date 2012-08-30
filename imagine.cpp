@@ -84,6 +84,8 @@ bool Imagine::loadPreset()
    if(sv.isValid()) ui.doubleSpinBoxStartPos->setValue(sv.toNumber());
    sv=preset.property("stopPosition");
    if(sv.isValid()) ui.doubleSpinBoxStopPos->setValue(sv.toNumber());
+   sv=preset.property("initialPosition");
+   if(sv.isValid()) ui.doubleSpinBoxCurPos->setValue(sv.toNumber());
    sv=preset.property("travelBackTime");
    if(sv.isValid()) ui.doubleSpinBoxPiezoTravelBackTime->setValue(sv.toNumber());
    
@@ -372,8 +374,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
       ui.comboBoxAxis->setCurrentIndex(1);
    }
 
-   //set piezo position to min position
-   ui.doubleSpinBoxCurPos->setValue(pPositioner->minPos());
+   //move piezo position to preset position
    on_btnMovePiezo_clicked();
 
    piezoUiParams.resize(3);//3 axes at most. TODOL support querying #dims
