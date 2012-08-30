@@ -5,6 +5,7 @@ if(rig=="hs-ocpi"){
       ///positioner's
       startPosition:100,
       stopPosition:400,
+      initialPosition: 100, //the position when Imagine starts.
       travelBackTime:0,
 
       ///camera's
@@ -22,6 +23,7 @@ if(rig=="bakewell"){
       ///positioner's
       startPosition:100,
       stopPosition:400,
+      initialPosition: 100, //the position when Imagine starts.
       travelBackTime:0,
 
       ///camera's
@@ -39,6 +41,7 @@ if(rig=="ocpi-1"){
       ///positioner's
       startPosition:100,
       stopPosition:400,
+      initialPosition: 100, //the position when Imagine starts.
       travelBackTime:0,
 
       ///camera's
