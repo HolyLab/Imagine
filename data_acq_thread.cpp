@@ -105,7 +105,7 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
          ios::out|ios::trunc );
    header<<headerMagic<<endl;
    header<<"[general]"<<endl
-      <<"header version=5.1"<<endl
+      <<"header version=5.2"<<endl
       <<"app version=2.0, build ("<<__DATE__<<", "<<__TIME__<<")"<<endl
       <<"date and time="<<QDateTime::currentDateTime().toString(Qt::ISODate).toStdString()<<endl
       <<"byte order=l"<<endl
