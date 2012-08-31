@@ -48,6 +48,7 @@ QString positionerType; //todo: query Positioner instead
 QScriptEngine* se;
 DaqDo * digOut=nullptr;
 QString daq;
+string rig;
 
 extern Timer_g gTimer;
 
@@ -107,7 +108,9 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
       <<"header version=5.1"<<endl
       <<"app version=2.0, build ("<<__DATE__<<", "<<__TIME__<<")"<<endl
       <<"date and time="<<QDateTime::currentDateTime().toString(Qt::ISODate).toStdString()<<endl
-      <<"byte order=l"<<endl<<endl;
+      <<"byte order=l"<<endl
+      <<"rig="<<rig<<endl
+      <<endl;
 
    header<<"[misc params]"<<endl
       <<"stimulus file content="

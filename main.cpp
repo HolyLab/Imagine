@@ -45,6 +45,7 @@ extern QString positionerType;
 extern QScriptEngine* se;
 extern DaqDo* digOut;
 extern QString daq;
+extern string rig;
 
 bool loadScript(const QString &filename)
 {
@@ -94,7 +95,7 @@ int main(int argc, char *argv[])
 {
    QApplication a(argc, argv);
 
-   string rig="hs-ocpi";
+   rig="hs-ocpi";
    if(argc==2) {
       rig=argv[1];
       cout<<"The rig is: "<<rig<<endl;
