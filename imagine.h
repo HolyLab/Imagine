@@ -109,6 +109,8 @@ private slots:
         void on_actionStimuli_triggered();
         void on_actionConfig_triggered();
         void on_actionLog_triggered();
+        void on_actionIntensity_triggered();
+        void on_actionHistogram_triggered();
         void on_actionDisplayFullImage_triggered();
         //void on_actionColorizeSaturatedPixels_triggered();
         void on_tabWidgetCfg_currentChanged(int index);

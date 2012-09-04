@@ -1605,5 +1605,37 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>dwHist</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>actionHistogram</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>536</x>
+     <y>320</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dwIntenCurve</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>actionIntensity</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>570</x>
+     <y>125</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
 </ui>

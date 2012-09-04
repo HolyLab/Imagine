@@ -1309,21 +1309,37 @@ void Imagine::on_btnOpenStimFile_clicked()
    ui.tableWidgetStimDisplay->setVerticalHeaderLabels(tableHeader);
 }
 
+void setDockwigetByAction(QAction* act, QDockWidget* widget)
+{
+   bool visible=act->isChecked();
+   widget->setVisible(visible);
+   if(visible) widget->raise();
+}
+
 void Imagine::on_actionStimuli_triggered()
 {
-   ui.dwStim->setVisible(ui.actionStimuli->isChecked());
+   setDockwigetByAction(ui.actionStimuli, ui.dwStim);
 }
 
 void Imagine::on_actionConfig_triggered()
 {
-   ui.dwCfg->setVisible(ui.actionConfig->isChecked());
+   setDockwigetByAction(ui.actionConfig, ui.dwCfg);
 }
 
 void Imagine::on_actionLog_triggered()
 {
-   ui.dwLog->setVisible(ui.actionLog->isChecked());
+   setDockwigetByAction(ui.actionLog, ui.dwLog);
 }
 
+void Imagine::on_actionIntensity_triggered()
+{
+   setDockwigetByAction(ui.actionIntensity, ui.dwIntenCurve);
+}
+
+void Imagine::on_actionHistogram_triggered()
+{
+   setDockwigetByAction(ui.actionHistogram, ui.dwHist);
+}
 
 //TODO: move this func to misc.cpp
 QString addExtNameIfAbsent(QString filename, QString newExtname)
