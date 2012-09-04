@@ -72,7 +72,7 @@
    <widget class="QDockWidget" name="dwLog">
     <property name="geometry">
      <rect>
-      <x>370</x>
+      <x>400</x>
       <y>420</y>
       <width>351</width>
       <height>141</height>
@@ -1538,5 +1538,54 @@
  <resources>
   <include location="imagine.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>dwStim</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>actionStimuli</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>210</x>
+     <y>114</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dwCfg</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>actionConfig</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>200</x>
+     <y>382</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dwLog</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>actionLog</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>575</x>
+     <y>545</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
