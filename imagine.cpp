@@ -1495,6 +1495,8 @@ void Imagine::on_btnMovePiezo_clicked()
 
    pPositioner->moveTo(um);
 
+   on_btnRefreshPos_clicked();
+
    this->statusBar()->showMessage("Moving the actuator. Please wait ... Done");
 }
 
