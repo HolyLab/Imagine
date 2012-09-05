@@ -1121,6 +1121,38 @@
            </property>
           </item>
          </widget>
+         <widget class="QPushButton" name="btnMoveToStartPos">
+          <property name="geometry">
+           <rect>
+            <x>240</x>
+            <y>100</y>
+            <width>70</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>Move to the start position</string>
+          </property>
+          <property name="text">
+           <string>Move</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="btnMoveToStopPos">
+          <property name="geometry">
+           <rect>
+            <x>240</x>
+            <y>210</y>
+            <width>70</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>Move to the stop position</string>
+          </property>
+          <property name="text">
+           <string>Move</string>
+          </property>
+         </widget>
         </widget>
         <widget class="QWidget" name="tabShutter">
          <attribute name="title">

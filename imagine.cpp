@@ -1500,6 +1500,18 @@ void Imagine::on_btnMovePiezo_clicked()
    this->statusBar()->showMessage("Moving the actuator. Please wait ... Done");
 }
 
+void Imagine::on_btnMoveToStartPos_clicked()
+{
+   ui.doubleSpinBoxCurPos->setValue(ui.doubleSpinBoxStartPos->value());
+   on_btnMovePiezo_clicked();
+}
+
+void Imagine::on_btnMoveToStopPos_clicked()
+{
+   ui.doubleSpinBoxCurPos->setValue(ui.doubleSpinBoxStopPos->value());
+   on_btnMovePiezo_clicked();
+}
+
 void Imagine::on_comboBoxAxis_currentIndexChanged(int index)
 {
    int oldDim=pPositioner->getDim();
