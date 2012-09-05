@@ -1079,7 +1079,7 @@
            </rect>
           </property>
           <property name="toolTip">
-           <string/>
+           <string>refresh current position</string>
           </property>
           <property name="text">
            <string>Refresh</string>
