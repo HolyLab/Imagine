@@ -210,7 +210,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    //adjust size and 
    //todo: center the window
    QRect tRect=geometry();
-   tRect.setHeight(tRect.height()+100);
+   tRect.setHeight(tRect.height()+150);
    tRect.setWidth(tRect.width()+125);
    this->setGeometry(tRect);
    
@@ -377,7 +377,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    //move piezo position to preset position
    on_btnMovePiezo_clicked();
 
-   piezoUiParams.resize(3);//3 axes at most. TODOL support querying #dims
+   piezoUiParams.resize(3);//3 axes at most. TODO: support querying #dims
 
    QString buildDateStr=__DATE__;
    QDate date=QDate::fromString(buildDateStr, "MMM d yyyy");
