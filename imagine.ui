@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>763</width>
-    <height>643</height>
+    <width>849</width>
+    <height>716</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -143,14 +143,14 @@
      <rect>
       <x>20</x>
       <y>130</y>
-      <width>362</width>
-      <height>395</height>
+      <width>371</width>
+      <height>435</height>
      </rect>
     </property>
     <property name="minimumSize">
      <size>
       <width>362</width>
-      <height>395</height>
+      <height>435</height>
      </size>
     </property>
     <property name="windowTitle">
@@ -166,6 +166,12 @@
       </property>
       <item>
        <widget class="QTabWidget" name="tabWidgetCfg">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>366</height>
+         </size>
+        </property>
         <property name="currentIndex">
          <number>4</number>
         </property>
@@ -1153,6 +1159,19 @@
            <string>Move</string>
           </property>
          </widget>
+         <widget class="QCheckBox" name="cbBidirectionalImaging">
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>320</y>
+            <width>141</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Bi-directional Imaging</string>
+          </property>
+         </widget>
         </widget>
         <widget class="QWidget" name="tabShutter">
          <attribute name="title">
@@ -1342,7 +1361,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>763</width>
+     <width>849</width>
      <height>21</height>
     </rect>
    </property>
