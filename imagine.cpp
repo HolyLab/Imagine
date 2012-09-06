@@ -438,6 +438,12 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
           this, SLOT(onModified()));
    }
 
+   auto checkboxes=ui.tabWidgetCfg->findChildren<QCheckBox*>();
+   for(auto cb: checkboxes){
+      connect(cb, SIGNAL(stateChanged(int)),
+          this, SLOT(onModified()));
+   }
+
    QRect rect = QApplication::desktop()->screenGeometry();
    int x = (rect.width()-this->width()) / 2;
    int y = (rect.height()-this->height()) / 2;
