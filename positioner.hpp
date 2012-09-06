@@ -38,7 +38,11 @@ public:
    virtual bool moveTo(double to)=0; //move as quick as possible
 
    //// cmd related:
-   virtual bool addMovement(double from, double to, double duration, int trigger); //to: when NaN, don't move; trigger: 1 on, 0 off, otherwise no change
+   virtual bool addMovement(double from, double to, double duration, int trigger); 
+      //from: if NaN, from=last movement's "to" position (but if no "last movement": cur pos)
+      //to: if NaN, don't move;
+      //duration: 0 means asap;
+      //trigger: 1 on, 0 off, otherwise no change
    virtual void clearCmd(); // clear the movement sequence
    //todo: for now, testCmd() and optimizeCmd() are not pure virtual so compiler is happy
    //   but they should be pure virtual once the changes to subclasses are done
