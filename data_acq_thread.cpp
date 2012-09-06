@@ -188,16 +188,27 @@ void DataAcqThread::fireStimulus(int valve)
 }//fireStimulus(),
 
 
-bool DataAcqThread::preparePositioner()
+bool DataAcqThread::preparePositioner(bool isForward)
 {
    pPositioner->clearCmd();
    int oldAxis=pPositioner->getDim();
    if(positionerType=="thor") pPositioner->setDim(1); //y axis. Todo: make it a param in cfg file
 
    // the piezo code only supports the following three lines calling pattern
-   pPositioner->addMovement(piezoStartPosUm, piezoStopPosUm, nFramesPerStack*cycleTime*1e6, 1);
-   pPositioner->addMovement(numeric_limits<double>::quiet_NaN(), piezoStartPosUm, piezoTravelBackTime*1e6, -1); //move back directly without prepare
-   pPositioner->addMovement(piezoStartPosUm, numeric_limits<double>::quiet_NaN(), 0, 0); //no movement, only stop the trigger
+   if(isBiDirectionalImaging){
+      if(isForward){
+         pPositioner->addMovement(piezoStartPosUm, piezoStopPosUm, nFramesPerStack*cycleTime*1e6, 1);
+      }
+      else {
+         pPositioner->addMovement(piezoStopPosUm, piezoStartPosUm, nFramesPerStack*cycleTime*1e6, 1);
+      }
+      pPositioner->addMovement(numeric_limits<double>::quiet_NaN(), numeric_limits<double>::quiet_NaN(), 0.05, -1); //no movement, no trigger change, just block 0.05s so camera can get its last frame
+   }//if, record on both direction
+   else {
+      pPositioner->addMovement(piezoStartPosUm, piezoStopPosUm, nFramesPerStack*cycleTime*1e6, 1);
+      pPositioner->addMovement(numeric_limits<double>::quiet_NaN(), piezoStartPosUm, piezoTravelBackTime*1e6, -1); //move back directly without prepare
+   }//else, uni-directional recording
+   pPositioner->addMovement(numeric_limits<double>::quiet_NaN(), numeric_limits<double>::quiet_NaN(), 0, 0); //no movement, only stop the trigger
 
    if(positionerType=="thor") pPositioner->setDim(oldAxis);
 
@@ -571,6 +582,9 @@ nextStack:
 
    idxCurStack++;  //post: it is #stacks we got so far
    if(idxCurStack<this->nStacks && !stopRequested){
+      if(isBiDirectionalImaging){
+         preparePositioner(idxCurStack%2==0);
+      }
       double timePerStack=nFramesPerStack*cycleTime+idleTimeBwtnStacks;
       double stackEndingTime=gTimer.read();
       double timeToWait=timePerStack*idxCurStack-stackEndingTime;

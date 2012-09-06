@@ -39,7 +39,7 @@ public:
     void startAcq();
     void stopAcq(); //note: this func call is non-blocking
 
-    bool preparePositioner();
+    bool preparePositioner(bool isForward=true);
 
     //intended camera params:
     int nStacks, 
@@ -63,6 +63,7 @@ public:
 
     //piezo params:
     double piezoStartPosUm, piezoStopPosUm; //NOTE: in um
+    bool isBiDirectionalImaging;
 
     //stimulus:
     QString stimFileContent;

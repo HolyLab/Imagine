@@ -1136,6 +1136,7 @@ void Imagine::on_btnApply_clicked()
    dataAcqThread.piezoStartPosUm=ui.doubleSpinBoxStartPos->value();
    dataAcqThread.piezoStopPosUm =ui.doubleSpinBoxStopPos->value();
    dataAcqThread.piezoTravelBackTime=ui.doubleSpinBoxPiezoTravelBackTime->value();
+   dataAcqThread.isBiDirectionalImaging=ui.cbBidirectionalImaging->isChecked();
 
    dataAcqThread.nStacks=ui.spinBoxNumOfStacks->value();
    dataAcqThread.nFramesPerStack=ui.spinBoxFramesPerStack->value();
