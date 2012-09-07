@@ -341,6 +341,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
       ui.comboBoxPreAmpGains->setEnabled(false);
       ui.comboBoxVertShiftSpeed->setEnabled(false);
       ui.comboBoxVertClockVolAmp->setEnabled(false);
+      ui.cbBaseLineClamp->setEnabled(false);
 
       ui.actionTemperature->setEnabled(false);
 
