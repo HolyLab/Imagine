@@ -380,7 +380,13 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    piezoUiParams.resize(3);//3 axes at most. TODO: support querying #dims
 
    QString buildDateStr=__DATE__;
+   //cout<<"build date is: '"<<buildDateStr.toStdString()<<"'"<<endl;
    QDate date=QDate::fromString(buildDateStr, "MMM d yyyy");
+   if(!date.isValid()) {
+      date=QDate::fromString(buildDateStr, "MMM  d yyyy");
+      assert(date.isValid());
+   }
+   //cout<<"date is: "<<date.year()<<", "<<date.month()<<","<<date.day()<<endl;
    QString ver=QString("%1%2%3")
       .arg(date.year()-2000, 1, 16)
       .arg(date.month(), 1, 16)
