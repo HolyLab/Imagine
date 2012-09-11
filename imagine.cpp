@@ -451,6 +451,8 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
           this, SLOT(onModified()));
    }
 
+   on_spinBoxSpinboxSteps_valueChanged(ui.spinBoxSpinboxSteps->value());
+
    QRect rect = QApplication::desktop()->screenGeometry();
    int x = (rect.width()-this->width()) / 2;
    int y = (rect.height()-this->height()) / 2;
@@ -1474,6 +1476,15 @@ void Imagine::on_doubleSpinBoxCurPos_valueChanged(double newValue)
    //do nothing for now
 }
 
+void Imagine::on_spinBoxSpinboxSteps_valueChanged(int newValue)
+{
+   QDoubleSpinBox* spinboxes[]={ui.doubleSpinBoxStartPos, ui.doubleSpinBoxCurPos,
+      ui.doubleSpinBoxStopPos};
+   for(auto box: spinboxes){
+      box->setSingleStep(newValue);
+   }
+}
+
 
 void Imagine::on_doubleSpinBoxBoxIdleTimeBtwnStacks_valueChanged(double newValue)
 {
@@ -1557,25 +1568,25 @@ void Imagine::on_btnRefreshPos_clicked()
 
 void Imagine::on_btnFastIncPosAndMove_clicked()
 {
-   ui.doubleSpinBoxCurPos->stepBy(10);
+   ui.doubleSpinBoxCurPos->stepBy(10*ui.spinBoxSpinboxSteps->value());
    on_btnMovePiezo_clicked();
 }
 
 void Imagine::on_btnIncPosAndMove_clicked()
 {
-   ui.doubleSpinBoxCurPos->stepBy(1);
+   ui.doubleSpinBoxCurPos->stepBy(ui.spinBoxSpinboxSteps->value());
    on_btnMovePiezo_clicked();
 }
 
 void Imagine::on_btnDecPosAndMove_clicked()
 {
-   ui.doubleSpinBoxCurPos->stepBy(-1);
+   ui.doubleSpinBoxCurPos->stepBy(-1*ui.spinBoxSpinboxSteps->value());
    on_btnMovePiezo_clicked();
 }
 
 void Imagine::on_btnFastDecPosAndMove_clicked()
 {
-   ui.doubleSpinBoxCurPos->stepBy(-10);
+   ui.doubleSpinBoxCurPos->stepBy(-10*ui.spinBoxSpinboxSteps->value());
    on_btnMovePiezo_clicked();
 }
 

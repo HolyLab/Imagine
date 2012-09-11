@@ -118,6 +118,7 @@ private slots:
         void on_tabWidgetCfg_currentChanged(int index);
         void on_comboBoxAxis_currentIndexChanged(int index);
         void on_doubleSpinBoxCurPos_valueChanged(double newValue);
+        void on_spinBoxSpinboxSteps_valueChanged(int newValue);
         void on_doubleSpinBoxBoxIdleTimeBtwnStacks_valueChanged(double newValue);
         void on_cbAutoSetPiezoTravelBackTime_stateChanged ( int state ) ;
         void readPiezoCurPos();
