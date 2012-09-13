@@ -144,13 +144,13 @@
       <x>20</x>
       <y>130</y>
       <width>362</width>
-      <height>461</height>
+      <height>481</height>
      </rect>
     </property>
     <property name="minimumSize">
      <size>
       <width>362</width>
-      <height>459</height>
+      <height>479</height>
      </size>
     </property>
     <property name="windowTitle">
@@ -169,7 +169,7 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>390</height>
+          <height>410</height>
          </size>
         </property>
         <property name="currentIndex">
@@ -796,6 +796,9 @@
           <property name="accelerated">
            <bool>true</bool>
           </property>
+          <property name="decimals">
+           <number>0</number>
+          </property>
           <property name="maximum">
            <double>1000000.000000000000000</double>
           </property>
@@ -814,6 +817,9 @@
           </property>
           <property name="accelerated">
            <bool>true</bool>
+          </property>
+          <property name="decimals">
+           <number>0</number>
           </property>
           <property name="maximum">
            <double>1000000.000000000000000</double>
@@ -884,6 +890,9 @@
           </property>
           <property name="accelerated">
            <bool>true</bool>
+          </property>
+          <property name="decimals">
+           <number>0</number>
           </property>
           <property name="minimum">
            <double>-1.000000000000000</double>
@@ -1005,7 +1014,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>310</y>
+            <y>340</y>
             <width>111</width>
             <height>21</height>
            </rect>
@@ -1024,7 +1033,7 @@
           <property name="geometry">
            <rect>
             <x>130</x>
-            <y>310</y>
+            <y>340</y>
             <width>100</width>
             <height>20</height>
            </rect>
@@ -1049,7 +1058,7 @@
           <property name="geometry">
            <rect>
             <x>240</x>
-            <y>310</y>
+            <y>340</y>
             <width>70</width>
             <height>17</height>
            </rect>
@@ -1065,7 +1074,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>275</y>
+            <y>305</y>
             <width>101</width>
             <height>16</height>
            </rect>
@@ -1078,7 +1087,7 @@
           <property name="geometry">
            <rect>
             <x>130</x>
-            <y>275</y>
+            <y>305</y>
             <width>70</width>
             <height>16</height>
            </rect>
@@ -1091,7 +1100,7 @@
           <property name="geometry">
            <rect>
             <x>240</x>
-            <y>270</y>
+            <y>300</y>
             <width>70</width>
             <height>23</height>
            </rect>
@@ -1175,7 +1184,7 @@
           <property name="geometry">
            <rect>
             <x>130</x>
-            <y>340</y>
+            <y>370</y>
             <width>141</width>
             <height>17</height>
            </rect>
@@ -1226,6 +1235,50 @@
           </property>
           <property name="value">
            <number>10</number>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_31">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>270</y>
+            <width>91</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>#decimals:</string>
+          </property>
+         </widget>
+         <widget class="QSpinBox" name="spinBoxNumOfDecimalDigits">
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>270</y>
+            <width>100</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string/>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="accelerated">
+           <bool>true</bool>
+          </property>
+          <property name="minimum">
+           <number>0</number>
+          </property>
+          <property name="maximum">
+           <number>5</number>
+          </property>
+          <property name="singleStep">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>0</number>
           </property>
          </widget>
         </widget>
