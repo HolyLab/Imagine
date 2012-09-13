@@ -1485,6 +1485,13 @@ void Imagine::on_spinBoxSpinboxSteps_valueChanged(int newValue)
    }
 }
 
+void Imagine::on_spinBoxNumOfDecimalDigits_valueChanged(int newValue)
+{
+   QDoubleSpinBox* spinboxes[]={ui.doubleSpinBoxStartPos, ui.doubleSpinBoxCurPos,
+      ui.doubleSpinBoxStopPos};
+   for_each(begin(spinboxes), end(spinboxes), [=](QDoubleSpinBox* box){
+      box->setDecimals(newValue);});
+}
 
 void Imagine::on_doubleSpinBoxBoxIdleTimeBtwnStacks_valueChanged(double newValue)
 {
