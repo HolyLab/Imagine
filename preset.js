@@ -21,9 +21,16 @@ if(rig=="hs-ocpi"){
 if(rig=="bakewell"){
    var preset={
       ///positioner's
-      startPosition:11000,
-      stopPosition: 20000,
-      initialPosition: 15000, //the position when Imagine starts.
+      if(positioner=="thor"){
+         startPosition:11000,
+         stopPosition: 20000,
+         initialPosition: 15000, //the position when Imagine starts.
+      }
+      else {
+         startPosition:200,
+         stopPosition: 600,
+         initialPosition: 500, //the position when Imagine starts.
+      }
       travelBackTime:0,
 
       ///camera's
