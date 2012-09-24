@@ -106,4 +106,5 @@ void AiThread::save(ofstream& ofsAi)
    ofsAi.write((const char*)&data[0], //note: take advantage that items in a vector are stored contiguously
       sizeof(uInt16)*data.size());
    data.clear();
+   data.shrink_to_fit();
 }
