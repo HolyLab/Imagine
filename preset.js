@@ -21,14 +21,14 @@ if(rig=="hs-ocpi"){
 if(rig=="bakewell"){
    var preset={
       ///positioner's
-      startPosition:100,
-      stopPosition:400,
-      initialPosition: 100, //the position when Imagine starts.
+      startPosition:11000,
+      stopPosition: 20000,
+      initialPosition: 15000, //the position when Imagine starts.
       travelBackTime:0,
 
       ///camera's
       numOfStacks:5,
-      framesPerStack:200,
+      framesPerStack:100,
       exposureTime:0.02,
       idleTime:0.7,
       triggerMode: "internal", //internal or external
