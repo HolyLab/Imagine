@@ -21,16 +21,9 @@ if(rig=="hs-ocpi"){
 if(rig=="bakewell"){
    var preset={
       ///positioner's
-      if(positioner=="thor"){
-         startPosition:11000,
-         stopPosition: 20000,
-         initialPosition: 15000, //the position when Imagine starts.
-      }
-      else {
-         startPosition:200,
-         stopPosition: 600,
-         initialPosition: 500, //the position when Imagine starts.
-      }
+      startPosition:200,
+      stopPosition: 600,
+      initialPosition: 500, //the position when Imagine starts.
       travelBackTime:0,
 
       ///camera's
@@ -41,6 +34,11 @@ if(rig=="bakewell"){
       triggerMode: "internal", //internal or external
       gain:24,
    };
+   if(positioner=="thor"){
+      preset.startPosition=11000;
+      preset.stopPosition= 20000;
+      preset.initialPosition= 15000; 
+   }
 }
 
 if(rig=="ocpi-1"){
