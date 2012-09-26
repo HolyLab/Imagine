@@ -262,7 +262,7 @@ public:
       
    }//dtor, NiDaqAi
 
-   //set scan rate and driver's input buffer size
+   //set scan rate and driver's input buffer size in scans
    bool cfgTiming(int scanRate, int bufSize){
       this->scanRate=scanRate;
 
@@ -270,7 +270,7 @@ public:
          scanRate,
          DAQmx_Val_Rising,
          DAQmx_Val_ContSamps,
-         bufSize
+         bufSize //the unit is scan
          ); 
 
       return !isError();
