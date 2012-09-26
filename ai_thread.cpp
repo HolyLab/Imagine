@@ -42,6 +42,8 @@ AiThread::AiThread(QObject *parent, int readBufSize, int driverBufSize, int scan
    }
    this->chanList=chanList;
 
+   ofs=nullptr;
+
    ai=nullptr;
 
    if(daq=="ni") ai=new NiDaqAi(chanList);
@@ -91,20 +93,29 @@ void AiThread::run()
          QMutexLocker locker(&mutex);
          for(int i=0; i<readBufSize*chanList.size(); ++i){
             data.push_back(readBuf[i]);
-            //todo: save periodically to avoid data becomes too big
          }//for,
+		 if(ofs) mSave(*ofs);
       }//local scope to make QMutexLocker work
    }//while, user not requested stop
 }//run()
 
-void AiThread::save(ofstream& ofsAi)
+//NOTE: lockless
+bool AiThread::mSave(ofstream& ofsAi)
 {
-   QMutexLocker locker(&mutex);
-   
-   if(data.size()==0) return;
+   if(data.size()==0) return true;
 
-   ofsAi.write((const char*)&data[0], //note: take advantage that items in a vector are stored contiguously
+   bool result=ofsAi.write((const char*)&data[0], //note: take advantage that items in a vector are stored contiguously
       sizeof(uInt16)*data.size());
    data.clear();
    data.shrink_to_fit();
+
+   return result;	
+}
+
+//same as mSave() but w/ lock
+bool AiThread::save(ofstream& ofsAi)
+{
+   QMutexLocker locker(&mutex);
+   
+   return mSave(ofsAi);
 }

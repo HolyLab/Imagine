@@ -44,10 +44,12 @@ public:
 
    bool startAcq();
    void stopAcq(); //note: this func call is blocking.
-   void save(ofstream& ofsAi);
+   bool save(ofstream& ofsAi);
+   void setOfstream(ofstream* ofs){this->ofs=ofs;}
 
 protected:
    void run();
+   bool mSave(ofstream& ofsAi);
 
 private:
    vector<Daq::sample_t> data;  //TODO: may reserve space beforehand to speed up
@@ -55,6 +57,7 @@ private:
    int driverBufSize;//driver's input buffer size
    volatile bool stopRequested;
    vector<int> chanList;
+   ofstream* ofs;
 
    QMutex mutex;
    QWaitCondition condition;
