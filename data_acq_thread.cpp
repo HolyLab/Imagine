@@ -368,7 +368,7 @@ void DataAcqThread::run_acq_and_save()
    preparePositioner(); //nec for volpiezo
 
    //prepare for AI:
-   AiThread * aiThread=new AiThread(); //TODO: set buf size and scan rate here
+   AiThread * aiThread=new AiThread(0, 10000, 50000, 50000); //TODO: set buf size and scan rate here
    ScopedPtr_g<AiThread> ttScopedPtrAiThread(aiThread,false);
 
    //after all devices are prepared, now we can save the file header:
@@ -378,11 +378,13 @@ void DataAcqThread::run_acq_and_save()
       camFilename=stackDir+"\\stack_%1_";
    }
 
-   ofstream *ofsAi=NULL;
-   FastOfstream *ofsCam=NULL;
    saveHeader(headerFilename, aiThread->ai);
-   ofsAi =new ofstream(aiFilename.toStdString().c_str(), 
+
+   ofstream *ofsAi=new ofstream(aiFilename.toStdString().c_str(), 
       ios::binary|ios::out|ios::trunc );
+   aiThread->setOfstream(ofsAi);
+
+   FastOfstream *ofsCam=NULL;
    if(!isUseSpool){
       ofsCam=new FastOfstream(camFilename.toStdString().c_str() );
       assert(*ofsCam);
