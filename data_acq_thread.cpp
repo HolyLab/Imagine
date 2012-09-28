@@ -598,11 +598,16 @@ nextStack:
          nOverrunStacks++;
          emit newLogMsgReady("WARNING: overrun(current stack): idle time is too short.");
       }
+    
+	  int maxWaitTime=2; //the frequency to check stop signal
+repeatWait:
+	  timeToWait=timePerStack*idxCurStack-gTimer.read();
       if(timeToWait>0.01){
-         QThread::msleep(timeToWait*1000); // *1000: sec -> ms
+         QThread::msleep(min(maxWaitTime,timeToWait)*1000); // *1000: sec -> ms
       }//if, need wait more than 10ms
+	  if(timeToWait>maxWaitTime && !stopRequested) goto repeatWait;
 
-      goto nextStack;
+	  if(!stopRequested) goto nextStack;
    }//if, there're more stacks and no stop requested
 
 
