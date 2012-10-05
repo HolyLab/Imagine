@@ -28,7 +28,6 @@ private:
 	int USBID; // ID of the E-861 controller USB port
 	char szAxis[4]; // Axis information of the piezo stage
 
-	double magicActFrom;
 	double magicAcc;
 
 	struct RecordedPositions { // Struct for storing the actualPositions recorded by PI Piezo
@@ -94,6 +93,14 @@ protected:
 	bool moving(const double to); // Move with Non-trigger & destination-checking
 	bool Triggering(const int i); // Pure triggering
 	bool setTrigger(const int trigger); // Change the trigger signal
+
+private:
+	bool isBiDirectionalImaging;
+	int pCount;
+public:
+	void setScanType(const bool b); // true: bi-dir, false: uni-dir (default)
+	bool getScanType();
+	void setPCount();
 };
 
 #endif // PIEZO_CONTROLLER_HPP

@@ -197,17 +197,18 @@ bool DataAcqThread::preparePositioner(bool isForward)
 
    // the piezo code only supports the following three lines calling pattern
    if(isBiDirectionalImaging){
+	  pPositioner->setScanType(isBiDirectionalImaging);
       if(isForward){
          pPositioner->addMovement(piezoStartPosUm, piezoStopPosUm, nFramesPerStack*cycleTime*1e6, 1);
       }
       else {
          pPositioner->addMovement(piezoStopPosUm, piezoStartPosUm, nFramesPerStack*cycleTime*1e6, 1);
       }
-      pPositioner->addMovement(numeric_limits<double>::quiet_NaN(), numeric_limits<double>::quiet_NaN(), 0.05, -1); //no movement, no trigger change, just block 0.05s so camera can get its last frame
+      pPositioner->addMovement(numeric_limits<double>::quiet_NaN(), numeric_limits<double>::quiet_NaN(), 0.05*1e6, -1); //no movement, no trigger change, just block 0.05s so camera can get its last frame
    }//if, record on both direction
    else {
       pPositioner->addMovement(piezoStartPosUm, piezoStopPosUm, nFramesPerStack*cycleTime*1e6, 1);
-      pPositioner->addMovement(numeric_limits<double>::quiet_NaN(), piezoStartPosUm, piezoTravelBackTime*1e6, -1); //move back directly without prepare
+	  pPositioner->addMovement(piezoStopPosUm, piezoStartPosUm, piezoTravelBackTime*1e6, -1); //move back directly without prepare
    }//else, uni-directional recording
    pPositioner->addMovement(numeric_limits<double>::quiet_NaN(), numeric_limits<double>::quiet_NaN(), 0, 0); //no movement, only stop the trigger
 

@@ -39,8 +39,8 @@ public:
 
    //// cmd related:
    virtual bool addMovement(double from, double to, double duration, int trigger); 
-      //from: if NaN, from=last movement's "to" position (but if no "last movement": cur pos)
-      //to: if NaN, don't move;
+      //from:
+      //to:
       //duration: 0 means asap;
       //trigger: 1 on, 0 off, otherwise no change
    virtual void clearCmd(); // clear the movement sequence
@@ -53,6 +53,8 @@ public:
    virtual bool runCmd()=0;  //NOTE: this is repeatable (i.e. once prepared, you can run same cmd more than once)
    virtual bool waitCmd()=0; // wait forever until the movement sequence finishes
    virtual bool abortCmd()=0;// stop it as soon as possible
+   virtual void setScanType(const bool b);
+   virtual bool getScanType();
 };//class, Positioner
 
 #endif //POSITIONER_HPP
