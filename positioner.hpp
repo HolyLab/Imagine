@@ -55,6 +55,7 @@ public:
    virtual bool abortCmd()=0;// stop it as soon as possible
    virtual void setScanType(const bool b) {};
    virtual bool getScanType() {return false;}
+   virtual void setPCount() {};
 };//class, Positioner
 
 #endif //POSITIONER_HPP
