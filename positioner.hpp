@@ -53,8 +53,8 @@ public:
    virtual bool runCmd()=0;  //NOTE: this is repeatable (i.e. once prepared, you can run same cmd more than once)
    virtual bool waitCmd()=0; // wait forever until the movement sequence finishes
    virtual bool abortCmd()=0;// stop it as soon as possible
-   virtual void setScanType(const bool b);
-   virtual bool getScanType();
+   virtual void setScanType(const bool b) {};
+   virtual bool getScanType() {return false;}
 };//class, Positioner
 
 #endif //POSITIONER_HPP
