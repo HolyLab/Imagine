@@ -587,7 +587,9 @@ nextStack:
    idxCurStack++;  //post: it is #stacks we got so far
    if(idxCurStack<this->nStacks && !stopRequested){
       if(isBiDirectionalImaging){
+         cout<<"b4 preparePositioner: "<<gTimer.read()<<endl;
          preparePositioner(idxCurStack%2==0);
+         cout<<"after preparePositioner: "<<gTimer.read()<<endl;
       }
       double timePerStack=nFramesPerStack*cycleTime+idleTimeBwtnStacks;
       double stackEndingTime=gTimer.read();
