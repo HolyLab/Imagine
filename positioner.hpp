@@ -21,7 +21,7 @@ protected:
    };
    vector<Movement* > movements;
    string lastErrorMsg;
-   int dim; //dim that minPos, maxPos, curPos, moveTo, addMovement work on. 0 is x-axis.
+   int dim; //dim that minPos, maxPos, curPos, moveTo, addMovement work on. 0 is x-axis, 1 is y-axis.
 
 public:
    Positioner(){setDim(0);}

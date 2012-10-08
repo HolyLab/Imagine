@@ -27,16 +27,16 @@ public:
 	// Members related to the X axis (CHAN1 axis)
 public:
 	bool moveToX(const double to); // Move to any absolute position on the X axis
+	bool moveToY(const double to); // Move to position in range within on the Y axis
 	
 	// Members related to the Y axis (CHAN2 axis)
 private:	
 	const double lowPosLimit; // Lower limit of the moving range. Unit: 1.0E-6 meter
-	const double upPosLimit; // Up limit of the moving range
+	const double upPosLimit; // Up limit of the moving range for Y-axis
 	const double maxVelocity; // Maximum velocity
 	const double maxAcceleration; // Maximum acceleration
 	const double micro; // Const parameter for unit conversion
 
-	double magicActFrom;
 	double magicAcc;
 	
 	struct actMovement { // Actual "from & to" of each current movement 
@@ -74,7 +74,7 @@ public:
 	bool run(const int i);
 	bool wait(const int i);
 
-	bool setReturnFlag(const bool i);
+	void setReturnFlag(const bool i);
 	bool getReturnFlag();
 
 };
