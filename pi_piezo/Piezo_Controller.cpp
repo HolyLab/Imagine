@@ -515,6 +515,7 @@ void Piezo_Controller::runMovements()
 		double to = (*this->movements[i]).to;
 
 		printf(" Inside of runMovement: %d %f %f %d %d %d \n", i, from, to, _isnan(from), _isnan(to), (*this->movements[i]).trigger);
+		std::cout<<"%%%%%%%%  1 : "<<gTimer.read()<<std::endl;
 
 		if(_isnan(from) && _isnan(to)) {
 			if(!Triggering(i)) {
@@ -596,6 +597,8 @@ bool Piezo_Controller::prepare(const int i)
 
 bool Piezo_Controller::run(const int i)
 {
+	std::cout<<"%%%%%%%%  4 : "<<gTimer.read()<<std::endl;
+
 	double actTo;
 	if(i == 0)
 		actTo = this->oneActMovement.actTo;
@@ -603,6 +606,7 @@ bool Piezo_Controller::run(const int i)
 		actTo = this->oneActMovement.actFrom;
 
 	if(Qmoving(actTo)) { // Move to "actTo" and retun immediately
+		std::cout<<"%%%%%%%%  5 : "<<gTimer.read()<<std::endl;
 		return true;
 	}
 	else {
@@ -613,6 +617,8 @@ bool Piezo_Controller::run(const int i)
 
 bool Piezo_Controller::wait(const int i)
 {	
+	std::cout<<"%%%%%%%%  6 : "<<gTimer.read()<<std::endl;
+
 	double from = (*this->movements[i]).from;
 	double to = (*this->movements[i]).to;
 	int trigger = (*this->movements[i]).trigger;
@@ -643,6 +649,7 @@ bool Piezo_Controller::wait(const int i)
 	}
 	// boost::this_thread::interruption_point(); // abort the current waiting process if requested
 
+	/*
 	if(!MovingStatus && i == 0) {
 		// load the recorded position data and save into memory only when i == 0
 		int recordTableId[] = {1};
@@ -657,6 +664,10 @@ bool Piezo_Controller::wait(const int i)
 		// save the recorded position data
 		recordPositionVector.push_back(new RecordedPositions(recordData));
 	}
+	*/
+
+	std::cout<<"%%%%%%%%  7 : "<<gTimer.read()<<std::endl;
+	
 	return true;
 }
 
