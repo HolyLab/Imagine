@@ -633,6 +633,8 @@ bool Piezo_Controller::wait(const int i)
 			if(PI_qPOS(this->USBID, &this->szAxis[0], &CurrentPos)) { // Inquire the current piezo stage position
 				CurrentPos = CurrentPos * this->micro;
 				if( (CurrentPos < to && CurrentPos > from) || (CurrentPos > to && CurrentPos < from) ) {
+					std::cout<<"%%%%%%%%  b point : "<<gTimer.read()<<std::endl;
+
 					if((trigger == 1) || (trigger == 0))
 						if(!setTrigger(trigger)) return false;				
 					trigStatus = 1;
@@ -711,6 +713,7 @@ bool Piezo_Controller::moving(const double to)
 
 bool Piezo_Controller::Triggering(const int i)
 {
+	std::cout<<"%%%%%%%%  8 : "<<gTimer.read()<<std::endl;
 	// Triggering
 	int trigger = (*this->movements[i]).trigger;
 	if((trigger == 0) || (trigger == 1)) {
@@ -727,6 +730,7 @@ bool Piezo_Controller::Triggering(const int i)
 		while(clock() < endwait) {}
 	}
 
+	std::cout<<"%%%%%%%%  9 : "<<gTimer.read()<<std::endl;
 	return true;
 }
 
