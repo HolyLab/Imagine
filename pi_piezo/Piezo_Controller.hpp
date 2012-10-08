@@ -42,7 +42,9 @@ private:
 	struct actMovement // Actual "from & to" of each current movement 
 	{
 		double actFrom,
-			actTo;
+			actTo,
+			vel,
+			acc;
 	} oneActMovement;
 
 	boost::thread workerThread; // workerThread for runCmd()

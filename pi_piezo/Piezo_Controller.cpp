@@ -263,12 +263,10 @@ bool Piezo_Controller::testCmd()
 	double from = (*this->movements[i]).from;
 	double to = (*this->movements[i]).to;
 	double duration = (*this->movements[i]).duration;
-	int trigger = (*this->movements[i]).trigger;
 
 	double Velocity = abs(to - from) / (duration / this->micro / this->micro); // Unit micrometre / second
 	this->magicAcc = this->ParaAccr; // Acceleration rate during A->B
 	double Acceleration = this->magicAcc; // Unit micrometre / second^2
-	double Deceleration = Acceleration;
 
 	double Length = this->ParaLnth * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
 	double actFrom, actTo; // The actual from & to of each movement
@@ -280,8 +278,8 @@ bool Piezo_Controller::testCmd()
 		actFrom = from + Length;
 		actTo = to - Length;
 	}
-	oneActMovement.actFrom = actFrom;
-	oneActMovement.actTo = actTo;
+	this->oneActMovement.actFrom = actFrom;
+	this->oneActMovement.actTo = actTo;
 
 	// Test the variables
 	if((from < this->lowPosLimit) || (from > this->upPosLimit)) {
@@ -310,37 +308,45 @@ bool Piezo_Controller::testCmd()
 
 bool Piezo_Controller::prepareCmd()
 {
+	/*
 	if(!checkControllerReady()) {
-		this->lastErrorMsg = "The controller is NOT ready.";
-		return false;
+	this->lastErrorMsg = "The controller is NOT ready.";
+	return false;
 	}
 	if(!haltAxisMotion()) {
-		this->lastErrorMsg = "The axis is STILL moving.";
-		return false;
+	this->lastErrorMsg = "The axis is STILL moving.";
+	return false;
 	}
+	*/
 
 	// Move the piezo stage to the "actFrom"
-	double actFrom = this->oneActMovement.actFrom;
-	if(!moveTo(actFrom)) return false;
-
 	// Set the velocity & acceleration for the bi-dir scanning, execute only ONCE
-	//if (this->getScanType() && (this->pCount == 1)) {
-	if (this->getScanType()) {
-		this->setScanType(false);
-		if(!prepare(0)) {
-			this->lastErrorMsg = "The prepare() in prepareCmd fails.";
-			return false;
+
+	if (this->pCount == 1) {
+		double actFrom = this->oneActMovement.actFrom;
+		if(!moveTo(actFrom)) return false;
+
+		if(getScanType()) {
+			setScanType(false);
+			if(!prepare(0)) {
+				this->lastErrorMsg = "The prepare() in prepareCmd fails.";
+				return false;
+			}
+			setScanType(true);
 		}
-		this->setScanType(true);
+
 		this->pCount = 0;
 	}
 
+
 	// Set the piezo position record rate
+	/*
 	int duration = static_cast<int>((*this->movements[0]).duration); // Time in micro second
 	int recordRate = duration / 50 / 1024;
 	if (!PI_RTR(this->USBID, recordRate)) {
-		printf("ERROR: The setting of the position recorder rate fails. \n");
+	printf("ERROR: The setting of the position recorder rate fails. \n");
 	}
+	*/
 
 	return true;
 }
@@ -555,7 +561,6 @@ bool Piezo_Controller::prepare(const int i)
 
 		double Length = this->ParaLnth * Velocity * Velocity / Acceleration; // Extra travel length for acceleration
 		double actFrom, actTo; // The actual from & to of each movement
-
 		if(from <= to) {		
 			actFrom = from - Length;
 			actTo = to + Length;
