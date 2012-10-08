@@ -366,6 +366,8 @@ void DataAcqThread::run_acq_and_save()
    //get the real params used by the camera:
    cycleTime=camera.getCycleTime();
 
+   pPositioner->setPCount();
+
    preparePositioner(); //nec for volpiezo
 
    //prepare for AI:
