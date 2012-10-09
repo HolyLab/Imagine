@@ -371,7 +371,7 @@ void DataAcqThread::run_acq_and_save()
    preparePositioner(); //nec for volpiezo
 
    //prepare for AI:
-   AiThread * aiThread=new AiThread(0, 10000, 50000, 50000); //TODO: set buf size and scan rate here
+   AiThread * aiThread=new AiThread(0, 10000, 50000, 10000);
    ScopedPtr_g<AiThread> ttScopedPtrAiThread(aiThread,false);
 
    //after all devices are prepared, now we can save the file header:
