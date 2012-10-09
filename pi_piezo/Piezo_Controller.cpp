@@ -322,17 +322,24 @@ bool Piezo_Controller::prepareCmd()
 	// Move the piezo stage to the "actFrom"
 	// Set the velocity & acceleration for the bi-dir scanning, execute only ONCE
 
-	if (this->pCount == 1) {
-		double actFrom = this->oneActMovement.actFrom;
-		if(!moveTo(actFrom)) return false;
+	if(this->pCount == 1) {
+		double from = (*this->movements[0]).from;
+		double to = (*this->movements[0]).to;
+		if(abs(from - to) < 1.0) { // Special case: no-motion scanning
+			if(!moveTo(from)) return false;
+		}
+		else { // General case:
+			double actFrom = this->oneActMovement.actFrom;
+			if(!moveTo(actFrom)) return false;
 
-		if(getScanType()) {
-			setScanType(false);
-			if(!prepare(0)) {
-				this->lastErrorMsg = "The prepare() in prepareCmd fails.";
-				return false;
+			if(getScanType()) {
+				setScanType(false);
+				if(!prepare(0)) {
+					this->lastErrorMsg = "The prepare() in prepareCmd fails.";
+					return false;
+				}
+				setScanType(true);
 			}
-			setScanType(true);
 		}
 
 		this->pCount = 0;
@@ -547,6 +554,12 @@ void Piezo_Controller::runMovements()
 
 bool Piezo_Controller::prepare(const int i)
 {
+	// Special case: from = to
+	double from = (*this->movements[i]).from;
+	double to = (*this->movements[i]).to;
+	if(abs(from - to) < 1.0) return true;
+
+	// General case:
 	if(i == 0) { // For both types of scanning
 		std::cout<<"%%%%%%%%  2 : "<<gTimer.read()<<std::endl;
 
@@ -599,6 +612,12 @@ bool Piezo_Controller::run(const int i)
 {
 	std::cout<<"%%%%%%%%  4 : "<<gTimer.read()<<std::endl;
 
+	// Special case:
+	double from = (*this->movements[i]).from;
+	double to = (*this->movements[i]).to;
+	if(abs(from - to) < 1.0) return true;
+
+	// General case:
 	double actTo;
 	if(i == 0)
 		actTo = this->oneActMovement.actTo;
@@ -619,6 +638,19 @@ bool Piezo_Controller::wait(const int i)
 {	
 	std::cout<<"%%%%%%%%  6 : "<<gTimer.read()<<std::endl;
 
+	// Special case:
+	double from = (*this->movements[i]).from;
+	double to = (*this->movements[i]).to;
+	if(abs(from - to) < 1.0) {
+		double duration = (*this->movements[i]).duration;
+		if(duration > 0.0) {
+			clock_t endwait = clock () + long(duration / this->micro / this->micro * double(CLOCKS_PER_SEC));
+			while(clock() < endwait) {}
+		}
+		return true;
+	}
+
+	// General case:
 	double from = (*this->movements[i]).from;
 	double to = (*this->movements[i]).to;
 	int trigger = (*this->movements[i]).trigger;
@@ -653,23 +685,23 @@ bool Piezo_Controller::wait(const int i)
 
 	/*
 	if(!MovingStatus && i == 0) {
-		// load the recorded position data and save into memory only when i == 0
-		int recordTableId[] = {1};
-		int numRecordTable = 1;
-		int startIdx = 1;
-		int numDatas = 1024;
-		double recordData[1024];
-		if (!PI_qDRR_SYNC(this->USBID, 1, startIdx, numDatas, recordData)) {
-			printf("ERROR: The read of recorded position data fails. \n");
-			return false;
-		}
-		// save the recorded position data
-		recordPositionVector.push_back(new RecordedPositions(recordData));
+	// load the recorded position data and save into memory only when i == 0
+	int recordTableId[] = {1};
+	int numRecordTable = 1;
+	int startIdx = 1;
+	int numDatas = 1024;
+	double recordData[1024];
+	if (!PI_qDRR_SYNC(this->USBID, 1, startIdx, numDatas, recordData)) {
+	printf("ERROR: The read of recorded position data fails. \n");
+	return false;
+	}
+	// save the recorded position data
+	recordPositionVector.push_back(new RecordedPositions(recordData));
 	}
 	*/
 
 	std::cout<<"%%%%%%%%  7 : "<<gTimer.read()<<std::endl;
-	
+
 	return true;
 }
 
