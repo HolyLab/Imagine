@@ -651,8 +651,6 @@ bool Piezo_Controller::wait(const int i)
 	}
 
 	// General case:
-	double from = (*this->movements[i]).from;
-	double to = (*this->movements[i]).to;
 	int trigger = (*this->movements[i]).trigger;
 
 	BOOL MovingStatus = true;
