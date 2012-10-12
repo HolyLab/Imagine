@@ -20,6 +20,7 @@
 #include <fstream>
 #include <vector>
 #include <utility>
+#include <memory>
 
 using namespace std;
 
@@ -372,7 +373,7 @@ void DataAcqThread::run_acq_and_save()
 
    //prepare for AI:
    AiThread * aiThread=new AiThread(0, 10000, 50000, 10000);
-   ScopedPtr_g<AiThread> ttScopedPtrAiThread(aiThread,false);
+   unique_ptr<AiThread> uniPtrAiThread(aiThread);
 
    //after all devices are prepared, now we can save the file header:
    QString stackDir=replaceExtName(camFilename, "stacks");
