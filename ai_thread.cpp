@@ -17,11 +17,11 @@
 
 #include <math.h>
 #include <fstream>
- 
+#include <memory>
+
 using namespace std;
 
 #include "ai_thread.hpp"
-#include "scoped_ptr_g.hpp"
 #include "dummy_daq.hpp"
 #include "ni_daq_g.hpp"
 
@@ -84,8 +84,8 @@ void AiThread::stopAcq()
 void AiThread::run()
 {
    uInt16* readBuf=new uInt16[readBufSize*chanList.size()];
-   ScopedPtr_g<uInt16> ttScopedPtr(readBuf, true);
    //ScopedPtr_g<uInt16>(readBuf, true); //note: unamed temp var will be free at cur line
+   unique_ptr<uInt16[]> ttScopedPtr(readBuf);
 
    while(!stopRequested){
       ai->read(readBufSize, readBuf);
