@@ -89,13 +89,15 @@ void AiThread::run()
 
    while(!stopRequested){
       ai->read(readBufSize, readBuf);
-      {//local scope to make QMutexLocker work
-         QMutexLocker locker(&mutex);
+      {//local scope to make auto-unlock work
+         unique_ptr<QMutex, void(*)(QMutex*)> locker(&mutex, [](QMutex* m){m->unlock();});
+         mutex.lock();
+
          for(int i=0; i<readBufSize*chanList.size(); ++i){
             data.push_back(readBuf[i]);
          }//for,
-		 if(ofs) mSave(*ofs);
-      }//local scope to make QMutexLocker work
+	 if(ofs) mSave(*ofs);
+      }//local scope to make auto-unlock work
    }//while, user not requested stop
 }//run()
 
