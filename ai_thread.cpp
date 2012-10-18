@@ -18,6 +18,7 @@
 #include <math.h>
 #include <fstream>
 #include <memory>
+#include <functional>
 
 using namespace std;
 
@@ -117,7 +118,9 @@ bool AiThread::mSave(ofstream& ofsAi)
 //same as mSave() but w/ lock
 bool AiThread::save(ofstream& ofsAi)
 {
-   QMutexLocker locker(&mutex);
+   //QMutexLocker locker(&mutex);
+   unique_ptr<QMutex, std::function<void(QMutex*)>> locker(&mutex, [](QMutex* m){m->unlock();});
+   mutex.lock();
    
    return mSave(ofsAi);
 }
