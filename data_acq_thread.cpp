@@ -390,7 +390,7 @@ void DataAcqThread::run_acq_and_save()
 
    FastOfstream *ofsCam=NULL;
    if(!isUseSpool){
-      ofsCam=new FastOfstream(camFilename.toStdString().c_str() );
+      ofsCam=new FastOfstream(camFilename.toStdString());
       assert(*ofsCam);
    }
 

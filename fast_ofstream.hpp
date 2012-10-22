@@ -45,7 +45,7 @@ public:
    class EAllocBuf{};
 
    //@param bufsize default 64M
-   FastOfstream(const char* filename, int bufsize_in_4kb=65536/4){
+   FastOfstream(const string& filename, int bufsize_in_4kb=65536/4){
       allBuf=nullptr;
       hFile=INVALID_HANDLE_VALUE;
       isGood=false;
@@ -59,7 +59,7 @@ public:
       if(!allBuf) throw EAllocBuf();
       buf=allBuf; //initially, cur buf is the first one
 
-      hFile=CreateFileA(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 
+      hFile=CreateFileA(filename.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 
          FILE_ATTRIBUTE_NORMAL|FILE_FLAG_NO_BUFFERING,
          NULL);
       if(hFile==INVALID_HANDLE_VALUE){
