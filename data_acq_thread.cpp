@@ -37,7 +37,6 @@ using namespace std;
 #include "timer_g.hpp"
 #include "ni_daq_g.hpp"
 #include "ai_thread.hpp"
-#include "scoped_ptr_g.hpp"
 #include "fast_ofstream.hpp"
 #include "positioner.hpp"
 #include "Piezo_Controller.hpp"
@@ -402,6 +401,7 @@ void DataAcqThread::run_acq_and_save()
    int nPixels=imageW*imageH;
    //Camera::PixelValue * frame=new Camera::PixelValue[nPixels];
    Camera::PixelValue * frame=(Camera::PixelValue*)_aligned_malloc(sizeof(Camera::PixelValue)*nPixels, 4*1024);
+   unique_ptr<Camera::PixelValue, decltype(_aligned_free)*> uniPtrFrame(frame, _aligned_free);
 
    idxCurStack=0;
 
@@ -622,9 +622,6 @@ repeatWait:
       int postSeqStim=0; //TODO: get this value from stim file header
       fireStimulus(postSeqStim);  
    }
-
-   //delete frame;  //TODO: use scoped ptr
-   _aligned_free(frame);
 
    aiThread->stopAcq();
    aiThread->save(*ofsAi);
