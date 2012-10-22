@@ -385,6 +385,7 @@ void DataAcqThread::run_acq_and_save()
 
    ofstream *ofsAi=new ofstream(aiFilename.toStdString().c_str(), 
       ios::binary|ios::out|ios::trunc );
+   unique_ptr<ofstream> uniPtrOfsAi(ofsAi);
    aiThread->setOfstream(ofsAi);
 
    FastOfstream *ofsCam=NULL;
@@ -633,7 +634,6 @@ repeatWait:
    }
 
    ofsAi->close();
-   delete ofsAi;    //TODO: use scoped ptr
 
    //camera.stopAcq();
 
