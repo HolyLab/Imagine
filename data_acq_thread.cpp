@@ -252,6 +252,7 @@ void DataAcqThread::run_live()
    int imageH=camera.getImageHeight();
    int nPixels=imageW*imageH;
    Camera::PixelValue * frame=new Camera::PixelValue[nPixels];
+   unique_ptr<Camera::PixelValue[]> uniPtrFrame(frame);
 
    Timer_g timer;
    timer.start();
@@ -300,7 +301,6 @@ void DataAcqThread::run_live()
 
    camera.stopAcq(); //TODO: check return value
 
-   delete frame;  //TODO: use scoped ptr
 
    QString ttMsg="Live mode is stopped";
    emit newStatusMsgReady(ttMsg);
