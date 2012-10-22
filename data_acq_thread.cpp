@@ -383,8 +383,7 @@ void DataAcqThread::run_acq_and_save()
 
    saveHeader(headerFilename, aiThread->ai);
 
-   ofstream *ofsAi=new ofstream(aiFilename.toStdString().c_str(), 
-      ios::binary|ios::out|ios::trunc );
+   ofstream *ofsAi=new ofstream(aiFilename.toStdString(), ios::binary|ios::out|ios::trunc );
    unique_ptr<ofstream> uniPtrOfsAi(ofsAi);
    aiThread->setOfstream(ofsAi);
 
