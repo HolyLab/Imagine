@@ -56,6 +56,7 @@ public:
     Camera::TriggerMode triggerMode;
     int hstart, hend, vstart, vend; //binning params
     int angle;
+    double umPerPxlXy;
 
     QString preAmpGain, horShiftSpeed, verShiftSpeed; //for the purpose of saving in header only
 

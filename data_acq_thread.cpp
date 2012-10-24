@@ -162,7 +162,7 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
       <<"frames per stack="<<nFramesPerStack<<endl
       <<"pixel data type=uint16"<<endl    //bits per pixel
       <<"camera="<<camera.getModel()<<endl 
-      <<"um per pixel=-1"<<endl //TODO:
+      <<"um per pixel="<<umPerPxlXy<<endl 
       <<"binning="<<"hbin:"<<camera.hbin
       <<";vbin:"<<camera.vbin
       <<";hstart:"<<camera.hstart
