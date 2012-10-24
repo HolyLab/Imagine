@@ -53,8 +53,9 @@ public:
     int verShiftSpeedIdx;
     int verClockVolAmp;
     bool isBaselineClamp;
-    AndorCamera::TriggerMode triggerMode;
+    Camera::TriggerMode triggerMode;
     int hstart, hend, vstart, vend; //binning params
+    int angle;
 
     QString preAmpGain, horShiftSpeed, verShiftSpeed; //for the purpose of saving in header only
 

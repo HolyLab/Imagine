@@ -1175,6 +1175,8 @@ void Imagine::on_btnApply_clicked()
    dataAcqThread.vstart=camera.vstart=ui.spinBoxVstart->value();
    dataAcqThread.vend  =camera.vend  =ui.spinBoxVend  ->value();
 
+   dataAcqThread.angle =ui.spinBoxAngle->value();
+
    //enforce #nBytesPerFrame is x times of 16
    int nBytesPerFrame=camera.getImageWidth()*camera.getImageHeight()*2; //todo: hardcoded 2
    if(nBytesPerFrame%16) {
