@@ -209,8 +209,8 @@ bool Actuator_Controller::testCmd()
 			"Please change the camera & position settings accordingly. \n");
 		return false;
 	}
-	else if (Velocity < 100.0) { // the lower limit of Bakewell Stage velocity, 0.1 mm/s
-		printf("Error: The calculated stage movement velocity is less than 0.1 mm/s, the minimum allowed velocity. "
+	else if (Velocity < 40.0) { // the lower limit of Bakewell Stage velocity, 0.04 mm/s
+		printf("Error: The calculated stage movement velocity is less than 0.04 mm/s, the minimum allowed velocity. "
 			"The stage velocity is equal to (the travel length / the travel time). "
 			"Please change the camear & position settings accordingly. \n");
 		return false;
