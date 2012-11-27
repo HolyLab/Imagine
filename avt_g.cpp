@@ -338,7 +338,7 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
    }
 
    ///trigger for frame
-   errorCode=PvAttrEnumSet(cameraHandle,"FrameStartTriggerMode","Freerun");
+   errorCode=PvAttrEnumSet(cameraHandle,"FrameStartTriggerMode","FixedRate");
    if(errorCode!=ePvErrSuccess){
       errorMsg="error when set frame trigger mode";
       return false;
@@ -362,6 +362,12 @@ bool AvtCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
       errorCode=PvAttrEnumSet(cameraHandle,"AcquisitionMode","MultiFrame"); 
 
       //PvAttrEnumSet(cameraHandle,"AcquisitionMode","Continuous");
+   }
+
+   errorCode=PvAttrFloat32Set(cameraHandle,"FrameRate", 1/exposure);
+   if(errorCode!=ePvErrSuccess){
+      errorMsg="error when set frame rate";
+      return false;
    }
 
    tPvFloat32 frameRate=-1;
