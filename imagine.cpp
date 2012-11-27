@@ -1207,7 +1207,8 @@ void Imagine::on_btnApply_clicked()
    //TODO: temp
    L=-1;
 
-   paramOK=camera.setAcqParams(dataAcqThread.gain,
+   for(int i=0; i<2; ++i){
+     paramOK=camera.setAcqParams(dataAcqThread.gain,
                        dataAcqThread.preAmpGainIdx,
                        dataAcqThread.horShiftSpeedIdx,
                        dataAcqThread.verShiftSpeedIdx,
@@ -1219,16 +1220,19 @@ void Imagine::on_btnApply_clicked()
       goto skip;
    }
    
-   paramOK=camera.setAcqModeAndTime(Camera::eLive,
+      paramOK=camera.setAcqModeAndTime(Camera::eLive,
                             dataAcqThread.exposureTime, 
                             dataAcqThread.nFramesPerStack,
                             Camera::eInternalTrigger  //use internal trigger
                             );
+      dataAcqThread.cycleTime=camera.getCycleTime();
    updateStatus(QString("Camera: applied params: ")+camera.getErrorMsg().c_str());
    if(!paramOK) goto skip;
+   }
 
    //get the real params used by the camera:
    dataAcqThread.cycleTime=camera.getCycleTime();
+   cout<<"cycle time is: "<<dataAcqThread.cycleTime<<endl;
    if(!dataAcqThread.preparePositioner()){
       paramOK=false;
       QString msg=QString("Positioner: applied params failed: ")+pPositioner->getLastErrorMsg().c_str();
