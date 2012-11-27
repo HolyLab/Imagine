@@ -1195,6 +1195,15 @@ void Imagine::on_btnApply_clicked()
       return;
    }
 
+   if(camera.vendor=="avt"){
+      if(dataAcqThread.exposureTime<1/57.0){
+         QMessageBox::critical(this, "Imagine", "exposure time is too small."
+            , QMessageBox::Ok, QMessageBox::NoButton);
+
+         return;
+	  }
+   }
+
    //TODO: temp
    L=-1;
 
