@@ -657,6 +657,10 @@ repeatWait:
       }
    }
 
+   ///reset the actuator to its exact starting pos
+   emit newStatusMsgReady("Now resetting the actuator to its exact starting pos ...");
+   emit resetActuatorPosReady();
+
    QString ttMsg="Acquisition is done";
    if(stopRequested) ttMsg+=" (User requested STOP)";
    emit newStatusMsgReady(ttMsg);

@@ -409,6 +409,8 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    connect(&dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
                         this, SLOT(updateDisplay(const QByteArray &, long, int, int)));
 
+   connect(&dataAcqThread, SIGNAL(resetActuatorPosReady()),
+                            this, SLOT(on_btnMoveToStartPos_clicked()));
    
    //mouse events on image
    connect(ui.labelImage, SIGNAL(mousePressed(QMouseEvent*)),
@@ -1226,7 +1228,7 @@ void Imagine::on_btnApply_clicked()
                             Camera::eInternalTrigger  //use internal trigger
                             );
       dataAcqThread.cycleTime=camera.getCycleTime();
-   updateStatus(QString("Camera: applied params: ")+camera.getErrorMsg().c_str());
+      updateStatus(QString("Camera: applied params: ")+camera.getErrorMsg().c_str());
    if(!paramOK) goto skip;
    }
 

@@ -86,6 +86,7 @@ signals:
     void newStatusMsgReady(const QString &str);
     void newLogMsgReady(const QString &str);
     void imageDataReady(const QByteArray &data16, long idx, int imageW, int imageH);
+    void resetActuatorPosReady();
 
 protected:
     void run();
