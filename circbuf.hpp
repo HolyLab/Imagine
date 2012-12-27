@@ -10,6 +10,8 @@
      head's range is [0 cap), so % is not used and cap doesn't have to be power of 2 to speed up %; also no overflow isue.
      so [8 x) ==> [0 x-8)
    The other way: head's range is [0, inf) so code is very simple.
+
+   Alternatively, you can use the pair {head,size} to specify the range (tail=head+size;).
 */
 class CircularBuf {
    int head,tail,cap; //we could add one more field "size" but it's not nec. But when use semaphore, a "size" field is used implicitly.
