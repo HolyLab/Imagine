@@ -6,8 +6,10 @@ using namespace std;
 #include <QtDebug>
 
 #include "abstractserial.h"
+#include "ni_daq_g.hpp"
 
 AbstractSerial *port;
+extern DaqDo * digOut;
 
 bool openShutterDevice(const QString& dev)
 {
@@ -112,4 +114,11 @@ bool setShutterStatus(int line, bool isOpen)
    return true;
 }//setShutterStatus(),
 
+//NOTE: line: 0-based numbering
+bool setDio(int line, bool isOpen)
+{
+   digOut->updateOutputBuf(line, isOpen);
+   digOut->write();
 
+   return true;
+}

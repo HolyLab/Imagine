@@ -8,6 +8,7 @@
 bool openShutterDevice(const QString& dev);
 bool closeShutterDevice();
 bool setShutterStatus(int line, bool status);
+bool setDio(int line, bool status);
 
 inline QScriptValue openShutterDeviceWrapper(QScriptContext *context, QScriptEngine *se)
 {
@@ -26,5 +27,13 @@ inline QScriptValue setShutterStatusWrapper(QScriptContext *context, QScriptEngi
    bool status = context->argument(1).toBool();
    return QScriptValue(se, setShutterStatus(line, status));
 }
+
+inline QScriptValue setDioWrapper(QScriptContext *context, QScriptEngine *se)
+{
+   int line = context->argument(0).toInt32();
+   bool status = context->argument(1).toBool();
+   return QScriptValue(se, setDio(line, status));
+}
+
 
 #endif //SHUTTERCTRL_H

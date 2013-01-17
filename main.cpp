@@ -120,6 +120,8 @@ int main(int argc, char *argv[])
    se->globalObject().setProperty("closeShutterDevice", svRunClosedev); 
    QScriptValue svRunSetShutter = se->newFunction(setShutterStatusWrapper);
    se->globalObject().setProperty("setShutterStatus", svRunSetShutter); 
+   QScriptValue svRunSetDio = se->newFunction(setDioWrapper);
+   se->globalObject().setProperty("setDio", svRunSetDio); 
 
    if(!loadScript(QString::fromStdString("imagine.js"))){
       return 1;  
