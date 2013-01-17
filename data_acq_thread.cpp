@@ -433,8 +433,11 @@ nextStack:
    digOut->write();
    //cout<<"b4 open laser(js call): "<<gTimer.read()<<endl;
    {
-   QScriptValue jsFunc=se->globalObject().property("onShutterOpen");
-   if(jsFunc.isFunction()) jsFunc.call();
+      QScriptValue jsFunc=se->globalObject().property("onShutterOpen");
+      if(jsFunc.isFunction()) {
+         se->globalObject().setProperty("currentStackIndex", idxCurStack);
+         jsFunc.call();
+      }
    }
 
    cout<<"after open laser: "<<gTimer.read()<<endl;
@@ -530,8 +533,11 @@ nextStack:
    digOut->updateOutputBuf(4,false);
    digOut->write();
    {
-   QScriptValue jsFunc=se->globalObject().property("onShutterClose");
-   if(jsFunc.isFunction()) jsFunc.call();
+      QScriptValue jsFunc=se->globalObject().property("onShutterClose");
+      if(jsFunc.isFunction()){
+         se->globalObject().setProperty("currentStackIndex", idxCurStack);
+         jsFunc.call();
+      }
    }
 
    //update stimulus if necessary:  idxCurStack
