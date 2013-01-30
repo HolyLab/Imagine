@@ -320,7 +320,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="qtgen\qrc_imagine.cpp" />
-    <ClCompile Include="volpiezo.cpp" />
+    <ClCompile Include="actuators\voltage\volpiezo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="daq.hpp" />
@@ -332,7 +332,7 @@
     </ClInclude>
     <ClInclude Include="pi_piezo\Piezo_Controller.hpp" />
     <ClInclude Include="shutterctrl.h" />
-    <ClInclude Include="volpiezo.hpp" />
+    <ClInclude Include="actuators\voltage\volpiezo.hpp" />
     <CustomBuild Include="ai_thread.hpp">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing ai_thread.hpp...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing ai_thread.hpp...</Message>

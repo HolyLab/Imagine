@@ -30,7 +30,7 @@
 #include "avt_g.hpp"
 #include "cooke.hpp"
 
-#include "volpiezo.hpp"
+#include "actuators/voltage/volpiezo.hpp"
 #include "Piezo_Controller.hpp"
 #include "Actuator_Controller.hpp"
 #include "actuators/dummy/dummypiezo.hpp"
