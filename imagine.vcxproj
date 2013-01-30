@@ -324,7 +324,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="daq.hpp" />
-    <ClInclude Include="dummypiezo.hpp" />
+    <ClInclude Include="actuators\dummy\dummypiezo.hpp" />
     <ClInclude Include="dummy_daq.hpp" />
     <ClInclude Include="pi_actuator\Actuator_Controller.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

@@ -33,7 +33,7 @@
 #include "volpiezo.hpp"
 #include "Piezo_Controller.hpp"
 #include "Actuator_Controller.hpp"
-#include "dummypiezo.hpp"
+#include "actuators/dummy/dummypiezo.hpp"
 #include "ni_daq_g.hpp"
 #include "dummy_daq.hpp"
 #include "shutterctrl.h"
