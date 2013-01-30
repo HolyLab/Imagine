@@ -147,9 +147,6 @@
     <ClCompile Include="volpiezo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pi_piezo\Piezo_Controller.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="pi_actuator\Actuator_Controller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -157,6 +154,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="shutterctrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="actuators\pi\Piezo_Controller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
