@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Positioner">
+    <Position X="5.25" Y="0.5" Width="1.5" />
+    <NestedTypes>
+      <Struct Name="Positioner::Movement" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>positioner.hpp</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>ICAFAAAAAiAEIAAAIACgCAKAEgIAIAAACAAAAAgKAAA=</HashCode>
+      <FileName>positioner.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VolPiezo" Collapsed="true">
+    <Position X="5.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>YAAEAACAAgAAAABAAABACACAgAIAIAAACAAAAAAIIAA=</HashCode>
+      <FileName>volpiezo.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DummyPiezo" Collapsed="true">
+    <Position X="1.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAEAAAAAgAAAAAAAAAACACAAAIAYAAACAAABAAIAAA=</HashCode>
+      <FileName>dummypiezo.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Piezo_Controller" Collapsed="true">
+    <Position X="9.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAA1IwFAAgMABBQgAYCoCACAEAIbpAAECTAAAAHGAAA=</HashCode>
+      <FileName>pi_piezo\Piezo_Controller.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
