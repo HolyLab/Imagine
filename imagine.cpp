@@ -253,7 +253,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    ui.dwCfg->raise();
 
    //show logo
-   QImage tImage("logo.jpg"); //todo: put logo here
+   QImage tImage(":/images/Resources/logo.jpg"); //todo: put logo here
    if(!tImage.isNull()) {
       ui.labelImage->setPixmap(QPixmap::fromImage(tImage));
       ui.labelImage->adjustSize();
@@ -392,7 +392,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
       .arg(date.year()-2000, 1, 16)
       .arg(date.month(), 1, 16)
       .arg(date.day(), 2, 10, QChar('0'));
-   QString copyright="(c) 2005-2012 Tim Holy & Zhongsheng Guo";
+   QString copyright="(c) 2005-2013";
    this->statusBar()->showMessage(
       QString("Ready. Imagine Version 2.0 (Build %1). %2").arg(ver)
       .arg(copyright));

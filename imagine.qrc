@@ -4,4 +4,8 @@
         <file>Resources/start_live.bmp</file>
         <file>Resources/stop.bmp</file>
     </qresource>
+    <qresource prefix="/images" >
+        <file>Resources/logo.jpg</file>
+        <file>Resources/splash.jpg</file>
+    </qresource>
 </RCC>

@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
 
    //show splash windows and init positioner/daq/camera:
    //see: QSplashScreen class ref
-   QPixmap pixmap("splash.jpg");
+   QPixmap pixmap(":/images/Resources/splash.jpg");
    QSplashScreen *splash = new QSplashScreen(pixmap);
    splash->show();
 
