@@ -451,7 +451,6 @@ nextStack:
    if(isAndor && isUseSpool) {
       QString stemName=camFilename.arg(idxCurStack,4,10,QLatin1Char('0'));
       //enable spool
-      //todo: use Camera::setSpooling() instead
       ((AndorCamera*)(&camera))->enableSpool((char*)(stemName.toStdString().c_str()), 10);
    }
 
@@ -487,12 +486,10 @@ nextStack:
    //digOut->updateOutputBuf(5,true);
    //digOut->write();
 
-
    emit newStatusMsgReady(QString("Camera: started acq: %1")
       .arg(camera.getErrorMsg().c_str()));
 
 
-   //bool isResize=false;
    long nFramesGotForStack=0;
    long nFramesGotForStackCur;
    while(true){
@@ -593,7 +590,6 @@ nextStack:
    //digOut->updateOutputBuf(5,false);
    //digOut->write();
 
-
    idxCurStack++;  //post: it is #stacks we got so far
    if(idxCurStack<this->nStacks && !stopRequested){
       if(isBiDirectionalImaging){
@@ -612,17 +608,16 @@ nextStack:
          emit newLogMsgReady("WARNING: overrun(current stack): idle time is too short.");
       }
     
-	  int maxWaitTime=2; //the frequency to check stop signal
+      int maxWaitTime=2; //in seconds. The frequency to check stop signal
 repeatWait:
-	  timeToWait=timePerStack*idxCurStack-gTimer.read();
+      timeToWait=timePerStack*idxCurStack-gTimer.read();
       if(timeToWait>0.01){
          QThread::msleep(min(maxWaitTime,timeToWait)*1000); // *1000: sec -> ms
       }//if, need wait more than 10ms
-	  if(timeToWait>maxWaitTime && !stopRequested) goto repeatWait;
+      if(timeToWait>maxWaitTime && !stopRequested) goto repeatWait;
 
-	  if(!stopRequested) goto nextStack;
+      if(!stopRequested) goto nextStack;
    }//if, there're more stacks and no stop requested
-
 
    //fire post-seq stimulus:
    if(applyStim){
@@ -640,8 +635,6 @@ repeatWait:
    }
 
    ofsAi->close();
-
-   //camera.stopAcq();
 
    {
    QScriptValue jsFunc=se->globalObject().property("onShutterFini");

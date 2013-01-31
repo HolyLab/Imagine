@@ -815,8 +815,6 @@ void Imagine::on_actionStartAcqAndSave_triggered()
    }
 
    //warn user if overwrite file:
-   //QFileInfo fi(dataAcqThread.headerFilename);
-   //if(fi.exists()){ }
    if(QFile::exists(dataAcqThread.headerFilename) &&
       QMessageBox::question(
       this,
@@ -1174,7 +1172,6 @@ void Imagine::on_btnApply_clicked()
 	  }
    }
 
-   //TODO: temp
    L=-1;
 
    for(int i=0; i<2; ++i){
@@ -1248,10 +1245,8 @@ bool loadTextFile(string filename, vector<string> & result)
    return true;
 }//loadTextFile(),
 
-//TODO: make this func clearer
 void Imagine::on_btnOpenStimFile_clicked()
 {
-   //
    QString stimFilename = QFileDialog::getOpenFileName(
                     this,
                     "Choose a stimulus file to open",
@@ -1270,7 +1265,6 @@ void Imagine::on_btnOpenStimFile_clicked()
       return;
    }
    QTextStream in(&file);
-   //QApplication::setOverrideCursor(Qt::WaitCursor);
    ui.textEditStimFileContent->setPlainText(in.readAll());
 
 
