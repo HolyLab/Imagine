@@ -104,8 +104,6 @@ int main(int argc, char *argv[])
       cout<<"The rig is default to: "<<rig<<endl;
    }
 
-   assert(qApp);
-
    se=new QScriptEngine();
 
    se->globalObject().setProperty("rig", QString::fromStdString(rig));
@@ -147,13 +145,13 @@ int main(int argc, char *argv[])
    }
 
 
-   //NOTE: the loading order of js files: imagine.js, camera_vendor.js, preset.js
+   //NOTE: the loading order of js files: imagine.js, the_rig.js, preset.js
    if(!loadScript("preset.js")){
       return 1;  
    }
 
    //show splash windows and init positioner/daq/camera:
-   //see: QSplashScreen class ref
+   //SEE: QSplashScreen class ref
    QPixmap pixmap(":/images/Resources/splash.jpg");
    QSplashScreen *splash = new QSplashScreen(pixmap);
    splash->show();
@@ -197,7 +195,12 @@ int main(int argc, char *argv[])
    if(cameraVendor=="avt") pCamera=new AvtCamera;
    else if(cameraVendor=="andor") pCamera=new AndorCamera;
    else if(cameraVendor=="cooke") pCamera=new CookeCamera;
-   //qApp->processEvents();
+   else {
+      QMessageBox::critical(0, "Imagine", "Unsupported camera."
+         , QMessageBox::Ok, QMessageBox::NoButton);
+
+      return 1;
+   }
    if(!pCamera->init()){
       splash->showMessage("Failed to initialize the camera.", 
          Qt::AlignLeft|Qt::AlignBottom, Qt::red);
@@ -208,9 +211,7 @@ int main(int argc, char *argv[])
       return 1;
    }
 
-
    delete splash;
-
 
    Imagine w;
    w.show();
