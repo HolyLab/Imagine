@@ -1533,8 +1533,8 @@
     <addaction name="actionOpenShutter"/>
     <addaction name="actionCloseShutter"/>
     <addaction name="separator"/>
-    <addaction name="actionTemperature"/>
     <addaction name="actionHeatsinkFan"/>
+    <addaction name="actionTemperature"/>
    </widget>
    <widget class="QMenu" name="menu_Acquisition">
     <property name="title">

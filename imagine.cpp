@@ -184,22 +184,10 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    addDockWidget(Qt::LeftDockWidgetArea, ui.dwHist);
    addDockWidget(Qt::LeftDockWidgetArea, ui.dwIntenCurve);
 
-   //ui.dwIntenCurve->setFloating(true);
-   //ui.dwIntenCurve->show();
-
    ui.dwCfg->setWindowTitle("Config and control");
    tabifyDockWidget(ui.dwCfg, ui.dwHist);
    tabifyDockWidget(ui.dwHist, ui.dwIntenCurve);
    setDockOptions(dockOptions() | QMainWindow::VerticalTabs);
-
-   /*
-   //make the hist window float
-   ui.dwHist->setFloating(true);
-   ui.dwHist->show();
-   */
-
-   //TODO: temp hide stim windows
-   //ui.dwStim->hide();
 
    //TODO: temp hide shutter and AI tabs
    //ui.tabAI->hide();  //doesn't work
@@ -207,8 +195,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    ui.tabWidgetCfg->removeTab(5); //shutter
    ui.tabWidgetCfg->removeTab(5); //now ai becomes 5,  so tab ai is removed as well.
 
-   //adjust size and 
-   //todo: center the window
+   //adjust size and center the window
    QRect tRect=geometry();
    tRect.setHeight(tRect.height()+150);
    tRect.setWidth(tRect.width()+125);
@@ -274,6 +261,9 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
       ui.actionFlickerControl->setChecked(true);
    }
 
+   ui.actionHeatsinkFan->setEnabled(isAndor);
+   ui.actionTemperature->setEnabled(isAndor);
+
    //camera's gain:
    auto gainRange=camera.getGainRange();
    if(gainRange.second==gainRange.first) ui.spinBoxGain->setEnabled(false);
@@ -283,7 +273,6 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    }
 
    if(isAndor){
-      //TODO: get pre-amp gain and fill in the cfg window
       //fill in horizontal shift speed (i.e. read out rate):
       vector<float> horSpeeds=((AndorCamera*)pCamera)->getHorShiftSpeeds();
       for(int i=0; i<horSpeeds.size(); ++i){
@@ -311,13 +300,6 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
          }//for, each pre amp gain
       }//for, each hor. shift speed
 
-      /* for this specific camera (ixon 885), nADChannels=nOutputAmplifiers=1
-         so this chunk code is not necessary.
-      int nADChannels=0, nOutputAmplifiers=0;
-      GetNumberADChannels(&nADChannels); //TODO: wrap it
-      GetNumberAmp(&nOutputAmplifiers); //TODO: wrap it
-      */
-
       //fill in vert. shift speed combo box
       vector<float> verSpeeds=((AndorCamera*)pCamera)->getVerShiftSpeeds();
       for(int i=0; i<verSpeeds.size(); ++i){
@@ -342,9 +324,6 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
       ui.comboBoxVertShiftSpeed->setEnabled(false);
       ui.comboBoxVertClockVolAmp->setEnabled(false);
       ui.cbBaseLineClamp->setEnabled(false);
-
-      ui.actionTemperature->setEnabled(false);
-
    }
 
    ui.spinBoxHend->setValue(camera.getChipWidth());
@@ -354,16 +333,6 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
 
    //apply the camera setting:
    on_btnApply_clicked();
-
-   /*
-   //pre-allocate space for camera buffer:
-   int nFrameToHold=60; //TODO: make this ui aware
-   if(!camera.allocImageArray(nFrameToHold,true)){
-      appendLog(QString("reserve %1-frame memory failed")
-         .arg(nFrameToHold));
-   }
-   */
-
 
    ///piezo stuff
    ui.doubleSpinBoxMinDistance->setValue(pPositioner->minPos());
@@ -1416,9 +1385,6 @@ void Imagine::updateStatus(ImagineStatus newStatus, ImagineAction newAction)
       enabledActions.push_back(ui.actionStartLive);
       enabledActions.push_back(ui.actionOpenShutter);
       enabledActions.push_back(ui.actionCloseShutter);
-      enabledActions.push_back(ui.actionTemperature);
-
-      //enabledWidgets.push_back(ui.btnApply);
 
       disabledActions.push_back(ui.actionStop);
 
