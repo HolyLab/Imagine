@@ -195,7 +195,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    ui.tabWidgetCfg->removeTab(5); //shutter
    ui.tabWidgetCfg->removeTab(5); //now ai becomes 5,  so tab ai is removed as well.
 
-   //adjust size and center the window
+   //adjust size
    QRect tRect=geometry();
    tRect.setHeight(tRect.height()+150);
    tRect.setWidth(tRect.width()+125);
@@ -350,13 +350,11 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
    piezoUiParams.resize(3);//3 axes at most. TODO: support querying #dims
 
    QString buildDateStr=__DATE__;
-   //cout<<"build date is: '"<<buildDateStr.toStdString()<<"'"<<endl;
    QDate date=QDate::fromString(buildDateStr, "MMM d yyyy");
    if(!date.isValid()) {
       date=QDate::fromString(buildDateStr, "MMM  d yyyy");
       assert(date.isValid());
    }
-   //cout<<"date is: "<<date.year()<<", "<<date.month()<<","<<date.day()<<endl;
    QString ver=QString("%1%2%3")
       .arg(date.year()-2000, 1, 16)
       .arg(date.month(), 1, 16)
@@ -424,6 +422,7 @@ Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
 
    on_spinBoxSpinboxSteps_valueChanged(ui.spinBoxSpinboxSteps->value());
 
+   //center window:
    QRect rect = QApplication::desktop()->screenGeometry();
    int x = (rect.width()-this->width()) / 2;
    int y = (rect.height()-this->height()) / 2;
