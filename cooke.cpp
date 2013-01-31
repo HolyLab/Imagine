@@ -66,7 +66,6 @@ bool CookeCamera::init()
    //model
    this->model=strCamType.strHardwareVersion.Board[0].szName;
 
-   //todo: alignment
    int nPixels=chipWidth*chipHeight;
    
    //pLiveImage=new PixelValue[nPixels];
@@ -97,9 +96,6 @@ bool CookeCamera::setAcqParams(int emGain,
                      bool isBaselineClamp
                      ) 
 {
-   //TODO: the gain settings (SetConversionFactor())
-
-
    //NOTE: the camera should be in idle state
    errorCode = PCO_SetRecordingState(hCamera, 0);// stop recording
    if (errorCode & PCO_WARNING_FIRMWARE_FUNC_ALREADY_OFF) errorCode = PCO_NOERROR;
@@ -134,13 +130,11 @@ bool CookeCamera::setAcqParams(int emGain,
       return false;
    }
 
-   // /*
    errorCode=PCO_SetStorageMode(hCamera, 1); //1: fifo mode
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to set storage mode";
       return false;
    }
-   // */
 
    errorCode=PCO_SetAcquireMode(hCamera, 0); //0: auto
    if(errorCode!=PCO_NOERROR) {
@@ -178,9 +172,6 @@ bool CookeCamera::setAcqParams(int emGain,
       errorMsg="failed to arm the camera";
       return false;
    }
-
-   //todo: should we set Ram Segment settings. SEE: the api's "storage ctrl" section?
-   // should we clear the active segment?
 
    PCO_SC2_CL_TRANSFER_PARAM clparams;
 
@@ -370,18 +361,14 @@ long CookeCamera::getAcquiredFrameCount()
    return result;
 }
 
-
-
-
 bool CookeCamera::startAcq()
 {
    CLockGuard tGuard(mpLock);
-   nAcquiredFrames=0; //todo: maybe too late if external trigger?
+   nAcquiredFrames=0; 
 
    //camera's internal frame counter can be reset by ARM which is too costly we maintain our own counter
    firstFrameCounter=-1;
 
-   //
    totalGap=0;
 
    ///alloc the ring buffer for data transfer from card to pc

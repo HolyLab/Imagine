@@ -49,6 +49,7 @@ public:
 
       cout<<"at the end of workerThread->ctor(): "<<gTimer.read()<<endl;
    }
+
    ~WorkerThread(){
       if(spoolingThread){
          spoolingThread->wait();
@@ -63,13 +64,11 @@ public:
    }
 
    void append2seq(CookeCamera::PixelValue* frame, int frameIdx, int nPixelsPerFrame){
-      //if(spoolingThread) assert(sizeof(Camera::PixelValue)*nPixelsPerFrame==spoolThread->itemSize);
       if(spoolingThread){
          spoolingThread->appendItem((char*)frame);
       }
       else {
          memcpy(camera->pImageArray+frameIdx*nPixelsPerFrame, frame, sizeof(Camera::PixelValue)*nPixelsPerFrame);
-
       }
    }
 
@@ -99,7 +98,6 @@ public:
             goto skipSponEvent;
          }
 
-
          PixelValue* rawData=camera->mRingBuf[eventIdx];
          long counter=camera->extractFrameCounter(rawData);
          if(camera->nAcquiredFrames==0) {
@@ -110,13 +108,9 @@ public:
          }
          int curFrameIdx=counter-camera->firstFrameCounter;
 
-         //todo: tmp
-         //curFrameIdx=camera->nAcquiredFrames;
-
 #ifdef _DEBUG
          curFrameIndices.push_back(curFrameIdx);
 #endif
-
 
          assert(curFrameIdx>=0);
          long nPixelsPerFrame=camera->getImageHeight()*camera->getImageWidth();
@@ -145,14 +139,10 @@ public:
                append2seq(rawData, curFrameIdx, nPixelsPerFrame);
             }
 
-            // CLockGuard tGuard(camera->mpLock); //need the lock on the camera only for live img & nAcquiredFrames
-            //tmp: 
             memcpy_g(camera->pLiveImage, rawData, sizeof(CookeCamera::PixelValue)*nPixelsPerFrame);
             camera->nAcquiredFrames=max(curFrameIdx+1, camera->nAcquiredFrames); //don't got back
          }
          else {
-            // CLockGuard tGuard(camera->mpLock); //need the lock on the camera only for live img & nAcquiredFrames
-
             if(camera->genericAcqMode==Camera::eAcqAndSave){
                memcpy_g(camera->pLiveImage, camera->pBlackImage, sizeof(Camera::PixelValue)*nPixelsPerFrame);
                camera->nAcquiredFrames=camera->nFrames;
