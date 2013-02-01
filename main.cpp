@@ -13,6 +13,9 @@
 ** warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 **-------------------------------------------------------------------------*/
 
+#include <filesystem>
+using namespace std;
+
 #include <QtGui/QApplication>
 #include <QSplashScreen>
 #include <QMessageBox>
@@ -146,7 +149,13 @@ int main(int argc, char *argv[])
 
 
    //NOTE: the loading order of js files: imagine.js, the_rig.js, preset.js
-   if(!loadScript("preset.js")){
+   const char* homedir=getenv("USERPROFILE");
+   string filename=string(homedir)+"/preset.js";
+   if(!tr2::sys::exists(tr2::sys::path(filename))){
+      filename="preset.js";
+   }
+   cout<<"preset file is: "<<filename<<endl;
+   if(!loadScript(QString::fromStdString(filename))){
       return 1;  
    }
 
