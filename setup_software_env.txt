@@ -1,0 +1,9 @@
+* install Cooke's camware (downloadable from Cooke's website)
+* install Cooke's camera SDK (downloadable from cooke's website too)
+* install visual studio
+* install NI's SDK (dvd; or download it from NI's website)
+* install Qt
+* install LSI raid management software (downloadable from its website too)
+* install PI's piezo constrol software
+* install laser constrol software (LMM)
+
