@@ -286,8 +286,9 @@ bool test(int nFrames, double exposure, int nRounds, void* buf)
    }
    ///END: setAcqParams(),
 
+   int round=1;
 nextRound:
-   cout<<"start a new round"<<endl;
+   cout<<"start a new round = "<<round++<<endl;
    ///setAcqModeAndTime():
 
    ///set acqusition trigger mode
@@ -364,7 +365,7 @@ nextRound:
    while(true){
       if(shouldStop) break;
       ///wait for events
-      int waitResult=WaitForMultipleObjects(2, mEvent, false, 5000);
+      int waitResult=WaitForMultipleObjects(2, mEvent, false, 30);
       switch(waitResult){
       case WAIT_OBJECT_0 + 0:
       case WAIT_OBJECT_0 + 1:
@@ -453,8 +454,8 @@ int main(int argc, char* argv[])
    int nRounds;
    if(argc!=4) {
       cerr<<"usage: "<<argv[0]<<" #frames exposure #rounds"<<endl;
-      cerr<<"Now use the default: 1000000 frames w/ 0.05s exposure and 3 rounds"<<endl;
-      exposure=0.05; nFrames=1000000; nRounds=3;
+      cerr<<"Now use the default: 1000 frames w/ 0.05s exposure and 3 rounds"<<endl;
+      exposure=0.05; nFrames=1000; nRounds=3;
    }
    else {
       nFrames=atoi(argv[1]);
@@ -471,7 +472,7 @@ int main(int argc, char* argv[])
 
    cout<<"test succeeded!"<<endl;
 
-   getc(stdin);
+   //getc(stdin);
 
    return 0;
 }
