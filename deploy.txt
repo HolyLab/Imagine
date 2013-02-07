@@ -1,5 +1,4 @@
 change system env variable Path to include $QT/bin
 change system env variable Path to include $pco.sdk/bin
 copy *.js to where imagine2.exe is then modify imagine.js
-copy *.jpg to where imagine2.exe is
 copy *.dll from 3rd_party/ to where imagine2.exe is
