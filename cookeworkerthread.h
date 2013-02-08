@@ -79,6 +79,10 @@ public:
       curFrameIndices.reserve(camera->nFrames);
       cerr<<"enter cooke worker thread run()"<<endl;
 #endif
+      DWORD dwStatusDll;
+      DWORD dwStatusDrv;
+      int negIndices=0;
+
       while(true){
          //if(shouldStop) break;
          ///wait for events
@@ -89,8 +93,17 @@ public:
             //todo: should we try to keep going? SEE: CSC2Class::SC2Thread()
          }//if, WAIT_ABANDONED, WAIT_TIMEOUT or WAIT_FAILED
          int eventIdx=waitResult-WAIT_OBJECT_0;
-         //todo: should we call GetBufferStatus() to double-check the status about transferring? SEE: demo.cpp
-         
+         int err = PCO_GetBufferStatus(camera->hCamera, camera->mBufIndex[eventIdx], &dwStatusDll, &dwStatusDrv);
+         if (err != 0) {
+            cerr<<"PCO_GetBufferStatus error: "<<hex<<err<<endl;
+            break;
+         }
+
+         if (dwStatusDrv != 0) {
+            cerr<<"PCO_GetBufferStatus dwStatusDrv(hex): "<<hex<<dwStatusDrv<<endl;
+            break;
+         }
+
          CLockGuard tGuard(camera->mpLock);
 
          ///work around sdk bug
@@ -112,6 +125,13 @@ public:
          curFrameIndices.push_back(curFrameIdx);
 #endif
 
+
+         if(curFrameIdx<0){
+            if(++negIndices<16) goto skipSponEvent;//NOTE: hard coded 16
+            else {
+               __debugbreak();
+            }
+         }
          assert(curFrameIdx>=0);
          long nPixelsPerFrame=camera->getImageHeight()*camera->getImageWidth();
 

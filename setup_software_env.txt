@@ -4,6 +4,6 @@
 * install NI's SDK (dvd; or download it from NI's website)
 * install Qt
 * install LSI raid management software (downloadable from its website too)
-* install PI's piezo constrol software
-* install laser constrol software (LMM)
+* install PI's piezo control software
+* install laser control software (LMM for HS-Ocpi from Spectral Applied)
 
