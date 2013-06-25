@@ -492,7 +492,7 @@ nextStack:
 
    long nFramesGotForStack=0;
    long nFramesGotForStackCur;
-   while(true){
+   while(!stopRequested || this->nStacks>1){
       nFramesGotForStackCur=camera.getAcquiredFrameCount();
       if(nFramesGotForStackCur==-1){
          Sleep(30);
