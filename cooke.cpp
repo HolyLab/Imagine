@@ -5,6 +5,9 @@
 
 #include "SC2_SDKAddendum.h"
 
+#include "pco_errt.h"
+#include <iostream>
+#define PCO_ERRT_H_CREATE_OBJECT
 
 bool CookeCamera::init()
 {
@@ -13,6 +16,9 @@ bool CookeCamera::init()
    errorCode=PCO_OpenCamera(&hCamera, 0);
 
    if(errorCode!=PCO_NOERROR){
+      char msg[16384];
+      PCO_GetErrorText(errorCode, msg, 16384);
+      cout << msg << endl;
       errorMsg+="call PCO_OpenCamera";
       return false;
    }
