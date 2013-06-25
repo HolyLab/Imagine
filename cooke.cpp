@@ -148,7 +148,7 @@ bool CookeCamera::setAcqParams(int emGain,
       return false;
    }
 
-   errorCode=PCO_SetTimestampMode(hCamera, 2); //2: bcd+ascii
+   errorCode=PCO_SetTimestampMode(hCamera, 1); //1: bcd; 2: bcd+ascii
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to set timestamp mode";
       return false;
