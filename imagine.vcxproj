@@ -156,14 +156,17 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmaind.lib;QtCored4.lib;QtGuid4.lib;Atmcd64m.lib;nidaqmx.lib;qwtd5.lib;PvAPI.lib;SC2_Cam.lib;QtScriptd4.lib;PI_GCS2_DLL_x64.lib;qserialdevice.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;QtCored4.lib;QtGuid4.lib;atmcd64m.lib;nidaqmx.lib;qwtd5.lib;PvAPI.lib;SC2_Cam.lib;QtScriptd4.lib;PI_GCS2_DLL_x64.lib;qserialdevice.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>c:\boost_1_49_0\stage\lib;$(QTDIR)\lib;.\3rd_party\64bit;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>c:\boost_1_49_0\stage\lib;$(QTDIR)\lib;E:\Users\tim\src\imagine\3rd_party\64bit;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <HeapReserveSize>0</HeapReserveSize>
       <StackReserveSize>0</StackReserveSize>
     </Link>
+    <ProjectReference>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
     <Link>
