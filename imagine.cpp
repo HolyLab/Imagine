@@ -771,7 +771,9 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
       for(int col=0; col<imageW; ++col){
          Camera::PixelValue inten= *tp++;
          int index;
-         if(inten>=16383 && isColorizeSaturatedPixels) index=255;
+         if(inten>=16383 && isColorizeSaturatedPixels) index=255; // FIXME 16-bit
+         else if (inten > maxPixelValue) index = 254;
+         else if (inten < minPixelValue) index = 0;
          else {
             index=(inten-minPixelValue)*factor;
             //image->setPixel(i%imageW, i/imageW,(frame[i]-minPixelValue)*factor);
