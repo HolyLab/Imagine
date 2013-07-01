@@ -602,36 +602,51 @@ void Imagine::updateHist(const Camera::PixelValue * frame,
                          const int imageW, const int imageH)
 {
    //initialize the counts to all 0's
-   for(unsigned int i=0; i<sizeof(counts)/sizeof(counts[0]); ++i) counts[i]=0;
+   int ncounts = sizeof(counts)/sizeof(counts[0]);
+   for(unsigned int i=0; i<ncounts; ++i) counts[i]=0;
 
    for(unsigned int i=0; i<imageW*imageH; ++i){
       counts[*frame++]++;
    }
 
+   // Autoscale
+   unsigned int maxintensity;
+   for (maxintensity = ncounts-1; maxintensity >= 0; maxintensity--)
+     if (counts[maxintensity])
+       break;
+
    //now binning
    int nBins=histPlot->width()/2;
-   int totalWidth=1<<14;
-   int binWidth=totalWidth/nBins;
+   int totalWidth= maxintensity; //1<<14;
+   double binWidth=double(totalWidth)/nBins;
 
    QwtArray<QwtDoubleInterval> intervals(nBins);
    QwtArray<double> values(nBins);
 
+   double maxcount = 0;
    for(unsigned int i = 0; i < nBins; i++ ) {
-      int start=i*binWidth;                            //inclusive
-      int end  = i==nBins-1?totalWidth:start+binWidth; //exclusive
-      int width=end-start;
+      double start=i*binWidth;                            //inclusive
+      double end = (i==nBins-1) ? totalWidth : start+binWidth;
       intervals[i] = QwtDoubleInterval(start, end);
 
-      int count=0;
-      for(; start<end;){
-         count+=counts[start++];
+      int count=1;  // since log scale, plot count+1
+      int width = 0;
+      int istart = ceil(start);
+      for(; istart<end;){
+         count+=counts[istart++];
+         width++;
       }
-      values[i] = count?count:1; 
-
+      values[i] = (width > 0) ? (double(count)/width)*binWidth : 0;
+      if (values[i] > maxcount)
+        maxcount = values[i];
    }//for, each inten
+   cout << "Last interval: (" << intervals[nBins-1].minValue() << "," << intervals[nBins-1].maxValue() << ")";
+   cout << "; Last value: " << values[nBins-1] << endl;
 
    histogram->setData(QwtIntervalData(intervals, values));
    
+   histPlot->setAxisScale(QwtPlot::yLeft, 1, maxcount);
+   histPlot->setAxisScale(QwtPlot::xBottom, 0.0, maxintensity);
    histPlot->replot();
 
 }//updateHist(),
