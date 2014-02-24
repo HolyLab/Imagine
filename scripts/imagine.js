@@ -5,14 +5,14 @@ if(rig=="hs-ocpi"){
 	//var camera="andor";
 
 	//piezo/stage/actuator:
-	var positioner = "dummy";
+	//var positioner = "dummy";
 	//var positioner = "volpiezo"; //NOTE: requires daq=="ni"
-	//var positioner = "pi";
+	var positioner = "pi";
 	//var positioner = "thor";
 
 	//daq:
-	var daq="dummy";
-	//var daq="ni";
+	//var daq="dummy";
+	var daq="ni";
 }
 
 if(rig=="bakewell"){
@@ -22,8 +22,13 @@ if(rig=="bakewell"){
 }
 
 if(rig=="ocpi-1"){
-	var camera="andor";
+	var camera="cooke";
 	var positioner = "volpiezo"; //NOTE: requires daq=="ni"
 	var daq="ni";
 }
 
+if (rig == "ocpi-1bidi") {
+    var camera = "cooke";
+    var positioner = "dummy";
+    var daq = "dummy";
+}
