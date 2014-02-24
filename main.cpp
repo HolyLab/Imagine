@@ -147,8 +147,7 @@ int main(int argc, char *argv[])
       return 1;  
    }
 
-
-   //NOTE: the loading order of js files: imagine.js, the_rig.js, preset.js
+   // preset.js
    const char* homedir=getenv("USERPROFILE");
    string filename=string(homedir)+"/preset.js";
    if(!tr2::sys::exists(tr2::sys::path(filename))){
