@@ -119,7 +119,7 @@ public:
       errorCode=DAQmxCreateAOVoltageChan(taskHandle,
          chanList.c_str(), //channels to acquire
          "",  //nameToAssignToChannel
-         0,   //min value to output
+         -10.0,   //min value to output
          10.0,//max value to output
          DAQmx_Val_Volts,  //unit
          NULL              //customScaleName
@@ -135,10 +135,10 @@ public:
          throw EInitDevice("exception when call DAQmxGetAOResolution()");
       }
       sampleSize=(uInt32)tt;
-      maxDigitalValue=pow(2.0,int(sampleSize))-1;
-      minDigitalValue=0;
+      maxDigitalValue=pow(2.0,int(sampleSize)-1)-1;
+      minDigitalValue=-pow(2.0,int(sampleSize)-1);
       maxPhyValue=10;
-      minPhyValue=0;
+      minPhyValue=-10;
 
    }//ctor,
 
