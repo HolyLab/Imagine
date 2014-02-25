@@ -48,6 +48,9 @@ extern QString positionerType;
 extern QScriptEngine* se;
 extern DaqDo* digOut;
 extern QString daq;
+extern QString doname;
+extern QString aoname;
+extern QString ainame;
 extern string rig;
 
 bool loadScript(const QString &filename)
@@ -130,7 +133,11 @@ int main(int argc, char *argv[])
    QString cameraVendor=se->globalObject().property("camera").toString();
    positionerType=se->globalObject().property("positioner").toString();
    daq=se->globalObject().property("daq").toString();
-
+   if (daq=="ni") {
+     doname=se->globalObject().property("doname").toString();
+     aoname=se->globalObject().property("aoname").toString();
+     ainame=se->globalObject().property("ainame").toString();
+   }
    cout<<"using "<<cameraVendor.toStdString()<<" camera, "
       <<positionerType.toStdString()<<" positioner, "
       <<daq.toStdString()<<" daq."<<endl;
@@ -169,7 +176,7 @@ int main(int argc, char *argv[])
 
    splash->showMessage(QString("Initialize the %1 actuator ...").arg(positionerType), 
       Qt::AlignLeft|Qt::AlignBottom, Qt::red);
-   if(positionerType=="volpiezo") pPositioner=new VolPiezo;
+   if(positionerType=="volpiezo") pPositioner=new VolPiezo(ainame,aoname);
    else if(positionerType=="pi") pPositioner=new Piezo_Controller;
 #ifndef _WIN64
    else if(positionerType=="thor") pPositioner=new Actuator_Controller;
@@ -185,7 +192,7 @@ int main(int argc, char *argv[])
    splash->showMessage(QString("Initialize the %1 daq ...").arg(daq), 
       Qt::AlignLeft|Qt::AlignBottom, Qt::red);
    if(daq=="ni") {
-      digOut=new NiDaqDo();
+      digOut=new NiDaqDo(doname);
    }
    else if(daq=="dummy"){
       digOut=new DummyDaqDo();

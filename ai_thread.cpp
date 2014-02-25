@@ -29,7 +29,7 @@ using namespace std;
 extern QString daq;
 
 
-AiThread::AiThread(QObject *parent, int readBufSize, int driverBufSize, int scanrate)
+AiThread::AiThread(QObject *parent, QString ainame, int readBufSize, int driverBufSize, int scanrate)
 : QThread(parent)
 {
    this->readBufSize=readBufSize; 
@@ -47,7 +47,7 @@ AiThread::AiThread(QObject *parent, int readBufSize, int driverBufSize, int scan
 
    ai=nullptr;
 
-   if(daq=="ni") ai=new NiDaqAi(chanList);
+   if(daq=="ni") ai=new NiDaqAi(ainame, chanList);
    else if(daq=="dummy") ai=new DummyDaqAi(chanList);
    else {
       throw Daq::EInitDevice("exception: the AI device is unsupported");

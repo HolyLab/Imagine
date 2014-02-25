@@ -8,7 +8,7 @@
 class VolPiezo: public Positioner {
 
 public:
-   VolPiezo(){aoOnce=nullptr; ao=nullptr;}
+   VolPiezo(QString aistring,QString aostring){ainame=aistring; aoname=aostring; aoOnce=nullptr; ao=nullptr;}
    ~VolPiezo(){delete aoOnce; delete ao;}
 
    double minPos(){return 0;}
@@ -24,6 +24,8 @@ public:
    bool abortCmd();
 
 private:
+   QString ainame;
+   QString aoname;
    NiDaqAoWriteOne * aoOnce;
    NiDaqAo* ao;
 

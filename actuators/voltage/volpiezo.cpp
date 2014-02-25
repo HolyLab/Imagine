@@ -12,7 +12,7 @@ double VolPiezo::zpos2voltage(double um)
 
 bool VolPiezo::curPos(double* pos)
 {
-   NiDaqAiReadOne ai(0); //channel 0: piezo
+   NiDaqAiReadOne ai(ainame,0); //channel 0: piezo
    int reading;
    ai.readOne(reading); //TODO: check error
    double vol=ai.toPhyUnit(reading);
@@ -28,7 +28,7 @@ bool VolPiezo::moveTo(double to)
    if(aoOnce==NULL){
       cleanup();
       int aoChannelForPiezo=0; //TODO: put this configurable
-      aoOnce=new NiDaqAoWriteOne(aoChannelForPiezo);
+      aoOnce=new NiDaqAoWriteOne(aoname,aoChannelForPiezo);
       Sleep(0.5*1000); //sleep 0.5s 
    }
    uInt16 sampleValue=aoOnce->toDigUnit(vol);
@@ -72,7 +72,7 @@ bool VolPiezo::prepareCmd()
    aoChannels.push_back(aoChannelForTrigger);
 
    if(ao) cleanup();
-   ao=new NiDaqAo(aoChannels);
+   ao=new NiDaqAo(aoname,aoChannels);
 
    double totalTime=0;
    for(unsigned idx=0; idx<movements.size(); ++idx) totalTime+=movements[idx]->duration/1e6; //macrosec to sec

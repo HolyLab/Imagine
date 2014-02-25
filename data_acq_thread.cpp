@@ -48,6 +48,9 @@ QString positionerType; //todo: query Positioner instead
 QScriptEngine* se;
 DaqDo * digOut=nullptr;
 QString daq;
+QString doname;
+QString aoname;
+QString ainame;
 string rig;
 
 extern Timer_g gTimer;
@@ -310,15 +313,15 @@ void DataAcqThread::run_live()
 
 void genSquareSpike(int duration)
 {
-   return;
+   //return;
 
-   cout<<"enter gen spike @"<<gTimer.read()<<endl;
+   //cout<<"enter gen spike @"<<gTimer.read()<<endl;
    digOut->updateOutputBuf(5,true);
    digOut->write();
    Sleep(duration);
    digOut->updateOutputBuf(5,false);
    digOut->write();
-   cout<<"leave gen spike @"<<gTimer.read()<<endl;
+   //cout<<"leave gen spike @"<<gTimer.read()<<endl;
 }
 
 void DataAcqThread::run_acq_and_save()
@@ -372,7 +375,7 @@ void DataAcqThread::run_acq_and_save()
    preparePositioner(); //nec for volpiezo
 
    //prepare for AI:
-   AiThread * aiThread=new AiThread(0, 10000, 50000, 10000);
+   AiThread * aiThread=new AiThread(0, ainame, 10000, 50000, 10000);
    unique_ptr<AiThread> uniPtrAiThread(aiThread);
 
    //after all devices are prepared, now we can save the file header:

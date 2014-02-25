@@ -12,22 +12,31 @@ if(rig=="hs-ocpi"){
 
 	//daq:
 	//var daq="dummy";
-	var daq="ni";
+	var daq = "ni";
+	var doname = "Dev1/port0/line0:7";
+	var aoname = "Dev1/ao";
+	var ainame = "Dev1/ai";
 }
 
 if(rig=="bakewell"){
 	var camera="avt";
 	var positioner = "thor";
 	var daq="ni";
+	var doname = "Dev1/port0/line0:7";
+	var aoname = "Dev1/ao";
+	var ainame = "Dev1/ai";
 }
 
 if(rig=="ocpi-1"){
 	var camera="cooke";
 	var positioner = "volpiezo"; //NOTE: requires daq=="ni"
 	var daq="ni";
+	var doname = "Dev2/port0/line0:7";
+	var aoname = "Dev2/ao";
+	var ainame = "Dev2/ai";
 }
 
-if (rig == "ocpi-1bidi") {
+if (rig=="ocpi-1bidi") {
     var camera = "cooke";
     var positioner = "dummy";
     var daq = "dummy";

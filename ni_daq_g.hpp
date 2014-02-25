@@ -107,10 +107,11 @@ class NiDaqAo: public NiDaq, public DaqAo {
 
 public:
    //create ao channel and add the channel to task
-   NiDaqAo(const vector<int> & chs): Daq(chs), NiDaq(chs), DaqAo(chs){
+   NiDaqAo(QString devstring, const vector<int> & chs): Daq(chs), NiDaq(chs), DaqAo(chs){
       dataU16=0;
-
-      string dev="Dev1/ao";
+      string dev = devstring.toStdString();
+      cout << "About to initialize AO device " << dev << endl;
+      //string dev="Dev1/ao";
       string chanList=dev+toString(channels[0]);
       for(unsigned int i=1; i<channels.size(); ++i){
          chanList+=", "+dev+toString(channels[i]);
@@ -130,7 +131,7 @@ public:
 
       //get the raw sample size, min/max digital values:
       float64 tt;
-      errorCode=DAQmxGetAOResolution(taskHandle,"Dev1/ao0", &tt);
+      errorCode=DAQmxGetAOResolution(taskHandle,(dev+"0").c_str(), &tt);
       if(isError()){
          throw EInitDevice("exception when call DAQmxGetAOResolution()");
       }
@@ -219,11 +220,12 @@ class NiDaqAi: public NiDaq, public DaqAi {
    //uInt16 *    dataU16; //it is better that user supplies the read buf
 public:
    //create AI channels and add the channels to the task
-   NiDaqAi(const vector<int> & chs): Daq(chs), NiDaq(chs), DaqAi(chs){
+   NiDaqAi(QString devstring,const vector<int> & chs): Daq(chs), NiDaq(chs), DaqAi(chs){
       //todo: next line is unnecessary?
       //DAQmxErrChk(DAQmxCfgInputBuffer(taskHandle, buf_size) ); //jason: this change DEFAULT(?) input buffer size
-
-      string dev="Dev1/ai";
+      string dev = devstring.toStdString();
+      cout << "About to initialize AI device " << dev << endl;
+      //string dev="Dev1/ai";
       string chanList=dev+toString(channels[0]);
       for(unsigned int i=1; i<channels.size(); ++i){
          chanList+=", "+dev+toString(channels[i]);
@@ -243,7 +245,7 @@ public:
       }
 
       //get the raw sample size:
-      errorCode=DAQmxGetAIRawSampSize(taskHandle, "Dev1/ai0", (uInt32*)&sampleSize);
+      errorCode=DAQmxGetAIRawSampSize(taskHandle, (dev+"0").c_str(), (uInt32*)&sampleSize);
       if(isError()){
          throw EInitDevice("exception when call DAQmxGetAIRawSampSize()");
       }
@@ -306,8 +308,10 @@ public:
 class NiDaqDo: public NiDaq, public DaqDo {
 public:
    //create DO channel and start the task
-   NiDaqDo(): Daq(vector<int>()), NiDaq(vector<int>()){
-      errorCode=DAQmxCreateDOChan(taskHandle,"Dev1/port0/line0:7","",DAQmx_Val_ChanForAllLines);
+   NiDaqDo(QString devstring): Daq(vector<int>()), NiDaq(vector<int>()){
+      string dev = devstring.toStdString();
+      cout << "About to initialize DO device with " << dev << endl;
+      errorCode=DAQmxCreateDOChan(taskHandle,dev.c_str(),"",DAQmx_Val_ChanForAllLines);
       if(isError()){
          throw EInitDevice("exception when call DAQmxCreateDOChan()");
       }
@@ -345,10 +349,10 @@ public:
 class NiDaqAiReadOne :public DaqAiReadOne {
    NiDaqAi * ai;
 public:
-   NiDaqAiReadOne(int channel):DaqAiReadOne(channel){
+   NiDaqAiReadOne(QString ainame, int channel):DaqAiReadOne(channel){
       vector<int> chs;
       chs.push_back(channel);
-      ai=new NiDaqAi(chs);
+      ai=new NiDaqAi(ainame, chs);
 
       if(!ai->cfgTiming(10000, 10000)){
          throw Daq::EInitDevice("exception when cfgTiming()");
@@ -379,10 +383,10 @@ public:
 class NiDaqAoWriteOne : public DaqAoWriteOne{
    NiDaqAo* ao;
 public:
-   NiDaqAoWriteOne(int channel): DaqAoWriteOne(channel){
+   NiDaqAoWriteOne(QString aoname,int channel): DaqAoWriteOne(channel){
       vector<int> channels;
       channels.push_back(channel);
-      ao=new NiDaqAo(channels);
+      ao=new NiDaqAo(aoname, channels);
 
       if(!ao->cfgTiming(10000, 2)){ //for buffered writing, 2 samples at least. //SEE: DAQmxWriteBinaryU16()'s online help.
          throw Daq::EInitDevice("exception when cfgTiming()");

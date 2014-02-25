@@ -38,7 +38,7 @@ public:
    DaqAi* ai;
 
    //NOTE: readBufSize is in scan.
-   AiThread(QObject *parent = 0, 
+   AiThread(QObject *parent = 0, QString ainame = "",
       int readBufSize=1000, int driverBufSize=10000, int scanrate=10000);
    ~AiThread();
 

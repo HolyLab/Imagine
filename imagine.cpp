@@ -640,8 +640,8 @@ void Imagine::updateHist(const Camera::PixelValue * frame,
       if (values[i] > maxcount)
         maxcount = values[i];
    }//for, each inten
-   cout << "Last interval: (" << intervals[nBins-1].minValue() << "," << intervals[nBins-1].maxValue() << ")";
-   cout << "; Last value: " << values[nBins-1] << endl;
+   //cout << "Last interval: (" << intervals[nBins-1].minValue() << "," << intervals[nBins-1].maxValue() << ")";
+   //cout << "; Last value: " << values[nBins-1] << endl;
 
    histogram->setData(QwtIntervalData(intervals, values));
    

@@ -54,7 +54,7 @@ if(rig=="ocpi-1"){
       framesPerStack:20,
       exposureTime:0.03,
       idleTime:0.7,
-      triggerMode: "external", //internal or external
+      triggerMode: "internal", //internal or external
       gain:0,
    };
 }
