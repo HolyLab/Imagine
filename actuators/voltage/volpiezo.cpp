@@ -126,8 +126,12 @@ bool VolPiezo::prepareCmd()
       const Movement& m=*movements[idx];
       int nScansNow=int(scanRateAo*m.duration/1e6);
 
+      // Some cameras trigger on a pulse, others use an "enable" gate
+      // that requires TTL high throughout the whole acquisition period.
+      // For generality, implement the latter behavior.
       if(m.trigger==1){
-         buf[0]=aoTTLHigh; //the sample that starts camera
+        for (int k = 0; k < nScansNow-1; k++)  // set low on very last sample
+          buf[k]=aoTTLHigh;
       }
       buf+=nScansNow;
    }
