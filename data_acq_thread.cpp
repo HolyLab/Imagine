@@ -211,8 +211,8 @@ bool DataAcqThread::preparePositioner(bool isForward)
       pPositioner->addMovement(numeric_limits<double>::quiet_NaN(), numeric_limits<double>::quiet_NaN(), 0.05*1e6, -1); //no movement, no trigger change, just block 0.05s so camera can get its last frame
    }//if, record on both direction
    else {
-      pPositioner->addMovement(piezoStartPosUm, piezoStopPosUm, nFramesPerStack*cycleTime*1e6, 1);
-	  pPositioner->addMovement(piezoStopPosUm, piezoStartPosUm, piezoTravelBackTime*1e6, -1); //move back directly without prepare
+     pPositioner->addMovement(piezoStartPosUm, piezoStopPosUm, nFramesPerStack*cycleTime*1e6, 1);
+	   pPositioner->addMovement(piezoStopPosUm, piezoStartPosUm, piezoTravelBackTime*1e6, -1); //move back directly without prepare
    }//else, uni-directional recording
    pPositioner->addMovement(numeric_limits<double>::quiet_NaN(), numeric_limits<double>::quiet_NaN(), 0, 0); //no movement, only stop the trigger
 
@@ -359,10 +359,14 @@ void DataAcqThread::run_acq_and_save()
       camera.setSpooling(camFilename.toStdString());
    }
 
+   bool startCameraOnce = isCooke && triggerMode==Camera::eExternalStart;
+
+   int framefactor = startCameraOnce ? this->nStacks : 1;
+
    ///camera.setAcqModeAndTime(AndorCamera::eKineticSeries,
    camera.setAcqModeAndTime(Camera::eAcqAndSave,
                             this->exposureTime, 
-                            this->nFramesPerStack,
+                            this->nFramesPerStack*framefactor,
                             this->triggerMode);
    emit newStatusMsgReady(QString("Camera: set acq mode and time: %1")
       .arg(camera.getErrorMsg().c_str()));
@@ -417,6 +421,9 @@ void DataAcqThread::run_acq_and_save()
    //start AI
    aiThread->startAcq();
 
+   if(startCameraOnce)
+     camera.startAcq();
+
    //start stimuli[0] if necessary
    if(applyStim && stimuli[0].second==0){
       curStimIndex=0;
@@ -424,6 +431,7 @@ void DataAcqThread::run_acq_and_save()
    }//if, first stimulus should be fired before stack_0
 
    int nOverrunStacks=0;
+   long nFramesDoneStack=this->nFramesPerStack;
 
    gTimer.start(); //seq's start time is 0, the new ref pt
 
@@ -462,25 +470,27 @@ nextStack:
    cout<<"b4 start camera & piezo: "<<gTimer.read()<<endl;
 
    if(triggerMode==Camera::eExternalStart){
-      if(positionerType!="pi"){
+      if(!startCameraOnce && positionerType!="pi"){
          camera.startAcq();
          double timeToWait=0.1;
          //TODO: maybe I should use busy waiting?
          QThread::msleep(timeToWait*1000); // *1000: sec -> ms
       }
       cout<<"b4 pPositioner->runCmd: "<<gTimer.read()<<endl;
-      genSquareSpike(10);
+      //genSquareSpike(10);
       pPositioner->runCmd();
       cout<<"after pPositioner->runCmd: "<<gTimer.read()<<endl;
-      if(positionerType=="pi"){
+      if(!startCameraOnce && positionerType=="pi"){
          camera.startAcq();
       }
    }
    else {
       pPositioner->runCmd();
-      cout<<"b4 camera.startacq: "<<gTimer.read()<<endl;
-      camera.startAcq();
-      cout<<"after camera.startacq: "<<gTimer.read()<<endl;
+      if (!startCameraOnce) {
+        cout<<"b4 camera.startacq: "<<gTimer.read()<<endl;
+        camera.startAcq();
+        cout<<"after camera.startacq: "<<gTimer.read()<<endl;
+      }
    }
 
    cout<<"after start camera & piezo: "<<gTimer.read()<<endl;
@@ -501,7 +511,7 @@ nextStack:
          Sleep(30);
          continue;
       }
-      if(nFramesGotForStackCur>=nFramesPerStack){
+      if(nFramesGotForStackCur>=nFramesDoneStack){
          break;
       }
 
@@ -515,17 +525,19 @@ nextStack:
          }
          //copy data
          QByteArray data16((const char*)frame, imageW*imageH*2);
-         emit imageDataReady(data16, nFramesGotForStack-1, imageW, imageH); //-1: due to 0-based indexing
+         emit imageDataReady(data16, nFramesGotForStack-1-(nFramesDoneStack-nFramesPerStack), imageW, imageH); //-1: due to 0-based indexing
          Sleep(50);
       }
    }//while, camera is not idle
 
    //get the last frame if nec
-   if(nFramesGotForStack<nFramesPerStack){
+   if(nFramesGotForStack<nFramesDoneStack){
       camera.getLatestLiveImage(frame);
       QByteArray data16((const char*)frame, imageW*imageH*2);
       emit imageDataReady(data16, nFramesPerStack-1, imageW, imageH); //-1: due to 0-based indexing
    }
+
+   nFramesDoneStack += startCameraOnce ? nFramesPerStack : 0;
 
    cout<<"b4 close laser: "<<gTimer.read()<<endl;
 
@@ -579,12 +591,14 @@ nextStack:
    aiThread->save(*ofsAi);
    ofsAi->flush();
 
-   cout<<"b4 stop camera: "<<gTimer.read()<<endl;
-   camera.stopAcq();
-   cout<<"after stop camera: "<<gTimer.read()<<endl;
+   if(!startCameraOnce) {
+     cout<<"b4 stop camera: "<<gTimer.read()<<endl;
+     camera.stopAcq();
+     cout<<"after stop camera: "<<gTimer.read()<<endl;
+   }
 
    cout<<"b4 wait piezo: "<<gTimer.read()<<endl;
-   genSquareSpike(50);
+   //genSquareSpike(50);
    pPositioner->waitCmd();
    cout<<"after wait piezo: "<<gTimer.read()<<endl;
    genSquareSpike(70);
@@ -630,6 +644,9 @@ repeatWait:
 
    aiThread->stopAcq();
    aiThread->save(*ofsAi);
+
+   if(startCameraOnce)
+     camera.stopAcq();
 
    if(!isUseSpool){
       ofsCam->close();
