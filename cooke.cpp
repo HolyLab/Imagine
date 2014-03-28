@@ -430,12 +430,17 @@ bool CookeCamera::stopAcq()
       return false;
    }
 
+
+   cout<<"b4 PCO_RemoveBuffer: "<<gTimer.read()<<endl;
+
    //reverse of PCO_AddBuffer()
    errorCode=PCO_RemoveBuffer(hCamera);   // If there's still a buffer in the driver queue, remove it
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to stop camera";
       return false;
    }
+
+   cout<<"after PCO_RemoveBuffer: "<<gTimer.read()<<endl;
 
    for(int i=0; i<nBufs; ++i){
       //reverse of PCO_AllocateBuffer()
