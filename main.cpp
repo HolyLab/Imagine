@@ -16,7 +16,7 @@
 #include <filesystem>
 using namespace std;
 
-#include <QtGui/QApplication>
+#include <QApplication>
 #include <QSplashScreen>
 #include <QMessageBox>
 #include <QTextStream>
@@ -84,7 +84,7 @@ bool loadScript(const QString &filename)
 
 bool run(const QString& cmd)
 {
-   return 0==system(cmd.toAscii());
+   return 0==system(cmd.toLatin1());
 }
 QScriptValue runWrapper(QScriptContext *context, QScriptEngine *se)
 {

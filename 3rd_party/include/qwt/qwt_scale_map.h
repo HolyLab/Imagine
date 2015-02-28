@@ -89,8 +89,9 @@ public:
     double pDist() const;
     double sDist() const;
 
-    QT_STATIC_CONST double LogMin;
-    QT_STATIC_CONST double LogMax;
+
+	static double LogMin;
+    static double LogMax;
 
 private:
     void newFactor();   

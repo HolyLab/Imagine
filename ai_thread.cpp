@@ -107,12 +107,12 @@ bool AiThread::mSave(ofstream& ofsAi)
 {
    if(data.size()==0) return true;
 
-   bool result=ofsAi.write((const char*)&data[0], //note: take advantage that items in a vector are stored contiguously
-      sizeof(uInt16)*data.size());
+   ofsAi.write((const char*)&data[0], //note: take advantage that items in a vector are stored contiguously
+   sizeof(uInt16)*data.size());
    data.clear();
    data.shrink_to_fit();
 
-   return result;	
+   return ofsAi.good();
 }
 
 //same as mSave() but w/ lock

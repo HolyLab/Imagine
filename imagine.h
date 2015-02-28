@@ -16,7 +16,7 @@
 #ifndef IMAGINE_H
 #define IMAGINE_H
 
-#include <QtGui/QMainWindow>
+#include <QMainWindow>
 
 class QScrollArea;
 class QString;
@@ -45,7 +45,7 @@ class Imagine : public QMainWindow
     Q_OBJECT
 
 public:
-    Imagine(QWidget *parent = 0, Qt::WFlags flags = 0);
+    Imagine(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~Imagine();
 
 protected:

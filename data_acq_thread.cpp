@@ -14,6 +14,7 @@
 **-------------------------------------------------------------------------*/
 
 #include <QtGui>
+#include <QApplication>
 #include <QDir>
 
 #include <math.h>
@@ -625,7 +626,7 @@ nextStack:
          emit newLogMsgReady("WARNING: overrun(current stack): idle time is too short.");
       }
     
-      int maxWaitTime=2; //in seconds. The frequency to check stop signal
+      double maxWaitTime=2; //in seconds. The frequency to check stop signal
 repeatWait:
       timeToWait=timePerStack*idxCurStack-gTimer.read();
       if(timeToWait>0.01){

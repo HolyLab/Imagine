@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -31,30 +31,29 @@
     <RootNamespace>imagine</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
     <ProjectName>imagine2</ProjectName>
-    <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -97,34 +96,37 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Configuration)\</IntDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ExecutablePath>$(QTDIR)\bin;$(ExecutablePath)</ExecutablePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>qtgen;$(QTDIR)\include;.\qtgen\Release;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;.\;$(QTDIR)\include\QtScript;.\pi_piezo;.\pi_actuator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>qtgen;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include;.\qtgen\Release;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui;.\;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript;.\pi_piezo;.\pi_actuator;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtLocation;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtMultimedia;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtNetwork;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtQml;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtQuick;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSql;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtTest;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\ActiveQt;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtOpenGL;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtDeclarative;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSensors;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSvg;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtWebkitWidgets;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtWidgets;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtXml;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtXmlPatterns;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtConcurrent;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtMultimediaWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
       </DebugInformationFormat>
-      <PreprocessorDefinitions>QT_DLL;QT_SCRIPT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>QT_DLL;QT_SCRIPT_LIB;QT_LOCATION_LIB;QT_MULTIMEDIA_LIB;QT_NETWORK_LIB;QT_QML_LIB;QT_QUICK_LIB;QT_SQL_LIB;QT_TESTLIB_LIB;QT_OPENGL_LIB;QT_DECLARATIVE_LIB;QT_SENSORS_LIB;QT_SVG_LIB;QT_WEBKITWIDGETS_LIB;QT_WIDGETS_LIB;QT_XML_LIB;QT_XMLPATTERNS_LIB;QT_CONCURRENT_LIB;QT_MULTIMEDIAWIDGETS_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmain.lib;QtCore4.lib;QtGui4.lib;QtScript4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\qtmain.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\QtCore4.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\QtGui4.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\QtScript4.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Location.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Multimedia.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Network.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Qml.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Quick.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Sql.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Test.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5AxContainer.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5AxBase.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5OpenGL.lib;opengl32.lib;glu32.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Declarative.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Sensors.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Svg.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5WebkitWidgets.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Widgets.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Xml.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5XmlPatterns.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Concurrent.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5MultimediaWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>qtgen;$(QTDIR)\include;.\qtgen\Release;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;.\;$(QTDIR)\include\QtScript;.\pi_piezo;.\pi_actuator;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\include;c:/boost_1_49_0;.\3rd_party\include;.\3rd_party\include\qwt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>qtgen;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include;.\qtgen\Release;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui;.\;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript;.\pi_piezo;.\pi_actuator;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\include;c:/boost_1_49_0;.\3rd_party\include;.\3rd_party\include\qwt;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtLocation;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtMultimedia;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtNetwork;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtQml;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtQuick;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSql;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtTest;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\ActiveQt;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtOpenGL;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtDeclarative;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSensors;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSvg;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtWebkitWidgets;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtWidgets;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtXml;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtXmlPatterns;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtConcurrent;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtMultimediaWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
       </DebugInformationFormat>
-      <PreprocessorDefinitions>QT_DLL;QT_SCRIPT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>QT_DLL;QT_SCRIPT_LIB;QT_LOCATION_LIB;QT_MULTIMEDIA_LIB;QT_NETWORK_LIB;QT_QML_LIB;QT_QUICK_LIB;QT_SQL_LIB;QT_TESTLIB_LIB;QT_OPENGL_LIB;QT_DECLARATIVE_LIB;QT_SENSORS_LIB;QT_SVG_LIB;QT_WEBKITWIDGETS_LIB;QT_WIDGETS_LIB;QT_XML_LIB;QT_XMLPATTERNS_LIB;QT_CONCURRENT_LIB;QT_MULTIMEDIAWIDGETS_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmain.lib;QtCore4.lib;QtGui4.lib;QtScript4.lib;nidaqmx.lib;Atmcd64m.lib;qwtd5.lib;PvAPI.lib;SC2_Cam.lib;PI_GCS2_DLL_x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\qtmain.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\QtCore4.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\QtGui4.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\QtScript4.lib;nidaqmx.lib;Atmcd64m.lib;qwtd5.lib;PvAPI.lib;SC2_Cam.lib;PI_GCS2_DLL_x64.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Location.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Multimedia.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Network.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Qml.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Quick.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Sql.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Test.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5AxContainer.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5AxBase.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5OpenGL.lib;opengl32.lib;glu32.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Declarative.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Sensors.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Svg.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5WebkitWidgets.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Widgets.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Xml.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5XmlPatterns.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Concurrent.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5MultimediaWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>$(QTDIR)\lib;c:\boost_1_49_0\stage\lib;.\3rd_party\64bit;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib;c:\boost_1_49_0\stage\lib;.\3rd_party\64bit;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
     </Link>
@@ -132,15 +134,15 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>qtgen;$(QTDIR)\include;.\qtgen\Debug;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;.\3rd_party\include\qwt;.\;$(QTDIR)\include\QtScript;C:\boost_1_49_0;.\actuators\pi;.\pi_actuator;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\include;.\3rd_party\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DEBUG_AI;QT_DLL;QT_SCRIPT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>qtgen;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include;.\qtgen\Debug;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui;.\3rd_party\include\qwt;.\;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript;C:\boost_1_49_0;.\actuators\pi;.\pi_actuator;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\include;.\3rd_party\include;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtLocation;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtMultimedia;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtNetwork;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtQml;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtQuick;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSql;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtTest;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\ActiveQt;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtOpenGL;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtDeclarative;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSensors;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSvg;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtWebkitWidgets;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtWidgets;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtXml;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtXmlPatterns;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtConcurrent;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtMultimediaWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG_AI;QT_DLL;QT_SCRIPT_LIB;QT_LOCATION_LIB;QT_MULTIMEDIA_LIB;QT_NETWORK_LIB;QT_QML_LIB;QT_QUICK_LIB;QT_SQL_LIB;QT_TESTLIB_LIB;QT_OPENGL_LIB;QT_DECLARATIVE_LIB;QT_SENSORS_LIB;QT_SVG_LIB;QT_WEBKITWIDGETS_LIB;QT_WIDGETS_LIB;QT_XML_LIB;QT_XMLPATTERNS_LIB;QT_CONCURRENT_LIB;QT_MULTIMEDIAWIDGETS_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmaind.lib;QtCored4.lib;QtGuid4.lib;Atmcd32m.lib;nidaqmx.lib;qwtd5.lib;PvAPI.lib;SC2_Cam.lib;QtScriptd4.lib;PI_GCS2_DLL.lib;apt.lib;qserialdevice.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\qtmaind.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\QtCored4.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\QtGuid4.lib;Atmcd32m.lib;nidaqmx.lib;qwtd5.lib;PvAPI.lib;SC2_Cam.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\QtScriptd4.lib;PI_GCS2_DLL.lib;apt.lib;qserialdevice.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Locationd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Multimediad.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Networkd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Qmld.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Quickd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Sqld.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Testd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5AxContainerd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5AxBased.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5OpenGLd.lib;opengl32.lib;glu32.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Declaratived.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Sensorsd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Svgd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5WebkitWidgetsd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Widgetsd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Xmld.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5XmlPatternsd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Concurrentd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5MultimediaWidgetsd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>C:\boost_1_49_0\stage\lib;$(QTDIR)\lib;.\3rd_party\32bit;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\boost_1_49_0\stage\lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib;.\3rd_party\32bit;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <HeapReserveSize>0</HeapReserveSize>
@@ -150,15 +152,15 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>qtgen;$(QTDIR)\include;.\qtgen\Debug;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;.\3rd_party\include\qwt;.\;$(QTDIR)\include\QtScript;c:/boost_1_49_0;.\actuators\pi;.\pi_actuator;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\include;.\3rd_party\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DEBUG_AI;QT_DLL;QT_SCRIPT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>qtgen;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include;.\qtgen\Debug;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui;.\3rd_party\include\qwt;.\;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript;c:/boost_1_49_0;.\actuators\pi;.\pi_actuator;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\include;.\3rd_party\include;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtLocation;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtMultimedia;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtNetwork;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtQml;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtQuick;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSql;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtTest;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\ActiveQt;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtOpenGL;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtDeclarative;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSensors;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSvg;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtWebkitWidgets;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtWidgets;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtXml;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtXmlPatterns;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtConcurrent;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtMultimediaWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG_AI;QT_DLL;QT_SCRIPT_LIB;QT_LOCATION_LIB;QT_MULTIMEDIA_LIB;QT_NETWORK_LIB;QT_QML_LIB;QT_QUICK_LIB;QT_SQL_LIB;QT_TESTLIB_LIB;QT_OPENGL_LIB;QT_DECLARATIVE_LIB;QT_SENSORS_LIB;QT_SVG_LIB;QT_WEBKITWIDGETS_LIB;QT_WIDGETS_LIB;QT_XML_LIB;QT_XMLPATTERNS_LIB;QT_CONCURRENT_LIB;QT_MULTIMEDIAWIDGETS_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmaind.lib;QtCored4.lib;QtGuid4.lib;atmcd64m.lib;nidaqmx.lib;qwtd5.lib;PvAPI.lib;SC2_Cam.lib;QtScriptd4.lib;PI_GCS2_DLL_x64.lib;qserialdevice.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\qtmaind.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Cored.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Guid.lib;atmcd64m.lib;nidaqmx.lib;qwtd5.lib;PvAPI.lib;SC2_Cam.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Scriptd.lib;PI_GCS2_DLL_x64.lib;qserialdevice.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Locationd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Multimediad.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Networkd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Qmld.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Quickd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Sqld.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Testd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5AxContainerd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5AxBased.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5OpenGLd.lib;opengl32.lib;glu32.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Declaratived.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Sensorsd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Svgd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5WebkitWidgetsd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Widgetsd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Xmld.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5XmlPatternsd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Concurrentd.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5MultimediaWidgetsd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>c:\boost_1_49_0\stage\lib;$(QTDIR)\lib;E:\Users\tim\src\imagine\3rd_party\64bit;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>c:\boost_1_49_0\stage\lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib;C:\imagine\3rd_party\64bit;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <HeapReserveSize>0</HeapReserveSize>
@@ -170,20 +172,20 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
     <Link>
-      <AdditionalDependencies>QtScript4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\QtScript4.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Location.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Multimedia.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Network.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Qml.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Quick.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Sql.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Test.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5AxContainer.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5AxBase.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5OpenGL.lib;opengl32.lib;glu32.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Declarative.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Sensors.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Svg.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5WebkitWidgets.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Widgets.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Xml.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5XmlPatterns.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Concurrent.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5MultimediaWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>QT_DLL;QT_SCRIPT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.\qtgen;.\;$(QTDIR)\include\QtScript;.\pi_piezo;.\pi_actuator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>QT_DLL;QT_SCRIPT_LIB;QT_LOCATION_LIB;QT_MULTIMEDIA_LIB;QT_NETWORK_LIB;QT_QML_LIB;QT_QUICK_LIB;QT_SQL_LIB;QT_TESTLIB_LIB;QT_OPENGL_LIB;QT_DECLARATIVE_LIB;QT_SENSORS_LIB;QT_SVG_LIB;QT_WEBKITWIDGETS_LIB;QT_WIDGETS_LIB;QT_XML_LIB;QT_XMLPATTERNS_LIB;QT_CONCURRENT_LIB;QT_MULTIMEDIAWIDGETS_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\qtgen;.\;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript;.\pi_piezo;.\pi_actuator;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtLocation;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtMultimedia;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtNetwork;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtQml;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtQuick;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSql;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtTest;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\ActiveQt;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtOpenGL;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtDeclarative;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSensors;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSvg;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtWebkitWidgets;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtWidgets;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtXml;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtXmlPatterns;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtConcurrent;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtMultimediaWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
     <Link>
-      <AdditionalDependencies>QtScript4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\QtScript4.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Location.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Multimedia.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Network.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Qml.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Quick.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Sql.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Test.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5AxContainer.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5AxBase.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5OpenGL.lib;opengl32.lib;glu32.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Declarative.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Sensors.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Svg.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5WebkitWidgets.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Widgets.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Xml.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5XmlPatterns.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5Concurrent.lib;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\lib\Qt5MultimediaWidgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>QT_DLL;QT_SCRIPT_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.\qtgen;.\;$(QTDIR)\include\QtScript;.\pi_piezo;.\pi_actuator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>QT_DLL;QT_SCRIPT_LIB;QT_LOCATION_LIB;QT_MULTIMEDIA_LIB;QT_NETWORK_LIB;QT_QML_LIB;QT_QUICK_LIB;QT_SQL_LIB;QT_TESTLIB_LIB;QT_OPENGL_LIB;QT_DECLARATIVE_LIB;QT_SENSORS_LIB;QT_SVG_LIB;QT_WEBKITWIDGETS_LIB;QT_WIDGETS_LIB;QT_XML_LIB;QT_XMLPATTERNS_LIB;QT_CONCURRENT_LIB;QT_MULTIMEDIAWIDGETS_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\qtgen;.\;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript;.\pi_piezo;.\pi_actuator;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtLocation;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtMultimedia;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtNetwork;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtQml;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtQuick;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSql;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtTest;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\ActiveQt;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtOpenGL;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtDeclarative;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSensors;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtSvg;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtWebkitWidgets;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtWidgets;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtXml;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtXmlPatterns;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtConcurrent;C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtMultimediaWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -326,33 +328,347 @@
     <ClCompile Include="actuators\voltage\volpiezo.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="daq.hpp" />
-    <ClInclude Include="actuators\dummy\dummypiezo.hpp" />
-    <ClInclude Include="dummy_daq.hpp" />
-    <ClInclude Include="pi_actuator\Actuator_Controller.hpp">
+    <CustomBuild Include="daq.hpp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="actuators\dummy\dummypiezo.hpp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="dummy_daq.hpp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="pi_actuator\Actuator_Controller.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="pi_piezo\Piezo_Controller.hpp" />
-    <ClInclude Include="shutterctrl.h" />
-    <ClInclude Include="actuators\voltage\volpiezo.hpp" />
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="pi_piezo\Piezo_Controller.hpp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="shutterctrl.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="actuators\voltage\volpiezo.hpp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
     <CustomBuild Include="ai_thread.hpp">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing ai_thread.hpp...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing ai_thread.hpp...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\ai_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;.\ai_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\ai_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\ai_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\Debug\moc_ai_thread.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\qtgen\Debug\moc_ai_thread.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing ai_thread.hpp...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing ai_thread.hpp...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\ai_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;.\ai_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Release" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Release" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\ai_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\ai_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\Release\moc_ai_thread.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\qtgen\Release\moc_ai_thread.cpp;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="andor_g.hpp">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -363,10 +679,6 @@
       </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -375,144 +687,613 @@
       </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
     </CustomBuild>
-    <ClInclude Include="Atmcd32d.h" />
+    <CustomBuild Include="Atmcd32d.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
     <CustomBuild Include="data_acq_thread.hpp">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing data_acq_thread.hpp...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing data_acq_thread.hpp...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\data_acq_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;.\data_acq_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\data_acq_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\data_acq_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\Debug\moc_data_acq_thread.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\qtgen\Debug\moc_data_acq_thread.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing data_acq_thread.hpp...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing data_acq_thread.hpp...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\data_acq_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;.\data_acq_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Release" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Release" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\data_acq_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\data_acq_thread.hpp;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\Release\moc_data_acq_thread.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\qtgen\Release\moc_data_acq_thread.cpp;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="fanctrldialog.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing fanctrldialog.h...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing fanctrldialog.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\fanctrldialog.h;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;.\fanctrldialog.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\fanctrldialog.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\fanctrldialog.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\$(Configuration)\moc_fanctrldialog.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\qtgen\$(Configuration)\moc_fanctrldialog.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing fanctrldialog.h...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing fanctrldialog.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\fanctrldialog.h;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;.\fanctrldialog.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Release" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Release" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\fanctrldialog.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\fanctrldialog.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\$(Configuration)\moc_fanctrldialog.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\qtgen\$(Configuration)\moc_fanctrldialog.cpp;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
     </CustomBuild>
-    <ClInclude Include="avt_g.hpp" />
-    <ClInclude Include="camera_g.hpp" />
-    <ClInclude Include="circbuf.hpp" />
-    <ClInclude Include="cooke.hpp" />
+    <CustomBuild Include="avt_g.hpp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="camera_g.hpp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="circbuf.hpp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="cooke.hpp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
     <CustomBuild Include="cookeworkerthread.h">
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing %(Identity)...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing %(Identity)...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Release" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Release" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Moc%27ing %(Identity)...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB  "-I." "-I.\qtgen" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB  "-I." "-I.\qtgen" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB  "-I." "-I.\qtgen" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB  "-I." "-I.\qtgen" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
     <CustomBuild Include="spoolthread.h">
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath);C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath);C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing %(Identity)...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath);C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath);C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing %(Identity)...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Release" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Release" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath);C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath);C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Moc%27ing %(Identity)...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Moc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB  "-I." "-I.\qtgen" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB  "-I." "-I.\qtgen" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB  "-I." "-I.\qtgen" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB  "-I." "-I.\qtgen" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
-    <ClInclude Include="fast_ofstream.hpp" />
-    <ClInclude Include="histogram_item.h" />
+    <CustomBuild Include="fast_ofstream.hpp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="histogram_item.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
     <CustomBuild Include="imagelabel.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing imagelabel.h...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing imagelabel.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\imagelabel.h;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;.\imagelabel.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\imagelabel.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\imagelabel.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\Debug\moc_imagelabel.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\qtgen\Debug\moc_imagelabel.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing imagelabel.h...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing imagelabel.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\imagelabel.h;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;.\imagelabel.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Release" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Release" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\imagelabel.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\imagelabel.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\Release\moc_imagelabel.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\qtgen\Release\moc_imagelabel.cpp;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="imagine.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing imagine.h...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing imagine.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\imagine.h;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;.\imagine.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\imagine.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\imagine.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\Debug\moc_imagine.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\qtgen\Debug\moc_imagine.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing imagine.h...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing imagine.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\imagine.h;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;.\imagine.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Release" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Release" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\imagine.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\imagine.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\Release\moc_imagine.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\qtgen\Release\moc_imagine.cpp;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
     </CustomBuild>
-    <ClInclude Include="lockguard.h" />
-    <ClInclude Include="misc.hpp" />
+    <CustomBuild Include="lockguard.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="misc.hpp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
     <CustomBuild Include="ni_daq_g.hpp">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </Message>
@@ -522,10 +1303,6 @@
       </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -534,12 +1311,81 @@
       </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
     </CustomBuild>
-    <ClInclude Include="NIDAQmx.h" />
+    <CustomBuild Include="NIDAQmx.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
     <CustomBuild Include="scoped_ptr_g.hpp">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </Message>
@@ -549,10 +1395,6 @@
       </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -561,34 +1403,289 @@
       </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="temperaturedialog.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing temperaturedialog.h...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing temperaturedialog.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Debug" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-I$(QTDIR)\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\temperaturedialog.h;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;.\temperaturedialog.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\temperaturedialog.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\temperaturedialog.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\Debug\moc_temperaturedialog.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\qtgen\Debug\moc_temperaturedialog.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing temperaturedialog.h...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing temperaturedialog.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-I$(QTDIR)\include" "-I.\qtgen\Release" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I$(QTDIR)\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\temperaturedialog.h;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;.\temperaturedialog.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Release" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Release" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\temperaturedialog.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\temperaturedialog.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\Release\moc_temperaturedialog.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\qtgen\Release\moc_temperaturedialog.cpp;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
     </CustomBuild>
-    <ClInclude Include="positioner.hpp" />
-    <ClInclude Include="PvApi.h" />
-    <ClInclude Include="PvRegIo.h" />
-    <ClInclude Include="timer_g.hpp" />
-    <ClInclude Include="qtgen\ui_fanctrldialog.h" />
+    <CustomBuild Include="positioner.hpp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="PvApi.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="PvRegIo.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="timer_g.hpp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="qtgen\ui_fanctrldialog.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
     <CustomBuild Include="qtgen\ui_imagine.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </Message>
@@ -598,10 +1695,6 @@
       </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -610,105 +1703,359 @@
       </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
     </CustomBuild>
-    <ClInclude Include="qtgen\ui_temperaturedialog.h" />
+    <CustomBuild Include="qtgen\ui_temperaturedialog.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="fanctrldialog.ui">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Uic%27ing %(FullPath)...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Uic%27ing %(FullPath)...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\uic.exe" -o ".\qtgen\ui_fanctrldialog.h" "%(FullPath)"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe" -o ".\qtgen\ui_fanctrldialog.h" "%(FullPath)"
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\uic.exe" -o ".\qtgen\ui_fanctrldialog.h" "%(FullPath)"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe" -o ".\qtgen\ui_fanctrldialog.h" "%(FullPath)"
 </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\ui_fanctrldialog.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\qtgen\ui_fanctrldialog.h;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Uic%27ing %(FullPath)...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Uic%27ing %(FullPath)...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\uic.exe" -o ".\qtgen\ui_fanctrldialog.h" "%(FullPath)"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe" -o ".\qtgen\ui_fanctrldialog.h" "%(FullPath)"
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\uic.exe" -o ".\qtgen\ui_fanctrldialog.h" "%(FullPath)"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe" -o ".\qtgen\ui_fanctrldialog.h" "%(FullPath)"
 </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\ui_fanctrldialog.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\qtgen\ui_fanctrldialog.h;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="imagine.ui">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Uic%27ing imagine.ui...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Uic%27ing imagine.ui...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\uic.exe" -o ".\qtgen\ui_imagine.h" ".\imagine.ui"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe" -o ".\qtgen\ui_imagine.h" ".\imagine.ui"
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\uic.exe" -o ".\qtgen\ui_imagine.h" ".\imagine.ui"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe" -o ".\qtgen\ui_imagine.h" ".\imagine.ui"
 </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\ui_imagine.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\qtgen\ui_imagine.h;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Uic%27ing imagine.ui...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Uic%27ing imagine.ui...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\uic.exe" -o ".\qtgen\ui_imagine.h" ".\imagine.ui"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe" -o ".\qtgen\ui_imagine.h" ".\imagine.ui"
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\uic.exe" -o ".\qtgen\ui_imagine.h" ".\imagine.ui"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe" -o ".\qtgen\ui_imagine.h" ".\imagine.ui"
 </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\ui_imagine.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\qtgen\ui_imagine.h;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="temperaturedialog.ui">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Uic%27ing temperaturedialog.ui...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Uic%27ing temperaturedialog.ui...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\uic.exe" -o ".\qtgen\ui_temperaturedialog.h" ".\temperaturedialog.ui"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe" -o ".\qtgen\ui_temperaturedialog.h" ".\temperaturedialog.ui"
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\uic.exe" -o ".\qtgen\ui_temperaturedialog.h" ".\temperaturedialog.ui"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe" -o ".\qtgen\ui_temperaturedialog.h" ".\temperaturedialog.ui"
 </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\qtgen\ui_temperaturedialog.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\qtgen\ui_temperaturedialog.h;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Uic%27ing temperaturedialog.ui...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Uic%27ing temperaturedialog.ui...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\uic.exe" -o ".\qtgen\ui_temperaturedialog.h" ".\temperaturedialog.ui"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe" -o ".\qtgen\ui_temperaturedialog.h" ".\temperaturedialog.ui"
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\uic.exe" -o ".\qtgen\ui_temperaturedialog.h" ".\temperaturedialog.ui"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe" -o ".\qtgen\ui_temperaturedialog.h" ".\temperaturedialog.ui"
 </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\qtgen\ui_temperaturedialog.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\qtgen\ui_temperaturedialog.h;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="imagine.qrc">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling Qt resource file: .\imagine.qrc...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling Qt resource file: .\imagine.qrc...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\rcc.exe" -name "imagine" -no-compress ".\imagine.qrc" -o "qtgen\qrc_imagine.cpp"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\rcc.exe" -name "imagine" -no-compress ".\imagine.qrc" -o "qtgen\qrc_imagine.cpp"
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\rcc.exe" -name "imagine" -no-compress ".\imagine.qrc" -o "qtgen\qrc_imagine.cpp"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\rcc.exe" -name "imagine" -no-compress ".\imagine.qrc" -o "qtgen\qrc_imagine.cpp"
 </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\rcc.exe;Resources/start_acq.bmp;Resources/start_live.bmp;Resources/stop.bmp;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\rcc.exe;Resources/start_acq.bmp;Resources/start_live.bmp;Resources/stop.bmp;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\rcc.exe;Resources/start_acq.bmp;Resources/start_live.bmp;Resources/stop.bmp;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\rcc.exe;Resources/start_acq.bmp;Resources/start_live.bmp;Resources/stop.bmp;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">qtgen\qrc_imagine.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">qtgen\qrc_imagine.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling Qt resource file: .\imagine.qrc...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compiling Qt resource file: .\imagine.qrc...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\rcc.exe" -name "imagine" -no-compress ".\imagine.qrc" -o "qtgen\qrc_imagine.cpp"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\rcc.exe" -name "imagine" -no-compress ".\imagine.qrc" -o "qtgen\qrc_imagine.cpp"
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\rcc.exe" -name "imagine" -no-compress ".\imagine.qrc" -o "qtgen\qrc_imagine.cpp"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\rcc.exe" -name "imagine" -no-compress ".\imagine.qrc" -o "qtgen\qrc_imagine.cpp"
 </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\rcc.exe;Resources/start_acq.bmp;Resources/start_live.bmp;Resources/stop.bmp;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\rcc.exe;Resources/start_acq.bmp;Resources/start_live.bmp;Resources/stop.bmp;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\rcc.exe;Resources/start_acq.bmp;Resources/start_live.bmp;Resources/stop.bmp;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\rcc.exe;Resources/start_acq.bmp;Resources/start_live.bmp;Resources/stop.bmp;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">qtgen\qrc_imagine.cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">qtgen\qrc_imagine.cpp;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
     </CustomBuild>
-    <None Include="Resources\start_acq.bmp" />
-    <None Include="Resources\start_live.bmp" />
-    <None Include="Resources\stop.bmp" />
+    <CustomBuild Include="Resources\start_acq.bmp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="Resources\start_live.bmp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="Resources\stop.bmp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
+    </CustomBuild>
     <CustomBuild Include="imagine.ico">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Creating windows resources...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating windows resources...</Message>
@@ -726,6 +2073,28 @@
 </Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">imagine.res;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">imagine.res;%(Outputs)</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+      </AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Template|x64'">Performing Custom Build Tools</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+      </AdditionalInputs>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -733,6 +2102,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
+      <UserProperties lupdateOnBuild="0" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

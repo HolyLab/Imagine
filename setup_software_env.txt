@@ -1,8 +1,14 @@
 * install Cooke's camware (downloadable from Cooke's website)
 * install Cooke's camera SDK (downloadable from cooke's website too)
-* install visual studio
+* install visual studio 2013
 * install NI's SDK (dvd; or download it from NI's website)
-* install Qt
+* install Qt version 5.4.1
+* install Qt creator version 2.7.2 x64
+* install Qt addin for visual studio
+* install boost (see the correct version from the imagine2 project settings->Configuration Properties->C/C++->General->Additional Include Directories)
+* install visual c++ 2013 redistributable
+* Set up Visual Studio project settings:
+  - 
 * install LSI raid management software (downloadable from its website too)
 * install PI's piezo control software
 * install laser control software (LMM for HS-Ocpi from Spectral Applied)

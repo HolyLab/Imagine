@@ -166,7 +166,7 @@ void Imagine::preparePlots(Camera* pCamera)
 
 }
 
-Imagine::Imagine(QWidget *parent, Qt::WFlags flags)
+Imagine::Imagine(QWidget *parent, Qt::WindowFlags flags)
 : QMainWindow(parent, flags)
 {
    minPixelValueByUser=0;
@@ -688,7 +688,7 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
       delete image; image=0;
       image=new QImage(imageW, imageH, QImage::Format_Indexed8);
       //set to 256 level grayscale
-      image->setNumColors(256);
+      image->setColorCount(256);
       for(int i=0; i<256; i++){
          image->setColor(i, qRgb(i, i, i)); //set color table entry
       }

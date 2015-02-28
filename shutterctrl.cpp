@@ -79,6 +79,7 @@ bool closeShutterDevice()
    port->close();
    delete port;
    port=nullptr;
+   return true;
 }//closeShutterDevice(),
 
 static int getShutterStatus()
@@ -107,7 +108,7 @@ bool setShutterStatus(int line, bool isOpen)
    bitset<4> bs((unsigned long long)curStatus);
    bs.set(line-1, isOpen);
    int newStatus=bs.to_ulong();
-   QByteArray tx=QString("01%1\r").arg(newStatus, 2, 16, QChar('0')).toAscii();
+   QByteArray tx=QString("01%1\r").arg(newStatus, 2, 16, QChar('0')).toLatin1();
    int nWritten = port->write(tx);
    //qDebug() << "Writed is : " << nWritten << " bytes";
 
