@@ -4,49 +4,49 @@
 using namespace std;
 
 #include <QtDebug>
+#include <QtSerialPort/QSerialPort>
 
-#include "abstractserial.h"
 #include "ni_daq_g.hpp"
 
-AbstractSerial *port;
+QSerialPort *port;
 extern DaqDo * digOut;
 
 bool openShutterDevice(const QString& dev)
 {
    /* 1. First - create an instance of an object.
    */
-   port = new AbstractSerial();
+   port = new QSerialPort();
    /* 2. Second - set the device name.
    */
-   port->setDeviceName(dev);
+   port->setPortName(dev);
 
    /* 3. Third - open the device.
    */
-   if (port->open(AbstractSerial::ReadWrite)) {
+   if (port->open(QSerialPort::ReadWrite)) {
       /* 4. Fourth - now you can set the parameters. (after successfully opened port)
       */
-      if (!port->setBaudRate(AbstractSerial::BaudRate19200)) {
-         qDebug() << "Set baud rate " <<  AbstractSerial::BaudRate19200 << " error.";
+      if (!port->setBaudRate(QSerialPort::Baud19200)) {
+         qDebug() << "Set baud rate " <<  QSerialPort::Baud19200 << " error.";
          goto label;
       }
 
-      if (!port->setDataBits(AbstractSerial::DataBits8)) {
-         qDebug() << "Set data bits " <<  AbstractSerial::DataBits8 << " error.";
+      if (!port->setDataBits(QSerialPort::Data8)) {
+         qDebug() << "Set data bits " <<  QSerialPort::Data8 << " error.";
          goto label;
       }
 
-      if (!port->setParity(AbstractSerial::ParityNone)) {
-         qDebug() << "Set parity " <<  AbstractSerial::ParityNone << " error.";
+      if (!port->setParity(QSerialPort::NoParity)) {
+         qDebug() << "Set parity " <<  QSerialPort::NoParity << " error.";
          goto label;
       }
 
-      if (!port->setStopBits(AbstractSerial::StopBits1)) {
-         qDebug() << "Set stop bits " <<  AbstractSerial::StopBits1 << " error.";
+      if (!port->setStopBits(QSerialPort::OneStop)) {
+         qDebug() << "Set stop bits " <<  QSerialPort::OneStop << " error.";
          goto label;
       }
 
-      if (!port->setFlowControl(AbstractSerial::FlowControlOff)) {
-         qDebug() << "Set flow " <<  AbstractSerial::FlowControlOff << " error.";
+      if (!port->setFlowControl(QSerialPort::NoFlowControl)) {
+         qDebug() << "Set flow " <<  QSerialPort::NoFlowControl << " error.";
          goto label;
       }
 

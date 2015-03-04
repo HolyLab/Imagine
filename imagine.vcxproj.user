@@ -7,7 +7,7 @@
     <QTDIR>C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl</QTDIR>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerEnvironment>PATH="C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin%3b$(PATH)</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>PATH=C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\bin64;C:\Program Files\SiliconSoftware\Runtime5.2.2\bin;C:\src\imagine\3rd_party\64bit;%(PATH)%</LocalDebuggerEnvironment>
     <LocalDebuggerCommandArguments>ocpi-1</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>

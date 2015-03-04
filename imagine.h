@@ -23,7 +23,7 @@ class QString;
 class QwtPlot;
 class QwtPlotCurve;
 class HistogramItem;
-class CurveData;
+//class CurveData;
 
 #include "ui_imagine.h"
 
@@ -63,7 +63,7 @@ private:
     HistogramItem *histogram;
     QwtPlot *intenPlot;
     QwtPlotCurve *intenCurve;
-    CurveData *intenCurveData;
+//    CurveData *intenCurveData;
     vector<PiezoUiParam> piezoUiParams;
     bool modified;
     bool paramOK;

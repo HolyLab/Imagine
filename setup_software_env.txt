@@ -5,11 +5,35 @@
 * install Qt version 5.4.1
 * install Qt creator version 2.7.2 x64
 * install Qt addin for visual studio
-* install boost (see the correct version from the imagine2 project settings->Configuration Properties->C/C++->General->Additional Include Directories)
+* install boost (NOTE: user newer version, see below; OLD: see the correct version from the imagine2 project settings->Configuration Properties->C/C++->General->Additional Include Directories)
 * install visual c++ 2013 redistributable
 * Set up Visual Studio project settings:
-  - 
+  - A big help here is to build one of the Qt demo projects and see what libs get added
+  - Project->Properties->C/C++->Additional include directories, make sure it points to the Qt dirs and anything else
+  - Project->Properties->Linker->Additional library directories, likewise
 * install LSI raid management software (downloadable from its website too)
 * install PI's piezo control software
 * install laser control software (LMM for HS-Ocpi from Spectral Applied)
 
+To build boost (see their "Getting started")
+Open Command Prompt and execute the following:
+   cd C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools
+  (or wherever vsvars32.bat is)
+  vsvars32.bat
+or probably more easily:
+  open the Visual Studio tools directory under the Start menu, select "Developer's command prompt"
+cd C:\src\boost_1_57_0
+bootstrap.bat
+.\b2 address-model=64
+
+Compiling qwt:
+Open the "Developer's command prompt" as above
+cd VC
+vcvarsall amd64
+cd to qwt directory
+qmake (must specify path to qmake executable) as they indicate
+
+Old path in Debug->Environment:
+PATH="C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin%3b$(PATH)
+PATH=%PATH%;C:\src\imagine\3rd_party\64bit;C:\src\qwt-6.1.2\qwt-6.1.2\lib
+"

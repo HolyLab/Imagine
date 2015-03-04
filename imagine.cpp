@@ -35,15 +35,13 @@
 #include <qwt_plot.h>
 #include <qwt_plot_grid.h>
 #include <qwt_plot_marker.h>
-#include <qwt_interval_data.h>
 #include <qwt_scale_engine.h>
-#include <qwt_data.h>
 #include <qwt_symbol.h>
 #include <qwt_plot_curve.h>
 #include <QDesktopWidget>
 
 #include "histogram_item.h"
-#include "curvedata.h"
+//#include "curvedata.h"
 
 #include <vector>
 #include <utility>
@@ -115,13 +113,13 @@ void Imagine::preparePlots(Camera* pCamera)
    histPlot=new QwtPlot();
    histPlot->setCanvasBackground(QColor(Qt::white));
    ui.dwHist->setWidget(histPlot); //setWidget() causes the widget using all space
-   histPlot->setAxisScaleEngine(QwtPlot::yLeft, new QwtLog10ScaleEngine);
+   histPlot->setAxisScaleEngine(QwtPlot::yLeft, new QwtLogScaleEngine(10));
 
    QwtPlotGrid *grid = new QwtPlotGrid;
    grid->enableXMin(true);
    grid->enableYMin(true);
-   grid->setMajPen(QPen(Qt::black, 0, Qt::DotLine));
-   grid->setMinPen(QPen(Qt::gray, 0 , Qt::DotLine));
+   grid->setMajorPen(QPen(Qt::black, 0, Qt::DotLine));
+   grid->setMinorPen(QPen(Qt::gray, 0 , Qt::DotLine));
    grid->attach(histPlot);
 
    histogram = new HistogramItem();
@@ -144,6 +142,7 @@ void Imagine::preparePlots(Camera* pCamera)
 
    //intensity curve
    //TODO: make it ui aware
+   /*
    int curveWidth=500;
    intenPlot=new QwtPlot();
    ui.dwIntenCurve->setWidget(intenPlot);
@@ -155,15 +154,15 @@ void Imagine::preparePlots(Camera* pCamera)
    sym.setStyle(QwtSymbol::Cross);
    sym.setPen(QColor(Qt::black));
    sym.setSize(5);
-   intenCurve->setSymbol(sym);
+   intenCurve->setSymbol(&sym);
 
    intenCurve->setRenderHint(QwtPlotItem::RenderAntialiased);
    intenCurve->setPen(QPen(Qt::red));
    intenCurve->attach(intenPlot);
 
-   intenCurveData=new CurveData(curveWidth);
+   //intenCurveData=new CurveData(curveWidth);
    intenCurve->setData(*intenCurveData);
-
+   */
 }
 
 Imagine::Imagine(QWidget *parent, Qt::WindowFlags flags)
@@ -620,14 +619,12 @@ void Imagine::updateHist(const Camera::PixelValue * frame,
    int totalWidth= maxintensity; //1<<14;
    double binWidth=double(totalWidth)/nBins;
 
-   QwtArray<QwtDoubleInterval> intervals(nBins);
-   QwtArray<double> values(nBins);
+   QVector<QwtIntervalSample> intervals(nBins);
 
    double maxcount = 0;
    for(unsigned int i = 0; i < nBins; i++ ) {
       double start=i*binWidth;                            //inclusive
       double end = (i==nBins-1) ? totalWidth : start+binWidth;
-      intervals[i] = QwtDoubleInterval(start, end);
 
       int count=1;  // since log scale, plot count+1
       int width = 0;
@@ -636,14 +633,15 @@ void Imagine::updateHist(const Camera::PixelValue * frame,
          count+=counts[istart++];
          width++;
       }
-      values[i] = (width > 0) ? (double(count)/width)*binWidth : 0;
-      if (values[i] > maxcount)
-        maxcount = values[i];
+      double value = (width > 0) ? (double(count)/width)*binWidth : 0;
+      if (value > maxcount)
+        maxcount = value;
+	  intervals[i] = QwtIntervalSample(value, start, end);
    }//for, each inten
    //cout << "Last interval: (" << intervals[nBins-1].minValue() << "," << intervals[nBins-1].maxValue() << ")";
    //cout << "; Last value: " << values[nBins-1] << endl;
 
-   histogram->setData(QwtIntervalData(intervals, values));
+   histogram->setSamples(intervals);
    
    histPlot->setAxisScale(QwtPlot::yLeft, 1, maxcount);
    histPlot->setAxisScale(QwtPlot::xBottom, 0.0, maxintensity);
@@ -655,7 +653,7 @@ void Imagine::updateIntenCurve(const Camera::PixelValue * frame,
                     const int imageW, const int imageH, const int frameIdx)
 {
    //TODO: if not visible, just return
-
+	/*
    double sum=0;
    int nPixels=imageW*imageH;
    for(unsigned int i=0; i<nPixels; ++i){
@@ -668,6 +666,7 @@ void Imagine::updateIntenCurve(const Camera::PixelValue * frame,
    intenCurve->setData(*intenCurveData);
    intenPlot->setAxisScale(QwtPlot::xBottom, intenCurveData->left(), intenCurveData->right());
    intenPlot->replot();
+   */
 }//updateIntenCurve(),
 
 
@@ -862,7 +861,7 @@ void Imagine::on_actionStartAcqAndSave_triggered()
       curStimIndex=0;
    }
 
-   intenCurveData->clear();
+//   intenCurveData->clear();
 
    dataAcqThread.isLive=false;
    dataAcqThread.startAcq();
@@ -891,7 +890,7 @@ void Imagine::on_actionStartLive_triggered()
    nUpdateImage=0;
    minPixelValue=maxPixelValue=-1;
 
-   intenCurveData->clear();
+//   intenCurveData->clear();
 
    dataAcqThread.isLive=true;
    dataAcqThread.startAcq();
