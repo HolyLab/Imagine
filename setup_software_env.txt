@@ -37,3 +37,15 @@ Old path in Debug->Environment:
 PATH="C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin%3b$(PATH)
 PATH=%PATH%;C:\src\imagine\3rd_party\64bit;C:\src\qwt-6.1.2\qwt-6.1.2\lib
 "
+Getting the imaging path aligned:
+Attach objective
+Immerse piece of lens tissue, shine light on it, see light collected by the objective.
+Adjust camera lens & camera position to center the spot (at short focal length),
+then zoom in until it fills the camera chip.
+Check alignment by moving the piezo back and forth
+Check that we can focus on a "slice" of the paper
+
+Getting the cigarette aligned:
+Remove the objective
+Without lenses or coverslip, align the cigarette so the beam passes through it and maintains circularity
+Insert lenses, but do not attach coverslip. Check the light sheet.
