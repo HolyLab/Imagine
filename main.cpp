@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
    }
 
    if(!loadScript(QString::fromStdString(rig)+".js")){
-      return 1;  
+      return 1;
    }
 
    // preset.js

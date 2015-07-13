@@ -7,8 +7,8 @@
     <QTDIR>C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl</QTDIR>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerEnvironment>PATH="C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin%3b$(PATH)</LocalDebuggerEnvironment>
-    <LocalDebuggerCommandArguments>ocpi-1</LocalDebuggerCommandArguments>
+    <LocalDebuggerEnvironment>PATH=C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin%3b$(PATH)</LocalDebuggerEnvironment>
+    <LocalDebuggerCommandArguments>ocpi-2</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -16,7 +16,7 @@
     <QTDIR>C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl</QTDIR>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerEnvironment>PATH="C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin%3b$(PATH)</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>PATH=C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin%3b$(PATH)</LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
@@ -24,7 +24,7 @@
     <QTDIR>C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl</QTDIR>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
-    <LocalDebuggerEnvironment>PATH="C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin%3b$(PATH)</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>PATH=C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin%3b$(PATH)</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup>
     <QTDIR>C:\Qt\4.8.0</QTDIR>

@@ -36,6 +36,15 @@ if(rig=="ocpi-1"){
 	var ainame = "Dev2/ai";
 }
 
+if(rig=="ocpi-2"){
+	var camera="cooke";
+	var positioner = "volpiezo"; //NOTE: requires daq=="ni"
+	var daq="ni";
+	var doname = "Dev1/port0/line0:7";
+	var aoname = "Dev1/ao";
+	var ainame = "Dev1/ai";
+}
+
 if (rig=="ocpi-1bidi") {
     var camera = "cooke";
     var positioner = "dummy";
