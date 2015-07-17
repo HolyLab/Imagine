@@ -171,8 +171,8 @@ int main(int argc, char *argv[])
    QSplashScreen *splash = new QSplashScreen(pixmap);
    splash->show();
 
-   QMessageBox::information(0, "Imagine", 
-         "Please raise microscope.");
+   /*QMessageBox::information(0, "Imagine", 
+         "Please raise microscope.");*/
 
    splash->showMessage(QString("Initialize the %1 actuator ...").arg(positionerType), 
       Qt::AlignLeft|Qt::AlignBottom, Qt::red);
