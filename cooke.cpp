@@ -129,7 +129,7 @@ bool CookeCamera::setAcqParams(int emGain,
       return false;
    }
 
-   //frame trigger mode
+   // frame trigger mode
    errorCode = PCO_SetTriggerMode(hCamera, 0);
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to set frame trigger mode";
@@ -154,13 +154,19 @@ bool CookeCamera::setAcqParams(int emGain,
       return false;
    }
 
-   errorCode=PCO_SetBitAlignment(hCamera, 1);
+   errorCode=PCO_SetBitAlignment(hCamera, 1); //0: MSB aligned; 1: LSB aligned
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to set bit alignment mode";
       return false;
    }
 
-   DWORD dwPixelRate=286000000;
+   /*also need PO_SetTransferParameter and PCO_SetActiveLookuptable with
+	   appropriate parameter*/
+
+   //DWORD dwPixelRate=286000000;
+   DWORD dwPixelRate = 272250000;
+   //DWORD dwPixelRate = 95333333;
+
    errorCode=PCO_SetPixelRate(hCamera, dwPixelRate); 
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to call PCO_SetPixelRate()";
@@ -201,14 +207,6 @@ bool CookeCamera::setAcqParams(int emGain,
    }
    assert(wXResAct==hend-hstart+1 && wYResAct==vend-vstart+1);
 
-   //
-   errorCode=PCO_GetPixelRate(hCamera, &dwPixelRate);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetPixelRate()";
-      return false;
-   }
-
-
    WORD wDestInterface=2,wFormat, wRes1, wRes2;
    errorCode=PCO_GetInterfaceOutputFormat(hCamera, &wDestInterface, &wFormat, &wRes1, &wRes2);
    if(errorCode!=PCO_NOERROR) {
@@ -224,12 +222,15 @@ bool CookeCamera::setAcqParams(int emGain,
       return false;
    }
 
-   clparams.DataFormat=PCO_CL_DATAFORMAT_5x12L | wFormat;
-   errorCode=PCO_SetTransferParameter(hCamera, &clparams,sizeof(PCO_SC2_CL_TRANSFER_PARAM)); 
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_SetTransferParameter()";
-      return false;
-   }
+   //clparams.DataFormat=PCO_CL_DATAFORMAT_5x12L | wFormat; // 12L requires lookup table 0x1612
+   ////clparams.ClockFrequency = 85000000; // see SC2_SDKAddendum.h for valid values - NOT same as pixel freq.
+   ////clparams.Transmit = 0; // single image transmission mode
+   //errorCode=PCO_SetTransferParameter(hCamera, &clparams,sizeof(PCO_SC2_CL_TRANSFER_PARAM)); 
+   //if(errorCode!=PCO_NOERROR) {
+   //   errorMsg="failed to call PCO_SetTransferParameter()";
+   //   return false;
+   //}
+   PCO_SetTransferParametersAuto(hCamera, NULL, 0);
 
    errorCode = PCO_GetTransferParameter(hCamera, &clparams, sizeof(PCO_SC2_CL_TRANSFER_PARAM));
    if(errorCode!=PCO_NOERROR) {
@@ -241,7 +242,7 @@ bool CookeCamera::setAcqParams(int emGain,
    WORD wFormat2;
    errorCode=PCO_GetDoubleImageMode(hCamera, &wFormat2);
 
-   char Description[256]; BYTE bInputWidth,bOutputWidth; 
+   char Description[256]; BYTE bInputWidth,bOutputWidth;
    WORD wNumberOfLuts, wDescLen, wIdentifier;
    errorCode=PCO_GetLookupTableInfo(hCamera, 0, &wNumberOfLuts, 0, 0, 0, 0, 0, 0);
    if(errorCode!=PCO_NOERROR) {
@@ -251,19 +252,31 @@ bool CookeCamera::setAcqParams(int emGain,
    int nLuts=wNumberOfLuts;
    for(int i=0; i<nLuts; ++i){
       errorCode=PCO_GetLookupTableInfo(hCamera, i, &wNumberOfLuts, Description, 256, &wIdentifier, &bInputWidth, &bOutputWidth, &wFormat2);
-      if(errorCode!=PCO_NOERROR) cout<<"error when get lut "<<i<<"'s info"<<endl;
-      //else cout<<"lut "<<i<<": '"<<Description<<"'"<<
+	  if (errorCode != PCO_NOERROR) { cout << "error when get lut " << i << "'s info" << endl; }
+	  else cout << "lut " << i << ": '" << Description << "'";
    }
+   
+
+   // TODO: take a look at the settings that SetTransferParametersAuto gives you
+   // TODO: apply those settings manually
+   // TODO: remove the code above that just does debugging stuff
+   // TODO: do we want an implementation that's good for this cooke camera, or a little more robust?
+   // TODO: how would you handle two cameras?
+
+   // TODO: write the auto-set lookup table and transfer params for the
+   // pco edge 2 here... let's see if we can find a way to derive them safely...
 
 
    WORD wParameter=0;
-   wIdentifier=5650; 
-   errorCode =PCO_SetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_SetActiveLookupTable()";
-      return false;
-   }
+   //WORD wIdentifier=0x1612; // 0x1612 for high speed, with x resolution > 1920
+   //errorCode =PCO_SetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
+   //if(errorCode!=PCO_NOERROR) {
+   //   errorMsg="failed to call PCO_SetActiveLookupTable()";
+   //   return false;
+   //}
+   //// consider PCO_SetTransferParametersAuto
 
+   //WORD wIdentifier;
    errorCode =PCO_GetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to call PCO_GetActiveLookupTable()";
@@ -278,7 +291,11 @@ bool CookeCamera::setAcqParams(int emGain,
       return false;
    }
 
+   // set the image buffer parameters
    errorCode = PCO_CamLinkSetImageParameters(hCamera, wXResAct, wYResAct);
+   char msg[16384];
+   PCO_GetErrorText(errorCode, msg, 16384);
+   cout << msg << endl;
    if(errorCode!=PCO_NOERROR) {
       errorMsg="failed to call PCO_CamLinkSetImageParameters()";
       return false;
