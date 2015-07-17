@@ -7,7 +7,11 @@
 
 #include "pco_errt.h"
 #include <iostream>
+#include <QtDebug>
+
 #define PCO_ERRT_H_CREATE_OBJECT
+
+int const COOKE_EXCEPTION = 47;
 
 bool CookeCamera::init()
 {
@@ -92,8 +96,6 @@ bool CookeCamera::fini()
    return true;
 }//fini(),
 
-
-
 bool CookeCamera::setAcqParams(int emGain,
                      int preAmpGainIdx,
                      int horShiftSpeedIdx,
@@ -102,125 +104,73 @@ bool CookeCamera::setAcqParams(int emGain,
                      bool isBaselineClamp
                      ) 
 {
-   //NOTE: the camera should be in idle state
-   errorCode = PCO_SetRecordingState(hCamera, 0);// stop recording
-   if (errorCode & PCO_WARNING_FIRMWARE_FUNC_ALREADY_OFF) errorCode = PCO_NOERROR;
+   // if you need to ask the camera about available settings, this is the place to do it.
 
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to stop camera";
-      return false;
+   // failure of a config call will raise an exception so we can try/catch for cleanliness
+   try {
+	   // stop recording - necessary for changing camera settings
+	   safe_pco(PCO_SetRecordingState(hCamera, 0), "failed to stop camera");
+	   // start with default settings
+	   safe_pco(PCO_ResetSettingsToDefault(hCamera), "failed to reset camera settings");
+	   // skip SetBinning... not applicable to cooke cameras
+	   // set roi
+	   safe_pco(PCO_SetROI(hCamera, hstart, vstart, hend, vend), "failed to set ROI");
+	   // frame trigger mode (0 for auto)
+	   safe_pco(PCO_SetTriggerMode(hCamera, 0), "failed to set frame trigger mode");
+	   // storage mode (1 for FIFO)
+	   safe_pco(PCO_SetStorageMode(hCamera, 1), "failed to set storage mode");
+	   // acquisition mode (0 for auto)
+	   safe_pco(PCO_SetAcquireMode(hCamera, 0), "failed to set acquisition mode");
+	   // timestamp mode (1: bcd; 2: bcd+ascii)
+	   safe_pco(PCO_SetTimestampMode(hCamera, 1), "failed to set timestamp mode");
+	   // bit alignment (0: MSB aligned; 1: LSB aligned)
+	   safe_pco(PCO_SetBitAlignment(hCamera, 1), "failed to set bit alignment mode");
+	  
+	   // pixel rate (note that the viable settings might change between models)
+	   //DWORD dwPixelRate=286000000;
+	   DWORD dwPixelRate = 272250000;
+	   //DWORD dwPixelRate = 95333333;
+	   safe_pco(PCO_SetPixelRate(hCamera, dwPixelRate), "failed to call PCO_SetPixelRate()");
+
+       // arm the camera to apply the image size settings... needed for the config calls that follow
+       safe_pco(PCO_ArmCamera(hCamera), "failed to arm the camera");
+
+       // get set roi size, make sure it matches what we meant to set
+       WORD wXResAct = -1, wYResAct = -1, wXResMax, wYResMax;
+       safe_pco(PCO_GetSizes(hCamera, &wXResAct, &wYResAct, &wXResMax, &wYResMax), "failed to get roi size");
+       assert(wXResAct == hend - hstart + 1 && wYResAct == vend - vstart + 1);
+
+       // interface output format (interface 2 for DVI)
+       // note that the wFormat passed here is copied from the code before I arrived... seems weird.
+       safe_pco(PCO_SetInterfaceOutputFormat(hCamera, 2, SCCMOS_FORMAT_TOP_CENTER_BOTTOM_CENTER, 0, 0),
+           "failed to call PCO_SetInterfaceOutputFormat()");
+
+       // auto-set the transfer params
+       PCO_SetTransferParametersAuto(hCamera, NULL, 0);
+
+
+       // TODO: explicitly set the transfer params here
+
+
+       // TODO: explicitly set the active lookup table here
+
+
+       // arm the camera to validate the settings
+       safe_pco(PCO_ArmCamera(hCamera), "failed to arm the camera");
+
+       // set the image buffer parameters
+       safe_pco(PCO_CamLinkSetImageParameters(hCamera, wXResAct, wYResAct),
+           "failed to call PCO_CamLinkSetImageParameters()");
+   }
+   catch (int e) {
+	   if (e != COOKE_EXCEPTION) throw;
+	   return false;
    }
 
-   // /*
-   errorCode=PCO_ResetSettingsToDefault(hCamera);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to reset camera settings";
-      return false;
-   }
-   // */
-
-   //for this cooke camera no binning is possible
-   //so skip SetBinning
-
-   //set roi
-   errorCode = PCO_SetROI(hCamera, hstart, vstart, hend, vend);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to set ROI";
-      return false;
-   }
-
-   // frame trigger mode
-   errorCode = PCO_SetTriggerMode(hCamera, 0);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to set frame trigger mode";
-      return false;
-   }
-
-   errorCode=PCO_SetStorageMode(hCamera, 1); //1: fifo mode
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to set storage mode";
-      return false;
-   }
-
-   errorCode=PCO_SetAcquireMode(hCamera, 0); //0: auto
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to set acquisition mode";
-      return false;
-   }
-
-   errorCode=PCO_SetTimestampMode(hCamera, 1); //1: bcd; 2: bcd+ascii
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to set timestamp mode";
-      return false;
-   }
-
-   errorCode=PCO_SetBitAlignment(hCamera, 1); //0: MSB aligned; 1: LSB aligned
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to set bit alignment mode";
-      return false;
-   }
-
-   /*also need PO_SetTransferParameter and PCO_SetActiveLookuptable with
-	   appropriate parameter*/
-
-   //DWORD dwPixelRate=286000000;
-   DWORD dwPixelRate = 272250000;
-   //DWORD dwPixelRate = 95333333;
-
-   errorCode=PCO_SetPixelRate(hCamera, dwPixelRate); 
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_SetPixelRate()";
-      return false;
-   }
-
-   errorCode=PCO_GetPixelRate(hCamera, &dwPixelRate);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetPixelRate()";
-      return false;
-   }
-
-   errorCode = PCO_ArmCamera(hCamera);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to arm the camera";
-      return false;
-   }
-
-   PCO_SC2_CL_TRANSFER_PARAM clparams;
-
-   errorCode = PCO_GetTransferParameter(hCamera, &clparams, sizeof(PCO_SC2_CL_TRANSFER_PARAM));
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetTransferParameter()";
-      return false;
-   }
-
-
-   //get size
-   WORD wXResAct=-1; // Actual X Resolution
-   WORD wYResAct = -1; // Actual Y Resolution
-   WORD wXResMax; // Maximum X Resolution
-   WORD wYResMax; // Maximum Y 
-
-   errorCode = PCO_GetSizes(hCamera, &wXResAct, &wYResAct, &wXResMax, &wYResMax);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to get roi size";
-      return false;
-   }
-   assert(wXResAct==hend-hstart+1 && wYResAct==vend-vstart+1);
-
-   WORD wDestInterface=2,wFormat, wRes1, wRes2;
-   errorCode=PCO_GetInterfaceOutputFormat(hCamera, &wDestInterface, &wFormat, &wRes1, &wRes2);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetInterfaceOutputFormat()";
-      return false;
-   }
-
-   wRes1=wRes2=0;
-   wFormat=SCCMOS_FORMAT_TOP_CENTER_BOTTOM_CENTER;
-   errorCode=PCO_SetInterfaceOutputFormat(hCamera, wDestInterface, wFormat, wRes1, wRes2);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_SetInterfaceOutputFormat()";
-      return false;
-   }
+   
+   // TODO: write the auto-set lookup table and transfer params for the
+   // pco edge 2 here... let's see if we can find a way to derive them safely...
+   
 
    //clparams.DataFormat=PCO_CL_DATAFORMAT_5x12L | wFormat; // 12L requires lookup table 0x1612
    ////clparams.ClockFrequency = 85000000; // see SC2_SDKAddendum.h for valid values - NOT same as pixel freq.
@@ -230,76 +180,64 @@ bool CookeCamera::setAcqParams(int emGain,
    //   errorMsg="failed to call PCO_SetTransferParameter()";
    //   return false;
    //}
-   PCO_SetTransferParametersAuto(hCamera, NULL, 0);
-
-   errorCode = PCO_GetTransferParameter(hCamera, &clparams, sizeof(PCO_SC2_CL_TRANSFER_PARAM));
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetTransferParameter()";
-      return false;
-   }
-
-   //PCO_SetInterfaceOutputFormat, p6, 20
-   WORD wFormat2;
-   errorCode=PCO_GetDoubleImageMode(hCamera, &wFormat2);
-
-   char Description[256]; BYTE bInputWidth,bOutputWidth;
-   WORD wNumberOfLuts, wDescLen, wIdentifier;
-   errorCode=PCO_GetLookupTableInfo(hCamera, 0, &wNumberOfLuts, 0, 0, 0, 0, 0, 0);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to get #LUTs";
-      return false;
-   }
-   int nLuts=wNumberOfLuts;
-   for(int i=0; i<nLuts; ++i){
-      errorCode=PCO_GetLookupTableInfo(hCamera, i, &wNumberOfLuts, Description, 256, &wIdentifier, &bInputWidth, &bOutputWidth, &wFormat2);
-	  if (errorCode != PCO_NOERROR) { cout << "error when get lut " << i << "'s info" << endl; }
-	  else cout << "lut " << i << ": '" << Description << "'";
-   }
-   
-
-   // TODO: take a look at the settings that SetTransferParametersAuto gives you
-   // TODO: apply those settings manually
-   // TODO: remove the code above that just does debugging stuff
-   // TODO: do we want an implementation that's good for this cooke camera, or a little more robust?
-   // TODO: how would you handle two cameras?
-
-   // TODO: write the auto-set lookup table and transfer params for the
-   // pco edge 2 here... let's see if we can find a way to derive them safely...
 
 
-   WORD wParameter=0;
+
+   // set the active lookup table 
+   //WORD wParameter=0;
    //WORD wIdentifier=0x1612; // 0x1612 for high speed, with x resolution > 1920
    //errorCode =PCO_SetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
    //if(errorCode!=PCO_NOERROR) {
    //   errorMsg="failed to call PCO_SetActiveLookupTable()";
    //   return false;
    //}
-   //// consider PCO_SetTransferParametersAuto
 
-   //WORD wIdentifier;
-   errorCode =PCO_GetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetActiveLookupTable()";
-      return false;
+   
+
+   ////////////////////////////////////////
+   // EVERYTHING BELOW THIS POINT IS FOR DEBUGGING ONLY... COMMENT OUT FOR RELEASE BUILD.
+   ////////////////////////////////////////
+
+
+
+   // let's take a look at the transfer parameters that got set...
+   PCO_SC2_CL_TRANSFER_PARAM clparams;
+   errorCode = PCO_GetTransferParameter(hCamera, &clparams, sizeof(PCO_SC2_CL_TRANSFER_PARAM));
+   if (errorCode != PCO_NOERROR) {
+	   errorMsg = "failed to call PCO_GetTransferParameter()";
+	   return false;
    }
 
-   //arm the camera to validate the settings
-   //NOTE: you have to arm the camera again in setAcqModeAndTime() due to the trigger setting (i.e. set PCO_SetAcquireMode() again)
-   errorCode = PCO_ArmCamera(hCamera);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to arm the camera";
-      return false;
+
+   // take a look at the lookup table that got activated
+   WORD wIdentifier, wParameter=0;
+   errorCode = PCO_GetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
+   if (errorCode != PCO_NOERROR) {
+	   errorMsg = "failed to call PCO_GetActiveLookupTable()";
+	   return false;
    }
 
-   // set the image buffer parameters
-   errorCode = PCO_CamLinkSetImageParameters(hCamera, wXResAct, wYResAct);
-   char msg[16384];
-   PCO_GetErrorText(errorCode, msg, 16384);
-   cout << msg << endl;
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_CamLinkSetImageParameters()";
-      return false;
+
+   // take a look at the available lookup tables
+   //WORD wParameter = 0;
+   WORD wFormat2;
+   errorCode = PCO_GetDoubleImageMode(hCamera, &wFormat2);
+   char Description[256]; BYTE bInputWidth, bOutputWidth;
+   WORD wNumberOfLuts, wDescLen;
+   errorCode = PCO_GetLookupTableInfo(hCamera, 0, &wNumberOfLuts, 0, 0, 0, 0, 0, 0);
+   if (errorCode != PCO_NOERROR) {
+	   errorMsg = "failed to get #LUTs";
+	   return false;
    }
+   int nLuts = wNumberOfLuts;
+   for (int i = 0; i < nLuts; ++i){
+       errorCode = PCO_GetLookupTableInfo(hCamera, i, &wNumberOfLuts, Description, 256, &wIdentifier, &bInputWidth, &bOutputWidth, &wFormat2);
+       if (errorCode != PCO_NOERROR) { cout << "error when get lut " << i << "'s info" << endl; }
+       //else cout << "\nlut " << i << ": '" << Description << "'";
+       qDebug() << QString("\nlut: %1\n\tdesc: %2\n\tid: %3").arg(i).arg(Description).arg(wIdentifier);
+   }
+
+
 
    return true;
 }//setAcqParams(),
@@ -434,7 +372,6 @@ bool CookeCamera::startAcq()
    return true;
 }//startAcq(),
 
-
 bool CookeCamera::stopAcq()
 {
    //not rely on the "wait abandon"!!!
@@ -503,7 +440,6 @@ bool CookeCamera::getLatestLiveImage(PixelValue * frame)
    return true;
 }
 
-
 //return false if, say, can't open the spooling file to save
 //NOTE: have to call this b4 setAcqModeAndTime() to avoid out-of-mem
 bool CookeCamera::setSpooling(string filename)
@@ -525,4 +461,21 @@ bool CookeCamera::setSpooling(string filename)
    }
    else return true;
 
+}
+
+void CookeCamera::safe_pco(int errCode, string errMsg)
+{
+	// TODO: there is a method you can use to decode the errCodes into strings...
+	// ... consider using it.
+	if (errCode != PCO_NOERROR) {
+		errorMsg = errMsg;
+		throw COOKE_EXCEPTION; // could throw an exception class w/informative message... but meh.
+	}
+
+    // FYI, this is how it works:
+    /*
+     char msg[16384];
+     PCO_GetErrorText(errorCode, msg, 16384);
+     cout << msg << endl;
+    */
 }

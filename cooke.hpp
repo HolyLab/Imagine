@@ -156,6 +156,8 @@ public:
 
    bool setSpooling(string filename);
 
+   void safe_pco(int errCode, string errMsg);
+
 };//class, CookeCamera
 
 
