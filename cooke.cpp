@@ -464,17 +464,15 @@ bool CookeCamera::setSpooling(string filename)
 
 void CookeCamera::safe_pco(int errCode, string errMsg)
 {
-	// TODO: there is a method you can use to decode the errCodes into strings...
-	// ... consider using it.
-	if (errCode != PCO_NOERROR) {
+    // set errorMsg and throw an exception if you get a not-ok error code
+    if (errCode != PCO_NOERROR && (errCode & PCO_ERROR_CODE_MASK) != 0) {
+    //if (errCode != PCO_NOERROR) {
+        
+        // it might be nice to use this to give slightly more informative debug messages
+        char msg[16384];
+        PCO_GetErrorText(errCode, msg, 16384);
+        cout << msg << endl;
 		errorMsg = errMsg;
 		throw COOKE_EXCEPTION; // could throw an exception class w/informative message... but meh.
 	}
-
-    // FYI, this is how it works:
-    /*
-     char msg[16384];
-     PCO_GetErrorText(errorCode, msg, 16384);
-     cout << msg << endl;
-    */
 }
