@@ -167,9 +167,27 @@ bool CookeCamera::setAcqParams(int emGain,
 	   return false;
    }
 
+   /*
+   So if you find yourself having problems with PCO_CamLinkSetImageParameters(), it
+   might be because of a mismatch between your camera settings (specifically the pixel
+   rate and ROI dimensions, see doco FMI), the image parameters set in
+   PCO_SetTransferParameter(), and the active lookup table set in PCO_SetActiveLookupTable().
+   One approach to debugging is to comment out the explicit transfer params and lookup calls
+   and uncomment PCO_SetTransferParametersAuto, see what settings were applied, then plug
+   those value back into the explicit methods (if they suit your needs). We don't just
+   leave auto on because "auto" isn't necessarily garunteed to do the same thing.
    
-   // TODO: write the auto-set lookup table and transfer params for the
-   // pco edge 2 here... let's see if we can find a way to derive them safely...
+   For reference, here are the values that auto-set chose last time we checked:
+   clparams:
+        baudrate: 38400
+        ClockFrequency: 85000000
+        CCline: 0
+        DataFormat: 261
+        Transmit: 1
+
+    Lookuptable: 0 (disabled)
+    Lookuptable params: 0 (disabled)
+   */
    
 
    //clparams.DataFormat=PCO_CL_DATAFORMAT_5x12L | wFormat; // 12L requires lookup table 0x1612
@@ -199,44 +217,25 @@ bool CookeCamera::setAcqParams(int emGain,
    ////////////////////////////////////////
 
 
-
-   // let's take a look at the transfer parameters that got set...
+   // take a look at the transfer parameters that got set...
    PCO_SC2_CL_TRANSFER_PARAM clparams;
-   errorCode = PCO_GetTransferParameter(hCamera, &clparams, sizeof(PCO_SC2_CL_TRANSFER_PARAM));
-   if (errorCode != PCO_NOERROR) {
-	   errorMsg = "failed to call PCO_GetTransferParameter()";
-	   return false;
-   }
-
+   PCO_GetTransferParameter(hCamera, &clparams, sizeof(PCO_SC2_CL_TRANSFER_PARAM));
 
    // take a look at the lookup table that got activated
-   WORD wIdentifier, wParameter=0;
-   errorCode = PCO_GetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
-   if (errorCode != PCO_NOERROR) {
-	   errorMsg = "failed to call PCO_GetActiveLookupTable()";
-	   return false;
-   }
-
+   WORD wIdentifier=-1, wParameter=-1;
+   PCO_GetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
 
    // take a look at the available lookup tables
-   //WORD wParameter = 0;
    WORD wFormat2;
    errorCode = PCO_GetDoubleImageMode(hCamera, &wFormat2);
    char Description[256]; BYTE bInputWidth, bOutputWidth;
    WORD wNumberOfLuts, wDescLen;
-   errorCode = PCO_GetLookupTableInfo(hCamera, 0, &wNumberOfLuts, 0, 0, 0, 0, 0, 0);
-   if (errorCode != PCO_NOERROR) {
-	   errorMsg = "failed to get #LUTs";
-	   return false;
-   }
-   int nLuts = wNumberOfLuts;
-   for (int i = 0; i < nLuts; ++i){
-       errorCode = PCO_GetLookupTableInfo(hCamera, i, &wNumberOfLuts, Description, 256, &wIdentifier, &bInputWidth, &bOutputWidth, &wFormat2);
-       if (errorCode != PCO_NOERROR) { cout << "error when get lut " << i << "'s info" << endl; }
-       //else cout << "\nlut " << i << ": '" << Description << "'";
+   PCO_GetLookupTableInfo(hCamera, 0, &wNumberOfLuts, 0, 0, 0, 0, 0, 0);
+   for (int i = 0; i < (int)wNumberOfLuts; ++i){
+       PCO_GetLookupTableInfo(hCamera, i, &wNumberOfLuts, Description,
+           256, &wIdentifier, &bInputWidth, &bOutputWidth, &wFormat2);
        qDebug() << QString("\nlut: %1\n\tdesc: %2\n\tid: %3").arg(i).arg(Description).arg(wIdentifier);
    }
-
 
 
    return true;
