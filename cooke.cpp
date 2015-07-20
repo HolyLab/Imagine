@@ -170,6 +170,7 @@ bool CookeCamera::setAcqParams(int emGain,
    }
    catch (int e) {
 	   if (e != COOKE_EXCEPTION) throw;
+       if (errorCode == PCO_NOERROR) errorCode = -1;
 	   return false;
    }
 
@@ -478,6 +479,7 @@ void CookeCamera::safe_pco(int errCode, string errMsg)
         char msg[16384];
         PCO_GetErrorText(errCode, msg, 16384);
         cout << msg << endl;
+        errorCode = errCode;
 		errorMsg = errMsg;
 		throw COOKE_EXCEPTION; // could throw an exception class w/informative message... but meh.
 	}
