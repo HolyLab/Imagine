@@ -110,9 +110,18 @@ bool CookeCamera::setAcqParams(int emGain,
        PCO_Description pcDesc;
        pcDesc.wSize = (ushort)sizeof(PCO_Description);
        safe_pco(PCO_GetCameraDescription(hCamera, &pcDesc), "failed to get camera description");
-
-    
-
+       // for now, we'll just always use the fastest available pixel rate
+       DWORD maxPixRate = 0;
+       for (int i = 0; i < sizeof(pcDesc.dwPixelRateDESC) / sizeof(DWORD); i++) {
+           if (pcDesc.dwPixelRateDESC[i] > maxPixRate) maxPixRate = pcDesc.dwPixelRateDESC[i];
+       }
+       if (maxPixRate) {
+           qDebug() << QString("setting pixel rate to: %1 Hz").arg(maxPixRate);
+       }
+       else {
+           errorMsg = "could not find non-zero pixel rate";
+           throw COOKE_EXCEPTION;
+       }
 
 	   // stop recording - necessary for changing camera settings
 	   safe_pco(PCO_SetRecordingState(hCamera, 0), "failed to stop camera");
@@ -131,11 +140,8 @@ bool CookeCamera::setAcqParams(int emGain,
 	   safe_pco(PCO_SetTimestampMode(hCamera, 1), "failed to set timestamp mode");
 	   // bit alignment (0: MSB aligned; 1: LSB aligned)
 	   safe_pco(PCO_SetBitAlignment(hCamera, 1), "failed to set bit alignment mode");
-	  
-	   // pixel rate (note that the viable settings might change between models)
-	   //DWORD dwPixelRate=286000000;
-	   DWORD dwPixelRate = 272250000;
-	   //DWORD dwPixelRate = 95333333;
+	   // pixel rate (for now just use the fastest rate listed in the cam description)
+       DWORD dwPixelRate = maxPixRate;
 	   safe_pco(PCO_SetPixelRate(hCamera, dwPixelRate), "failed to call PCO_SetPixelRate()");
 
        // arm the camera to apply the image size settings... needed for the config calls that follow
