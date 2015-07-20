@@ -143,15 +143,12 @@ bool CookeCamera::setAcqParams(int emGain,
 	   // pixel rate (for now just use the fastest rate listed in the cam description)
        DWORD dwPixelRate = maxPixRate;
 	   safe_pco(PCO_SetPixelRate(hCamera, dwPixelRate), "failed to call PCO_SetPixelRate()");
-
        // arm the camera to apply the image size settings... needed for the config calls that follow
        safe_pco(PCO_ArmCamera(hCamera), "failed to arm the camera");
-
        // get set roi size, make sure it matches what we meant to set
        WORD wXResAct = -1, wYResAct = -1, wXResMax, wYResMax;
        safe_pco(PCO_GetSizes(hCamera, &wXResAct, &wYResAct, &wXResMax, &wYResMax), "failed to get roi size");
        assert(wXResAct == hend - hstart + 1 && wYResAct == vend - vstart + 1);
-
        // interface output format (interface 2 for DVI)
        // note that the wFormat passed here is copied from the code before I arrived... seems weird.
        safe_pco(PCO_SetInterfaceOutputFormat(hCamera, 2, SCCMOS_FORMAT_TOP_CENTER_BOTTOM_CENTER, 0, 0),
@@ -159,17 +156,13 @@ bool CookeCamera::setAcqParams(int emGain,
 
        // auto-set the transfer params
        PCO_SetTransferParametersAuto(hCamera, NULL, 0);
-
-
        // TODO: explicitly set the transfer params here
-
-
        // TODO: explicitly set the active lookup table here
-
+       // Do we really care to do the above, or are we okay as
+       //   long as ROI and pix rate are what we want?
 
        // arm the camera to validate the settings
        safe_pco(PCO_ArmCamera(hCamera), "failed to arm the camera");
-
        // set the image buffer parameters
        safe_pco(PCO_CamLinkSetImageParameters(hCamera, wXResAct, wYResAct),
            "failed to call PCO_CamLinkSetImageParameters()");
@@ -202,7 +195,6 @@ bool CookeCamera::setAcqParams(int emGain,
     Lookuptable params: 0 (disabled)
    */
    
-
    //clparams.DataFormat=PCO_CL_DATAFORMAT_5x12L | wFormat; // 12L requires lookup table 0x1612
    ////clparams.ClockFrequency = 85000000; // see SC2_SDKAddendum.h for valid values - NOT same as pixel freq.
    ////clparams.Transmit = 0; // single image transmission mode
@@ -211,8 +203,6 @@ bool CookeCamera::setAcqParams(int emGain,
    //   errorMsg="failed to call PCO_SetTransferParameter()";
    //   return false;
    //}
-
-
 
    // set the active lookup table 
    //WORD wParameter=0;
@@ -223,33 +213,26 @@ bool CookeCamera::setAcqParams(int emGain,
    //   return false;
    //}
 
-   
-
    ////////////////////////////////////////
    // EVERYTHING BELOW THIS POINT IS FOR DEBUGGING ONLY... COMMENT OUT FOR RELEASE BUILD.
    ////////////////////////////////////////
-
-
-   // take a look at the transfer parameters that got set...
-   PCO_SC2_CL_TRANSFER_PARAM clparams;
-   PCO_GetTransferParameter(hCamera, &clparams, sizeof(PCO_SC2_CL_TRANSFER_PARAM));
-
-   // take a look at the lookup table that got activated
-   WORD wIdentifier=-1, wParameter=-1;
-   PCO_GetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
-
-   // take a look at the available lookup tables
-   WORD wFormat2;
-   errorCode = PCO_GetDoubleImageMode(hCamera, &wFormat2);
-   char Description[256]; BYTE bInputWidth, bOutputWidth;
-   WORD wNumberOfLuts, wDescLen;
-   PCO_GetLookupTableInfo(hCamera, 0, &wNumberOfLuts, 0, 0, 0, 0, 0, 0);
-   for (int i = 0; i < (int)wNumberOfLuts; ++i){
-       PCO_GetLookupTableInfo(hCamera, i, &wNumberOfLuts, Description,
-           256, &wIdentifier, &bInputWidth, &bOutputWidth, &wFormat2);
-       qDebug() << QString("\nlut: %1\n\tdesc: %2\n\tid: %3").arg(i).arg(Description).arg(wIdentifier);
-   }
-
+   //// take a look at the transfer parameters that got set...
+   //PCO_SC2_CL_TRANSFER_PARAM clparams;
+   //PCO_GetTransferParameter(hCamera, &clparams, sizeof(PCO_SC2_CL_TRANSFER_PARAM))
+   //// take a look at the lookup table that got activated
+   //WORD wIdentifier=-1, wParameter=-1;
+   //PCO_GetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
+   //// take a look at the available lookup tables
+   //WORD wFormat2;
+   //errorCode = PCO_GetDoubleImageMode(hCamera, &wFormat2);
+   //char Description[256]; BYTE bInputWidth, bOutputWidth;
+   //WORD wNumberOfLuts, wDescLen;
+   //PCO_GetLookupTableInfo(hCamera, 0, &wNumberOfLuts, 0, 0, 0, 0, 0, 0);
+   //for (int i = 0; i < (int)wNumberOfLuts; ++i){
+   //    PCO_GetLookupTableInfo(hCamera, i, &wNumberOfLuts, Description,
+   //        256, &wIdentifier, &bInputWidth, &bOutputWidth, &wFormat2);
+   //    qDebug() << QString("\nlut: %1\n\tdesc: %2\n\tid: %3").arg(i).arg(Description).arg(wIdentifier);
+   //}
 
    return true;
 }//setAcqParams(),
