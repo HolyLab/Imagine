@@ -104,13 +104,19 @@ bool CookeCamera::setAcqParams(int emGain,
                      bool isBaselineClamp
                      ) 
 {
-   // if you need to ask the camera about available settings, this is the place to do it.
-
-   // failure of a config call will raise an exception so we can try/catch for cleanliness
+   // failure of an safe_pco() call will raise an exception, so we can try/catch for cleanliness
    try {
+       // get camera description
+       PCO_Description pcDesc;
+       pcDesc.wSize = (ushort)sizeof(PCO_Description);
+       safe_pco(PCO_GetCameraDescription(hCamera, &pcDesc), "failed to get camera description");
+
+    
+
+
 	   // stop recording - necessary for changing camera settings
 	   safe_pco(PCO_SetRecordingState(hCamera, 0), "failed to stop camera");
-	   // start with default settings
+       // start with default settings
 	   safe_pco(PCO_ResetSettingsToDefault(hCamera), "failed to reset camera settings");
 	   // skip SetBinning... not applicable to cooke cameras
 	   // set roi
