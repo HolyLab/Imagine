@@ -41,6 +41,9 @@ using namespace std;
 #include "dummy_daq.hpp"
 #include "shutterctrl.h"
 
+#include "sc2_common.h"
+#include "sc2_camexport.h"
+
 
 extern Camera* pCamera;
 extern Positioner* pPositioner;
@@ -86,6 +89,7 @@ bool run(const QString& cmd)
 {
    return 0==system(cmd.toLatin1());
 }
+
 QScriptValue runWrapper(QScriptContext *context, QScriptEngine *se)
 {
     QString x = context->argument(0).toString();
@@ -94,6 +98,36 @@ QScriptValue runWrapper(QScriptContext *context, QScriptEngine *se)
     //result.setProperty("status", QScriptValue(se, ...));
     //result.setProperty("msg", QScriptValue(se, ...));
     //return result;
+}
+
+void getCamCount(int *camCount) {
+    // so, this sucks, but for now the only way to get the camera count is
+    // to iterate through camera numbers, starting with 0, and see how many
+    // unique cameras we can open before getting an exception. great...
+    
+    HANDLE tCam{ 0 };
+    int tErr = 0;
+    int camNum = 0;
+    tErr = PCO_OpenCamera(&tCam, 0);
+    if (tErr != PCO_NOERROR) {
+        /*char msg[16384];
+        PCO_GetErrorText(tErr, msg, 16384);
+        cout << msg << endl;*/
+        return;
+    }
+    // before closing the camera, see how many other cameras you can open (ugh)
+    getCamCount(camCount);
+    *camCount += 1;
+    
+    // and now we can close the camera
+    try {
+        tErr = PCO_CloseCamera(tCam);
+    }
+    catch (...) {
+        cout << "Internal exception while counting cameras. Please ignore.";
+    }
+
+    // TODO: take a careful look at the camera... using camlink will cause duplicates
 }
 
 
@@ -203,6 +237,10 @@ int main(int argc, char *argv[])
 
       return 1;
    }
+
+   // check out many cameras are attached
+   int nCams = 0;
+   //getCamCount(&nCams);
 
    splash->showMessage(QString("Initialize the %1 camera ...").arg(cameraVendor), 
       Qt::AlignLeft|Qt::AlignBottom, Qt::red);
