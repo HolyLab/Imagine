@@ -59,14 +59,14 @@ extern string rig;
 bool loadScript(const QString &filename)
 {
    if(!QFile::exists(filename)) {
-      QMessageBox::critical(0, "Imagine", QString("couldn't find script %1.").arg(filename)
-         , QMessageBox::Ok, QMessageBox::NoButton);
+      QMessageBox::critical(0, "Imagine", QString("couldn't find script %1.").arg(filename),
+          QMessageBox::Ok, QMessageBox::NoButton);
       return false;
    }
    QFile file(filename);
    if (!file.open(QFile::ReadOnly | QFile::Text)) {
-      QMessageBox::critical(0, "Imagine", "couldn't read imagine.js."
-         , QMessageBox::Ok, QMessageBox::NoButton);
+       QMessageBox::critical(0, "Imagine", QString("couldn't read script %1.").arg(filename),
+           QMessageBox::Ok, QMessageBox::NoButton);
       return false;
    }
    QTextStream in(&file);

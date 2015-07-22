@@ -1415,10 +1415,10 @@ void Imagine::updateStatus(ImagineStatus newStatus, ImagineAction newAction)
 
       //change intensity plot xlabel
       if(curAction==eLive){
-         intenPlot->setAxisTitle(QwtPlot::xBottom, "frame number");
+         //intenPlot->setAxisTitle(QwtPlot::xBottom, "frame number");
       }
       else {
-         intenPlot->setAxisTitle(QwtPlot::xBottom, "stack number");
+         //intenPlot->setAxisTitle(QwtPlot::xBottom, "stack number");
       }
 
    }//else if, running
