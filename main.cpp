@@ -32,6 +32,7 @@ using namespace std;
 #include "andor_g.hpp"
 #include "avt_g.hpp"
 #include "cooke.hpp"
+#include "pco_errt.h"
 
 #include "actuators/voltage/volpiezo.hpp"
 #include "Piezo_Controller.hpp"
@@ -135,7 +136,8 @@ int main(int argc, char *argv[])
 {
    QApplication a(argc, argv);
 
-   rig="hs-ocpi";
+   //rig = "hs-ocpi";
+   rig="ocpi-2";
    if(argc==2) {
       rig=argv[1];
       cout<<"The rig is: "<<rig<<endl;
