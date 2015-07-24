@@ -58,36 +58,36 @@ extern string rig;
 
 bool loadScript(const QString &filename)
 {
-   if(!QFile::exists(filename)) {
-      QMessageBox::critical(0, "Imagine", QString("couldn't find script %1.").arg(filename),
-          QMessageBox::Ok, QMessageBox::NoButton);
-      return false;
-   }
-   QFile file(filename);
-   if (!file.open(QFile::ReadOnly | QFile::Text)) {
-       QMessageBox::critical(0, "Imagine", QString("couldn't read script %1.").arg(filename),
-           QMessageBox::Ok, QMessageBox::NoButton);
-      return false;
-   }
-   QTextStream in(&file);
-   QString jscode=in.readAll();
-   QScriptProgram sp(jscode);
-   QScriptValue jsobj=se->evaluate(sp);
-   if(se->hasUncaughtException()){
-      QMessageBox::critical(0, "Imagine",
-         QString("There's problem when evaluating %1:\n%2\n%3.")
-         .arg(filename)
-         .arg(QString("   ... at line %1").arg(se->uncaughtExceptionLineNumber()))
-         .arg(QString("   ... error msg: %1").arg(se->uncaughtException().toString())));
-      return false;
-   }
+    if (!QFile::exists(filename)) {
+        QMessageBox::critical(0, "Imagine", QString("couldn't find script %1.").arg(filename),
+            QMessageBox::Ok, QMessageBox::NoButton);
+        return false;
+    }
+    QFile file(filename);
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        QMessageBox::critical(0, "Imagine", QString("couldn't read script %1.").arg(filename),
+            QMessageBox::Ok, QMessageBox::NoButton);
+        return false;
+    }
+    QTextStream in(&file);
+    QString jscode = in.readAll();
+    QScriptProgram sp(jscode);
+    QScriptValue jsobj = se->evaluate(sp);
+    if (se->hasUncaughtException()){
+        QMessageBox::critical(0, "Imagine",
+            QString("There's problem when evaluating %1:\n%2\n%3.")
+            .arg(filename)
+            .arg(QString("   ... at line %1").arg(se->uncaughtExceptionLineNumber()))
+            .arg(QString("   ... error msg: %1").arg(se->uncaughtException().toString())));
+        return false;
+    }
 
-   return true;
+    return true;
 }
 
 bool run(const QString& cmd)
 {
-   return 0==system(cmd.toLatin1());
+    return 0 == system(cmd.toLatin1());
 }
 
 QScriptValue runWrapper(QScriptContext *context, QScriptEngine *se)
@@ -104,7 +104,7 @@ void getCamCount(int *camCount) {
     // so, this sucks, but for now the only way to get the camera count is
     // to iterate through camera numbers, starting with 0, and see how many
     // unique cameras we can open before getting an exception. great...
-    
+
     HANDLE tCam{ 0 };
     int tErr = 0;
     int camNum = 0;
@@ -118,7 +118,7 @@ void getCamCount(int *camCount) {
     // before closing the camera, see how many other cameras you can open (ugh)
     getCamCount(camCount);
     *camCount += 1;
-    
+
     // and now we can close the camera
     try {
         tErr = PCO_CloseCamera(tCam);
@@ -132,143 +132,143 @@ void getCamCount(int *camCount) {
 
 int main(int argc, char *argv[])
 {
-   QApplication a(argc, argv);
+    QApplication a(argc, argv);
 
-   //rig = "hs-ocpi";
-   rig="ocpi-2";
-   if(argc==2) {
-      rig=argv[1];
-      cout<<"The rig is: "<<rig<<endl;
-   }
-   else {
-      cout<<"The rig is default to: "<<rig<<endl;
-   }
+    //rig = "hs-ocpi";
+    rig = "ocpi-2";
+    if (argc == 2) {
+        rig = argv[1];
+        cout << "The rig is: " << rig << endl;
+    }
+    else {
+        cout << "The rig is default to: " << rig << endl;
+    }
 
-   se=new QScriptEngine();
+    se = new QScriptEngine();
 
-   se->globalObject().setProperty("rig", QString::fromStdString(rig));
+    se->globalObject().setProperty("rig", QString::fromStdString(rig));
 
-   QScriptValue svRun = se->newFunction(runWrapper);
-   se->globalObject().setProperty("system", svRun); 
+    QScriptValue svRun = se->newFunction(runWrapper);
+    se->globalObject().setProperty("system", svRun);
 
-   //shutter ctrl
-   QScriptValue svRunOpendev = se->newFunction(openShutterDeviceWrapper);
-   se->globalObject().setProperty("openShutterDevice", svRunOpendev); 
-   QScriptValue svRunClosedev = se->newFunction(closeShutterDeviceWrapper);
-   se->globalObject().setProperty("closeShutterDevice", svRunClosedev); 
-   QScriptValue svRunSetShutter = se->newFunction(setShutterStatusWrapper);
-   se->globalObject().setProperty("setShutterStatus", svRunSetShutter); 
-   QScriptValue svRunSetDio = se->newFunction(setDioWrapper);
-   se->globalObject().setProperty("setDio", svRunSetDio); 
+    //shutter ctrl
+    QScriptValue svRunOpendev = se->newFunction(openShutterDeviceWrapper);
+    se->globalObject().setProperty("openShutterDevice", svRunOpendev);
+    QScriptValue svRunClosedev = se->newFunction(closeShutterDeviceWrapper);
+    se->globalObject().setProperty("closeShutterDevice", svRunClosedev);
+    QScriptValue svRunSetShutter = se->newFunction(setShutterStatusWrapper);
+    se->globalObject().setProperty("setShutterStatus", svRunSetShutter);
+    QScriptValue svRunSetDio = se->newFunction(setDioWrapper);
+    se->globalObject().setProperty("setDio", svRunSetDio);
 
-   if(!loadScript(QString::fromStdString("imagine.js"))){
-      return 1;  
-   }
-   QString cameraVendor=se->globalObject().property("camera").toString();
-   positionerType=se->globalObject().property("positioner").toString();
-   daq=se->globalObject().property("daq").toString();
-   if (daq=="ni") {
-     doname=se->globalObject().property("doname").toString();
-     aoname=se->globalObject().property("aoname").toString();
-     ainame=se->globalObject().property("ainame").toString();
-   }
-   cout<<"using "<<cameraVendor.toStdString()<<" camera, "
-      <<positionerType.toStdString()<<" positioner, "
-      <<daq.toStdString()<<" daq."<<endl;
+    if (!loadScript(QString::fromStdString("imagine.js"))){
+        return 1;
+    }
+    QString cameraVendor = se->globalObject().property("camera").toString();
+    positionerType = se->globalObject().property("positioner").toString();
+    daq = se->globalObject().property("daq").toString();
+    if (daq == "ni") {
+        doname = se->globalObject().property("doname").toString();
+        aoname = se->globalObject().property("aoname").toString();
+        ainame = se->globalObject().property("ainame").toString();
+    }
+    cout << "using " << cameraVendor.toStdString() << " camera, "
+        << positionerType.toStdString() << " positioner, "
+        << daq.toStdString() << " daq." << endl;
 
-   if(cameraVendor!="avt" && cameraVendor!="andor" && cameraVendor!="cooke"){
-      QMessageBox::critical(0, "Imagine", "Unsupported camera."
-         , QMessageBox::Ok, QMessageBox::NoButton);
+    if (cameraVendor != "avt" && cameraVendor != "andor" && cameraVendor != "cooke"){
+        QMessageBox::critical(0, "Imagine", "Unsupported camera."
+            , QMessageBox::Ok, QMessageBox::NoButton);
 
-      return 1;
+        return 1;
 
-   }
+    }
 
-   if(!loadScript(QString::fromStdString(rig)+".js")){
-      return 1;
-   }
+    if (!loadScript(QString::fromStdString(rig) + ".js")){
+        return 1;
+    }
 
-   // preset.js
-   const char* homedir=getenv("USERPROFILE");
-   string filename=string(homedir)+"/preset.js";
-   if(!tr2::sys::exists(tr2::sys::path(filename))){
-      filename="preset.js";
-   }
-   cout<<"preset file is: "<<filename<<endl;
-   if(!loadScript(QString::fromStdString(filename))){
-      return 1;  
-   }
+    // preset.js
+    const char* homedir = getenv("USERPROFILE");
+    string filename = string(homedir) + "/preset.js";
+    if (!tr2::sys::exists(tr2::sys::path(filename))){
+        filename = "preset.js";
+    }
+    cout << "preset file is: " << filename << endl;
+    if (!loadScript(QString::fromStdString(filename))){
+        return 1;
+    }
 
-   //show splash windows and init positioner/daq/camera:
-   //SEE: QSplashScreen class ref
-   QPixmap pixmap(":/images/Resources/splash.jpg");
-   QSplashScreen *splash = new QSplashScreen(pixmap);
-   splash->show();
+    //show splash windows and init positioner/daq/camera:
+    //SEE: QSplashScreen class ref
+    QPixmap pixmap(":/images/Resources/splash.jpg");
+    QSplashScreen *splash = new QSplashScreen(pixmap);
+    splash->show();
 
-   /*QMessageBox::information(0, "Imagine", 
-         "Please raise microscope.");*/
+    /*QMessageBox::information(0, "Imagine",
+          "Please raise microscope.");*/
 
-   splash->showMessage(QString("Initialize the %1 actuator ...").arg(positionerType), 
-      Qt::AlignLeft|Qt::AlignBottom, Qt::red);
-   if(positionerType=="volpiezo") pPositioner=new VolPiezo(ainame,aoname);
-   else if(positionerType=="pi") pPositioner=new Piezo_Controller;
+    splash->showMessage(QString("Initialize the %1 actuator ...").arg(positionerType),
+        Qt::AlignLeft | Qt::AlignBottom, Qt::red);
+    if (positionerType == "volpiezo") pPositioner = new VolPiezo(ainame, aoname);
+    else if (positionerType == "pi") pPositioner = new Piezo_Controller;
 #ifndef _WIN64
-   else if(positionerType=="thor") pPositioner=new Actuator_Controller;
+    else if (positionerType == "thor") pPositioner = new Actuator_Controller;
 #endif
-   else if(positionerType=="dummy") pPositioner=new DummyPiezo;
-   else {
-      QMessageBox::critical(0, "Imagine", "Unsupported positioner."
-         , QMessageBox::Ok, QMessageBox::NoButton);
+    else if (positionerType == "dummy") pPositioner = new DummyPiezo;
+    else {
+        QMessageBox::critical(0, "Imagine", "Unsupported positioner."
+            , QMessageBox::Ok, QMessageBox::NoButton);
 
-      return 1;
-   }
+        return 1;
+    }
 
-   splash->showMessage(QString("Initialize the %1 daq ...").arg(daq), 
-      Qt::AlignLeft|Qt::AlignBottom, Qt::red);
-   if(daq=="ni") {
-      digOut=new NiDaqDo(doname);
-   }
-   else if(daq=="dummy"){
-      digOut=new DummyDaqDo();
-   }
-   else {
-      QMessageBox::critical(0, "Imagine", "Unsupported daq."
-         , QMessageBox::Ok, QMessageBox::NoButton);
+    splash->showMessage(QString("Initialize the %1 daq ...").arg(daq),
+        Qt::AlignLeft | Qt::AlignBottom, Qt::red);
+    if (daq == "ni") {
+        digOut = new NiDaqDo(doname);
+    }
+    else if (daq == "dummy"){
+        digOut = new DummyDaqDo();
+    }
+    else {
+        QMessageBox::critical(0, "Imagine", "Unsupported daq."
+            , QMessageBox::Ok, QMessageBox::NoButton);
 
-      return 1;
-   }
+        return 1;
+    }
 
-   // check out many cameras are attached
-   int nCams = 0;
-   //getCamCount(&nCams);
+    // check out many cameras are attached
+    int nCams = 0;
+    //getCamCount(&nCams);
 
-   splash->showMessage(QString("Initialize the %1 camera ...").arg(cameraVendor), 
-      Qt::AlignLeft|Qt::AlignBottom, Qt::red);
-   qApp->processEvents();
+    splash->showMessage(QString("Initialize the %1 camera ...").arg(cameraVendor),
+        Qt::AlignLeft | Qt::AlignBottom, Qt::red);
+    qApp->processEvents();
 
-   // Init the camera. Pointer will be deleted in clean-up of its owning data_acq_thread.
-   // The camera gets passed to the acq thread via the Imagine instance, below.
-   Camera *cam;
-   if (cameraVendor == "avt") cam = new AvtCamera;
-   else if(cameraVendor=="andor") cam = new AndorCamera;
-   else if(cameraVendor=="cooke") cam = new CookeCamera;
-   else {
-      QMessageBox::critical(0, "Imagine", "Unsupported camera.", QMessageBox::Ok, QMessageBox::NoButton);
-      return 1;
-   }
-   // camera initialization (not in the programming sense of initialization...)
-   if(!cam->init()){
-      splash->showMessage("Failed to initialize the camera.", Qt::AlignLeft|Qt::AlignBottom, Qt::red);
-      QMessageBox::critical(splash, "Imagine", "Failed to initialize the camera."
-         , QMessageBox::Ok, QMessageBox::NoButton);
-      return 1;
-   }
-   // get rid of the status message
-   delete splash;
-   // make and present an instance of the main UI object, passing it the cam it'll control
-   Imagine w(cam);
-   w.show();
-   // go!
-   a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
-   return a.exec();
+    // Init the camera. Pointer will be deleted in clean-up of its owning data_acq_thread.
+    // The camera gets passed to the acq thread via the Imagine instance, below.
+    Camera *cam;
+    if (cameraVendor == "avt") cam = new AvtCamera;
+    else if (cameraVendor == "andor") cam = new AndorCamera;
+    else if (cameraVendor == "cooke") cam = new CookeCamera;
+    else {
+        QMessageBox::critical(0, "Imagine", "Unsupported camera.", QMessageBox::Ok, QMessageBox::NoButton);
+        return 1;
+    }
+    // camera initialization (not in the programming sense of initialization...)
+    if (!cam->init()){
+        splash->showMessage("Failed to initialize the camera.", Qt::AlignLeft | Qt::AlignBottom, Qt::red);
+        QMessageBox::critical(splash, "Imagine", "Failed to initialize the camera."
+            , QMessageBox::Ok, QMessageBox::NoButton);
+        return 1;
+    }
+    // get rid of the status message
+    delete splash;
+    // make and present an instance of the main UI object, passing it the cam it'll control
+    Imagine w(cam);
+    w.show();
+    // go!
+    a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
+    return a.exec();
 }

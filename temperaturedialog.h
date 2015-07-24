@@ -31,13 +31,13 @@ public:
 
     Imagine *imagineParent;
     Ui::TemperatureDialogClass ui;
-public slots:
+    public slots:
     int updateTemperature();
 private:
 
-private slots:
+    private slots :
         void on_btnSet_clicked();
-        void on_radioButtonOn_toggled(bool);
+    void on_radioButtonOn_toggled(bool);
 
 };
 

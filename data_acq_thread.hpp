@@ -40,16 +40,16 @@ public:
     void startAcq();
     void stopAcq(); //note: this func call is non-blocking
 
-    bool preparePositioner(bool isForward=true);
+    bool preparePositioner(bool isForward = true);
 
     // this thread's camera
     Camera* pCamera;
 
     //intended camera params:
-    int nStacks, 
-       nFramesPerStack;
+    int nStacks,
+        nFramesPerStack;
     double exposureTime, //in sec
-       idleTimeBwtnStacks; //in sec
+        idleTimeBwtnStacks; //in sec
     double piezoTravelBackTime; //in sec
     int gain;
     int preAmpGainIdx;
@@ -83,7 +83,7 @@ public:
     QString comment;
 
     bool isLive;
-    int idxCurStack; 
+    int idxCurStack;
 
 signals:
     void imageDisplayReady(const QImage &image, long idx);

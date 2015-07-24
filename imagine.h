@@ -30,14 +30,14 @@ class HistogramItem;
 #include "data_acq_thread.hpp"
 #include "andor_g.hpp"
 
-enum ImagineStatus {eIdle=0, eRunning, eStopping};
-enum ImagineAction {eNoAction=0, eAcqAndSave, eLive};
+enum ImagineStatus { eIdle = 0, eRunning, eStopping };
+enum ImagineAction { eNoAction = 0, eAcqAndSave, eLive };
 
 struct PiezoUiParam {
-   bool valid;
-   double start, stop, moveto;
+    bool valid;
+    double start, stop, moveto;
 
-   PiezoUiParam(){valid=false;}
+    PiezoUiParam(){ valid = false; }
 };
 
 class Imagine : public QMainWindow
@@ -50,7 +50,7 @@ public:
     DataAcqThread dataAcqThread;
 
 protected:
-   void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event);
 
 
 private:
@@ -63,7 +63,7 @@ private:
     HistogramItem *histogram;
     QwtPlot *intenPlot;
     QwtPlotCurve *intenCurve;
-//    CurveData *intenCurveData;
+    //    CurveData *intenCurveData;
     vector<PiezoUiParam> piezoUiParams;
     bool modified;
     bool paramOK;
@@ -72,66 +72,66 @@ private:
     void updateStatus(ImagineStatus newStatus, ImagineAction newAction);
     double zpos2voltage(double um); //z-position to piezo voltage
     void updateImage();
-    void updateHist(const AndorCamera::PixelValue * frame, 
-       const int imageW, const int imageH);
-    void updateIntenCurve(const AndorCamera::PixelValue * frame, 
-       const int imageW, const int imageH, const int frameIdx);
+    void updateHist(const AndorCamera::PixelValue * frame,
+        const int imageW, const int imageH);
+    void updateIntenCurve(const AndorCamera::PixelValue * frame,
+        const int imageW, const int imageH, const int frameIdx);
 
     bool checkRoi();
     bool loadPreset();
 
     void preparePlots();
 
-private slots:
-        void on_actionHeatsinkFan_triggered();
-        void on_actionExit_triggered();
-        void on_btnFastDecPosAndMove_clicked();
-        void on_btnDecPosAndMove_clicked();
-        void on_btnIncPosAndMove_clicked();
-        void on_btnFastIncPosAndMove_clicked();
-        void on_btnMovePiezo_clicked();
-        void on_btnMoveToStartPos_clicked();
-        void on_btnMoveToStopPos_clicked();
-        void on_btnRefreshPos_clicked();
-        void on_btnSetCurPosAsStop_clicked();
-        void on_btnSetCurPosAsStart_clicked();
-        void on_btnSelectFile_clicked();
-        void on_btnOpenStimFile_clicked();
-        void on_btnApply_clicked();
-        void on_btnFullChipSize_clicked();
-        void on_btnUseZoomWindow_clicked();
-        void on_actionStartAcqAndSave_triggered();
-        void on_actionStartLive_triggered();
-        void on_actionStop_triggered();
-        void on_actionOpenShutter_triggered();
-        void on_actionCloseShutter_triggered();
-        void on_actionTemperature_triggered();
-        void on_actionAutoScaleOnFirstFrame_triggered();
-        void on_actionContrastMin_triggered();
-        void on_actionContrastMax_triggered();
-        void on_actionStimuli_triggered();
-        void on_actionConfig_triggered();
-        void on_actionLog_triggered();
-        void on_actionIntensity_triggered();
-        void on_actionHistogram_triggered();
-        void on_actionDisplayFullImage_triggered();
-        //void on_actionColorizeSaturatedPixels_triggered();
-        void on_tabWidgetCfg_currentChanged(int index);
-        void on_comboBoxAxis_currentIndexChanged(int index);
-        void on_doubleSpinBoxCurPos_valueChanged(double newValue);
-        void on_spinBoxSpinboxSteps_valueChanged(int newValue);
-        void on_spinBoxNumOfDecimalDigits_valueChanged(int newValue);
-        void on_doubleSpinBoxBoxIdleTimeBtwnStacks_valueChanged(double newValue);
-        void on_cbAutoSetPiezoTravelBackTime_stateChanged ( int state ) ;
-        void readPiezoCurPos();
-	void onModified();
+    private slots:
+    void on_actionHeatsinkFan_triggered();
+    void on_actionExit_triggered();
+    void on_btnFastDecPosAndMove_clicked();
+    void on_btnDecPosAndMove_clicked();
+    void on_btnIncPosAndMove_clicked();
+    void on_btnFastIncPosAndMove_clicked();
+    void on_btnMovePiezo_clicked();
+    void on_btnMoveToStartPos_clicked();
+    void on_btnMoveToStopPos_clicked();
+    void on_btnRefreshPos_clicked();
+    void on_btnSetCurPosAsStop_clicked();
+    void on_btnSetCurPosAsStart_clicked();
+    void on_btnSelectFile_clicked();
+    void on_btnOpenStimFile_clicked();
+    void on_btnApply_clicked();
+    void on_btnFullChipSize_clicked();
+    void on_btnUseZoomWindow_clicked();
+    void on_actionStartAcqAndSave_triggered();
+    void on_actionStartLive_triggered();
+    void on_actionStop_triggered();
+    void on_actionOpenShutter_triggered();
+    void on_actionCloseShutter_triggered();
+    void on_actionTemperature_triggered();
+    void on_actionAutoScaleOnFirstFrame_triggered();
+    void on_actionContrastMin_triggered();
+    void on_actionContrastMax_triggered();
+    void on_actionStimuli_triggered();
+    void on_actionConfig_triggered();
+    void on_actionLog_triggered();
+    void on_actionIntensity_triggered();
+    void on_actionHistogram_triggered();
+    void on_actionDisplayFullImage_triggered();
+    //void on_actionColorizeSaturatedPixels_triggered();
+    void on_tabWidgetCfg_currentChanged(int index);
+    void on_comboBoxAxis_currentIndexChanged(int index);
+    void on_doubleSpinBoxCurPos_valueChanged(double newValue);
+    void on_spinBoxSpinboxSteps_valueChanged(int newValue);
+    void on_spinBoxNumOfDecimalDigits_valueChanged(int newValue);
+    void on_doubleSpinBoxBoxIdleTimeBtwnStacks_valueChanged(double newValue);
+    void on_cbAutoSetPiezoTravelBackTime_stateChanged(int state);
+    void readPiezoCurPos();
+    void onModified();
 
-        void updateStatus(const QString &str);
-        void appendLog(const QString& msg);
-        void updateDisplay(const QByteArray &data16, long idx, int imageW, int imageH);
-        void zoom_onMousePressed(QMouseEvent*);
-        void zoom_onMouseMoved(QMouseEvent*);
-        void zoom_onMouseReleased(QMouseEvent*);
+    void updateStatus(const QString &str);
+    void appendLog(const QString& msg);
+    void updateDisplay(const QByteArray &data16, long idx, int imageW, int imageH);
+    void zoom_onMousePressed(QMouseEvent*);
+    void zoom_onMouseMoved(QMouseEvent*);
+    void zoom_onMouseReleased(QMouseEvent*);
 
 };
 

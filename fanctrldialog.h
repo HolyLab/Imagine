@@ -32,8 +32,8 @@ public:
 private:
     Ui::FanCtrlDialogClass ui;
     Imagine *parentImagine;
-private slots:
-        void on_buttonBox_accepted();
+    private slots:
+    void on_buttonBox_accepted();
 };
 
 #endif // FANCTRLDIALOG_H
