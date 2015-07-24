@@ -19,6 +19,8 @@
 #include <QDialog>
 #include "ui_temperaturedialog.h"
 
+class Imagine;
+
 class TemperatureDialog : public QDialog
 {
     Q_OBJECT
@@ -27,7 +29,7 @@ public:
     TemperatureDialog(QWidget *parent = 0);
     ~TemperatureDialog();
 
-
+    Imagine *imagineParent;
     Ui::TemperatureDialogClass ui;
 public slots:
     int updateTemperature();

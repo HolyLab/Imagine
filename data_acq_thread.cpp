@@ -26,7 +26,6 @@
 using namespace std;
 
 #include <QDateTime>
-
 #include <QScriptEngine>
 #include <QScriptProgram>
 #include <QScriptable>
@@ -41,9 +40,8 @@ using namespace std;
 #include "fast_ofstream.hpp"
 #include "positioner.hpp"
 #include "Piezo_Controller.hpp"
+#include "spoolthread.h"
 
-
-Camera* pCamera=nullptr;
 Positioner* pPositioner=nullptr;
 QString positionerType; //todo: query Positioner instead
 QScriptEngine* se;
@@ -56,20 +54,19 @@ string rig;
 
 extern Timer_g gTimer;
 
-
 //defined in imagine.cpp:
 extern vector<pair<int,int> > stimuli; //first: stim (valve), second: time (stack#)
 extern int curStimIndex;
 
 QString replaceExtName(QString filename, QString newExtname);
 
-
-DataAcqThread::DataAcqThread(QObject *parent)
+DataAcqThread::DataAcqThread(Camera *cam, QObject *parent)
 : QThread(parent)
 {
    restart = false;
    abort = false;
    isLive=true;
+   pCamera = cam;
 }
 
 DataAcqThread::~DataAcqThread()
@@ -78,6 +75,13 @@ DataAcqThread::~DataAcqThread()
    abort = true;
    condition.wakeOne();
    mutex.unlock();
+
+   // TODO: clean up the camera, if needed
+   if (pCamera->vendor == "cooke"){
+       SpoolThread::freeMemPool();
+   }
+
+   delete pCamera;
 
    wait();
 }
@@ -101,6 +105,7 @@ QString linize(QString lines)
 }
 
 const string headerMagic="IMAGINE";
+
 bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
 {
    Camera& camera=*pCamera;
@@ -180,7 +185,6 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
    return true;
 }//DataAcqThread::saveHeader()
 
-
 extern volatile bool isUpdatingImage;
 
 void DataAcqThread::fireStimulus(int valve)
@@ -192,7 +196,6 @@ void DataAcqThread::fireStimulus(int valve)
    }
    digOut->write();
 }//fireStimulus(),
-
 
 bool DataAcqThread::preparePositioner(bool isForward)
 {
@@ -226,7 +229,6 @@ bool DataAcqThread::preparePositioner(bool isForward)
 
 }
 
-
 void DataAcqThread::run()
 {
    if(isLive) run_live();
@@ -235,7 +237,6 @@ void DataAcqThread::run()
    //this is for update ui status only:
    emit newStatusMsgReady(QString("acq-thread-finish"));
 }//run()
-
 
 void DataAcqThread::run_live()
 {
@@ -310,7 +311,6 @@ void DataAcqThread::run_live()
    QString ttMsg="Live mode is stopped";
    emit newStatusMsgReady(ttMsg);
 }//run_live()
-
 
 void genSquareSpike(int duration)
 {

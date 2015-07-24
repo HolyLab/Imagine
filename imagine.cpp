@@ -68,7 +68,6 @@ ImagineAction curAction;
 Timer_g gTimer;
 
 //todo: 
-extern Camera* pCamera;
 extern Positioner* pPositioner;
 extern QScriptEngine* se;
 extern DaqDo* digOut;
@@ -107,7 +106,7 @@ bool Imagine::loadPreset()
    return true;
 }
 
-void Imagine::preparePlots(Camera* pCamera)
+void Imagine::preparePlots()
 {
    //the histgram
    histPlot=new QwtPlot();
@@ -127,11 +126,11 @@ void Imagine::preparePlots(Camera* pCamera)
    histogram->attach(histPlot);
 
    ///todo: make it more robust by query Camera class
-   if(pCamera->vendor=="andor"){
+   if(dataAcqThread.pCamera->vendor=="andor"){
       histPlot->setAxisScale(QwtPlot::yLeft, 1, 1000000.0);
       histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1<<14);
    }
-   else if(pCamera->vendor=="cooke"){
+   else if (dataAcqThread.pCamera->vendor == "cooke"){
       histPlot->setAxisScale(QwtPlot::yLeft, 1, 5000000.0);
       histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1<<16);
    }
@@ -165,9 +164,12 @@ void Imagine::preparePlots(Camera* pCamera)
    */
 }
 
-Imagine::Imagine(QWidget *parent, Qt::WindowFlags flags)
+Imagine::Imagine(Camera *cam, QWidget *parent, Qt::WindowFlags flags)
 : QMainWindow(parent, flags)
 {
+    // pass the camera to the dataAcqThread
+    dataAcqThread.pCamera = cam;
+
    minPixelValueByUser=0;
    maxPixelValueByUser=1<<16;
 
@@ -221,7 +223,7 @@ Imagine::Imagine(QWidget *parent, Qt::WindowFlags flags)
    ui.actionColorizeSaturatedPixels->setCheckable(true);
    ui.actionColorizeSaturatedPixels->setChecked(true);
 
-   preparePlots(pCamera);
+   preparePlots();
 
    //see: QT demo -> widgets -> ImageViewer Example
    ui.labelImage->setBackgroundRole(QPalette::Base);
@@ -251,7 +253,7 @@ Imagine::Imagine(QWidget *parent, Qt::WindowFlags flags)
       ui.comboBoxTriggerMode->setCurrentIndex(1);
    }
 
-   Camera& camera=*pCamera;
+   Camera& camera=*dataAcqThread.pCamera;
 
    bool isAndor=camera.vendor=="andor";
    bool isAvt=camera.vendor=="avt";
@@ -273,7 +275,7 @@ Imagine::Imagine(QWidget *parent, Qt::WindowFlags flags)
 
    if(isAndor){
       //fill in horizontal shift speed (i.e. read out rate):
-      vector<float> horSpeeds=((AndorCamera*)pCamera)->getHorShiftSpeeds();
+       vector<float> horSpeeds = ((AndorCamera*)dataAcqThread.pCamera)->getHorShiftSpeeds();
       for(int i=0; i<horSpeeds.size(); ++i){
          ui.comboBoxHorReadoutRate->addItem(QString().setNum(horSpeeds[i])
             +" MHz");
@@ -281,7 +283,7 @@ Imagine::Imagine(QWidget *parent, Qt::WindowFlags flags)
       ui.comboBoxHorReadoutRate->setCurrentIndex(0);
 
       //fill in pre-amp gains:
-      vector<float> preAmpGains=((AndorCamera*)pCamera)->getPreAmpGains();
+      vector<float> preAmpGains = ((AndorCamera*)dataAcqThread.pCamera)->getPreAmpGains();
       for(int i=0; i<preAmpGains.size(); ++i){
          ui.comboBoxPreAmpGains->addItem(QString().setNum(preAmpGains[i]));
       }
@@ -300,7 +302,7 @@ Imagine::Imagine(QWidget *parent, Qt::WindowFlags flags)
       }//for, each hor. shift speed
 
       //fill in vert. shift speed combo box
-      vector<float> verSpeeds=((AndorCamera*)pCamera)->getVerShiftSpeeds();
+      vector<float> verSpeeds = ((AndorCamera*)dataAcqThread.pCamera)->getVerShiftSpeeds();
       for(int i=0; i<verSpeeds.size(); ++i){
          ui.comboBoxVertShiftSpeed->addItem(QString().setNum(verSpeeds[i])
             +" us");
@@ -427,7 +429,7 @@ Imagine::Imagine(QWidget *parent, Qt::WindowFlags flags)
    int y = (rect.height()-this->height()) / 2;
    this->move(x, y);
 
-   if(pCamera->vendor=="cooke"){
+   if (dataAcqThread.pCamera->vendor == "cooke"){
       SpoolThread::allocMemPool(-1); //use default size
    }
 }
@@ -436,12 +438,6 @@ Imagine::~Imagine()
 {
    delete digOut;
    delete pPositioner;
-
-   if(pCamera->vendor=="cooke"){
-      SpoolThread::freeMemPool(); 
-   }
-
-   delete pCamera;
 }
 
 bool zoom_isMouseDown=false;
@@ -1006,7 +1002,7 @@ void Imagine::closeEvent(QCloseEvent *event)
    }
    */
 
-   Camera& camera=*pCamera;
+    Camera& camera = *dataAcqThread.pCamera;
 
    bool isAndor=camera.vendor=="andor";
 
@@ -1023,7 +1019,7 @@ void Imagine::closeEvent(QCloseEvent *event)
          event->ignore();
          return;
       }
-      ((AndorCamera*)pCamera)->switchCooler(false); //switch off cooler
+      ((AndorCamera*)dataAcqThread.pCamera)->switchCooler(false); //switch off cooler
    }
 
    //shutdown camera
@@ -1086,7 +1082,7 @@ void Imagine::on_btnUseZoomWindow_clicked()
 
 bool Imagine::checkRoi()
 {
-   Camera& camera=*pCamera;
+    Camera& camera = *dataAcqThread.pCamera;
 
    //set the roi def
    se->globalObject().setProperty("hstart",ui.spinBoxHstart->value());
@@ -1121,7 +1117,7 @@ void Imagine::on_btnApply_clicked()
       return;
    }
 
-   Camera& camera=*pCamera;
+   Camera& camera = *dataAcqThread.pCamera;
 
    QString triggerModeStr=ui.comboBoxTriggerMode->currentText();
    AndorCamera::TriggerMode triggerMode;

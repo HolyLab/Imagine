@@ -22,6 +22,7 @@
 
 #include "andor_g.hpp"
 #include "daq.hpp"
+#include "camera_g.hpp"
 
 extern QString positionerType;
 
@@ -33,13 +34,16 @@ class DataAcqThread : public QThread
     Q_OBJECT
 
 public:
-    DataAcqThread(QObject *parent = 0);
+    DataAcqThread(Camera *cam = nullptr, QObject *parent = 0);
     ~DataAcqThread();
 
     void startAcq();
     void stopAcq(); //note: this func call is non-blocking
 
     bool preparePositioner(bool isForward=true);
+
+    // this thread's camera
+    Camera* pCamera;
 
     //intended camera params:
     int nStacks, 

@@ -14,12 +14,9 @@
 **-------------------------------------------------------------------------*/
 
 #include "temperaturedialog.h"
-
+#include "imagine.h"
 #include <QTimer>
-
 #include "andor_g.hpp"
-
-extern Camera* pCamera;
 
 TemperatureDialog::TemperatureDialog(QWidget *parent)
     : QDialog(parent)
@@ -29,6 +26,7 @@ TemperatureDialog::TemperatureDialog(QWidget *parent)
         QTimer *timer = new QTimer(this);
         connect(timer, SIGNAL(timeout()), this, SLOT(updateTemperature()));
         timer->start(1000);
+        imagineParent = (Imagine*)parent;
 }
 
 TemperatureDialog::~TemperatureDialog()
@@ -40,9 +38,7 @@ TemperatureDialog::~TemperatureDialog()
 void TemperatureDialog::on_radioButtonOn_toggled(bool isChecked)
 {
    ui.btnSet->setEnabled(isChecked);
-
-   ((AndorCamera*)pCamera)->switchCooler(isChecked);
-
+   ((AndorCamera*)imagineParent->dataAcqThread.pCamera)->switchCooler(isChecked);
 }
 
 void TemperatureDialog::on_btnSet_clicked()

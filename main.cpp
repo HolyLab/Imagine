@@ -46,7 +46,6 @@ using namespace std;
 #include "sc2_camexport.h"
 
 
-extern Camera* pCamera;
 extern Positioner* pPositioner;
 extern QString positionerType;
 extern QScriptEngine* se;
@@ -130,7 +129,6 @@ void getCamCount(int *camCount) {
 
     // TODO: take a careful look at the camera... using camlink will cause duplicates
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -247,29 +245,30 @@ int main(int argc, char *argv[])
    splash->showMessage(QString("Initialize the %1 camera ...").arg(cameraVendor), 
       Qt::AlignLeft|Qt::AlignBottom, Qt::red);
    qApp->processEvents();
-   if(cameraVendor=="avt") pCamera=new AvtCamera;
-   else if(cameraVendor=="andor") pCamera=new AndorCamera;
-   else if(cameraVendor=="cooke") pCamera=new CookeCamera;
-   else {
-      QMessageBox::critical(0, "Imagine", "Unsupported camera."
-         , QMessageBox::Ok, QMessageBox::NoButton);
 
+   // Init the camera. Pointer will be deleted in clean-up of its owning data_acq_thread.
+   // The camera gets passed to the acq thread via the Imagine instance, below.
+   Camera *cam;
+   if (cameraVendor == "avt") cam = new AvtCamera;
+   else if(cameraVendor=="andor") cam = new AndorCamera;
+   else if(cameraVendor=="cooke") cam = new CookeCamera;
+   else {
+      QMessageBox::critical(0, "Imagine", "Unsupported camera.", QMessageBox::Ok, QMessageBox::NoButton);
       return 1;
    }
-   if(!pCamera->init()){
-      splash->showMessage("Failed to initialize the camera.", 
-         Qt::AlignLeft|Qt::AlignBottom, Qt::red);
-
+   // camera initialization (not in the programming sense of initialization...)
+   if(!cam->init()){
+      splash->showMessage("Failed to initialize the camera.", Qt::AlignLeft|Qt::AlignBottom, Qt::red);
       QMessageBox::critical(splash, "Imagine", "Failed to initialize the camera."
          , QMessageBox::Ok, QMessageBox::NoButton);
-
       return 1;
    }
-
+   // get rid of the status message
    delete splash;
-
-   Imagine w;
+   // make and present an instance of the main UI object, passing it the cam it'll control
+   Imagine w(cam);
    w.show();
+   // go!
    a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
    return a.exec();
 }

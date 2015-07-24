@@ -45,8 +45,9 @@ class Imagine : public QMainWindow
     Q_OBJECT
 
 public:
-    Imagine(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    Imagine(Camera *cam, QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~Imagine();
+    DataAcqThread dataAcqThread;
 
 protected:
    void closeEvent(QCloseEvent *event);
@@ -55,7 +56,6 @@ protected:
 private:
     Ui::ImagineClass ui;
     QScrollArea* scrollArea;
-    DataAcqThread dataAcqThread;
     int minPixelValue, maxPixelValue;
     int minPixelValueByUser, maxPixelValueByUser;
     int nContinousBlackFrames;
@@ -79,7 +79,8 @@ private:
 
     bool checkRoi();
     bool loadPreset();
-    void preparePlots(Camera* pCamera);
+
+    void preparePlots();
 
 private slots:
         void on_actionHeatsinkFan_triggered();

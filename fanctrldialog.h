@@ -19,6 +19,8 @@
 #include <QDialog>
 #include "ui_fanctrldialog.h"
 
+class Imagine;
+
 class FanCtrlDialog : public QDialog
 {
     Q_OBJECT
@@ -29,7 +31,7 @@ public:
 
 private:
     Ui::FanCtrlDialogClass ui;
-
+    Imagine *parentImagine;
 private slots:
         void on_buttonBox_accepted();
 };
