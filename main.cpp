@@ -49,7 +49,6 @@ using namespace std;
 extern QScriptEngine* se;
 extern DaqDo* digOut;
 extern QString daq;
-extern QString aoname;
 extern QString ainame;
 extern string rig;
 
@@ -165,6 +164,7 @@ int main(int argc, char *argv[])
     QString positionerType = se->globalObject().property("positioner").toString();
     daq = se->globalObject().property("daq").toString();
     QString doname;
+    QString aoname;
     if (daq == "ni") {
         doname = se->globalObject().property("doname").toString();
         aoname = se->globalObject().property("aoname").toString();
