@@ -46,7 +46,6 @@ using namespace std;
 QScriptEngine* se;
 DaqDo * digOut = nullptr;
 QString daq;
-QString ainame;
 string rig;
 
 //defined in imagine.cpp:
@@ -388,6 +387,7 @@ void DataAcqThread::run_acq_and_save()
     preparePositioner(); //nec for volpiezo
 
     //prepare for AI:
+    QString ainame = se->globalObject().property("ainame").toString();
     AiThread * aiThread = new AiThread(0, ainame, 10000, 50000, 10000);
     unique_ptr<AiThread> uniPtrAiThread(aiThread);
 
