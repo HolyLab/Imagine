@@ -22,8 +22,8 @@ using std::endl;
 
 #include "timer_g.hpp"
 
-extern Timer_g gTimer;
-
+class CookeCamera;
+class CookeWorkerThread;
 
 class SpoolThread: public QThread {
    Q_OBJECT
@@ -46,6 +46,9 @@ private:
 
    volatile bool shouldStop; //todo: do we need a lock to guard it?
 
+   // this is only here so we can get access to the damn gTimer...
+   CookeWorkerThread *parentThread;
+
 public:
    static bool allocMemPool(long long sz){
       if(sz<0){
@@ -66,62 +69,9 @@ public:
       memPoolSize=0;
    }
 
-   //PRE: itemsize: the size (in bytes) of each item in the circ buf
-   SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *parent = 0)
-      : QThread(parent){
-      this->ofsSpooling=ofsSpooling;
-      circBuf=nullptr;
-      tmpItem=nullptr;
-
-      //NOTE: to make sure fast_ofstream works, we enforce
-      // (the precise cond: #bytes2write_in_total is an integer multiple of phy sector size.
-      //  #bytes2write is itemSize * #items2write
-      // assert(itemSize%4096==0);
-      //NOTE: do it in upstream code instead
-
-      this->itemSize=itemSize;
-
-      int circBufCap=memPoolSize/itemSize;
-      cout<<"b4 new CircularBuf: "<<gTimer.read()<<endl;
-
-      circBuf=new CircularBuf(circBufCap); 
-      cout<<"after new CircularBuf: "<<gTimer.read()<<endl;
-
-      long long circBufDataSize=size_t(itemSize)*circBuf->capacity();
-      if(circBufDataSize>memPoolSize){
-         freeMemPool();
-         allocMemPool(circBufDataSize);
-      }
-      circBufData=memPool;
-
-      //cout<<"after _aligned_malloc: "<<gTimer.read()<<endl;
-#ifdef _WIN64
-      assert((unsigned long long)circBufData%(1024*64)==0);
-#else
-      assert((unsigned long)circBufData%(1024*64)==0);
-#endif
-      tmpItem=new char[itemSize]; //todo: align
-
-      //todo: provide way to check out-of-mem etc.. e.g., if(circBufData==nullptr) isInGoodState=false;
-      //          If FastOfstream obj fails (i.e. write error), isInGoodState is set to false too.
-
-      mpLock=new QMutex;
- 
-      shouldStop=false;
-
-      cout<<"b4 exit spoolthread->ctor: "<<gTimer.read()<<endl;
-
-      timer.start();
-
-   }//ctor,
-
-
-   ~SpoolThread(){
-      delete circBuf;
-      delete[] tmpItem;
-      delete mpLock;
-
-   }//dtor,
+   // ctor and dtor
+   SpoolThread::SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *parent = 0);
+   SpoolThread::~SpoolThread();
 
    void requestStop(){
       shouldStop=true;

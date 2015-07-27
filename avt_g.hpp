@@ -127,8 +127,4 @@ public:
    friend void  __stdcall onFrameDone(tPvFrame* pFrame);
 };
 
-
-//extern AvtCamera camera;
-
-
 #endif //AVT_G_HPP

@@ -1,12 +1,13 @@
 #include "Piezo_Controller.hpp"
-
+#include "data_acq_thread.hpp"
 #include "timer_g.hpp"
 #include <iostream>
-
-extern Timer_g gTimer;
+#include "imagine.h"
 
 Piezo_Controller::Piezo_Controller() : lowPosLimit(500.0), upPosLimit(18500.0), maxVelocity(1500.0),maxAcceleration(10000.0), maxDeceleration(10000.0), micro(1000.0)
 {
+    posType = PiezoControlPositioner;
+
 	//
 	// Inquire and set up the connection to the E-861 controller USB port
 	//
@@ -521,8 +522,9 @@ void Piezo_Controller::runMovements()
 		double from = (*this->movements[i]).from;
 		double to = (*this->movements[i]).to;
 
+        Timer_g gt = parentAcqThread->parentImagine->gTimer;
 		printf(" Inside of runMovement: %d %f %f %d %d %d \n", i, from, to, _isnan(from), _isnan(to), (*this->movements[i]).trigger);
-		std::cout<<"%%%%%%%%  1 : "<<gTimer.read()<<std::endl;
+		std::cout<<"%%%%%%%%  1 : "<<gt.read()<<std::endl;
 
 		if(_isnan(from) && _isnan(to)) {
 			if(!Triggering(i)) {
@@ -554,6 +556,9 @@ void Piezo_Controller::runMovements()
 
 bool Piezo_Controller::prepare(const int i)
 {
+    // shared timer
+    Timer_g gt = parentAcqThread->parentImagine->gTimer;
+
 	// Special case: from = to
 	double from = (*this->movements[i]).from;
 	double to = (*this->movements[i]).to;
@@ -561,7 +566,7 @@ bool Piezo_Controller::prepare(const int i)
 
 	// General case:
 	if(i == 0) { // For both types of scanning
-		std::cout<<"%%%%%%%%  2 : "<<gTimer.read()<<std::endl;
+		std::cout<<"%%%%%%%%  2 : "<<gt.read()<<std::endl;
 
 		double from = (*this->movements[i]).from;
 		double to = (*this->movements[i]).to;
@@ -592,7 +597,7 @@ bool Piezo_Controller::prepare(const int i)
 			if(!setDeceleration(Deceleration)) return false;
 		}
 
-		std::cout<<"%%%%%%%%  3 : "<<gTimer.read()<<std::endl;
+		std::cout<<"%%%%%%%%  3 : "<<gt.read()<<std::endl;
 	}
 	else if(i == 1) { // For the uni-directional scanning
 		double Velocity = this->maxVel();
@@ -610,7 +615,8 @@ bool Piezo_Controller::prepare(const int i)
 
 bool Piezo_Controller::run(const int i)
 {
-	std::cout<<"%%%%%%%%  4 : "<<gTimer.read()<<std::endl;
+    Timer_g gt = parentAcqThread->parentImagine->gTimer;
+	std::cout<<"%%%%%%%%  4 : "<<gt.read()<<std::endl;
 
 	// Special case:
 	double from = (*this->movements[i]).from;
@@ -625,7 +631,7 @@ bool Piezo_Controller::run(const int i)
 		actTo = this->oneActMovement.actFrom;
 
 	if(Qmoving(actTo)) { // Move to "actTo" and retun immediately
-		std::cout<<"%%%%%%%%  5 : "<<gTimer.read()<<std::endl;
+		std::cout<<"%%%%%%%%  5 : "<<gt.read()<<std::endl;
 		return true;
 	}
 	else {
@@ -636,7 +642,8 @@ bool Piezo_Controller::run(const int i)
 
 bool Piezo_Controller::wait(const int i)
 {	
-	std::cout<<"%%%%%%%%  6 : "<<gTimer.read()<<std::endl;
+    Timer_g gt = parentAcqThread->parentImagine->gTimer;
+	std::cout<<"%%%%%%%%  6 : "<<gt.read()<<std::endl;
 
 	// Special case:
 	double from = (*this->movements[i]).from;
@@ -663,7 +670,7 @@ bool Piezo_Controller::wait(const int i)
 			if(PI_qPOS(this->USBID, &this->szAxis[0], &CurrentPos)) { // Inquire the current piezo stage position
 				CurrentPos = CurrentPos * this->micro;
 				if( (CurrentPos < to && CurrentPos > from) || (CurrentPos > to && CurrentPos < from) ) {
-					std::cout<<"%%%%%%%%  b point : "<<gTimer.read()<<std::endl;
+					std::cout<<"%%%%%%%%  b point : "<<gt.read()<<std::endl;
 
 					if((trigger == 1) || (trigger == 0))
 						if(!setTrigger(trigger)) return false;				
@@ -698,7 +705,7 @@ bool Piezo_Controller::wait(const int i)
 	}
 	*/
 
-	std::cout<<"%%%%%%%%  7 : "<<gTimer.read()<<std::endl;
+	std::cout<<"%%%%%%%%  7 : "<<gt.read()<<std::endl;
 
 	return true;
 }
@@ -743,7 +750,8 @@ bool Piezo_Controller::moving(const double to)
 
 bool Piezo_Controller::Triggering(const int i)
 {
-	std::cout<<"%%%%%%%%  8 : "<<gTimer.read()<<std::endl;
+    Timer_g gt = parentAcqThread->parentImagine->gTimer;
+	std::cout<<"%%%%%%%%  8 : "<<gt.read()<<std::endl;
 	// Triggering
 	int trigger = (*this->movements[i]).trigger;
 	if((trigger == 0) || (trigger == 1)) {
@@ -760,7 +768,7 @@ bool Piezo_Controller::Triggering(const int i)
 		while(clock() < endwait) {}
 	}
 
-	std::cout<<"%%%%%%%%  9 : "<<gTimer.read()<<std::endl;
+	std::cout<<"%%%%%%%%  9 : "<<gt.read()<<std::endl;
 	return true;
 }
 

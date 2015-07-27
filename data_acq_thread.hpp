@@ -23,18 +23,18 @@
 #include "andor_g.hpp"
 #include "daq.hpp"
 #include "camera_g.hpp"
-
-extern QString positionerType;
+#include "positioner.hpp"
 
 class QImage;
 class NiDaqAi;
+class Imagine;
 
 class DataAcqThread : public QThread
 {
     Q_OBJECT
 
 public:
-    DataAcqThread(Camera *cam = nullptr, QObject *parent = 0);
+    DataAcqThread(Camera *cam = nullptr, Positioner *pos = nullptr, QObject *parent = 0);
     ~DataAcqThread();
 
     void startAcq();
@@ -42,8 +42,20 @@ public:
 
     bool preparePositioner(bool isForward = true);
 
+    // setter for the camera and positioner... use this instead of setting the var directly
+    // yeah, I could make the var private... so can you!
+    void setCamera(Camera *cam);
+    void setPositioner(Positioner *pos);
+
     // this thread's camera
-    Camera* pCamera;
+    Camera* pCamera = nullptr;
+
+    // this thread's positioner, if not null
+    // COMPUTER, ENHANCE: should probably move ownership up a couple levels at some point
+    Positioner* pPositioner = nullptr;
+
+    // the Imagine instance that owns this thread
+    Imagine *parentImagine = nullptr;
 
     //intended camera params:
     int nStacks,

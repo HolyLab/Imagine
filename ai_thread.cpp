@@ -28,7 +28,6 @@ using namespace std;
 
 extern QString daq;
 
-
 AiThread::AiThread(QObject *parent, QString ainame, int readBufSize, int driverBufSize, int scanrate)
 : QThread(parent)
 {

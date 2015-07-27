@@ -23,7 +23,6 @@
 #include <QTextStream>
 #include <QFile>
 #include <QFileDialog>
-#include <QTimer>
 #include <QPainter>
 #include <QVBoxLayout>
 #include <QDate>
@@ -65,10 +64,7 @@ FanCtrlDialog* fanCtrlDialog = NULL;
 ImagineStatus curStatus;
 ImagineAction curAction;
 
-Timer_g gTimer;
-
 //todo: 
-extern Positioner* pPositioner;
 extern QScriptEngine* se;
 extern DaqDo* digOut;
 
@@ -164,11 +160,12 @@ void Imagine::preparePlots()
     */
 }
 
-Imagine::Imagine(Camera *cam, QWidget *parent, Qt::WindowFlags flags)
+Imagine::Imagine(Camera *cam, Positioner *pos, QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
 {
-    // pass the camera to the dataAcqThread
+    // pass the camera and positioner to the dataAcqThread
     dataAcqThread.pCamera = cam;
+    dataAcqThread.pPositioner = pos;
 
     minPixelValueByUser = 0;
     maxPixelValueByUser = 1 << 16;
@@ -248,7 +245,7 @@ Imagine::Imagine(Camera *cam, QWidget *parent, Qt::WindowFlags flags)
     }
 
     //trigger mode combo box
-    if (positionerType == "thor"){
+    if (pos->posType == ActuatorPositioner){
         ui.comboBoxTriggerMode->setEnabled(false);
         ui.comboBoxTriggerMode->setCurrentIndex(1);
     }
@@ -336,19 +333,22 @@ Imagine::Imagine(Camera *cam, QWidget *parent, Qt::WindowFlags flags)
     on_btnApply_clicked();
 
     ///piezo stuff
-    ui.doubleSpinBoxMinDistance->setValue(pPositioner->minPos());
-    ui.doubleSpinBoxMaxDistance->setValue(pPositioner->maxPos());
+    if (pos != NULL) {
+        bool isActPos = pos->posType == ActuatorPositioner;
+        ui.doubleSpinBoxMinDistance->setValue(pos->minPos());
+        ui.doubleSpinBoxMaxDistance->setValue(pos->maxPos());
 
-    ui.comboBoxAxis->setEnabled(positionerType == "thor");
-    if (positionerType == "thor"){
-        pPositioner->setDim(1);
-        ui.comboBoxAxis->setCurrentIndex(1);
+        ui.comboBoxAxis->setEnabled(isActPos);
+        if (isActPos){
+            pos->setDim(1);
+            ui.comboBoxAxis->setCurrentIndex(1);
+        }
+
+        //move piezo position to preset position
+        on_btnMovePiezo_clicked();
+
+        piezoUiParams.resize(3);//3 axes at most. TODO: support querying #dims
     }
-
-    //move piezo position to preset position
-    on_btnMovePiezo_clicked();
-
-    piezoUiParams.resize(3);//3 axes at most. TODO: support querying #dims
 
     QString buildDateStr = __DATE__;
     QDate date = QDate::fromString(buildDateStr, "MMM d yyyy");
@@ -437,7 +437,6 @@ Imagine::Imagine(Camera *cam, QWidget *parent, Qt::WindowFlags flags)
 Imagine::~Imagine()
 {
     delete digOut;
-    delete pPositioner;
 }
 
 bool zoom_isMouseDown = false;
@@ -912,7 +911,6 @@ void Imagine::on_actionContrastMax_triggered()
     if (ok) maxPixelValueByUser = value;
 }
 
-
 void Imagine::on_actionStop_triggered()
 {
     dataAcqThread.stopAcq();
@@ -1039,7 +1037,6 @@ void Imagine::closeEvent(QCloseEvent *event)
 
     event->accept();
 }
-
 
 void Imagine::on_btnFullChipSize_clicked()
 {
@@ -1212,9 +1209,12 @@ void Imagine::on_btnApply_clicked()
     //get the real params used by the camera:
     dataAcqThread.cycleTime = camera.getCycleTime();
     cout << "cycle time is: " << dataAcqThread.cycleTime << endl;
-    if (!dataAcqThread.preparePositioner()){
+
+    // if applicable, make sure positioner preparation went well...
+    Positioner *pos = dataAcqThread.pPositioner;
+    if (pos != NULL && !dataAcqThread.preparePositioner()){
         paramOK = false;
-        QString msg = QString("Positioner: applied params failed: ") + pPositioner->getLastErrorMsg().c_str();
+        QString msg = QString("Positioner: applied params failed: ") + pos->getLastErrorMsg().c_str();
         updateStatus(msg);
         QMessageBox::critical(0, "Imagine: Failed to setup piezo/stage.", msg
             , QMessageBox::Ok, QMessageBox::NoButton);
@@ -1444,8 +1444,13 @@ void Imagine::updateStatus(ImagineStatus newStatus, ImagineAction newAction)
 void Imagine::readPiezoCurPos()
 {
     double um;
-    if (pPositioner->curPos(&um)) ui.labelCurPos->setText(QString::number(um, 'f', 2));
-    else ui.labelCurPos->setText("Unknown");
+    Positioner *pos = dataAcqThread.pPositioner;
+    if (pos != NULL && pos->curPos(&um)) {
+        ui.labelCurPos->setText(QString::number(um, 'f', 2));
+    }
+    else {
+        ui.labelCurPos->setText("Unknown");
+    }
 }
 
 void Imagine::on_tabWidgetCfg_currentChanged(int index)
@@ -1510,12 +1515,14 @@ void Imagine::on_btnSetCurPosAsStop_clicked()
 
 void Imagine::on_btnMovePiezo_clicked()
 {
+    Positioner *pos = dataAcqThread.pPositioner;
+    if (pos == NULL) return;
     double um = ui.doubleSpinBoxCurPos->value();
-    pPositioner->setDim(ui.comboBoxAxis->currentIndex());
+    pos->setDim(ui.comboBoxAxis->currentIndex());
 
     this->statusBar()->showMessage("Moving the actuator. Please wait ...");
 
-    pPositioner->moveTo(um);
+    pos->moveTo(um);
 
     on_btnRefreshPos_clicked();
 
@@ -1536,10 +1543,12 @@ void Imagine::on_btnMoveToStopPos_clicked()
 
 void Imagine::on_comboBoxAxis_currentIndexChanged(int index)
 {
-    int oldDim = pPositioner->getDim();
-    pPositioner->setDim(index);
-    ui.doubleSpinBoxMinDistance->setValue(pPositioner->minPos());
-    ui.doubleSpinBoxMaxDistance->setValue(pPositioner->maxPos());
+    Positioner *pos = dataAcqThread.pPositioner;
+    if (pos == NULL) return;
+    int oldDim = pos->getDim();
+    pos->setDim(index);
+    ui.doubleSpinBoxMinDistance->setValue(pos->minPos());
+    ui.doubleSpinBoxMaxDistance->setValue(pos->maxPos());
     on_btnRefreshPos_clicked();
 
     int tmpIdx = max(oldDim, index);

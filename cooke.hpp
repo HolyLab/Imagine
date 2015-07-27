@@ -16,11 +16,16 @@
 
 #include "fast_ofstream.hpp"
 
+// dumb, but we need to do this so we can forward declare the nested class else
+class CookeWorkerThread {};
 
 class CookeCamera: public Camera {
+public:
    class WorkerThread;
    friend class WorkerThread;
+   typedef CookeWorkerThread WorkerThread;
 
+private:
    HANDLE hCamera;
    PCO_General strGeneral;
    PCO_CameraType strCamType;
@@ -159,9 +164,5 @@ public:
    void safe_pco(int errCode, string errMsg);
 
 };//class, CookeCamera
-
-
-//extern CookeCamera camera;
-
 
 #endif //COOKE_HPP

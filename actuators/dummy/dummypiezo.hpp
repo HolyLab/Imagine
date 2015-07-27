@@ -6,7 +6,7 @@
 class DummyPiezo: public Positioner {
 
 public:
-   DummyPiezo(){}
+    DummyPiezo(){ posType = DummyPositioner; }
    ~DummyPiezo(){}
 
    double minPos(){return 0;}

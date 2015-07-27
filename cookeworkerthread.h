@@ -11,6 +11,8 @@ using std::endl;
 #include "cooke.hpp"
 #include "lockguard.h"
 #include "spoolthread.h"
+#include "data_acq_thread.hpp"
+#include "imagine.h"
 
 #include <QThread>
 
@@ -18,11 +20,11 @@ using std::endl;
 #include <QThread>
 #include <QWaitCondition>
 
-extern Timer_g gTimer;
 void genSquareSpike(int);
 
 class CookeCamera::WorkerThread: public QThread {
-   Q_OBJECT
+    Q_OBJECT
+    friend class SpoolThread;
 private:
    CookeCamera* camera;
    SpoolThread* spoolingThread;
@@ -33,11 +35,13 @@ public:
    WorkerThread(CookeCamera * camera, QObject *parent = 0)
       : QThread(parent){
       this->camera=camera;
+
+      Timer_g gt = this->camera->parentAcqThread->parentImagine->gTimer;
       
       if(camera->isSpooling()){
          spoolingThread=new SpoolThread(camera->ofsSpooling, 
             camera->getImageWidth()*camera->getImageHeight()*sizeof(CookeCamera::PixelValue));
-         cout<<"after new spoolthread: "<<gTimer.read()<<endl;
+         cout << "after new spoolthread: " << gt.read() << endl;
 
          spoolingThread->start();
       }
@@ -47,7 +51,7 @@ public:
 
       shouldStop=false;
 
-      cout<<"at the end of workerThread->ctor(): "<<gTimer.read()<<endl;
+      cout << "at the end of workerThread->ctor(): " << gt.read() << endl;
    }
 
    ~WorkerThread(){
@@ -82,6 +86,7 @@ public:
       DWORD dwStatusDll;
       DWORD dwStatusDrv;
       int negIndices=0;
+      Timer_g gt = this->camera->parentAcqThread->parentImagine->gTimer;
 
       while(true){
          //if(shouldStop) break;
@@ -116,7 +121,7 @@ public:
          if(camera->nAcquiredFrames==0) {
             camera->firstFrameCounter=counter;
             assert(counter>=0);
-            cout<<"first frame's counter is "<<counter<<", at time: "<<gTimer.read()<<endl;
+            cout<<"first frame's counter is "<<counter<<", at time: "<<gt.read()<<endl;
             genSquareSpike(20);
          }
          int curFrameIdx=counter-camera->firstFrameCounter;
@@ -195,7 +200,7 @@ skipSponEvent:
          }
       }//while,
 #if defined(_DEBUG)
-	  cerr<<"leave cooke worker thread run() @ time "<<gTimer.read()<<endl;
+	  cerr<<"leave cooke worker thread run() @ time "<<gt.read()<<endl;
 	  genSquareSpike(30);
       cerr<<"black frame info:"<<endl;
       for(unsigned i=0; i<nBlackFrames.size(); ++i){

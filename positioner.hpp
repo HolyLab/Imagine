@@ -3,11 +3,22 @@
 
 #include <vector>
 #include <string>
+
 using std::vector;
 using std::string;
 
-//this is the base class of the specific positioners' classes
+class DataAcqThread;
 
+// enum for the different types of positioners
+typedef enum e_PositionerType {
+    NullPositioner,
+    DummyPositioner,
+    VolPiezoPositioner,
+    PiezoControlPositioner,
+    ActuatorPositioner
+} PositionerType;
+
+//this is the base class of the specific positioners' classes
 class Positioner {
 protected:
    struct Movement {
@@ -26,6 +37,9 @@ protected:
 public:
    Positioner(){setDim(0);}
    virtual ~Positioner(){ clearCmd(); }
+
+   PositionerType posType = NullPositioner;
+   DataAcqThread *parentAcqThread = nullptr;
 
    virtual string getLastErrorMsg(){return lastErrorMsg;}
 

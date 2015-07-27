@@ -46,8 +46,6 @@ using namespace std;
 #include "sc2_camexport.h"
 
 
-extern Positioner* pPositioner;
-extern QString positionerType;
 extern QScriptEngine* se;
 extern DaqDo* digOut;
 extern QString daq;
@@ -165,7 +163,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     QString cameraVendor = se->globalObject().property("camera").toString();
-    positionerType = se->globalObject().property("positioner").toString();
+    QString positionerType = se->globalObject().property("positioner").toString();
     daq = se->globalObject().property("daq").toString();
     if (daq == "ni") {
         doname = se->globalObject().property("doname").toString();
@@ -210,12 +208,13 @@ int main(int argc, char *argv[])
 
     splash->showMessage(QString("Initialize the %1 actuator ...").arg(positionerType),
         Qt::AlignLeft | Qt::AlignBottom, Qt::red);
-    if (positionerType == "volpiezo") pPositioner = new VolPiezo(ainame, aoname);
-    else if (positionerType == "pi") pPositioner = new Piezo_Controller;
+    Positioner *pos = nullptr;
+    if (positionerType == "volpiezo") pos = new VolPiezo(ainame, aoname);
+    else if (positionerType == "pi") pos = new Piezo_Controller;
 #ifndef _WIN64
-    else if (positionerType == "thor") pPositioner = new Actuator_Controller;
+    else if (positionerType == "thor") pos = new Actuator_Controller;
 #endif
-    else if (positionerType == "dummy") pPositioner = new DummyPiezo;
+    else if (positionerType == "dummy") pos = new DummyPiezo;
     else {
         QMessageBox::critical(0, "Imagine", "Unsupported positioner."
             , QMessageBox::Ok, QMessageBox::NoButton);
@@ -266,7 +265,7 @@ int main(int argc, char *argv[])
     // get rid of the status message
     delete splash;
     // make and present an instance of the main UI object, passing it the cam it'll control
-    Imagine w(cam);
+    Imagine w(cam, pos);
     w.show();
     // go!
     a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));

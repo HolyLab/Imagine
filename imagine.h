@@ -17,6 +17,7 @@
 #define IMAGINE_H
 
 #include <QMainWindow>
+#include <QTimer>
 
 class QScrollArea;
 class QString;
@@ -29,6 +30,7 @@ class HistogramItem;
 
 #include "data_acq_thread.hpp"
 #include "andor_g.hpp"
+#include "positioner.hpp"
 
 enum ImagineStatus { eIdle = 0, eRunning, eStopping };
 enum ImagineAction { eNoAction = 0, eAcqAndSave, eLive };
@@ -45,9 +47,11 @@ class Imagine : public QMainWindow
     Q_OBJECT
 
 public:
-    Imagine(Camera *cam, QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    Imagine(Camera *cam, Positioner *pos = nullptr,
+        QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~Imagine();
     DataAcqThread dataAcqThread;
+    Timer_g gTimer;
 
 protected:
     void closeEvent(QCloseEvent *event);

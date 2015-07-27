@@ -2,6 +2,7 @@
 
 Actuator_Controller::Actuator_Controller() : lowPosLimit(10000.0), upPosLimit(40000.0), maxVelocity(1100.0), maxAcceleration(1000.0), micro(1000.0)
 {
+    posType = ActuatorPositioner;
 	HANDLE_ERROR(APTInit()); // Initialize and set up the connection to the actuator controller
 	long lHWType = HWTYPE_SCC001;
 	HANDLE_ERROR(GetNumHWUnitsEx(lHWType, &this->plNumUnits)); // Get the number of HWUnits

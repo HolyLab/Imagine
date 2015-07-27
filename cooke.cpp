@@ -8,6 +8,8 @@
 #include "pco_errt.h"
 #include <iostream>
 #include <QtDebug>
+#include "data_acq_thread.hpp"
+#include "imagine.h"
 
 #define PCO_ERRT_H_CREATE_OBJECT
 
@@ -346,14 +348,14 @@ bool CookeCamera::startAcq()
          return false;
       }
    }
-
-   cout<<"b4 new WorkerThread(): "<<gTimer.read()<<endl;
+   Timer_g gt = parentAcqThread->parentImagine->gTimer;
+   cout<<"b4 new WorkerThread(): "<<gt.read()<<endl;
 
    workerThread=new WorkerThread(this);
-   cout<<"after new WorkerThread(): "<<gTimer.read()<<endl;
+   cout<<"after new WorkerThread(): "<<gt.read()<<endl;
    workerThread->start();
 
-   cout<<"after workerThread->start(): "<<gTimer.read()<<endl;
+   cout<<"after workerThread->start(): "<<gt.read()<<endl;
 
    errorCode = PCO_SetRecordingState(hCamera, 1); //1: run
    if(errorCode!=PCO_NOERROR) {
@@ -361,7 +363,7 @@ bool CookeCamera::startAcq()
       return false;
    }
 
-   cout<<"after set rec state to 1/run: "<<gTimer.read()<<endl;
+   cout<<"after set rec state to 1/run: "<<gt.read()<<endl;
 
    return true;
 }//startAcq(),
@@ -378,8 +380,8 @@ bool CookeCamera::stopAcq()
       return false;
    }
 
-
-   cout<<"b4 PCO_RemoveBuffer: "<<gTimer.read()<<endl;
+   Timer_g gt = parentAcqThread->parentImagine->gTimer;
+   cout<<"b4 PCO_RemoveBuffer: "<<gt.read()<<endl;
 
    //reverse of PCO_AddBuffer()
    errorCode=PCO_RemoveBuffer(hCamera);   // If there's still a buffer in the driver queue, remove it
@@ -388,7 +390,7 @@ bool CookeCamera::stopAcq()
       return false;
    }
 
-   cout<<"after PCO_RemoveBuffer: "<<gTimer.read()<<endl;
+   cout<<"after PCO_RemoveBuffer: "<<gt.read()<<endl;
 
    for(int i=0; i<nBufs; ++i){
       //reverse of PCO_AllocateBuffer()

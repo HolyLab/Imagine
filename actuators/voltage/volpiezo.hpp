@@ -8,7 +8,13 @@
 class VolPiezo: public Positioner {
 
 public:
-   VolPiezo(QString aistring,QString aostring){ainame=aistring; aoname=aostring; aoOnce=nullptr; ao=nullptr;}
+    VolPiezo(QString aistring, QString aostring){
+        ainame = aistring;
+        aoname = aostring;
+        aoOnce = nullptr;
+        ao = nullptr;
+        posType = VolPiezoPositioner;
+    }
    ~VolPiezo(){delete aoOnce; delete ao;}
 
    double minPos(){return 0;}

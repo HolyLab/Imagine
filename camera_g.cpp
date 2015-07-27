@@ -15,7 +15,7 @@
 
 
 #include "camera_g.hpp"
-
+#include "data_acq_thread.hpp"
 
 Camera::Camera()
 {
@@ -46,7 +46,6 @@ void Camera::freeImageArray()
          pImageArray = NULL;
          imageArraySize=0;
       }
-
 }
 
 //todo: align it
