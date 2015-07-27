@@ -3,8 +3,8 @@
 #include "cookeworkerthread.h"
 #include "imagine.h"
 
-char * SpoolThread::memPool=nullptr;
-long long SpoolThread::memPoolSize=0;
+char * SpoolThread::memPool = nullptr;
+long long SpoolThread::memPoolSize = 0;
 
 // Moved methods that refer to workerThread into here...
 // Eventually it might be nice to bring this class in line with the
@@ -17,7 +17,7 @@ SpoolThread::SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *paren
     circBuf = nullptr;
     tmpItem = nullptr;
     parentThread = (CookeWorkerThread*)parent;
-    
+
     // grab the timer...
     Timer_g gt = parentThread->camera->parentAcqThread->parentImagine->gTimer;
 
@@ -36,7 +36,7 @@ SpoolThread::SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *paren
     cout << "after new CircularBuf: " << gt.read() << endl;
 
     long long circBufDataSize = size_t(itemSize)*circBuf->capacity();
-    if (circBufDataSize>memPoolSize){
+    if (circBufDataSize > memPoolSize){
         freeMemPool();
         allocMemPool(circBufDataSize);
     }

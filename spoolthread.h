@@ -24,120 +24,120 @@ using std::endl;
 
 class CookeWorkerThread;
 
-class SpoolThread: public QThread {
-   Q_OBJECT
+class SpoolThread : public QThread {
+    Q_OBJECT
 private:
-   FastOfstream *ofsSpooling; //NOTE: SpoolThread is not the owner
+    FastOfstream *ofsSpooling; //NOTE: SpoolThread is not the owner
 
-   CircularBuf * circBuf;
-   int itemSize; //todo: change to long long
-   char * tmpItem;
-   char * circBufData;
+    CircularBuf * circBuf;
+    int itemSize; //todo: change to long long
+    char * tmpItem;
+    char * circBufData;
 
-   static char * memPool;
-   static long long memPoolSize;
+    static char * memPool;
+    static long long memPoolSize;
 
-   QWaitCondition bufNotEmpty;
-   QWaitCondition bufNotFull;
-   QMutex* mpLock;
+    QWaitCondition bufNotEmpty;
+    QWaitCondition bufNotFull;
+    QMutex* mpLock;
 
-   Timer_g timer;
+    Timer_g timer;
 
-   volatile bool shouldStop; //todo: do we need a lock to guard it?
+    volatile bool shouldStop; //todo: do we need a lock to guard it?
 
-   // this is only here so we can get access to the damn gTimer...
-   CookeWorkerThread *parentThread;
+    // this is only here so we can get access to the damn gTimer...
+    CookeWorkerThread *parentThread;
 
 public:
-   static bool allocMemPool(long long sz){
-      if(sz<0){
+    static bool allocMemPool(long long sz){
+        if (sz < 0){
 #ifdef _WIN64
-         memPoolSize=(long long)5529600*2*600; //600 full frames. TODO: make this user-configuable
+            memPoolSize = (long long)5529600 * 2 * 600; //600 full frames. TODO: make this user-configuable
 #else
-         memPoolSize=5529600*2*30; //30 full frames
+            memPoolSize=5529600*2*30; //30 full frames
 #endif
-      }//if, use default
-      else memPoolSize=sz;
+        }//if, use default
+        else memPoolSize = sz;
 
-      memPool=(char*)_aligned_malloc(memPoolSize, 1024*64);
-      return memPool;
-   }
-   static void freeMemPool(){
-      _aligned_free(memPool);
-      memPool=nullptr;
-      memPoolSize=0;
-   }
+        memPool = (char*)_aligned_malloc(memPoolSize, 1024 * 64);
+        return memPool;
+    }
+    static void freeMemPool(){
+        _aligned_free(memPool);
+        memPool = nullptr;
+        memPoolSize = 0;
+    }
 
-   // ctor and dtor
-   SpoolThread::SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *parent = 0);
-   SpoolThread::~SpoolThread();
+    // ctor and dtor
+    SpoolThread::SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *parent = 0);
+    SpoolThread::~SpoolThread();
 
-   void requestStop(){
-      shouldStop=true;
-      bufNotFull.wakeAll();
-      bufNotEmpty.wakeAll();
-   }
+    void requestStop(){
+        shouldStop = true;
+        bufNotFull.wakeAll();
+        bufNotEmpty.wakeAll();
+    }
 
-   //add one item to the ring buf. Blocked when full.
-   void appendItem(char* item){
-      mpLock->lock();
-      while(circBuf->full() && !shouldStop){
-         bufNotFull.wait(mpLock);
-      }
-      if(shouldStop)goto finishup;
-      int idx=circBuf->put();
-      memcpy_g(circBufData+idx*size_t(itemSize), item, itemSize);
-      bufNotEmpty.wakeAll();
-finishup:
-      mpLock->unlock();
-   }//appendItem(),
+    //add one item to the ring buf. Blocked when full.
+    void appendItem(char* item){
+        mpLock->lock();
+        while (circBuf->full() && !shouldStop){
+            bufNotFull.wait(mpLock);
+        }
+        if (shouldStop)goto finishup;
+        int idx = circBuf->put();
+        memcpy_g(circBufData + idx*size_t(itemSize), item, itemSize);
+        bufNotEmpty.wakeAll();
+    finishup:
+        mpLock->unlock();
+    }//appendItem(),
 
 
-   void run(){
+    void run(){
 #if defined(_DEBUG)
-      cerr<<"enter cooke spooling thread run()"<<endl;
+        cerr << "enter cooke spooling thread run()" << endl;
 #endif
 
-      long long timerReading;
+        long long timerReading;
 
-      while(true){
-lockAgain:
-         if(!mpLock->tryLock()){
-            timerReading=timer.readInNanoSec();
-            while(timer.readInNanoSec()-timerReading<1000*1000*7); //busy wait for 7ms
-            goto lockAgain;
-         }
-         while(circBuf->empty() && !shouldStop){
-            bufNotEmpty.wait(mpLock); //wait 4 not empty
-         }
-         if(shouldStop) goto finishup;
-getAgain:
-         int nEmptySlots=circBuf->capacity()-circBuf->size();
-         int idx=circBuf->get();
-         this->ofsSpooling->write(circBufData+idx*size_t(itemSize), itemSize);
-         if(false && nEmptySlots<64){
-            goto getAgain;
-         }
-         bufNotFull.wakeAll();
-         mpLock->unlock();
+        while (true){
+        lockAgain:
+            if (!mpLock->tryLock()){
+                timerReading = timer.readInNanoSec();
+                while (timer.readInNanoSec() - timerReading < 1000 * 1000 * 7); //busy wait for 7ms
+                goto lockAgain;
+            }
+            while (circBuf->empty() && !shouldStop){
+                bufNotEmpty.wait(mpLock); //wait 4 not empty
+            }
+            if (shouldStop) goto finishup;
+        getAgain:
+            int nEmptySlots = circBuf->capacity() - circBuf->size();
+            int idx = circBuf->get();
+            this->ofsSpooling->write(circBufData + idx*size_t(itemSize), itemSize);
+            if (false && nEmptySlots < 64){
+                goto getAgain;
+            }
+            bufNotFull.wakeAll();
+            mpLock->unlock();
 
-         //now flush if nec. 
-         //todo: take care aggressive "get" above ( ... nEmptySlots < 64 ... )
-         if(this->ofsSpooling->remainingBufSize()<itemSize){
-            this->ofsSpooling->flush();
-         }
-      }//while,
-finishup:
-      while(!circBuf->empty()){
-         int idx=circBuf->get();
-         this->ofsSpooling->write(circBufData+idx*size_t(itemSize), itemSize);
-      }
-      mpLock->unlock();
+            //now flush if nec. 
+            //todo: take care aggressive "get" above ( ... nEmptySlots < 64 ... )
+            if (this->ofsSpooling->remainingBufSize() < itemSize){
+                this->ofsSpooling->flush();
+            }
+        }//while,
+    finishup:
+        while (!circBuf->empty()){
+            int idx = circBuf->get();
+            this->ofsSpooling->write(circBufData + idx*size_t(itemSize), itemSize);
+        }
+        mpLock->unlock();
 
 #if defined(_DEBUG)
-      cerr<<"leave cooke spooling thread run()"<<endl;
+        cerr << "leave cooke spooling thread run()" << endl;
 #endif
-   }//run(),
+    }//run(),
 };//class, SpoolThread
 
 

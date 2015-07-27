@@ -494,7 +494,7 @@ nextStack:
             pPositioner->runCmd();
             cout << "after pPositioner->runCmd: " << gt.read() << endl;
         }
-        
+
         if (!startCameraOnce && isPiezo){
             camera.startAcq();
         }
