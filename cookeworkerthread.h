@@ -22,7 +22,7 @@ using std::endl;
 
 void genSquareSpike(int);
 
-class CookeCamera::WorkerThread: public QThread {
+class CookeWorkerThread : public QThread {
     Q_OBJECT
     friend class SpoolThread;
 private:
@@ -32,7 +32,7 @@ private:
    volatile bool shouldStop; //todo: do we need a lock to guard it?
 
 public:
-   WorkerThread(CookeCamera * camera, QObject *parent = 0)
+    CookeWorkerThread(CookeCamera * camera, QObject *parent = 0)
       : QThread(parent){
       this->camera=camera;
 
@@ -54,7 +54,7 @@ public:
       cout << "at the end of workerThread->ctor(): " << gt.read() << endl;
    }
 
-   ~WorkerThread(){
+    ~CookeWorkerThread(){
       if(spoolingThread){
          spoolingThread->wait();
          delete spoolingThread;
@@ -116,7 +116,7 @@ public:
             goto skipSponEvent;
          }
 
-         PixelValue* rawData=camera->mRingBuf[eventIdx];
+         CookeCamera::PixelValue* rawData=camera->mRingBuf[eventIdx];
          long counter=camera->extractFrameCounter(rawData);
          if(camera->nAcquiredFrames==0) {
             camera->firstFrameCounter=counter;
@@ -210,7 +210,7 @@ skipSponEvent:
       cerr<<"end of black frame info"<<endl;
 #endif
    }//run(),
-};//class, CookeCamera::WorkerThread
+};//class, CookeWorkerThread
 
 
 #endif // COOKEWORKERTHREAD_H

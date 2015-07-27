@@ -16,14 +16,14 @@
 
 #include "fast_ofstream.hpp"
 
-// dumb, but we need to do this so we can forward declare the nested class else
-class CookeWorkerThread {};
+// TODO: this is upside down, but cookeworkerthread.h is a mess...
+// in the future it would be nice to make use of cookworkerthread.cpp,
+// then forward declare this class in that one, rather than this.
+class CookeWorkerThread;
 
 class CookeCamera: public Camera {
 public:
-   class WorkerThread;
-   friend class WorkerThread;
-   typedef CookeWorkerThread WorkerThread;
+    friend class CookeWorkerThread;
 
 private:
    HANDLE hCamera;
@@ -56,7 +56,7 @@ private:
    HANDLE mEvent[nBufs];//m_hEvent
    PixelValue* mRingBuf[nBufs]; //m_pic12
 
-   WorkerThread* workerThread;
+   CookeWorkerThread* workerThread;
 
    FastOfstream *ofsSpooling;
 

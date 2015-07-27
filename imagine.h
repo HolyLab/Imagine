@@ -31,6 +31,7 @@ class HistogramItem;
 #include "data_acq_thread.hpp"
 #include "andor_g.hpp"
 #include "positioner.hpp"
+#include "timer_g.hpp"
 
 enum ImagineStatus { eIdle = 0, eRunning, eStopping };
 enum ImagineAction { eNoAction = 0, eAcqAndSave, eLive };

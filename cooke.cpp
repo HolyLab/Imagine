@@ -351,7 +351,7 @@ bool CookeCamera::startAcq()
    Timer_g gt = parentAcqThread->parentImagine->gTimer;
    cout<<"b4 new WorkerThread(): "<<gt.read()<<endl;
 
-   workerThread=new WorkerThread(this);
+   workerThread=new CookeWorkerThread(this);
    cout<<"after new WorkerThread(): "<<gt.read()<<endl;
    workerThread->start();
 

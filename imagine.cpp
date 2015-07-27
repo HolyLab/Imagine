@@ -164,8 +164,9 @@ Imagine::Imagine(Camera *cam, Positioner *pos, QWidget *parent, Qt::WindowFlags 
     : QMainWindow(parent, flags)
 {
     // pass the camera and positioner to the dataAcqThread
-    dataAcqThread.pCamera = cam;
-    dataAcqThread.pPositioner = pos;
+    dataAcqThread.setCamera(cam);
+    dataAcqThread.setPositioner(pos);
+    dataAcqThread.parentImagine = this;
 
     minPixelValueByUser = 0;
     maxPixelValueByUser = 1 << 16;

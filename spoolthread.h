@@ -22,7 +22,6 @@ using std::endl;
 
 #include "timer_g.hpp"
 
-class CookeCamera;
 class CookeWorkerThread;
 
 class SpoolThread: public QThread {
