@@ -46,7 +46,6 @@ using namespace std;
 QScriptEngine* se;
 DaqDo * digOut = nullptr;
 QString daq;
-QString doname;
 QString aoname;
 QString ainame;
 string rig;
