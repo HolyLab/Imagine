@@ -286,18 +286,11 @@ int main(int argc, char *argv[])
     // get rid of the status message
     delete splash;
 
-    // make an instance of the main UI object for each cam, passing it the
-    // cam it'll control, and optionally a positioner
-    Imagine w(cam1, pos);
-    a.imgOne = &w;
-    Imagine *w2p = nullptr;
-    if (nCams > 1) {
-        w2p = new Imagine(cam2, nullptr);
-        a.imgTwo = w2p;
-    }
-    
-    // go!
+    // init and show the ui
+    a.initUI(cam1, pos, cam2);
     a.showUi();
+
+    // go!
     a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
     return a.exec();
 }

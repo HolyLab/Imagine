@@ -353,7 +353,11 @@ Imagine::Imagine(Camera *cam, Positioner *pos, QWidget *parent, Qt::WindowFlags 
 
 Imagine::~Imagine()
 {
+    // this isn't really the logical place to do this... but dammit data
+    // sometimes I just gotta get my kling on.
+    if (digOut != NULL)
     delete digOut;
+    digOut = NULL;
 }
 
 #pragma endregion
