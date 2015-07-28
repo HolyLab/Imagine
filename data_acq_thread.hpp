@@ -48,6 +48,7 @@ public:
     void setPositioner(Positioner *pos);
 
     int curStimIndex = 0;
+    vector<pair<int, int> > stimuli; //first: stim (valve), second: time (stack#)
 
     // this thread's camera
     Camera* pCamera = nullptr;

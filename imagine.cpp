@@ -57,7 +57,6 @@ using namespace std;
 #include "timer_g.hpp"
 #include "spoolthread.h"
 
-vector<pair<int, int> > stimuli; //first: stim (valve), second: time (stack#)
 TemperatureDialog * temperatureDialog = NULL;
 FanCtrlDialog* fanCtrlDialog = NULL;
 ImagineStatus curStatus;
@@ -1293,7 +1292,7 @@ void Imagine::on_btnOpenStimFile_clicked()
     tt >> headerSize;
 
     int dataStartIdx = headerSize;
-    stimuli.clear();
+    dataAcqThread.stimuli.clear();
 
     for (int i = dataStartIdx; i < lines.size(); ++i){
         int valve, stack;
@@ -1301,16 +1300,16 @@ void Imagine::on_btnOpenStimFile_clicked()
         if (line.trimmed().isEmpty()) continue;
         QTextStream tt(&line);
         tt >> valve >> stack;
-        stimuli.push_back(pair<int, int>(valve, stack));
+        dataAcqThread.stimuli.push_back(pair<int, int>(valve, stack));
     }
 
     //fill in entries in table:
-    ui.tableWidgetStimDisplay->setColumnCount(stimuli.size());
+    ui.tableWidgetStimDisplay->setColumnCount(dataAcqThread.stimuli.size());
     QStringList tableHeader;
-    for (int i = 0; i < stimuli.size(); ++i){
-        QTableWidgetItem *newItem = new QTableWidgetItem(tr("%1").arg(stimuli[i].first));
+    for (int i = 0; i < dataAcqThread.stimuli.size(); ++i){
+        QTableWidgetItem *newItem = new QTableWidgetItem(tr("%1").arg(dataAcqThread.stimuli[i].first));
         ui.tableWidgetStimDisplay->setItem(0, i, newItem);
-        tableHeader << QString().setNum(stimuli[i].second);
+        tableHeader << QString().setNum(dataAcqThread.stimuli[i].second);
     }//for,
     ui.tableWidgetStimDisplay->setHorizontalHeaderLabels(tableHeader);
     tableHeader.clear();
