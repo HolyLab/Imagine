@@ -179,8 +179,6 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
     return true;
 }//DataAcqThread::saveHeader()
 
-extern volatile bool isUpdatingImage;
-
 void DataAcqThread::fireStimulus(int valve)
 {
     emit newStatusMsgReady(QString("valve is open: %1").arg(valve));

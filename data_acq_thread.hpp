@@ -47,8 +47,10 @@ public:
     void setCamera(Camera *cam);
     void setPositioner(Positioner *pos);
 
+    // de-globalized vars in need of a proper home...
     int curStimIndex = 0;
     vector<pair<int, int> > stimuli; //first: stim (valve), second: time (stack#)
+    volatile bool isUpdatingImage;
 
     // this thread's camera
     Camera* pCamera = nullptr;

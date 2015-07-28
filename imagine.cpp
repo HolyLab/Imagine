@@ -518,7 +518,6 @@ void Imagine::on_actionDisplayFullImage_triggered()
 }
 
 
-volatile bool isUpdatingImage = false;
 int nUpdateImage;
 
 void Imagine::appendLog(const QString& msg)
@@ -667,7 +666,7 @@ void Imagine::updateIntenCurve(const Camera::PixelValue * frame,
 //note: idx is 0-based
 void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int imageH)
 {
-    isUpdatingImage = true;
+    dataAcqThread.isUpdatingImage = true;
 
     //NOTE: about colormap/contrast/autoscale:
     //  Because Qt doesn't support 16bit grayscale image, we have to use 8bit index
@@ -784,7 +783,7 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
         + "-th updated frame(0-based)=" + QString().setNum(idx));
 
 done:
-    isUpdatingImage = false;
+    dataAcqThread.isUpdatingImage = false;
 }//updateDisplay(),
 
 
