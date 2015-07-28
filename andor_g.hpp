@@ -28,267 +28,268 @@ using std::endl;
 
 #include "camera_g.hpp"
 
-class AndorCamera: public Camera {
+class AndorCamera : public Camera {
 public:
-   enum AndorAcqMode {eSingleScan=1, eAccumulate, eKineticSeries, eRunTillAbort=5,
-         eUndocumentedFrameTransfer=6,
-   };
+    enum AndorAcqMode {
+        eSingleScan = 1, eAccumulate, eKineticSeries, eRunTillAbort = 5,
+        eUndocumentedFrameTransfer = 6,
+    };
 
 private:
-   AndorCapabilities caps;                     // AndorCapabilities structure
+    AndorCapabilities caps;                     // AndorCapabilities structure
 
-   //todo: move next two to local
-   int  idxVirticalSpeed;                 // Vertical Speed Index
-   int  idxHorizontalSpeed;                 // Horizontal Speed Index
+    //todo: move next two to local
+    int  idxVirticalSpeed;                 // Vertical Speed Index
+    int  idxHorizontalSpeed;                 // Horizontal Speed Index
 
-   //AcqMode acquisitionMode;
-   int     readMode;
+    //AcqMode acquisitionMode;
+    int     readMode;
 
 public:
-   AndorCamera(){
-      //acquisitionMode=eUndocumentedFrameTransfer; //6
-      readMode=4;
-      triggerMode=eInternalTrigger;   //internal mode
+    AndorCamera(){
+        //acquisitionMode=eUndocumentedFrameTransfer; //6
+        readMode = 4;
+        triggerMode = eInternalTrigger;   //internal mode
 
-      vendor="andor";
-   }//ctor
+        vendor = "andor";
+    }//ctor
 
-   ~AndorCamera(){
-   }
+    ~AndorCamera(){
+    }
 
-   string getErrorMsg(){
-      if(errorCode==DRV_SUCCESS){
-         return "no error";
-      }
-      else return errorMsg;
-   }
+    string getErrorMsg(){
+        if (errorCode == DRV_SUCCESS){
+            return "no error";
+        }
+        else return errorMsg;
+    }
 
-   int getExtraErrorCode(ExtraErrorCodeType type) {
-      switch(type){
-      case eOutOfMem: return DRV_ERROR_CODES-100;
-      //default: 
-      }
+    int getExtraErrorCode(ExtraErrorCodeType type) {
+        switch (type){
+        case eOutOfMem: return DRV_ERROR_CODES - 100;
+            //default: 
+        }
 
-      return -1;
-   }
+        return -1;
+    }
 
-   long getAcquiredFrameCount()
-   {
-      long nFramesGotCur;
-      GetTotalNumberImagesAcquired(&nFramesGotCur);
-      return nFramesGotCur;
-   }
+    long getAcquiredFrameCount()
+    {
+        long nFramesGotCur;
+        GetTotalNumberImagesAcquired(&nFramesGotCur);
+        return nFramesGotCur;
+    }
 
-   bool getLatestLiveImage(PixelValue * frame)
-   {
-      long nPixels=getImageWidth()*getImageHeight();
+    bool getLatestLiveImage(PixelValue * frame)
+    {
+        long nPixels = getImageWidth()*getImageHeight();
 
-      //todo: check return value
-      GetMostRecentImage16(frame, nPixels);
+        //todo: check return value
+        GetMostRecentImage16(frame, nPixels);
 
-      return true;
-   }
+        return true;
+    }
 
-   vector<float> getHorShiftSpeeds()
-   {
-      vector<float> horSpeeds;
+    vector<float> getHorShiftSpeeds()
+    {
+        vector<float> horSpeeds;
 
-      int nSpeeds;
-      float speed;
-      GetNumberHSSpeeds(0,0,&nSpeeds); //todo: error checking. func can be: bool getHorShiftSpeeds(vector<float> &)
-      for(int i=0; i<nSpeeds; i++){
-         GetHSSpeed(0, 0, i, &speed); //AD channel=0; type=0, i.e. electron multiplication.
-         horSpeeds.push_back(speed);
-      }
+        int nSpeeds;
+        float speed;
+        GetNumberHSSpeeds(0, 0, &nSpeeds); //todo: error checking. func can be: bool getHorShiftSpeeds(vector<float> &)
+        for (int i = 0; i < nSpeeds; i++){
+            GetHSSpeed(0, 0, i, &speed); //AD channel=0; type=0, i.e. electron multiplication.
+            horSpeeds.push_back(speed);
+        }
 
-      return horSpeeds;
-   }//getHorShiftSpeeds()
+        return horSpeeds;
+    }//getHorShiftSpeeds()
 
-   vector<float> getVerShiftSpeeds()
-   {
-      vector<float> verSpeeds;
+    vector<float> getVerShiftSpeeds()
+    {
+        vector<float> verSpeeds;
 
-      int nSpeeds;
-      float speed;
-      GetNumberVSSpeeds(&nSpeeds);   //todo: error checking
-      for(int i=0; i<nSpeeds; i++){
-         GetVSSpeed(i, &speed);
-         verSpeeds.push_back(speed);
-      }
+        int nSpeeds;
+        float speed;
+        GetNumberVSSpeeds(&nSpeeds);   //todo: error checking
+        for (int i = 0; i < nSpeeds; i++){
+            GetVSSpeed(i, &speed);
+            verSpeeds.push_back(speed);
+        }
 
-      return verSpeeds;
-   }//getVerShiftSpeeds()
+        return verSpeeds;
+    }//getVerShiftSpeeds()
 
-   vector<float> getPreAmpGains()
-   {
-      vector<float> preAmpGains;
+    vector<float> getPreAmpGains()
+    {
+        vector<float> preAmpGains;
 
-      int nPreAmpGains=0;
-      float gain;
-      GetNumberPreAmpGains(&nPreAmpGains);
-      for(int i=0; i<nPreAmpGains; ++i){
-         GetPreAmpGain(i, &gain);
-         preAmpGains.push_back(gain);
-      }
+        int nPreAmpGains = 0;
+        float gain;
+        GetNumberPreAmpGains(&nPreAmpGains);
+        for (int i = 0; i < nPreAmpGains; ++i){
+            GetPreAmpGain(i, &gain);
+            preAmpGains.push_back(gain);
+        }
 
-      return preAmpGains;
-   }//getPreAmpGains(),
-
-
-   //return true if success
-   bool init();
-
-   //switch on or off cooler
-   bool switchCooler(bool toON){
-      // cooler:
-      errorCode=toON?CoolerON():CoolerOFF();        // Switch on or off cooler
-      if(errorCode!=DRV_SUCCESS){
-         errorMsg=string("Error to switch ")+(toON?"on":"off")+" cooler";
-         return false;
-      }
-
-      return true;
-   }//switchCooler(),
-
-   //set heat sink fan speed
-   enum FanSpeed {fsHigh=0, fsLow, fsOff};
-   bool setHeatsinkFanSpeed(FanSpeed speed){
-      errorCode=SetFanMode(speed);
-      if(errorCode!=DRV_SUCCESS){
-         errorMsg=string("Error when change heatsink fan speed");
-         return false;
-      }
-
-      return true;
-   }//setHeatsinkFanSpeed()
-
-   //shut down the camera
-   bool fini();
+        return preAmpGains;
+    }//getPreAmpGains(),
 
 
-   //------------------------------------------------------------------------------
-   //  RETURNS: 	true: Image data acquired successfully
-   //  DESCRIPTION:    This function gets the acquired data from the card and
-   //		stores it in the global buffer pImageArray. 
-   // the data layout: e.g.
-   //     // get the requested spooled image
-   //     start = (scanNo-1)*imageWidth*imageHeight;  // scanNo is 1,2,3...
-   //     for(i=0;i<(imageWidth*imageHeight);i++){
-   //        MaxValue=pImageArray[i+start];
-   //     }
-   //note: before call this func, make sure camera is idle. Otherwise
-   //   this func will be ganranteed return false.
-   bool transferData(void)   {
-      int nPixels=getImageWidth()*getImageHeight()*nFrames;
+    //return true if success
+    bool init();
 
-      if(!allocImageArray(nFrames,false)){
-         return false;
-      }//if, fail to alloc enough mem
-
-      /*
-      //here check if camera is idle, i.e. data is ready
-      int status;
-      GetStatus(&status);  //todo: check return value
-      while(status!=DRV_IDLE){
-         GetStatus(&status);  //todo: check return value
-      }
-      */
-
-      errorCode=GetAcquiredData16(pImageArray, nPixels);
-      if(errorCode!=DRV_SUCCESS){
-         errorMsg="get acquisition data error";
-         return false;
-      }
-
-      return true;
-   }//getData(),
-
-   //abort acquisition
-   bool abortAcq(){
-      int status;
-      // abort acquisition if in progress
-      GetStatus(&status);
-      if(status==DRV_ACQUIRING){
-         errorCode=AbortAcquisition();
-         if(errorCode!=DRV_SUCCESS){
-            errorMsg="Error aborting acquistion";
+    //switch on or off cooler
+    bool switchCooler(bool toON){
+        // cooler:
+        errorCode = toON ? CoolerON() : CoolerOFF();        // Switch on or off cooler
+        if (errorCode != DRV_SUCCESS){
+            errorMsg = string("Error to switch ") + (toON ? "on" : "off") + " cooler";
             return false;
-         }
-      }
-      else{
-         //todo: should set some errorCode, like eAbortNonAcq?
-      }//else, let user know none is in progress
+        }
 
-      return true;
-   }//abortAcq(),
+        return true;
+    }//switchCooler(),
 
+    //set heat sink fan speed
+    enum FanSpeed { fsHigh = 0, fsLow, fsOff };
+    bool setHeatsinkFanSpeed(FanSpeed speed){
+        errorCode = SetFanMode(speed);
+        if (errorCode != DRV_SUCCESS){
+            errorMsg = string("Error when change heatsink fan speed");
+            return false;
+        }
 
-   bool setAcqModeAndTime(GenericAcqMode genericAcqMode,
-                          float exposure,
-                          int anFrames,  //used only in kinetic-series mode
-                          TriggerMode triggerMode
-                          );
+        return true;
+    }//setHeatsinkFanSpeed()
 
-   bool setAcqParams(int emGain,
-                     int preAmpGainIdx,
-                     int horShiftSpeedIdx,
-                     int verShiftSpeedIdx,
-                     int verClockVolAmp,
-                     bool isBaselineClamp
-                     ) ;
-
-   //start acquisition. Return true if successful
-   bool startAcq(){
-      //todo: is this necessary?
-      int status;
-      GetStatus(&status);  //todo: check return value
-      if(status!=DRV_IDLE){
-         errorMsg="start acquisition error: camera is not idle yet";
-         return false;
-      }
-
-      errorCode=StartAcquisition();
-      //if(trig==1) strcat(tBuf,"Waiting for external trigger\r\n");
-      if(errorCode!=DRV_SUCCESS){
-         errorMsg="Start acquisition error";
-         AbortAcquisition();
-         return false;
-      }
-
-      return true;
-   }//startAcq(),
+    //shut down the camera
+    bool fini();
 
 
-   bool stopAcq()
-   {
-      if(genericAcqMode==eLive){
-         //todo: check return value
-         AbortAcquisition();
-      }
-      //else  do  nothing
+    //------------------------------------------------------------------------------
+    //  RETURNS: 	true: Image data acquired successfully
+    //  DESCRIPTION:    This function gets the acquired data from the card and
+    //		stores it in the global buffer pImageArray. 
+    // the data layout: e.g.
+    //     // get the requested spooled image
+    //     start = (scanNo-1)*imageWidth*imageHeight;  // scanNo is 1,2,3...
+    //     for(i=0;i<(imageWidth*imageHeight);i++){
+    //        MaxValue=pImageArray[i+start];
+    //     }
+    //note: before call this func, make sure camera is idle. Otherwise
+    //   this func will be ganranteed return false.
+    bool transferData(void)   {
+        int nPixels = getImageWidth()*getImageHeight()*nFrames;
 
-      return true;
-   }
+        if (!allocImageArray(nFrames, false)){
+            return false;
+        }//if, fail to alloc enough mem
+
+        /*
+        //here check if camera is idle, i.e. data is ready
+        int status;
+        GetStatus(&status);  //todo: check return value
+        while(status!=DRV_IDLE){
+        GetStatus(&status);  //todo: check return value
+        }
+        */
+
+        errorCode = GetAcquiredData16(pImageArray, nPixels);
+        if (errorCode != DRV_SUCCESS){
+            errorMsg = "get acquisition data error";
+            return false;
+        }
+
+        return true;
+    }//getData(),
+
+    //abort acquisition
+    bool abortAcq(){
+        int status;
+        // abort acquisition if in progress
+        GetStatus(&status);
+        if (status == DRV_ACQUIRING){
+            errorCode = AbortAcquisition();
+            if (errorCode != DRV_SUCCESS){
+                errorMsg = "Error aborting acquistion";
+                return false;
+            }
+        }
+        else{
+            //todo: should set some errorCode, like eAbortNonAcq?
+        }//else, let user know none is in progress
+
+        return true;
+    }//abortAcq(),
 
 
-   double getCycleTime()
-   {
-   float tExp, tAccumTime, tKineticTime;
-   //todo: check return value
-   GetAcquisitionTimings(&tExp,&tAccumTime,&tKineticTime);
+    bool setAcqModeAndTime(GenericAcqMode genericAcqMode,
+        float exposure,
+        int anFrames,  //used only in kinetic-series mode
+        TriggerMode triggerMode
+        );
 
-   return tKineticTime;
-   }
+    bool setAcqParams(int emGain,
+        int preAmpGainIdx,
+        int horShiftSpeedIdx,
+        int verShiftSpeedIdx,
+        int verClockVolAmp,
+        bool isBaselineClamp
+        );
 
-   bool enableSpool(char* path, int bufsize)
-   {
-      //todo: check rtn value
-      SetSpool(1,2,path,bufsize); //Enabled, Mode 2, aPath stem and buffer size of bufsize
+    //start acquisition. Return true if successful
+    bool startAcq(){
+        //todo: is this necessary?
+        int status;
+        GetStatus(&status);  //todo: check return value
+        if (status != DRV_IDLE){
+            errorMsg = "start acquisition error: camera is not idle yet";
+            return false;
+        }
 
-      return true;
-   }
+        errorCode = StartAcquisition();
+        //if(trig==1) strcat(tBuf,"Waiting for external trigger\r\n");
+        if (errorCode != DRV_SUCCESS){
+            errorMsg = "Start acquisition error";
+            AbortAcquisition();
+            return false;
+        }
 
-   pair<int,int> getGainRange(){ return make_pair(0,255); }
+        return true;
+    }//startAcq(),
+
+
+    bool stopAcq()
+    {
+        if (genericAcqMode == eLive){
+            //todo: check return value
+            AbortAcquisition();
+        }
+        //else  do  nothing
+
+        return true;
+    }
+
+
+    double getCycleTime()
+    {
+        float tExp, tAccumTime, tKineticTime;
+        //todo: check return value
+        GetAcquisitionTimings(&tExp, &tAccumTime, &tKineticTime);
+
+        return tKineticTime;
+    }
+
+    bool enableSpool(char* path, int bufsize)
+    {
+        //todo: check rtn value
+        SetSpool(1, 2, path, bufsize); //Enabled, Mode 2, aPath stem and buffer size of bufsize
+
+        return true;
+    }
+
+    pair<int, int> getGainRange(){ return make_pair(0, 255); }
 };//class, AndorCamera
 
 #endif //ANDOR_G_HPP

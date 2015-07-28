@@ -20,32 +20,32 @@
 
 class ImageLabel : public QLabel
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-   ImageLabel(QWidget *parent);
-   ~ImageLabel();
+    ImageLabel(QWidget *parent);
+    ~ImageLabel();
 
-   //void registerMousePressHandler();
+    //void registerMousePressHandler();
 
 signals:
-   void mousePressed(QMouseEvent *event);
-   void mouseMoved(QMouseEvent *event);
-   void mouseReleased(QMouseEvent *event);
+    void mousePressed(QMouseEvent *event);
+    void mouseMoved(QMouseEvent *event);
+    void mouseReleased(QMouseEvent *event);
 
 protected:
-   void mousePressEvent(QMouseEvent *event){
-      emit mousePressed(event);
-   }
-   void mouseMoveEvent(QMouseEvent *event){
-      emit mouseMoved(event);
-   }
-   void mouseReleaseEvent(QMouseEvent *event){
-      emit mouseReleased(event);
-   }
+    void mousePressEvent(QMouseEvent *event){
+        emit mousePressed(event);
+    }
+    void mouseMoveEvent(QMouseEvent *event){
+        emit mouseMoved(event);
+    }
+    void mouseReleaseEvent(QMouseEvent *event){
+        emit mouseReleased(event);
+    }
 
 private:
-    
+
 };
 
 #endif // IMAGELABEL_H

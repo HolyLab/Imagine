@@ -29,132 +29,133 @@ class DataAcqThread;
 
 class Camera {
 public:
-   typedef unsigned short PixelValue;
-   enum ExtraErrorCodeType {
-      eOutOfMem,
-   };
-   enum TriggerMode {eInternalTrigger=0, 
-      eExternalStart=6,
-   };
+    typedef unsigned short PixelValue;
+    enum ExtraErrorCodeType {
+        eOutOfMem,
+    };
+    enum TriggerMode {
+        eInternalTrigger = 0,
+        eExternalStart = 6,
+    };
 
-   enum GenericAcqMode{
-      eLive,
-      eAcqAndSave,
-   } ;
+    enum GenericAcqMode{
+        eLive,
+        eAcqAndSave,
+    };
 
-   GenericAcqMode  genericAcqMode;
-   TriggerMode     triggerMode;
-   string vendor;
+    GenericAcqMode  genericAcqMode;
+    TriggerMode     triggerMode;
+    string vendor;
 
-   // dataAcqThread that owns this camera
-   DataAcqThread *parentAcqThread = nullptr;
+    // dataAcqThread that owns this camera
+    DataAcqThread *parentAcqThread = nullptr;
 
-   int  hbin, vbin,  hstart,  hend,  vstart,  vend; //image binning params. 1-based.
-                                //for hend and vend: <0 means chip width (or height)
+    int  hbin, vbin, hstart, hend, vstart, vend; //image binning params. 1-based.
+    //for hend and vend: <0 means chip width (or height)
 
 protected:
-   string model;
+    string model;
 
-   //camera specific error code and msg
-   int	errorCode;    //these two are paired. For andor's, errorCode meanings are defined by 
-   string errorMsg;   //   atmcd32d.h. 
+    //camera specific error code and msg
+    int	errorCode;    //these two are paired. For andor's, errorCode meanings are defined by 
+    string errorMsg;   //   atmcd32d.h. 
 
-   int  nFrames;
+    int  nFrames;
 
-   int 	chipWidth;       				// dims of
-   int	chipHeight;       				// CCD chip
+    int 	chipWidth;       				// dims of
+    int	chipHeight;       				// CCD chip
 
-   // image Buffers
-   PixelValue * pImageArray;	 // main image buffer read from card
-   int imageArraySize; //in pixel
+    // image Buffers
+    PixelValue * pImageArray;	 // main image buffer read from card
+    int imageArraySize; //in pixel
 
-   string spoolingFilename;
+    string spoolingFilename;
 
 public:
-   Camera();
-   virtual ~Camera();
+    Camera();
+    virtual ~Camera();
 
-   virtual string getErrorMsg()=0;
+    virtual string getErrorMsg() = 0;
 
-   int getErrorCode(){
-      return errorCode;
-   }
+    int getErrorCode(){
+        return errorCode;
+    }
 
-   virtual long getAcquiredFrameCount()=0; // #frames acquired so far
+    virtual long getAcquiredFrameCount() = 0; // #frames acquired so far
 
-   virtual bool getLatestLiveImage(PixelValue * frame)=0;
+    virtual bool getLatestLiveImage(PixelValue * frame) = 0;
 
-   //virtual bool isIdle()=0;
+    //virtual bool isIdle()=0;
 
-   virtual bool startAcq()=0;
-   virtual bool stopAcq()=0;
+    virtual bool startAcq() = 0;
+    virtual bool stopAcq() = 0;
 
-   PixelValue * getImageArray(){
-      return pImageArray;
-   }
+    PixelValue * getImageArray(){
+        return pImageArray;
+    }
 
-   int getChipWidth(){
-      return chipWidth;
-   }
+    int getChipWidth(){
+        return chipWidth;
+    }
 
-   int getChipHeight(){
-      return chipHeight;
-   }
+    int getChipHeight(){
+        return chipHeight;
+    }
 
-   //todo: to verify
-   int getImageWidth(){
-      return (hend-hstart+1)/hbin;
-   }
+    //todo: to verify
+    int getImageWidth(){
+        return (hend - hstart + 1) / hbin;
+    }
 
-   //todo: to verify
-   int getImageHeight(){
-      return (vend-vstart+1)/vbin;
-   }
+    //todo: to verify
+    int getImageHeight(){
+        return (vend - vstart + 1) / vbin;
+    }
 
-   string getModel()
-   {
-      return model;
-   }//getModel()
+    string getModel()
+    {
+        return model;
+    }//getModel()
 
-   virtual bool init()=0;
+    virtual bool init() = 0;
 
-   virtual bool fini()=0;
+    virtual bool fini() = 0;
 
-   virtual int getExtraErrorCode(ExtraErrorCodeType type)=0;
+    virtual int getExtraErrorCode(ExtraErrorCodeType type) = 0;
 
-   //allocate the image array space
-   bool allocImageArray(int nFrames, bool shouldReallocAnyway);
+    //allocate the image array space
+    bool allocImageArray(int nFrames, bool shouldReallocAnyway);
 
-   //params common to both live- and save-modes
-   ///NOTE: roi/binning are also set here
-   virtual bool setAcqParams(int gain, //emGain for Andor
-                     int preAmpGainIdx,
-                     int horShiftSpeedIdx,
-                     int verShiftSpeedIdx,
-                     int verClockVolAmp,
-                     bool isBaselineClamp
-                     )=0;
+    //params common to both live- and save-modes
+    ///NOTE: roi/binning are also set here
+    virtual bool setAcqParams(int gain, //emGain for Andor
+        int preAmpGainIdx,
+        int horShiftSpeedIdx,
+        int verShiftSpeedIdx,
+        int verClockVolAmp,
+        bool isBaselineClamp
+        ) = 0;
 
-   //params different for live from for save mode
-   virtual bool setAcqModeAndTime(GenericAcqMode genericAcqMode,
-                          float exposure,
-                          int anFrames,  //used only in kinetic-series mode
-                          TriggerMode triggerMode
-                          )=0;
+    //params different for live from for save mode
+    virtual bool setAcqModeAndTime(GenericAcqMode genericAcqMode,
+        float exposure,
+        int anFrames,  //used only in kinetic-series mode
+        TriggerMode triggerMode
+        ) = 0;
 
 
-   virtual double getCycleTime()=0;
+    virtual double getCycleTime() = 0;
 
-   virtual bool transferData()=0;
+    virtual bool transferData() = 0;
 
-   bool isSpooling() {return spoolingFilename!="";}
-   //string getSpoolingFilename(){return spoolingFilename;}
-   virtual bool setSpooling(string filename); //when filename is empty, disable the spooling
+    bool isSpooling() { return spoolingFilename != ""; }
+    //string getSpoolingFilename(){return spoolingFilename;}
+    virtual bool setSpooling(string filename); //when filename is empty, disable the spooling
 
-   virtual pair<int,int> getGainRange(){ return make_pair(0,0); }//by default, no gain
+    virtual pair<int, int> getGainRange(){ return make_pair(0, 0); }//by default, no gain
 
 private:
-   void   freeImageArray();
+    void   freeImageArray();
 };//class, Camera
 
 

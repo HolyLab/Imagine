@@ -23,16 +23,16 @@ inline QScriptValue closeShutterDeviceWrapper(QScriptContext *context, QScriptEn
 
 inline QScriptValue setShutterStatusWrapper(QScriptContext *context, QScriptEngine *se)
 {
-   int line = context->argument(0).toInt32();
-   bool status = context->argument(1).toBool();
-   return QScriptValue(se, setShutterStatus(line, status));
+    int line = context->argument(0).toInt32();
+    bool status = context->argument(1).toBool();
+    return QScriptValue(se, setShutterStatus(line, status));
 }
 
 inline QScriptValue setDioWrapper(QScriptContext *context, QScriptEngine *se)
 {
-   int line = context->argument(0).toInt32();
-   bool status = context->argument(1).toBool();
-   return QScriptValue(se, setDio(line, status));
+    int line = context->argument(0).toInt32();
+    bool status = context->argument(1).toBool();
+    return QScriptValue(se, setDio(line, status));
 }
 
 

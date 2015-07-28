@@ -32,35 +32,35 @@ using std::ofstream;
 
 class AiThread : public QThread
 {
-   Q_OBJECT
+    Q_OBJECT
 
 public:
-   DaqAi* ai;
+    DaqAi* ai;
 
-   //NOTE: readBufSize is in scan.
-   AiThread(QObject *parent = 0, QString ainame = "",
-      int readBufSize=1000, int driverBufSize=10000, int scanrate=10000);
-   ~AiThread();
+    //NOTE: readBufSize is in scan.
+    AiThread(QObject *parent = 0, QString ainame = "",
+        int readBufSize = 1000, int driverBufSize = 10000, int scanrate = 10000);
+    ~AiThread();
 
-   bool startAcq();
-   void stopAcq(); //note: this func call is blocking.
-   bool save(ofstream& ofsAi);
-   void setOfstream(ofstream* ofs){this->ofs=ofs;}
+    bool startAcq();
+    void stopAcq(); //note: this func call is blocking.
+    bool save(ofstream& ofsAi);
+    void setOfstream(ofstream* ofs){ this->ofs = ofs; }
 
 protected:
-   void run();
-   bool mSave(ofstream& ofsAi);
+    void run();
+    bool mSave(ofstream& ofsAi);
 
 private:
-   vector<Daq::sample_t> data;  //TODO: may reserve space beforehand to speed up
-   int readBufSize;  //note: not driver's input buffer size
-   int driverBufSize;//driver's input buffer size
-   volatile bool stopRequested;
-   vector<int> chanList;
-   ofstream* ofs;
+    vector<Daq::sample_t> data;  //TODO: may reserve space beforehand to speed up
+    int readBufSize;  //note: not driver's input buffer size
+    int driverBufSize;//driver's input buffer size
+    volatile bool stopRequested;
+    vector<int> chanList;
+    ofstream* ofs;
 
-   QMutex mutex;
-   QWaitCondition condition;
+    QMutex mutex;
+    QWaitCondition condition;
 };
 
 #endif  //AI_THREAD_HPP

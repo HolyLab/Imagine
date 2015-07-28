@@ -22,14 +22,14 @@
 
 QString replaceExtName(QString filename, QString newExtname)
 {
-   QFileInfo fi(filename);
-   QString ext = fi.suffix(); 
-   if(ext.isEmpty()){
-      return filename+"."+newExtname;
-   }
-   else {
-      filename.chop(ext.size());
-      return filename+newExtname;
-   }
+    QFileInfo fi(filename);
+    QString ext = fi.suffix();
+    if (ext.isEmpty()){
+        return filename + "." + newExtname;
+    }
+    else {
+        filename.chop(ext.size());
+        return filename + newExtname;
+    }
 }//replaceExtName()
 

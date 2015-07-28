@@ -231,9 +231,8 @@ int main(int argc, char *argv[])
         digOut = new DummyDaqDo();
     }
     else {
-        QMessageBox::critical(0, "Imagine", "Unsupported daq."
-            , QMessageBox::Ok, QMessageBox::NoButton);
-
+        QMessageBox::critical(0, "Imagine", "Unsupported daq.",
+            QMessageBox::Ok, QMessageBox::NoButton);
         return 1;
     }
 

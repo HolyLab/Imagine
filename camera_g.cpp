@@ -19,62 +19,62 @@
 
 Camera::Camera()
 {
-      hbin=vbin=1;
-      hstart=vstart=1;
-      hend=vend= -1; //
+    hbin = vbin = 1;
+    hstart = vstart = 1;
+    hend = vend = -1; //
 
-      pImageArray=NULL;
-      imageArraySize=0;
+    pImageArray = NULL;
+    imageArraySize = 0;
 
-      nFrames=100;  //todo: make this as a param
+    nFrames = 100;  //todo: make this as a param
 
-      model="Unknown";
+    model = "Unknown";
 
-      spoolingFilename="";
+    spoolingFilename = "";
 }
 
 Camera::~Camera()
 {
-   freeImageArray();
+    freeImageArray();
 }
 
 void Camera::freeImageArray()
 {
-      // free all allocated memory
-      if(pImageArray){
-         delete []pImageArray;
-         pImageArray = NULL;
-         imageArraySize=0;
-      }
+    // free all allocated memory
+    if (pImageArray){
+        delete[]pImageArray;
+        pImageArray = NULL;
+        imageArraySize = 0;
+    }
 }
 
 //todo: align it
 bool Camera::allocImageArray(int nFrames, bool shouldReallocAnyway)
 {
-      int nPixels=getImageWidth()*getImageHeight()*nFrames;
+    int nPixels = getImageWidth()*getImageHeight()*nFrames;
 
-      if(shouldReallocAnyway || nPixels>imageArraySize ){
-         if(pImageArray){
-            delete []pImageArray;
+    if (shouldReallocAnyway || nPixels > imageArraySize){
+        if (pImageArray){
+            delete[]pImageArray;
             pImageArray = nullptr;
-            imageArraySize=0;
-         }
-      }//if, should delete old allocation
+            imageArraySize = 0;
+        }
+    }//if, should delete old allocation
 
-      //here if pImageArray!=NULL, 
-      //     then !shouldReallocAnyway && nPixels<=imageArraySize.
+    //here if pImageArray!=NULL, 
+    //     then !shouldReallocAnyway && nPixels<=imageArraySize.
 
-      if(!pImageArray){
-         pImageArray=new PixelValue[nPixels];
-         if(!pImageArray){
-            errorCode=getExtraErrorCode(eOutOfMem);
-            errorMsg="no enough memory";
+    if (!pImageArray){
+        pImageArray = new PixelValue[nPixels];
+        if (!pImageArray){
+            errorCode = getExtraErrorCode(eOutOfMem);
+            errorMsg = "no enough memory";
             return false;
-         }//if, fail to alloc enough mem
-         imageArraySize=nPixels;
-      }//if, no allocated space before
+        }//if, fail to alloc enough mem
+        imageArraySize = nPixels;
+    }//if, no allocated space before
 
-      return true;
+    return true;
 
 }
 
@@ -82,11 +82,11 @@ bool Camera::allocImageArray(int nFrames, bool shouldReallocAnyway)
 //todo: check camera is idle b/c it's only called when the camera is idle
 bool Camera::setSpooling(string filename)
 {
-   spoolingFilename=filename;
-   if(filename==""){
-      freeImageArray();
-   }
+    spoolingFilename = filename;
+    if (filename == ""){
+        freeImageArray();
+    }
 
-   return true;
+    return true;
 }//setSpooling(),
 
