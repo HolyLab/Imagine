@@ -115,14 +115,8 @@ void getCamCount(int *camCount) {
     *camCount += 1;
 
     // and now we can close the camera
-    try {
-        tErr = PCO_CloseCamera(tCam);
-    }
-    catch (...) {
-        cout << "Internal exception while counting cameras. Please ignore.";
-    }
-
-    // TODO: take a careful look at the camera... using camlink will cause duplicates
+    // (ignore the bad handle exception)
+    tErr = PCO_CloseCamera(tCam);
 }
 
 int main(int argc, char *argv[])
