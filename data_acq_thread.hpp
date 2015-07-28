@@ -47,6 +47,8 @@ public:
     void setCamera(Camera *cam);
     void setPositioner(Positioner *pos);
 
+    int curStimIndex = 0;
+
     // this thread's camera
     Camera* pCamera = nullptr;
 

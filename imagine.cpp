@@ -58,7 +58,6 @@ using namespace std;
 #include "spoolthread.h"
 
 vector<pair<int, int> > stimuli; //first: stim (valve), second: time (stack#)
-int curStimIndex;
 TemperatureDialog * temperatureDialog = NULL;
 FanCtrlDialog* fanCtrlDialog = NULL;
 ImagineStatus curStatus;
@@ -801,7 +800,7 @@ void Imagine::updateStatus(const QString &str)
     appendLog(str);
 
     if (str.startsWith("valve", Qt::CaseInsensitive)){
-        ui.tableWidgetStimDisplay->setCurrentCell(0, curStimIndex);
+        ui.tableWidgetStimDisplay->setCurrentCell(0, dataAcqThread.curStimIndex);
     }//if, update stimulus display
 }
 
@@ -854,7 +853,7 @@ void Imagine::on_actionStartAcqAndSave_triggered()
 
     dataAcqThread.applyStim = ui.cbStim->isChecked();
     if (dataAcqThread.applyStim){
-        curStimIndex = 0;
+        dataAcqThread.curStimIndex = 0;
     }
 
     //   intenCurveData->clear();

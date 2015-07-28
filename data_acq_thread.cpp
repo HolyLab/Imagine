@@ -50,7 +50,6 @@ string rig;
 
 //defined in imagine.cpp:
 extern vector<pair<int, int> > stimuli; //first: stim (valve), second: time (stack#)
-extern int curStimIndex;
 
 QString replaceExtName(QString filename, QString newExtname);
 
