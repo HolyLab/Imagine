@@ -244,7 +244,7 @@ Imagine::Imagine(Camera *cam, Positioner *pos, QWidget *parent, Qt::WindowFlags 
     }
 
     //trigger mode combo box
-    if (pos->posType == ActuatorPositioner){
+    if (pos != NULL && pos->posType == ActuatorPositioner){
         ui.comboBoxTriggerMode->setEnabled(false);
         ui.comboBoxTriggerMode->setCurrentIndex(1);
     }

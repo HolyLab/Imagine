@@ -159,6 +159,9 @@
     <ClCompile Include="actuators\voltage\volpiezo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ImgApplication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ai_thread.hpp">
@@ -305,9 +308,22 @@
     <None Include="$(FodyPath)\*.*" />
     <None Include="$(FodyPath)\*.*" />
     <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImgApplication.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

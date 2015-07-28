@@ -26,8 +26,8 @@ using namespace std;
 #include <QScriptable>
 #include <QMetaType>
 
-
 #include "imagine.h"
+#include "ImgApplication.h"
 
 #include "andor_g.hpp"
 #include "avt_g.hpp"
@@ -100,7 +100,7 @@ void getCamCount(int *camCount) {
     // to iterate through camera numbers, starting with 0, and see how many
     // unique cameras we can open before getting an exception. great...
 
-    HANDLE tCam{ 0 };
+    HANDLE tCam = nullptr;
     int tErr = 0;
     int camNum = 0;
     tErr = PCO_OpenCamera(&tCam, 0);
@@ -127,7 +127,7 @@ void getCamCount(int *camCount) {
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    ImgApplication a(argc, argv);
 
     //rig = "hs-ocpi";
     rig = "ocpi-2";
@@ -205,9 +205,9 @@ int main(int argc, char *argv[])
 
     /*QMessageBox::information(0, "Imagine",
           "Please raise microscope.");*/
-
-    splash->showMessage(QString("Initialize the %1 actuator ...").arg(positionerType),
-        Qt::AlignLeft | Qt::AlignBottom, Qt::red);
+    int align = Qt::AlignBottom | Qt::AlignLeft;
+    Qt::GlobalColor col = Qt::red;
+    splash->showMessage(QString("Initialize the %1 actuator ...").arg(positionerType), align, col);
     Positioner *pos = nullptr;
     if (positionerType == "volpiezo") pos = new VolPiezo(ainame, aoname);
     else if (positionerType == "pi") pos = new Piezo_Controller;
@@ -222,8 +222,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    splash->showMessage(QString("Initialize the %1 daq ...").arg(daq),
-        Qt::AlignLeft | Qt::AlignBottom, Qt::red);
+    splash->showMessage(QString("Initialize the %1 daq ...").arg(daq), align, col);
     if (daq == "ni") {
         digOut = new NiDaqDo(doname);
     }
@@ -237,36 +236,68 @@ int main(int argc, char *argv[])
     }
 
     // check out many cameras are attached
+    splash->showMessage(QString("Counting cameras..."), align, col);
     int nCams = 0;
-    //getCamCount(&nCams);
+    getCamCount(&nCams);
 
-    splash->showMessage(QString("Initialize the %1 camera ...").arg(cameraVendor),
-        Qt::AlignLeft | Qt::AlignBottom, Qt::red);
+    // not sure why this is positioned here
+    splash->showMessage(QString("qAp is thinking about life ..."), align, col);
     qApp->processEvents();
 
-    // Init the camera. Pointer will be deleted in clean-up of its owning data_acq_thread.
-    // The camera gets passed to the acq thread via the Imagine instance, below.
-    Camera *cam;
-    if (cameraVendor == "avt") cam = new AvtCamera;
-    else if (cameraVendor == "andor") cam = new AndorCamera;
-    else if (cameraVendor == "cooke") cam = new CookeCamera;
+    // init the first (only?) camera.
+    // pointer will be deleted in clean-up of its owning data_acq_thread.
+    splash->showMessage(QString("Initializing (%1) camera 1 ...").arg(cameraVendor), align, col);
+    Camera *cam1;
+    if (cameraVendor == "avt") cam1 = new AvtCamera;
+    else if (cameraVendor == "andor") cam1 = new AndorCamera;
+    else if (cameraVendor == "cooke") cam1 = new CookeCamera;
     else {
         QMessageBox::critical(0, "Imagine", "Unsupported camera.", QMessageBox::Ok, QMessageBox::NoButton);
         return 1;
     }
-    // camera initialization (not in the programming sense of initialization...)
-    if (!cam->init()){
-        splash->showMessage("Failed to initialize the camera.", Qt::AlignLeft | Qt::AlignBottom, Qt::red);
-        QMessageBox::critical(splash, "Imagine", "Failed to initialize the camera."
-            , QMessageBox::Ok, QMessageBox::NoButton);
+    if (!cam1->init()){
+        splash->showMessage("Failed to initialize camera 1.", align, col);
+        QMessageBox::critical(splash, "Imagine", "Failed to initialize camera 1.",
+        QMessageBox::Ok, QMessageBox::NoButton);
         return 1;
     }
+
+    Camera *cam2;
+    if (nCams > 1) {
+        // init the second camera
+        // sorry for the copy pasta. perhaps put this in a function later
+        splash->showMessage(QString("Initializing (%1) camera 2 ...").arg(cameraVendor), align, col);
+        
+        if (cameraVendor == "avt") cam2 = new AvtCamera;
+        else if (cameraVendor == "andor") cam2 = new AndorCamera;
+        else if (cameraVendor == "cooke") cam2 = new CookeCamera;
+        else {
+            QMessageBox::critical(0, "Imagine", "Unsupported camera.", QMessageBox::Ok, QMessageBox::NoButton);
+            return 1;
+        }
+        if (!cam2->init()){
+            splash->showMessage("Failed to initialize camera 1.", align, col);
+            QMessageBox::critical(splash, "Imagine", "Failed to initialize camera 1.",
+                QMessageBox::Ok, QMessageBox::NoButton);
+            return 1;
+        }
+    }
+
     // get rid of the status message
     delete splash;
-    // make and present an instance of the main UI object, passing it the cam it'll control
-    Imagine w(cam, pos);
-    w.show();
+
+    // make an instance of the main UI object for each cam, passing it the
+    // cam it'll control, and optionally a positioner
+    Imagine w(cam1, pos);
+    a.imgOne = &w;
+    Imagine *w2p = nullptr;
+    if (nCams > 1) {
+        w2p = new Imagine(cam2, nullptr);
+        a.imgTwo = w2p;
+    }
+    
     // go!
+    a.showUi();
     a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
     return a.exec();
 }
