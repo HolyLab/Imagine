@@ -62,101 +62,19 @@ FanCtrlDialog* fanCtrlDialog = NULL;
 ImagineStatus curStatus;
 ImagineAction curAction;
 
-//todo: 
 extern QScriptEngine* se;
 extern DaqDo* digOut;
 
-bool Imagine::loadPreset()
-{
-    QScriptValue preset = se->globalObject().property("preset");
+// misc vars
+bool zoom_isMouseDown = false;
+QPoint zoom_downPos, zoom_curPos; //in the unit of displayed image
+int L = -1, W, T, H; //in the unit of original image
+QImage * image = 0;   //TODO: free it in dtor. The acquired image.
+QPixmap * pixmap = 0; //the displayed.
+int nUpdateImage;
 
-    //piezo
-    QScriptValue sv = preset.property("startPosition");
-    if (sv.isValid()) ui.doubleSpinBoxStartPos->setValue(sv.toNumber());
-    sv = preset.property("stopPosition");
-    if (sv.isValid()) ui.doubleSpinBoxStopPos->setValue(sv.toNumber());
-    sv = preset.property("initialPosition");
-    if (sv.isValid()) ui.doubleSpinBoxCurPos->setValue(sv.toNumber());
-    sv = preset.property("travelBackTime");
-    if (sv.isValid()) ui.doubleSpinBoxPiezoTravelBackTime->setValue(sv.toNumber());
 
-    ///camera
-    sv = preset.property("numOfStacks");
-    if (sv.isValid()) ui.spinBoxNumOfStacks->setValue(sv.toNumber());
-    sv = preset.property("framesPerStack");
-    if (sv.isValid()) ui.spinBoxFramesPerStack->setValue(sv.toNumber());
-    sv = preset.property("exposureTime");
-    if (sv.isValid()) ui.doubleSpinBoxExpTime->setValue(sv.toNumber());
-    sv = preset.property("idleTime");
-    if (sv.isValid()) ui.doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(sv.toNumber());
-    sv = preset.property("triggerMode");
-    if (sv.isValid()){
-        QString ttStr = sv.toString();
-        ui.comboBoxTriggerMode->setCurrentIndex(ttStr == "internal");
-    }
-    sv = preset.property("gain");
-    if (sv.isValid()) ui.spinBoxGain->setValue(sv.toNumber());
-
-    return true;
-}
-
-void Imagine::preparePlots()
-{
-    //the histgram
-    histPlot = new QwtPlot();
-    histPlot->setCanvasBackground(QColor(Qt::white));
-    ui.dwHist->setWidget(histPlot); //setWidget() causes the widget using all space
-    histPlot->setAxisScaleEngine(QwtPlot::yLeft, new QwtLogScaleEngine(10));
-
-    QwtPlotGrid *grid = new QwtPlotGrid;
-    grid->enableXMin(true);
-    grid->enableYMin(true);
-    grid->setMajorPen(QPen(Qt::black, 0, Qt::DotLine));
-    grid->setMinorPen(QPen(Qt::gray, 0, Qt::DotLine));
-    grid->attach(histPlot);
-
-    histogram = new HistogramItem();
-    histogram->setColor(Qt::darkCyan);
-    histogram->attach(histPlot);
-
-    ///todo: make it more robust by query Camera class
-    if (dataAcqThread.pCamera->vendor == "andor"){
-        histPlot->setAxisScale(QwtPlot::yLeft, 1, 1000000.0);
-        histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1 << 14);
-    }
-    else if (dataAcqThread.pCamera->vendor == "cooke"){
-        histPlot->setAxisScale(QwtPlot::yLeft, 1, 5000000.0);
-        histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1 << 16);
-    }
-    else {
-        histPlot->setAxisScale(QwtPlot::yLeft, 1, 1000000.0);
-        histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1 << 14);
-    }
-
-    //intensity curve
-    //TODO: make it ui aware
-    /*
-    int curveWidth=500;
-    intenPlot=new QwtPlot();
-    ui.dwIntenCurve->setWidget(intenPlot);
-    intenPlot->setAxisTitle(QwtPlot::xBottom, "frame number"); //TODO: stack number too
-    intenPlot->setAxisTitle(QwtPlot::yLeft, "avg intensity");
-    intenCurve = new QwtPlotCurve("avg intensity");
-
-    QwtSymbol sym;
-    sym.setStyle(QwtSymbol::Cross);
-    sym.setPen(QColor(Qt::black));
-    sym.setSize(5);
-    intenCurve->setSymbol(&sym);
-
-    intenCurve->setRenderHint(QwtPlotItem::RenderAntialiased);
-    intenCurve->setPen(QPen(Qt::red));
-    intenCurve->attach(intenPlot);
-
-    //intenCurveData=new CurveData(curveWidth);
-    intenCurve->setData(*intenCurveData);
-    */
-}
+#pragma region LIFECYCLE
 
 Imagine::Imagine(Camera *cam, Positioner *pos, QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
@@ -438,110 +356,10 @@ Imagine::~Imagine()
     delete digOut;
 }
 
-bool zoom_isMouseDown = false;
-QPoint zoom_downPos, zoom_curPos; //in the unit of displayed image
-int L = -1, W, T, H; //in the unit of original image
-QImage * image = 0;   //TODO: free it in dtor. The acquired image.
-QPixmap * pixmap = 0; //the displayed.
-
-void Imagine::zoom_onMousePressed(QMouseEvent* event)
-{
-    appendLog("pressed");
-    if (event->button() == Qt::LeftButton) {
-        zoom_downPos = event->pos();
-        zoom_isMouseDown = true;
-    }
-}
-
-void Imagine::zoom_onMouseMoved(QMouseEvent* event)
-{
-    //appendLog("moved");
-    if ((event->buttons() & Qt::LeftButton) && zoom_isMouseDown){
-        zoom_curPos = event->pos();
-
-        if (pixmap){ //TODO: if(pixmap && idle)
-            updateImage();
-        }
-    }
-}
-
-//convert position in the unit of pixmap to position in the unit of orig img
-QPoint calcPos(const QPoint& pos)
-{
-    QPoint result;
-    result.rx() = L + double(W) / pixmap->width()*pos.x();
-    result.ry() = T + double(H) / pixmap->height()*pos.y();
-
-    return result;
-}
-
-void Imagine::zoom_onMouseReleased(QMouseEvent* event)
-{
-    appendLog("released");
-    if (event->button() == Qt::LeftButton && zoom_isMouseDown) {
-        zoom_curPos = event->pos();
-        zoom_isMouseDown = false;
-
-        appendLog(QString("last pos: (%1, %2); cur pos: (%3, %4)")
-            .arg(zoom_downPos.x()).arg(zoom_downPos.y())
-            .arg(zoom_curPos.x()).arg(zoom_curPos.y()));
-
-        if (!pixmap) return; //NOTE: this is for not zooming logo image
-
-        //update L,T,W,H
-        QPoint LT = calcPos(zoom_downPos);
-        QPoint RB = calcPos(zoom_curPos);
-
-        if (LT.x() > RB.x() && LT.y() > RB.y()){
-            L = -1;
-            goto done;
-        }//if, should show full image
-
-        if (!(LT.x() < RB.x() && LT.y() < RB.y())) return; //unknown action
-
-        L = LT.x(); T = LT.y();
-        W = RB.x() - L; H = RB.y() - T;
-
-    done:
-        //refresh the image
-        updateImage();
-    }//if, dragging
-
-}
+#pragma endregion
 
 
-void Imagine::on_actionDisplayFullImage_triggered()
-{
-    L = -1;
-    updateImage();
-
-}
-
-
-int nUpdateImage;
-
-void Imagine::appendLog(const QString& msg)
-{
-    static int nAppendingLog = 0;
-    //if(nAppendingLog>=1000) {
-    if (nAppendingLog >= ui.spinBoxMaxNumOfLinesInLog->value()) {
-        ui.textEditLog->clear();
-        nAppendingLog = 0;
-    }
-
-    ui.textEditLog->append(msg);
-    nAppendingLog++;
-}
-
-void Imagine::calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH)
-{
-    minPixelValue = maxPixelValue = frame[0];
-    for (int i = 1; i<imageW*imageH; i++){
-        if (frame[i] == (1 << 16) - 1) continue; //todo: this is a tmp fix for dead pixels
-        if (frame[i]>maxPixelValue) maxPixelValue = frame[i];
-        else if (frame[i] < minPixelValue) minPixelValue = frame[i];
-    }//for, each pixel
-}
+#pragma region DRAWING
 
 void Imagine::updateImage()
 {
@@ -647,21 +465,88 @@ void Imagine::updateIntenCurve(const Camera::PixelValue * frame,
 {
     //TODO: if not visible, just return
     /*
-   double sum=0;
-   int nPixels=imageW*imageH;
-   for(unsigned int i=0; i<nPixels; ++i){
-   sum+=*frame++;
-   }
+    double sum=0;
+    int nPixels=imageW*imageH;
+    for(unsigned int i=0; i<nPixels; ++i){
+    sum+=*frame++;
+    }
 
-   double value=sum/nPixels;
+    double value=sum/nPixels;
 
-   intenCurveData->append(frameIdx, value);
-   intenCurve->setData(*intenCurveData);
-   intenPlot->setAxisScale(QwtPlot::xBottom, intenCurveData->left(), intenCurveData->right());
-   intenPlot->replot();
-   */
+    intenCurveData->append(frameIdx, value);
+    intenCurve->setData(*intenCurveData);
+    intenPlot->setAxisScale(QwtPlot::xBottom, intenCurveData->left(), intenCurveData->right());
+    intenPlot->replot();
+    */
 }//updateIntenCurve(),
 
+void Imagine::preparePlots()
+{
+    //the histgram
+    histPlot = new QwtPlot();
+    histPlot->setCanvasBackground(QColor(Qt::white));
+    ui.dwHist->setWidget(histPlot); //setWidget() causes the widget using all space
+    histPlot->setAxisScaleEngine(QwtPlot::yLeft, new QwtLogScaleEngine(10));
+
+    QwtPlotGrid *grid = new QwtPlotGrid;
+    grid->enableXMin(true);
+    grid->enableYMin(true);
+    grid->setMajorPen(QPen(Qt::black, 0, Qt::DotLine));
+    grid->setMinorPen(QPen(Qt::gray, 0, Qt::DotLine));
+    grid->attach(histPlot);
+
+    histogram = new HistogramItem();
+    histogram->setColor(Qt::darkCyan);
+    histogram->attach(histPlot);
+
+    ///todo: make it more robust by query Camera class
+    if (dataAcqThread.pCamera->vendor == "andor"){
+        histPlot->setAxisScale(QwtPlot::yLeft, 1, 1000000.0);
+        histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1 << 14);
+    }
+    else if (dataAcqThread.pCamera->vendor == "cooke"){
+        histPlot->setAxisScale(QwtPlot::yLeft, 1, 5000000.0);
+        histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1 << 16);
+    }
+    else {
+        histPlot->setAxisScale(QwtPlot::yLeft, 1, 1000000.0);
+        histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1 << 14);
+    }
+
+    //intensity curve
+    //TODO: make it ui aware
+    /*
+    int curveWidth=500;
+    intenPlot=new QwtPlot();
+    ui.dwIntenCurve->setWidget(intenPlot);
+    intenPlot->setAxisTitle(QwtPlot::xBottom, "frame number"); //TODO: stack number too
+    intenPlot->setAxisTitle(QwtPlot::yLeft, "avg intensity");
+    intenCurve = new QwtPlotCurve("avg intensity");
+
+    QwtSymbol sym;
+    sym.setStyle(QwtSymbol::Cross);
+    sym.setPen(QColor(Qt::black));
+    sym.setSize(5);
+    intenCurve->setSymbol(&sym);
+
+    intenCurve->setRenderHint(QwtPlotItem::RenderAntialiased);
+    intenCurve->setPen(QPen(Qt::red));
+    intenCurve->attach(intenPlot);
+
+    //intenCurveData=new CurveData(curveWidth);
+    intenCurve->setData(*intenCurveData);
+    */
+}
+
+//convert position in the unit of pixmap to position in the unit of orig img
+QPoint calcPos(const QPoint& pos)
+{
+    QPoint result;
+    result.rx() = L + double(W) / pixmap->width()*pos.x();
+    result.ry() = T + double(H) / pixmap->height()*pos.y();
+
+    return result;
+}
 
 //note: idx is 0-based
 void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int imageH)
@@ -786,7 +671,6 @@ done:
     dataAcqThread.isUpdatingImage = false;
 }//updateDisplay(),
 
-
 void Imagine::updateStatus(const QString &str)
 {
     if (str == "acq-thread-finish"){
@@ -802,6 +686,173 @@ void Imagine::updateStatus(const QString &str)
     }//if, update stimulus display
 }
 
+//TODO: move this func to misc.cpp
+QString addExtNameIfAbsent(QString filename, QString newExtname)
+{
+    QFileInfo fi(filename);
+    QString ext = fi.suffix();
+    if (ext.isEmpty()){
+        return filename + "." + newExtname;
+    }
+    else {
+        return filename;
+    }
+}//addExtNameIfAbsent()
+
+#pragma endregion
+
+
+#pragma region UNSORTED
+
+void Imagine::appendLog(const QString& msg)
+{
+    static int nAppendingLog = 0;
+    //if(nAppendingLog>=1000) {
+    if (nAppendingLog >= ui.spinBoxMaxNumOfLinesInLog->value()) {
+        ui.textEditLog->clear();
+        nAppendingLog = 0;
+    }
+
+    ui.textEditLog->append(msg);
+    nAppendingLog++;
+}
+
+void Imagine::calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH)
+{
+    minPixelValue = maxPixelValue = frame[0];
+    for (int i = 1; i<imageW*imageH; i++){
+        if (frame[i] == (1 << 16) - 1) continue; //todo: this is a tmp fix for dead pixels
+        if (frame[i]>maxPixelValue) maxPixelValue = frame[i];
+        else if (frame[i] < minPixelValue) minPixelValue = frame[i];
+    }//for, each pixel
+}
+
+//TODO: put this func in misc.cpp
+bool loadTextFile(string filename, vector<string> & result)
+{
+    QFile file(filename.c_str());
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+        return false;
+    }
+
+    result.clear();
+
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        result.push_back(line.toStdString());
+    }
+
+    return true;
+}//loadTextFile(),
+
+void setDockwigetByAction(QAction* act, QDockWidget* widget)
+{
+    bool visible = act->isChecked();
+    widget->setVisible(visible);
+    if (visible) widget->raise();
+}
+
+bool Imagine::loadPreset()
+{
+    QScriptValue preset = se->globalObject().property("preset");
+
+    //piezo
+    QScriptValue sv = preset.property("startPosition");
+    if (sv.isValid()) ui.doubleSpinBoxStartPos->setValue(sv.toNumber());
+    sv = preset.property("stopPosition");
+    if (sv.isValid()) ui.doubleSpinBoxStopPos->setValue(sv.toNumber());
+    sv = preset.property("initialPosition");
+    if (sv.isValid()) ui.doubleSpinBoxCurPos->setValue(sv.toNumber());
+    sv = preset.property("travelBackTime");
+    if (sv.isValid()) ui.doubleSpinBoxPiezoTravelBackTime->setValue(sv.toNumber());
+
+    ///camera
+    sv = preset.property("numOfStacks");
+    if (sv.isValid()) ui.spinBoxNumOfStacks->setValue(sv.toNumber());
+    sv = preset.property("framesPerStack");
+    if (sv.isValid()) ui.spinBoxFramesPerStack->setValue(sv.toNumber());
+    sv = preset.property("exposureTime");
+    if (sv.isValid()) ui.doubleSpinBoxExpTime->setValue(sv.toNumber());
+    sv = preset.property("idleTime");
+    if (sv.isValid()) ui.doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(sv.toNumber());
+    sv = preset.property("triggerMode");
+    if (sv.isValid()){
+        QString ttStr = sv.toString();
+        ui.comboBoxTriggerMode->setCurrentIndex(ttStr == "internal");
+    }
+    sv = preset.property("gain");
+    if (sv.isValid()) ui.spinBoxGain->setValue(sv.toNumber());
+
+    return true;
+}
+
+#pragma endregion
+
+
+#pragma region UI_CALLBACKS
+
+void Imagine::zoom_onMouseReleased(QMouseEvent* event)
+{
+    appendLog("released");
+    if (event->button() == Qt::LeftButton && zoom_isMouseDown) {
+        zoom_curPos = event->pos();
+        zoom_isMouseDown = false;
+
+        appendLog(QString("last pos: (%1, %2); cur pos: (%3, %4)")
+            .arg(zoom_downPos.x()).arg(zoom_downPos.y())
+            .arg(zoom_curPos.x()).arg(zoom_curPos.y()));
+
+        if (!pixmap) return; //NOTE: this is for not zooming logo image
+
+        //update L,T,W,H
+        QPoint LT = calcPos(zoom_downPos);
+        QPoint RB = calcPos(zoom_curPos);
+
+        if (LT.x() > RB.x() && LT.y() > RB.y()){
+            L = -1;
+            goto done;
+        }//if, should show full image
+
+        if (!(LT.x() < RB.x() && LT.y() < RB.y())) return; //unknown action
+
+        L = LT.x(); T = LT.y();
+        W = RB.x() - L; H = RB.y() - T;
+
+    done:
+        //refresh the image
+        updateImage();
+    }//if, dragging
+
+}
+
+void Imagine::on_actionDisplayFullImage_triggered()
+{
+    L = -1;
+    updateImage();
+
+}
+
+void Imagine::zoom_onMousePressed(QMouseEvent* event)
+{
+    appendLog("pressed");
+    if (event->button() == Qt::LeftButton) {
+        zoom_downPos = event->pos();
+        zoom_isMouseDown = true;
+    }
+}
+
+void Imagine::zoom_onMouseMoved(QMouseEvent* event)
+{
+    //appendLog("moved");
+    if ((event->buttons() & Qt::LeftButton) && zoom_isMouseDown){
+        zoom_curPos = event->pos();
+
+        if (pixmap){ //TODO: if(pixmap && idle)
+            updateImage();
+        }
+    }
+}
 
 void Imagine::on_actionStartAcqAndSave_triggered()
 {
@@ -970,7 +1021,6 @@ void Imagine::on_actionCloseShutter_triggered()
    ui.actionCloseShutter->setEnabled(true);
 }
 
-
 void Imagine::on_actionTemperature_triggered()
 {
     //
@@ -1045,7 +1095,6 @@ void Imagine::on_btnFullChipSize_clicked()
 
 }
 
-
 void Imagine::on_btnUseZoomWindow_clicked()
 {
     if (!image){
@@ -1073,7 +1122,6 @@ void Imagine::on_btnUseZoomWindow_clicked()
     }//else,
 
 }
-
 
 bool Imagine::checkRoi()
 {
@@ -1236,25 +1284,6 @@ skip:
     ui.btnApply->setEnabled(modified);
 }
 
-//TODO: put this func in misc.cpp
-bool loadTextFile(string filename, vector<string> & result)
-{
-    QFile file(filename.c_str());
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
-        return false;
-    }
-
-    result.clear();
-
-    QTextStream in(&file);
-    while (!in.atEnd()) {
-        QString line = in.readLine();
-        result.push_back(line.toStdString());
-    }
-
-    return true;
-}//loadTextFile(),
-
 void Imagine::on_btnOpenStimFile_clicked()
 {
     QString stimFilename = QFileDialog::getOpenFileName(
@@ -1316,13 +1345,6 @@ void Imagine::on_btnOpenStimFile_clicked()
     ui.tableWidgetStimDisplay->setVerticalHeaderLabels(tableHeader);
 }
 
-void setDockwigetByAction(QAction* act, QDockWidget* widget)
-{
-    bool visible = act->isChecked();
-    widget->setVisible(visible);
-    if (visible) widget->raise();
-}
-
 void Imagine::on_actionStimuli_triggered()
 {
     setDockwigetByAction(ui.actionStimuli, ui.dwStim);
@@ -1347,20 +1369,6 @@ void Imagine::on_actionHistogram_triggered()
 {
     setDockwigetByAction(ui.actionHistogram, ui.dwHist);
 }
-
-//TODO: move this func to misc.cpp
-QString addExtNameIfAbsent(QString filename, QString newExtname)
-{
-    QFileInfo fi(filename);
-    QString ext = fi.suffix();
-    if (ext.isEmpty()){
-        return filename + "." + newExtname;
-    }
-    else {
-        return filename;
-    }
-}//addExtNameIfAbsent()
-
 
 void Imagine::on_btnSelectFile_clicked()
 {
@@ -1463,7 +1471,6 @@ void Imagine::on_tabWidgetCfg_currentChanged(int index)
     }
 }
 
-
 void Imagine::on_doubleSpinBoxCurPos_valueChanged(double newValue)
 {
     //do nothing for now
@@ -1499,7 +1506,6 @@ void Imagine::on_cbAutoSetPiezoTravelBackTime_stateChanged(int /* state */)
     ui.doubleSpinBoxPiezoTravelBackTime->setEnabled(!ui.cbAutoSetPiezoTravelBackTime->isChecked());
 
 }
-
 
 void Imagine::on_btnSetCurPosAsStart_clicked()
 {
@@ -1594,7 +1600,6 @@ void Imagine::on_btnFastDecPosAndMove_clicked()
     on_btnMovePiezo_clicked();
 }
 
-
 void Imagine::on_actionExit_triggered()
 {
     close();
@@ -1607,3 +1612,5 @@ void Imagine::on_actionHeatsinkFan_triggered()
     }
     fanCtrlDialog->exec();
 }
+
+#pragma endregion
