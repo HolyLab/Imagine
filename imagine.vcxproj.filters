@@ -162,6 +162,9 @@
     <ClCompile Include="ImgApplication.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Pixmapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ai_thread.hpp">
@@ -291,12 +294,25 @@
     <CustomBuild Include="qtgen\ui_temperaturedialog.h">
       <Filter>Generated Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="Pixmapper.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
     <None Include="$(FodyPath)\*.*" />
     <None Include="$(FodyPath)\*.*" />
     <None Include="$(FodyPath)\*.*" />

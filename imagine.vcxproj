@@ -169,6 +169,7 @@
       <SubSystem>Console</SubSystem>
       <HeapReserveSize>0</HeapReserveSize>
       <StackReserveSize>0</StackReserveSize>
+      <ShowProgress>NotSet</ShowProgress>
     </Link>
     <ProjectReference>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
@@ -200,6 +201,7 @@
     <ClCompile Include="cooke.cpp" />
     <ClCompile Include="fast_ofstream.cpp" />
     <ClCompile Include="ImgApplication.cpp" />
+    <ClCompile Include="Pixmapper.cpp" />
     <ClCompile Include="pi_actuator\Actuator_Controller.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -1032,6 +1034,12 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Template|x64'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB  "-I." "-I.\qtgen" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Template|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DQT_DLL -DQT_SCRIPT_LIB  "-I." "-I.\qtgen" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-I.\pi_piezo" "-I.\pi_actuator" "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+    </CustomBuild>
+    <CustomBuild Include="Pixmapper.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing Pixmapper.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\imagine.h;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="spoolthread.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath);C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath)</AdditionalInputs>

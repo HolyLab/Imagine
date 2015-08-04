@@ -84,6 +84,15 @@ Imagine::Imagine(Camera *cam, Positioner *pos, QWidget *parent, Qt::WindowFlags 
     dataAcqThread.setPositioner(pos);
     dataAcqThread.parentImagine = this;
 
+    // set up the pixmap making thread (see dtor for cleanup)
+    pixmapperThread.setPriority(QThread::LowPriority);
+    pixmapper = new Pixmapper;
+    pixmapper->moveToThread(&pixmapperThread);
+    connect(&pixmapperThread, &QThread::finished, pixmapper, &QObject::deleteLater);
+    connect(this, &Imagine::makePixmap, pixmapper, &Pixmapper::handleImg);
+    connect(pixmapper, &Pixmapper::pixmapReady, this, &Imagine::handlePixmap);
+    pixmapperThread.start();
+
     minPixelValueByUser = 0;
     maxPixelValueByUser = 1 << 16;
 
@@ -353,11 +362,15 @@ Imagine::Imagine(Camera *cam, Positioner *pos, QWidget *parent, Qt::WindowFlags 
 
 Imagine::~Imagine()
 {
-    // this isn't really the logical place to do this... but dammit data
-    // sometimes I just gotta get my kling on.
+    // this isn't really the logical place to do this...
     if (digOut != NULL)
     delete digOut;
     digOut = NULL;
+
+    // clean up the pixmapper nonsense
+    pixmapperThread.quit();
+    pixmapperThread.wait();
+    delete(pixmapper);
 }
 
 #pragma endregion
@@ -373,42 +386,54 @@ void Imagine::updateImage()
     double displayAreaSize = ui.spinBoxDisplayAreaSize->value() / 100.0;
     double maxWidth = image->width()*displayAreaSize;
     double maxHeight = image->height()*displayAreaSize;
-    if (L == -1){
+    if (L == -1) {
         L = T = 0; H = image->height(); W = image->width();
-    }//if, uninitialized edges
-    //crop the image from the original
+    }
+    // crop and zoom the image from the original
     QImage cropedImage = image->copy(L, T, W, H);
-    //zoom
     double zoomFactor = min(maxWidth / W, maxHeight / H);
-    //double ttLiveZoomFactor=0.5;
-
     QImage scaledImage = cropedImage.scaledToHeight(cropedImage.height()*zoomFactor);
-    //QImage scaledImage=*image; //TODO: temp
+    
+    // making the pixmap is expensive - push it to another thread
+    // see handlePixmap() for continuation
+    int xd = 0, xc = 0, yd = 0, yc = 0;
+    if (zoom_isMouseDown) {
+        xd = zoom_downPos.x();
+        xc = zoom_curPos.x();
+        yd = zoom_downPos.y();
+        yc = zoom_curPos.y();
+    }
+    emit makePixmap(scaledImage, xd, xc, yd, yc);
 
     //NOTE: comment out next 2 lines, you will know that the display framerate's bottleneck
     //   is QT's signal-slot queuing and what in data_acq_thread.cpp
-    if (!pixmap) pixmap = new QPixmap();
-    *pixmap = QPixmap::fromImage(scaledImage);
+    //if (!pixmap) pixmap = new QPixmap();
+    //*pixmap = QPixmap::fromImage(scaledImage);
 
-    {
-        QPainter painter(pixmap); //interesting that it's not working w/ QImage
-        QPen pen(Qt::green, 2);
-        painter.setPen(pen);
-        //int width=nUpdateImage%100+20;
-        if (zoom_isMouseDown){
-            QPoint lt(min(zoom_downPos.x(), zoom_curPos.x()),
-                min(zoom_downPos.y(), zoom_curPos.y()));
-            QPoint rb(max(zoom_downPos.x(), zoom_curPos.x()),
-                max(zoom_downPos.y(), zoom_curPos.y()));
-            painter.drawRect(QRect(lt, rb));
-            //painter.drawText(rect(), Qt::AlignCenter, "The Text");
-        }
-    }//scope for QPainter obj
+    //{
+    //    QPainter painter(pixmap); //interesting that it's not working w/ QImage
+    //    QPen pen(Qt::green, 2);
+    //    painter.setPen(pen);
+    //    //int width=nUpdateImage%100+20;
+    //    if (zoom_isMouseDown){
+    //        QPoint lt(min(zoom_downPos.x(), zoom_curPos.x()),
+    //            min(zoom_downPos.y(), zoom_curPos.y()));
+    //        QPoint rb(max(zoom_downPos.x(), zoom_curPos.x()),
+    //            max(zoom_downPos.y(), zoom_curPos.y()));
+    //        painter.drawRect(QRect(lt, rb));
+    //        //painter.drawText(rect(), Qt::AlignCenter, "The Text");
+    //    }
+    //}//scope for QPainter obj
 
-    ui.labelImage->setPixmap(*pixmap);
+    //ui.labelImage->setPixmap(*pixmap);
     //ui.labelImage->setPixmap(QPixmap::fromImage(scaledImage));
-    ui.labelImage->adjustSize();
+    //ui.labelImage->adjustSize();
+}
 
+void Imagine::handlePixmap(const QPixmap &pxmp) {
+    // pop the new pixmap into the label, and hey-presto
+    ui.labelImage->setPixmap(pxmp);
+    ui.labelImage->adjustSize();
 }
 
 int counts[1 << 16];

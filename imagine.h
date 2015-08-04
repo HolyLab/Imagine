@@ -32,6 +32,7 @@ class HistogramItem;
 #include "andor_g.hpp"
 #include "positioner.hpp"
 #include "timer_g.hpp"
+#include "Pixmapper.h"
 
 enum ImagineStatus { eIdle = 0, eRunning, eStopping };
 enum ImagineAction { eNoAction = 0, eAcqAndSave, eLive };
@@ -53,6 +54,8 @@ public:
     ~Imagine();
     DataAcqThread dataAcqThread;
     Timer_g gTimer;
+    QThread pixmapperThread;
+    Pixmapper *pixmapper = nullptr;
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -87,7 +90,7 @@ private:
 
     void preparePlots();
 
-    private slots:
+private slots:
     void on_actionHeatsinkFan_triggered();
     void on_actionExit_triggered();
     void on_btnFastDecPosAndMove_clicked();
@@ -138,6 +141,12 @@ private:
     void zoom_onMouseMoved(QMouseEvent*);
     void zoom_onMouseReleased(QMouseEvent*);
 
+public slots:
+    // handle pixmap of recently acquired frame
+    void handlePixmap(const QPixmap &pxmp);
+signals:
+    void makePixmap(const QImage &img, const int xDown,
+        const int xCur, const int yDown, const int yCur);
 };
 
 #endif // IMAGINE_H
