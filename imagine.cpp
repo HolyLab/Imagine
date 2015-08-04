@@ -70,7 +70,6 @@ bool zoom_isMouseDown = false;
 QPoint zoom_downPos, zoom_curPos; //in the unit of displayed image
 int L = -1, W, T, H; //in the unit of original image
 QImage * image = 0;   //TODO: free it in dtor. The acquired image.
-QPixmap * pixmap = 0; //the displayed.
 int nUpdateImage;
 
 
@@ -411,6 +410,7 @@ void Imagine::updateImage()
 
 void Imagine::handlePixmap(const QPixmap &pxmp) {
     // pop the new pixmap into the label, and hey-presto
+    pixmap = pxmp;
     ui.labelImage->setPixmap(pxmp);
     ui.labelImage->adjustSize();
     isPixmapping = false;
@@ -548,11 +548,11 @@ void Imagine::preparePlots()
 }
 
 //convert position in the unit of pixmap to position in the unit of orig img
-QPoint calcPos(const QPoint& pos)
+QPoint Imagine::calcPos(const QPoint& pos)
 {
     QPoint result;
-    result.rx() = L + double(W) / pixmap->width()*pos.x();
-    result.ry() = T + double(H) / pixmap->height()*pos.y();
+    result.rx() = L + double(W) / pixmap.width()*pos.x();
+    result.ry() = T + double(H) / pixmap.height()*pos.y();
 
     return result;
 }
@@ -607,7 +607,6 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
         }
         maxPixelValue = oldMax;
     }
-
 
     //update histogram plot
     int histSamplingRate = 3; //that is, calc histgram every 3 updating
@@ -888,7 +887,7 @@ void Imagine::zoom_onMouseReleased(QMouseEvent* event)
             .arg(zoom_downPos.x()).arg(zoom_downPos.y())
             .arg(zoom_curPos.x()).arg(zoom_curPos.y()));
 
-        if (!pixmap) return; //NOTE: this is for not zooming logo image
+        if (pixmap.isNull()) return; //NOTE: this is for not zooming logo image
 
         //update L,T,W,H
         QPoint LT = calcPos(zoom_downPos);
@@ -933,7 +932,7 @@ void Imagine::zoom_onMouseMoved(QMouseEvent* event)
     if ((event->buttons() & Qt::LeftButton) && zoom_isMouseDown){
         zoom_curPos = event->pos();
 
-        if (pixmap){ //TODO: if(pixmap && idle)
+        if (!pixmap.isNull()){ //TODO: if(pixmap && idle)
             updateImage();
         }
     }

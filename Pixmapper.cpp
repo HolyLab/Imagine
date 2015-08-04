@@ -33,7 +33,7 @@ void Pixmapper::pixify(const QImage img, const int xDown,
     {
         QPainter painter(&pixmap);
         painter.setPen(pen);
-        if (xDown==xCur && yDown==yCur){
+        if (xDown!=xCur || yDown!=yCur){
             QPoint lt(std::min(xDown, xCur), std::min(yDown, yCur));
             QPoint rb(std::max(xDown, xCur), std::max(yDown, yCur));
             painter.drawRect(QRect(lt, rb));

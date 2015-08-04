@@ -57,6 +57,7 @@ public:
     
     Pixmapper pixmapper;
     bool isPixmapping = false;
+    QPixmap pixmap;
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -87,8 +88,8 @@ private:
 
     bool checkRoi();
     bool loadPreset();
-
     void preparePlots();
+    QPoint calcPos(const QPoint& pos);
 
 private slots:
     void on_actionHeatsinkFan_triggered();
