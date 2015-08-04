@@ -68,8 +68,6 @@ extern DaqDo* digOut;
 // misc vars
 bool zoom_isMouseDown = false;
 QPoint zoom_downPos, zoom_curPos; //in the unit of displayed image
-int L = -1, W, T, H; //in the unit of original image
-QImage * image = 0;   //TODO: free it in dtor. The acquired image.
 int nUpdateImage;
 
 
@@ -378,20 +376,9 @@ Imagine::~Imagine()
 
 void Imagine::updateImage()
 {
-    if (!image) return;
+    if (lastRawImg.isNull() || isPixmapping) return;
+    isPixmapping = true;
 
-    //TODO: user should be able to adjust this param or fit to width/height
-    double displayAreaSize = ui.spinBoxDisplayAreaSize->value() / 100.0;
-    double maxWidth = image->width()*displayAreaSize;
-    double maxHeight = image->height()*displayAreaSize;
-    if (L == -1) {
-        L = T = 0; H = image->height(); W = image->width();
-    }
-    // crop and zoom the image from the original
-    QImage cropedImage = image->copy(L, T, W, H);
-    double zoomFactor = min(maxWidth / W, maxHeight / H);
-    QImage scaledImage = cropedImage.scaledToHeight(cropedImage.height()*zoomFactor);
-    
     // making the pixmap is expensive - push it to another thread
     // see handlePixmap() for continuation
     int xd = 0, xc = 0, yd = 0, yc = 0;
@@ -401,16 +388,20 @@ void Imagine::updateImage()
         yd = zoom_downPos.y();
         yc = zoom_curPos.y();
     }
-
-    if (!isPixmapping) {
-        isPixmapping = true;
-        emit makePixmap(scaledImage, xd, xc, yd, yc);
+    bool colSat = ui.actionColorizeSaturatedPixels->isChecked();
+    double displayAreaSize = ui.spinBoxDisplayAreaSize->value() / 100.0;
+    if (L == -1) {
+        L = T = 0; H = lastImgH; W = lastImgW;
     }
+
+    emit makePixmap(lastRawImg, lastImgW, lastImgH, factor, displayAreaSize,
+        L, T, W, H, xd, xc, yd, yc, minPixelValue, maxPixelValue, colSat);
 }
 
-void Imagine::handlePixmap(const QPixmap &pxmp) {
+void Imagine::handlePixmap(const QPixmap &pxmp, const QImage &img) {
     // pop the new pixmap into the label, and hey-presto
     pixmap = pxmp;
+    image = img;
     ui.labelImage->setPixmap(pxmp);
     ui.labelImage->adjustSize();
     isPixmapping = false;
@@ -562,34 +553,10 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
 {
     dataAcqThread.isUpdatingImage = true;
 
-    //NOTE: about colormap/contrast/autoscale:
-    //  Because Qt doesn't support 16bit grayscale image, we have to use 8bit index
-    //  image. Then changing colormap (which is much faster than scaling the real data)
-    //  is not a good option because when we map 14 bit value to 8 bit, 
-    //  we map 64 possible values into one value and if original values are in small
-    //  range, we've lost the contrast so that changing colormap won't help. 
-    //  So I have to scale the real data.
-
-    if (image == 0 || image->width() != imageW || image->height() != imageH){
-        delete image; image = 0;
-        image = new QImage(imageW, imageH, QImage::Format_Indexed8);
-        //set to 256 level grayscale
-        image->setColorCount(256);
-        for (int i = 0; i < 256; i++){
-            image->setColor(i, qRgb(i, i, i)); //set color table entry
-        }
-    }//if, need realloc the Image object
-
-    //user may changed the colorizing option during acq.
-    bool isColorizeSaturatedPixels = ui.actionColorizeSaturatedPixels->isChecked();
-    if (isColorizeSaturatedPixels){
-        image->setColor(0, qRgb(0, 0, 255));
-        image->setColor(255, qRgb(255, 0, 0));
-    }
-    else{
-        image->setColor(0, qRgb(0, 0, 0));
-        image->setColor(255, qRgb(255, 255, 255));
-    }
+    // If something breaks... probably these units are wrong.
+    lastRawImg = data16;
+    lastImgH = imageH;
+    lastImgW = imageW;
 
     Camera::PixelValue * frame = (Camera::PixelValue *)data16.constData();
     if (ui.actionFlickerControl->isChecked()){
@@ -626,7 +593,6 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
     }
 
     //copy and scale data
-    double factor;
     if (ui.actionNoAutoScale->isChecked()){
         minPixelValue = maxPixelValue = 0;
         factor = 1.0 / (1 << 6); //i.e. /(2^14)*(2^8). note: not >>8 b/c it's 14-bit camera. TODO: take care of 16 bit camera?
@@ -647,27 +613,8 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
         }//else, user supplied min/max
 
         factor = 255.0 / (maxPixelValue - minPixelValue);
-        if (isColorizeSaturatedPixels) factor *= 254 / 255.0;
+        if (ui.actionColorizeSaturatedPixels->isChecked()) factor *= 254 / 255.0;
     }//else, adjust contrast(i.e. scale data by min/max values)
-
-    Camera::PixelValue * tp = frame;
-    for (int row = 0; row < imageH; ++row){
-        unsigned char * rowData = image->scanLine(row);
-        for (int col = 0; col<imageW; ++col){
-            Camera::PixelValue inten = *tp++;
-            int index;
-            if (inten >= 16383 && isColorizeSaturatedPixels) index = 255; // FIXME 16-bit
-            else if (inten > maxPixelValue) index = 254;
-            else if (inten < minPixelValue) index = 0;
-            else {
-                index = (inten - minPixelValue)*factor;
-                //image->setPixel(i%imageW, i/imageW,(frame[i]-minPixelValue)*factor);
-            }
-
-            rowData[col] = index;
-            //image->setPixel(col, row, index);
-        }//for, each scan line
-    }//for, each row
 
     updateImage();
 
@@ -1181,13 +1128,13 @@ void Imagine::on_btnFullChipSize_clicked()
 
 void Imagine::on_btnUseZoomWindow_clicked()
 {
-    if (!image){
+    if (image.isNull()){
         QMessageBox::warning(this, tr("Imagine"),
             tr("Please acquire one full chip image first"));
         return;
     }
 
-    if (image->width() != 1004 || image->height() != 1002){
+    if (image.width() != 1004 || image.height() != 1002){
         QMessageBox::warning(this, tr("Imagine"),
             tr("Please acquire one full chip image first"));
         return;

@@ -58,6 +58,17 @@ public:
     Pixmapper pixmapper;
     bool isPixmapping = false;
     QPixmap pixmap;
+    QImage image;
+    QByteArray lastRawImg;
+    int lastImgH = 0;
+    int lastImgW = 0;
+    double factor = 0.0;
+
+    // display coords in the unit of original image
+    int L = -1;
+    int W;
+    int H;
+    int T;
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -144,10 +155,13 @@ private slots:
 
 public slots:
     // handle pixmap of recently acquired frame
-    void handlePixmap(const QPixmap &pxmp);
+    void handlePixmap(const QPixmap &pxmp, const QImage &img);
 signals:
-    void makePixmap(const QImage &img, const int xDown,
-        const int xCur, const int yDown, const int yCur);
+    void makePixmap(const QByteArray &ba, const int imageW, const int imageH,
+        const double scaleFactor, const double dAreaSize,
+        const int dLeft, const int dTop, const int dWidth, const int dHeight,
+        const int xDown, const int xCur, const int yDown, const int yCur,
+        const int minPixVal, const int maxPixVal, bool colorizeSat);
 };
 
 #endif // IMAGINE_H
