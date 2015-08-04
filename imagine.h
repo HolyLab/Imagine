@@ -56,7 +56,7 @@ public:
     Timer_g gTimer;
     
     Pixmapper pixmapper;
-
+    bool isPixmapping = false;
 protected:
     void closeEvent(QCloseEvent *event);
 

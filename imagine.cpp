@@ -402,37 +402,18 @@ void Imagine::updateImage()
         yd = zoom_downPos.y();
         yc = zoom_curPos.y();
     }
-    emit makePixmap(scaledImage, xd, xc, yd, yc);
 
-    //NOTE: comment out next 2 lines, you will know that the display framerate's bottleneck
-    //   is QT's signal-slot queuing and what in data_acq_thread.cpp
-    //if (!pixmap) pixmap = new QPixmap();
-    //*pixmap = QPixmap::fromImage(scaledImage);
-
-    //{
-    //    QPainter painter(pixmap); //interesting that it's not working w/ QImage
-    //    QPen pen(Qt::green, 2);
-    //    painter.setPen(pen);
-    //    //int width=nUpdateImage%100+20;
-    //    if (zoom_isMouseDown){
-    //        QPoint lt(min(zoom_downPos.x(), zoom_curPos.x()),
-    //            min(zoom_downPos.y(), zoom_curPos.y()));
-    //        QPoint rb(max(zoom_downPos.x(), zoom_curPos.x()),
-    //            max(zoom_downPos.y(), zoom_curPos.y()));
-    //        painter.drawRect(QRect(lt, rb));
-    //        //painter.drawText(rect(), Qt::AlignCenter, "The Text");
-    //    }
-    //}//scope for QPainter obj
-
-    //ui.labelImage->setPixmap(*pixmap);
-    //ui.labelImage->setPixmap(QPixmap::fromImage(scaledImage));
-    //ui.labelImage->adjustSize();
+    if (!isPixmapping) {
+        isPixmapping = true;
+        emit makePixmap(scaledImage, xd, xc, yd, yc);
+    }
 }
 
 void Imagine::handlePixmap(const QPixmap &pxmp) {
     // pop the new pixmap into the label, and hey-presto
     ui.labelImage->setPixmap(pxmp);
     ui.labelImage->adjustSize();
+    isPixmapping = false;
 }
 
 int counts[1 << 16];
