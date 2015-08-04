@@ -815,6 +815,82 @@ bool Imagine::loadPreset()
     return true;
 }
 
+void Imagine::updateStatus(ImagineStatus newStatus, ImagineAction newAction)
+{
+    curStatus = newStatus;
+    curAction = newAction;
+
+    vector<QWidget*> enabledWidgets, disabledWidgets;
+    vector<QAction*> enabledActions, disabledActions;
+    if (curStatus == eIdle){
+        //in the order of from left to right, from top to bottom:
+        enabledActions.push_back(ui.actionStartAcqAndSave);
+        enabledActions.push_back(ui.actionStartLive);
+        enabledActions.push_back(ui.actionOpenShutter);
+        enabledActions.push_back(ui.actionCloseShutter);
+
+        disabledActions.push_back(ui.actionStop);
+
+        //no widgets to disable
+
+    }//if, idle
+    else if (curStatus == eRunning){
+        enabledActions.push_back(ui.actionStop);
+
+        //no widget to enable
+
+        disabledActions.push_back(ui.actionStartAcqAndSave);
+        disabledActions.push_back(ui.actionStartLive);
+        //disabledActions.push_back(ui.actionOpenShutter);
+        //disabledActions.push_back(ui.actionCloseShutter);
+        //disabledActions.push_back(ui.actionTemperature);
+
+        //disabledWidgets.push_back(ui.btnApply);
+
+        //change intensity plot xlabel
+        if (curAction == eLive){
+            //intenPlot->setAxisTitle(QwtPlot::xBottom, "frame number");
+        }
+        else {
+            //intenPlot->setAxisTitle(QwtPlot::xBottom, "stack number");
+        }
+
+    }//else if, running
+    else {
+        disabledActions.push_back(ui.actionStop);
+
+    }//else, stopping 
+
+    for (int i = 0; i < enabledWidgets.size(); ++i){
+        enabledWidgets[i]->setEnabled(true);
+    }
+
+    for (int i = 0; i < enabledActions.size(); ++i){
+        enabledActions[i]->setEnabled(true);
+    }
+
+    for (int i = 0; i < disabledWidgets.size(); ++i){
+        disabledWidgets[i]->setEnabled(false);
+    }
+
+    for (int i = 0; i < disabledActions.size(); ++i){
+        disabledActions[i]->setEnabled(false);
+    }
+
+}//Imagine::updateUiStatus()
+
+void Imagine::readPiezoCurPos()
+{
+    double um;
+    Positioner *pos = dataAcqThread.pPositioner;
+    if (pos != NULL && pos->curPos(&um)) {
+        ui.labelCurPos->setText(QString::number(um, 'f', 2));
+    }
+    else {
+        ui.labelCurPos->setText("Unknown");
+    }
+}
+
 #pragma endregion
 
 
@@ -1409,82 +1485,6 @@ void Imagine::on_btnSelectFile_clicked()
 
     imagineFilename = addExtNameIfAbsent(imagineFilename, "imagine");
     ui.lineEditFilename->setText(imagineFilename);
-}
-
-void Imagine::updateStatus(ImagineStatus newStatus, ImagineAction newAction)
-{
-    curStatus = newStatus;
-    curAction = newAction;
-
-    vector<QWidget*> enabledWidgets, disabledWidgets;
-    vector<QAction*> enabledActions, disabledActions;
-    if (curStatus == eIdle){
-        //in the order of from left to right, from top to bottom:
-        enabledActions.push_back(ui.actionStartAcqAndSave);
-        enabledActions.push_back(ui.actionStartLive);
-        enabledActions.push_back(ui.actionOpenShutter);
-        enabledActions.push_back(ui.actionCloseShutter);
-
-        disabledActions.push_back(ui.actionStop);
-
-        //no widgets to disable
-
-    }//if, idle
-    else if (curStatus == eRunning){
-        enabledActions.push_back(ui.actionStop);
-
-        //no widget to enable
-
-        disabledActions.push_back(ui.actionStartAcqAndSave);
-        disabledActions.push_back(ui.actionStartLive);
-        //disabledActions.push_back(ui.actionOpenShutter);
-        //disabledActions.push_back(ui.actionCloseShutter);
-        //disabledActions.push_back(ui.actionTemperature);
-
-        //disabledWidgets.push_back(ui.btnApply);
-
-        //change intensity plot xlabel
-        if (curAction == eLive){
-            //intenPlot->setAxisTitle(QwtPlot::xBottom, "frame number");
-        }
-        else {
-            //intenPlot->setAxisTitle(QwtPlot::xBottom, "stack number");
-        }
-
-    }//else if, running
-    else {
-        disabledActions.push_back(ui.actionStop);
-
-    }//else, stopping 
-
-    for (int i = 0; i < enabledWidgets.size(); ++i){
-        enabledWidgets[i]->setEnabled(true);
-    }
-
-    for (int i = 0; i < enabledActions.size(); ++i){
-        enabledActions[i]->setEnabled(true);
-    }
-
-    for (int i = 0; i < disabledWidgets.size(); ++i){
-        disabledWidgets[i]->setEnabled(false);
-    }
-
-    for (int i = 0; i < disabledActions.size(); ++i){
-        disabledActions[i]->setEnabled(false);
-    }
-
-}//Imagine::updateUiStatus()
-
-void Imagine::readPiezoCurPos()
-{
-    double um;
-    Positioner *pos = dataAcqThread.pPositioner;
-    if (pos != NULL && pos->curPos(&um)) {
-        ui.labelCurPos->setText(QString::number(um, 'f', 2));
-    }
-    else {
-        ui.labelCurPos->setText("Unknown");
-    }
 }
 
 void Imagine::on_tabWidgetCfg_currentChanged(int index)
