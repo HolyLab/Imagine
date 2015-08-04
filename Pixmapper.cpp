@@ -74,7 +74,7 @@ void Pixmapper::handleImg(const QByteArray &ba, const int imageW, const int imag
     double zoomFactor = std::min(maxWidth / dWidth, maxHeight / dHeight);
     QImage scaledImage = cropedImage.scaledToHeight(cropedImage.height()*zoomFactor);
 
-    QPixmap pixmap = QPixmap::fromImage(image);
+    QPixmap pixmap = QPixmap::fromImage(scaledImage);
     {
         QPainter painter(&pixmap);
         painter.setPen(pen);
