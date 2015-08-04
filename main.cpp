@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    Camera *cam2;
+    Camera *cam2 = nullptr;
     if (nCams > 1) {
         // init the second camera
         // sorry for the copy pasta. perhaps put this in a function later

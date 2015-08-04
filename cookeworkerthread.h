@@ -40,7 +40,8 @@ public:
 
         if (camera->isSpooling()){
             spoolingThread = new SpoolThread(camera->ofsSpooling,
-                camera->getImageWidth()*camera->getImageHeight()*sizeof(CookeCamera::PixelValue));
+                camera->getImageWidth()*camera->getImageHeight()*sizeof(CookeCamera::PixelValue),
+                this);
             cout << "after new spoolthread: " << gt.read() << endl;
 
             spoolingThread->start();

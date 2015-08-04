@@ -85,13 +85,12 @@ Imagine::Imagine(Camera *cam, Positioner *pos, QWidget *parent, Qt::WindowFlags 
     dataAcqThread.parentImagine = this;
 
     // set up the pixmap making thread (see dtor for cleanup)
-    pixmapperThread.setPriority(QThread::LowPriority);
-    pixmapper = new Pixmapper;
-    pixmapper->moveToThread(&pixmapperThread);
-    connect(&pixmapperThread, &QThread::finished, pixmapper, &QObject::deleteLater);
-    connect(this, &Imagine::makePixmap, pixmapper, &Pixmapper::handleImg);
-    connect(pixmapper, &Pixmapper::pixmapReady, this, &Imagine::handlePixmap);
+    pixmapper.moveToThread(&pixmapperThread);
+    connect(&pixmapperThread, &QThread::finished, &pixmapper, &QObject::deleteLater);
+    connect(this, &Imagine::makePixmap, &pixmapper, &Pixmapper::handleImg);
+    connect(&pixmapper, &Pixmapper::pixmapReady, this, &Imagine::handlePixmap);
     pixmapperThread.start();
+    pixmapperThread.setPriority(QThread::LowPriority);
 
     minPixelValueByUser = 0;
     maxPixelValueByUser = 1 << 16;
@@ -370,7 +369,7 @@ Imagine::~Imagine()
     // clean up the pixmapper nonsense
     pixmapperThread.quit();
     pixmapperThread.wait();
-    delete(pixmapper);
+    //delete(pixmapper);
 }
 
 #pragma endregion

@@ -63,33 +63,6 @@
     <ClCompile Include="temperaturedialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="qtgen\debug\moc_fanctrldialog.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\release\moc_fanctrldialog.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\debug\moc_imagelabel.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\release\moc_imagelabel.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\release\moc_imagine.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\debug\moc_imagine.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\debug\moc_temperaturedialog.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\release\moc_temperaturedialog.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\qrc_imagine.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="andor_g.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -98,18 +71,6 @@
     </ClCompile>
     <ClCompile Include="avt_g.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\release\moc_ai_thread.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\debug\moc_ai_thread.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\debug\moc_data_acq_thread.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\release\moc_data_acq_thread.cpp">
-      <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="misc.cpp">
       <Filter>Source Files</Filter>
@@ -165,6 +126,30 @@
     <ClCompile Include="Pixmapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_ai_thread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_data_acq_thread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_fanctrldialog.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_imagelabel.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_imagine.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_Pixmapper.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_temperaturedialog.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\qrc_imagine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ai_thread.hpp">
@@ -205,9 +190,6 @@
     </CustomBuild>
     <CustomBuild Include="imagine.qrc">
       <Filter>Resource Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="qtgen\ui_imagine.h">
-      <Filter>Generated Files</Filter>
     </CustomBuild>
     <CustomBuild Include="imagine.ico" />
     <CustomBuild Include="cookeworkerthread.h">
@@ -288,12 +270,6 @@
     <CustomBuild Include="Resources\stop.bmp">
       <Filter>Resource Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="qtgen\ui_fanctrldialog.h">
-      <Filter>Generated Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="qtgen\ui_temperaturedialog.h">
-      <Filter>Generated Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="Pixmapper.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
@@ -334,12 +310,31 @@
     <None Include="$(FodyPath)\*.*" />
     <None Include="$(FodyPath)\*.*" />
     <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ImgApplication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="qtgen\ui_fanctrldialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="qtgen\ui_imagine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="qtgen\ui_temperaturedialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -47,15 +47,15 @@ struct PiezoUiParam {
 class Imagine : public QMainWindow
 {
     Q_OBJECT
-
+    QThread pixmapperThread;
 public:
     Imagine(Camera *cam, Positioner *pos = nullptr,
         QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~Imagine();
     DataAcqThread dataAcqThread;
     Timer_g gTimer;
-    QThread pixmapperThread;
-    Pixmapper *pixmapper = nullptr;
+    
+    Pixmapper pixmapper;
 
 protected:
     void closeEvent(QCloseEvent *event);
