@@ -51,10 +51,11 @@ private:
     //lock used to coordinate accessing to nAcquiredFrames & pLiveImage
     QMutex* mpLock;
 
-    static const int nBufs = 2;
-    WORD mBufIndex[nBufs]; //m_wBufferNr
-    HANDLE mEvent[nBufs];//m_hEvent
-    PixelValue* mRingBuf[nBufs]; //m_pic12
+    // nBufs is defined in cpp file - these arrays should have the same length as nBufs
+    static const int nBufs;
+    WORD mBufIndex[2]; //m_wBufferNr
+    HANDLE mEvent[2];//m_hEvent
+    PixelValue* mRingBuf[2]; //m_pic12
 
     CookeWorkerThread* workerThread;
 

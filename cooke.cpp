@@ -14,6 +14,7 @@
 #define PCO_ERRT_H_CREATE_OBJECT
 
 int const COOKE_EXCEPTION = 47;
+const int CookeCamera::nBufs = 2;
 
 bool CookeCamera::init()
 {
@@ -334,7 +335,8 @@ bool CookeCamera::startAcq()
         mEvent[i] = NULL;
         mRingBuf[i] = NULL;
 
-        errorCode = PCO_AllocateBuffer(hCamera, (SHORT*)&mBufIndex[i], chipWidth * chipHeight * sizeof(DWORD), &mRingBuf[i], &mEvent[i]);
+        errorCode = PCO_AllocateBuffer(hCamera, (SHORT*)&mBufIndex[i],
+            chipWidth * chipHeight * sizeof(DWORD), &mRingBuf[i], &mEvent[i]);
         if (errorCode != PCO_NOERROR) {
             errorMsg = "failed to allocate buffer";
             return false;
