@@ -83,6 +83,30 @@ DataAcqThread::~DataAcqThread()
 
 #pragma endregion
 
+#pragma region Utility
+
+void genSquareSpike(int duration)
+{
+    //return;
+
+    //cout<<"enter gen spike @"<<gTimer.read()<<endl;
+    digOut->updateOutputBuf(5, true);
+    digOut->write();
+    Sleep(duration);
+    digOut->updateOutputBuf(5, false);
+    digOut->write();
+    //cout<<"leave gen spike @"<<gTimer.read()<<endl;
+}
+
+QString linize(QString lines)
+{
+    //join several lines into one line
+    lines.replace("\n", "\\n");
+    return lines;
+}
+
+#pragma endregion
+
 #pragma region Camera
 
 void DataAcqThread::setCamera(Camera *cam) {
@@ -715,42 +739,5 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
 }//DataAcqThread::saveHeader()
 
 #pragma endregion
-
-#pragma region Utility
-
-void genSquareSpike(int duration)
-{
-    //return;
-
-    //cout<<"enter gen spike @"<<gTimer.read()<<endl;
-    digOut->updateOutputBuf(5, true);
-    digOut->write();
-    Sleep(duration);
-    digOut->updateOutputBuf(5, false);
-    digOut->write();
-    //cout<<"leave gen spike @"<<gTimer.read()<<endl;
-}
-
-QString linize(QString lines)
-{
-    //join several lines into one line
-    lines.replace("\n", "\\n");
-    return lines;
-}
-
-#pragma endregion
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
