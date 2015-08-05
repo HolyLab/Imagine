@@ -82,10 +82,11 @@ Imagine::Imagine(Camera *cam, Positioner *pos, QWidget *parent, Qt::WindowFlags 
     dataAcqThread.parentImagine = this;
 
     // set up the pixmap making thread (see dtor for cleanup)
-    pixmapper.moveToThread(&pixmapperThread);
-    connect(&pixmapperThread, &QThread::finished, &pixmapper, &QObject::deleteLater);
-    connect(this, &Imagine::makePixmap, &pixmapper, &Pixmapper::handleImg);
-    connect(&pixmapper, &Pixmapper::pixmapReady, this, &Imagine::handlePixmap);
+    pixmapper = new Pixmapper();
+    pixmapper->moveToThread(&pixmapperThread);
+    connect(&pixmapperThread, &QThread::finished, pixmapper, &QObject::deleteLater);
+    connect(this, &Imagine::makePixmap, pixmapper, &Pixmapper::handleImg);
+    connect(pixmapper, &Pixmapper::pixmapReady, this, &Imagine::handlePixmap);
     pixmapperThread.start();
     pixmapperThread.setPriority(QThread::LowPriority);
 

@@ -55,7 +55,7 @@ public:
     DataAcqThread dataAcqThread;
     Timer_g gTimer;
     
-    Pixmapper pixmapper;
+    Pixmapper *pixmapper = nullptr;
     bool isPixmapping = false;
     QPixmap pixmap;
     QImage image;
