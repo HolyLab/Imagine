@@ -47,8 +47,9 @@ QScriptEngine* se;
 DaqDo * digOut = nullptr;
 QString daq;
 string rig;
+const string headerMagic = "IMAGINE";
 
-QString replaceExtName(QString filename, QString newExtname);
+#pragma region Lifecycle
 
 DataAcqThread::DataAcqThread(Camera *cam, Positioner *pos, QObject *parent)
     : QThread(parent)
@@ -80,114 +81,25 @@ DataAcqThread::~DataAcqThread()
     wait();
 }
 
-void DataAcqThread::startAcq()
-{
-    stopRequested = false;
-    this->start();
+#pragma endregion
+
+#pragma region Camera
+
+void DataAcqThread::setCamera(Camera *cam) {
+    // make sure that the camera knows who its parent is.
+    pCamera = cam;
+    if (cam != NULL) cam->parentAcqThread = this;
 }
 
-void DataAcqThread::stopAcq()
-{
-    stopRequested = true;
+#pragma endregion
+
+#pragma region Positioner
+
+void DataAcqThread::setPositioner(Positioner *pos) {
+    // make sure that the camera knows who its parent is.
+    pPositioner = pos;
+    if (pos != NULL) pos->parentAcqThread = this;
 }
-
-//join several lines into one line
-QString linize(QString lines)
-{
-    lines.replace("\n", "\\n");
-    return lines;
-}
-
-const string headerMagic = "IMAGINE";
-
-bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
-{
-    Camera& camera = *pCamera;
-
-    ofstream header(filename.toStdString().c_str(),
-        ios::out | ios::trunc);
-    header << headerMagic << endl;
-    header << "[general]" << endl
-        << "header version=7" << endl
-        << "app version=2.0, build (" << __DATE__ << ", " << __TIME__ << ")" << endl
-        << "date and time=" << QDateTime::currentDateTime().toString(Qt::ISODate).toStdString() << endl
-        << "byte order=l" << endl
-        << "rig=" << rig << endl
-        << endl;
-
-    header << "[misc params]" << endl
-        << "stimulus file content="
-        << (applyStim ? linize(stimFileContent).toStdString() : "")
-        << endl;
-
-    header << "comment=" << linize(comment).toStdString() << endl; //TODO: may need encode into one line
-
-    header << "ai data file=" << aiFilename.toStdString() << endl
-        << "image data file=" << camFilename.toStdString() << endl;
-
-    //TODO: output shutter params
-    //header<<"shutter=open time: ;"<<endl; 
-
-    header << "piezo=start position: " << piezoStartPosUm << " um"
-        << ";stop position: " << piezoStopPosUm << " um"
-        << ";output scan rate: " << 10000 //todo: hard coded
-        << ";bidirection: " << isBiDirectionalImaging
-        << endl << endl;
-
-    //ai related:
-    header << "[ai]" << endl
-        << "nscans=" << -1 << endl //TODO: output nscans at the end
-        << "channel list=0 1 2 3" << endl
-        << "label list=piezo$stimuli$camera frame TTL$heartbeat" << endl
-        << "scan rate=" << ai->scanRate << endl
-        << "min sample=" << ai->minDigitalValue << endl
-        << "max sample=" << ai->maxDigitalValue << endl
-        << "min input=" << ai->minPhyValue << endl
-        << "max input=" << ai->maxPhyValue << endl << endl;
-
-    //camera related:
-    header << "[camera]" << endl
-        << "original image depth=14" << endl    //effective bits per pixel
-        << "saved image depth=14" << endl       //effective bits per pixel
-        << "image width=" << camera.getImageWidth() << endl
-        << "image height=" << camera.getImageHeight() << endl
-        << "number of frames requested=" << nStacks*nFramesPerStack << endl
-        << "nStacks=" << nStacks << endl
-        << "idle time between stacks=" << idleTimeBwtnStacks << " s" << endl;
-    header << "pre amp gain=" << preAmpGain.toStdString() << endl
-        << "gain=" << gain << endl
-        << "exposure time=" << exposureTime << " s" << endl
-        << "vertical shift speed=" << verShiftSpeed.toStdString() << endl
-        << "vertical clock vol amp=" << verClockVolAmp << endl
-        << "readout rate=" << horShiftSpeed.toStdString() << endl;
-    header << "pixel order=x y z" << endl
-        << "frame index offset=0" << endl
-        << "frames per stack=" << nFramesPerStack << endl
-        << "pixel data type=uint16" << endl    //bits per pixel
-        << "camera=" << camera.getModel() << endl
-        << "um per pixel=" << umPerPxlXy << endl
-        << "binning=" << "hbin:" << camera.hbin
-        << ";vbin:" << camera.vbin
-        << ";hstart:" << camera.hstart
-        << ";hend:" << camera.hend
-        << ";vstart:" << camera.vstart
-        << ";vend:" << camera.vend << endl
-        << "angle from horizontal (deg)=" << angle << endl;
-
-    header.close();
-
-    return true;
-}//DataAcqThread::saveHeader()
-
-void DataAcqThread::fireStimulus(int valve)
-{
-    emit newStatusMsgReady(QString("valve is open: %1").arg(valve));
-    for (int i = 0; i < 4; ++i){
-        digOut->updateOutputBuf(i, valve & 1);
-        valve >>= 1;
-    }
-    digOut->write();
-}//fireStimulus(),
 
 bool DataAcqThread::preparePositioner(bool isForward)
 {
@@ -226,6 +138,21 @@ bool DataAcqThread::preparePositioner(bool isForward)
 
     return true;
 
+}
+
+#pragma endregion
+
+#pragma region Acquisition
+
+void DataAcqThread::startAcq()
+{
+    stopRequested = false;
+    this->start();
+}
+
+void DataAcqThread::stopAcq()
+{
+    stopRequested = true;
 }
 
 void DataAcqThread::run()
@@ -310,19 +237,6 @@ void DataAcqThread::run_live()
     QString ttMsg = "Live mode is stopped";
     emit newStatusMsgReady(ttMsg);
 }//run_live()
-
-void genSquareSpike(int duration)
-{
-    //return;
-
-    //cout<<"enter gen spike @"<<gTimer.read()<<endl;
-    digOut->updateOutputBuf(5, true);
-    digOut->write();
-    Sleep(duration);
-    digOut->updateOutputBuf(5, false);
-    digOut->write();
-    //cout<<"leave gen spike @"<<gTimer.read()<<endl;
-}
 
 void DataAcqThread::run_acq_and_save()
 {
@@ -701,14 +615,142 @@ nextStack:
 
 }//run_acq_and_save()
 
-void DataAcqThread::setCamera(Camera *cam) {
-    // make sure that the camera knows who its parent is.
-    pCamera = cam;
-    if (cam != NULL) cam->parentAcqThread = this;
+#pragma endregion
+
+#pragma region Stimulus
+
+void DataAcqThread::fireStimulus(int valve)
+{
+    emit newStatusMsgReady(QString("valve is open: %1").arg(valve));
+    for (int i = 0; i < 4; ++i){
+        digOut->updateOutputBuf(i, valve & 1);
+        valve >>= 1;
+    }
+    digOut->write();
+}//fireStimulus(),
+
+#pragma endregion
+
+#pragma region File IO
+
+QString replaceExtName(QString filename, QString newExtname);
+
+bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
+{
+    Camera& camera = *pCamera;
+
+    ofstream header(filename.toStdString().c_str(),
+        ios::out | ios::trunc);
+    header << headerMagic << endl;
+    header << "[general]" << endl
+        << "header version=7" << endl
+        << "app version=2.0, build (" << __DATE__ << ", " << __TIME__ << ")" << endl
+        << "date and time=" << QDateTime::currentDateTime().toString(Qt::ISODate).toStdString() << endl
+        << "byte order=l" << endl
+        << "rig=" << rig << endl
+        << endl;
+
+    header << "[misc params]" << endl
+        << "stimulus file content="
+        << (applyStim ? linize(stimFileContent).toStdString() : "")
+        << endl;
+
+    header << "comment=" << linize(comment).toStdString() << endl; //TODO: may need encode into one line
+
+    header << "ai data file=" << aiFilename.toStdString() << endl
+        << "image data file=" << camFilename.toStdString() << endl;
+
+    //TODO: output shutter params
+    //header<<"shutter=open time: ;"<<endl; 
+
+    header << "piezo=start position: " << piezoStartPosUm << " um"
+        << ";stop position: " << piezoStopPosUm << " um"
+        << ";output scan rate: " << 10000 //todo: hard coded
+        << ";bidirection: " << isBiDirectionalImaging
+        << endl << endl;
+
+    //ai related:
+    header << "[ai]" << endl
+        << "nscans=" << -1 << endl //TODO: output nscans at the end
+        << "channel list=0 1 2 3" << endl
+        << "label list=piezo$stimuli$camera frame TTL$heartbeat" << endl
+        << "scan rate=" << ai->scanRate << endl
+        << "min sample=" << ai->minDigitalValue << endl
+        << "max sample=" << ai->maxDigitalValue << endl
+        << "min input=" << ai->minPhyValue << endl
+        << "max input=" << ai->maxPhyValue << endl << endl;
+
+    //camera related:
+    header << "[camera]" << endl
+        << "original image depth=14" << endl    //effective bits per pixel
+        << "saved image depth=14" << endl       //effective bits per pixel
+        << "image width=" << camera.getImageWidth() << endl
+        << "image height=" << camera.getImageHeight() << endl
+        << "number of frames requested=" << nStacks*nFramesPerStack << endl
+        << "nStacks=" << nStacks << endl
+        << "idle time between stacks=" << idleTimeBwtnStacks << " s" << endl;
+    header << "pre amp gain=" << preAmpGain.toStdString() << endl
+        << "gain=" << gain << endl
+        << "exposure time=" << exposureTime << " s" << endl
+        << "vertical shift speed=" << verShiftSpeed.toStdString() << endl
+        << "vertical clock vol amp=" << verClockVolAmp << endl
+        << "readout rate=" << horShiftSpeed.toStdString() << endl;
+    header << "pixel order=x y z" << endl
+        << "frame index offset=0" << endl
+        << "frames per stack=" << nFramesPerStack << endl
+        << "pixel data type=uint16" << endl    //bits per pixel
+        << "camera=" << camera.getModel() << endl
+        << "um per pixel=" << umPerPxlXy << endl
+        << "binning=" << "hbin:" << camera.hbin
+        << ";vbin:" << camera.vbin
+        << ";hstart:" << camera.hstart
+        << ";hend:" << camera.hend
+        << ";vstart:" << camera.vstart
+        << ";vend:" << camera.vend << endl
+        << "angle from horizontal (deg)=" << angle << endl;
+
+    header.close();
+
+    return true;
+}//DataAcqThread::saveHeader()
+
+#pragma endregion
+
+#pragma region Utility
+
+void genSquareSpike(int duration)
+{
+    //return;
+
+    //cout<<"enter gen spike @"<<gTimer.read()<<endl;
+    digOut->updateOutputBuf(5, true);
+    digOut->write();
+    Sleep(duration);
+    digOut->updateOutputBuf(5, false);
+    digOut->write();
+    //cout<<"leave gen spike @"<<gTimer.read()<<endl;
 }
 
-void DataAcqThread::setPositioner(Positioner *pos) {
-    // make sure that the camera knows who its parent is.
-    pPositioner = pos;
-    if (pos != NULL) pos->parentAcqThread = this;
+QString linize(QString lines)
+{
+    //join several lines into one line
+    lines.replace("\n", "\\n");
+    return lines;
 }
+
+#pragma endregion
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
