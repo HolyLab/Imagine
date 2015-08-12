@@ -196,6 +196,8 @@
   <ItemGroup>
     <ClCompile Include="ai_thread.cpp" />
     <ClCompile Include="andor_g.cpp" />
+    <ClCompile Include="ArduinoSerial.cpp" />
+    <ClCompile Include="ArduinoThread.cpp" />
     <ClCompile Include="avt_g.cpp" />
     <ClCompile Include="camera_g.cpp" />
     <ClCompile Include="cooke.cpp" />
@@ -209,10 +211,12 @@
     <ClCompile Include="actuators\pi\Piezo_Controller.cpp" />
     <ClCompile Include="positioner.cpp" />
     <ClCompile Include="qtgen\Debug\moc_ai_thread.cpp" />
+    <ClCompile Include="qtgen\Debug\moc_ArduinoThread.cpp" />
     <ClCompile Include="qtgen\Debug\moc_data_acq_thread.cpp" />
     <ClCompile Include="qtgen\Debug\moc_fanctrldialog.cpp" />
     <ClCompile Include="qtgen\Debug\moc_imagelabel.cpp" />
     <ClCompile Include="qtgen\Debug\moc_imagine.cpp" />
+    <ClCompile Include="qtgen\Debug\moc_ImgApplication.cpp" />
     <ClCompile Include="qtgen\Debug\moc_Pixmapper.cpp" />
     <ClCompile Include="qtgen\Debug\moc_temperaturedialog.cpp" />
     <ClCompile Include="qtgen\qrc_imagine.cpp" />
@@ -971,6 +975,18 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing Pixmapper.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\Pixmapper.h;%(AdditionalInputs)</AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="ArduinoThread.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing %(Filename).h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\ArduinoThread.h;%(AdditionalInputs)</AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="ImgApplication.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe"   -DDEBUG_AI -DQT_DLL -DQT_SCRIPT_LIB -D_VC80_UPGRADE=0x0710  "-I." "-I.\qtgen" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include" "-I.\qtgen\Debug" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtCore" "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtGui" "-I.\3rd_party\include\qwt" "-I." "-IC:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\include\QtScript" "-IC:\Program Files\boost\boost_1_47" "-I.\pi_piezo" "-I.\pi_actuator" "-IC:\Program Files\Digital Camera Toolbox\pco.sdk\include" "-I.\3rd_party\include" "-I." "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\qtgen\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing %(Filename).h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\qtgen\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;.\%(Filename).h;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="spoolthread.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath);C:\Qt\Qt5.4.1\5.4\msvc2013_64_opengl\bin\moc.exe;%(FullPath)</AdditionalInputs>
@@ -1912,7 +1928,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ImgApplication.h" />
+    <ClInclude Include="ArduinoSerial.h" />
     <ClInclude Include="qtgen\ui_fanctrldialog.h" />
     <ClInclude Include="qtgen\ui_imagine.h" />
     <ClInclude Include="qtgen\ui_temperaturedialog.h" />

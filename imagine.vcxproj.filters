@@ -150,6 +150,18 @@
     <ClCompile Include="qtgen\qrc_imagine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ArduinoThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ArduinoSerial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_ArduinoThread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_ImgApplication.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ai_thread.hpp">
@@ -273,6 +285,12 @@
     <CustomBuild Include="Pixmapper.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="ArduinoThread.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ImgApplication.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="FodyWeavers.xml" />
@@ -330,12 +348,39 @@
     <None Include="$(FodyPath)\*.*" />
     <None Include="$(FodyPath)\*.*" />
     <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource1.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ImgApplication.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="qtgen\ui_fanctrldialog.h">
@@ -345,6 +390,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="qtgen\ui_temperaturedialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ArduinoSerial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
