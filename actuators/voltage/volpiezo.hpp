@@ -18,7 +18,7 @@ public:
     ~VolPiezo(){ delete aoOnce; delete ao; }
 
     double minPos(){ return 0; }
-    double maxPos(){ return 400; }
+    double maxPos(){ return 800; }
     bool curPos(double* pos);
     bool moveTo(double to);
 

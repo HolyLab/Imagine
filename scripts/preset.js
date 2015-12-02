@@ -63,7 +63,7 @@ if(rig=="ocpi-2"){
    var preset={
       ///positioner's
       startPosition:100,
-      stopPosition:400,
+      stopPosition:800,
       initialPosition: 100, //the position when Imagine starts.
       travelBackTime:0,
 
