@@ -34,7 +34,7 @@ void ArduinoThread::run() {
         /*this->exec();
         this->exit();*/
         // read incoming info, if it's there
-        if (serial->sPort->bytesAvailable() > 0) readIncoming();
+//not ready for arduino yet        if (serial->sPort->bytesAvailable() > 0) readIncoming();
         // hang out for a few milliseconds... we'll speed this up later
         msleep(20);
     }
