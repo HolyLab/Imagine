@@ -14,14 +14,14 @@
 void  __stdcall onFrameDone(tPvFrame* pFrame);
 
 
-class AvtCamera: public Camera {
+class AvtCamera : public Camera {
     unsigned long   cameraID;
     tPvHandle       cameraHandle;
 
     int circBufSize; //in frames
     tPvFrame *  pFrames;
     PixelValue* pCircBuf;  //the buffer for circular buffer
-                     //NOTE: it's word-aligned
+    //NOTE: it's word-aligned
     PixelValue* pRealCircBuf; //the ptr from operator new;
 
     //the buf for the live image
@@ -32,103 +32,99 @@ class AvtCamera: public Camera {
 
     long nAcquiredFrames;
     //lock used to coordinate accessing to nAcquiredFrames
-    QMutex* mpLock; 
+    QMutex* mpLock;
 
     FastOfstream *ofsSpooling;
 
 
 public:
-   AvtCamera(){
-      //
-      pCircBuf=pRealCircBuf=nullptr;
+    AvtCamera(){
+        //
+        pCircBuf = pRealCircBuf = nullptr;
 
-      pLiveImage=nullptr;
+        pLiveImage = nullptr;
 
-      pBlackImage=nullptr;
+        pBlackImage = nullptr;
 
-      ofsSpooling=nullptr;
+        ofsSpooling = nullptr;
 
-      nAcquiredFrames=0;
-      mpLock=new QMutex;
+        nAcquiredFrames = 0;
+        mpLock = new QMutex;
 
-      vendor="avt";
-   }
+        vendor = "avt";
+    }
 
-   ~AvtCamera(){
-      //
-      delete[] pLiveImage;
-      
-      delete[] pRealCircBuf;
+    ~AvtCamera(){
+        //
+        delete[] pLiveImage;
 
-      delete[] pBlackImage;
+        delete[] pRealCircBuf;
 
-      delete mpLock;
-   }
+        delete[] pBlackImage;
 
-   string getErrorMsg(){
-      if(errorCode==ePvErrSuccess){
-         return "no error";
-      }
-      else return errorMsg;
-   }
+        delete mpLock;
+    }
 
-   int getExtraErrorCode(ExtraErrorCodeType type) {
-      switch(type){
-      case eOutOfMem: return __ePvErr_force_32-100; //NOTE: this might be an issue
-      //default: 
-      }
+    string getErrorMsg(){
+        if (errorCode == ePvErrSuccess){
+            return "no error";
+        }
+        else return errorMsg;
+    }
 
-      return -1;
-   }
+    int getExtraErrorCode(ExtraErrorCodeType type) {
+        switch (type){
+        case eOutOfMem: return __ePvErr_force_32 - 100; //NOTE: this might be an issue
+            //default: 
+        }
 
-   bool init();
-   bool fini();
+        return -1;
+    }
 
-   bool setAcqParams(int gain,
-                     int preAmpGainIdx,
-                     int horShiftSpeedIdx,
-                     int verShiftSpeedIdx,
-                     int verClockVolAmp,
-                     bool isBaselineClamp
-                     ) ;
+    bool init();
+    bool fini();
 
-   //params different for live from for save mode
-   bool setAcqModeAndTime(GenericAcqMode genericAcqMode,
-                          float exposure,
-                          int anFrames,  //used only in kinetic-series mode
-                          TriggerMode triggerMode
-                          );
- 
+    bool setAcqParams(int gain,
+        int preAmpGainIdx,
+        int horShiftSpeedIdx,
+        int verShiftSpeedIdx,
+        int verClockVolAmp,
+        bool isBaselineClamp
+        );
 
-   long getAcquiredFrameCount();
+    //params different for live from for save mode
+    bool setAcqModeAndTime(GenericAcqMode genericAcqMode,
+        float exposure,
+        int anFrames,  //used only in kinetic-series mode
+        TriggerMode triggerMode
+        );
 
-   bool getLatestLiveImage(PixelValue * frame);
 
-   bool startAcq();
+    long getAcquiredFrameCount();
 
-   bool stopAcq();
+    bool getLatestLiveImage(PixelValue * frame);
 
-   double getCycleTime();
+    bool startAcq();
 
-   //bool isIdle();
+    bool stopAcq();
 
-   //transfer data from card
-   bool transferData()
-   {
-      //do nothing, since the data already in the buffer
+    double getCycleTime();
 
-      return true;
-   }
+    //bool isIdle();
 
-   bool setSpooling(string filename);
+    //transfer data from card
+    bool transferData()
+    {
+        //do nothing, since the data already in the buffer
 
-   pair<int,int> getGainRange(){ return make_pair(0,34); }
+        return true;
+    }
 
-   friend void  __stdcall onFrameDone(tPvFrame* pFrame);
+    bool setSpooling(string filename);
+
+    pair<int, int> getGainRange(){ return make_pair(0, 34); }
+
+    friend void  __stdcall onFrameDone(tPvFrame* pFrame);
 };
-
-
-//extern AvtCamera camera;
-
 
 #endif //AVT_G_HPP

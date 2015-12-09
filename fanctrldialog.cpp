@@ -14,16 +14,14 @@
 **-------------------------------------------------------------------------*/
 
 #include "fanctrldialog.h"
-
+#include "imagine.h"
 #include "andor_g.hpp"
-
-extern Camera* pCamera;
-
 
 FanCtrlDialog::FanCtrlDialog(QWidget *parent)
     : QDialog(parent)
 {
-        ui.setupUi(this);
+    ui.setupUi(this);
+    parentImagine = (Imagine*)parent;
 }
 
 FanCtrlDialog::~FanCtrlDialog()
@@ -34,11 +32,12 @@ FanCtrlDialog::~FanCtrlDialog()
 
 void FanCtrlDialog::on_buttonBox_accepted()
 {
-   AndorCamera::FanSpeed speed=AndorCamera::fsHigh;
-   if(ui.radioButtonLow->isChecked()) speed=AndorCamera::fsLow;
-   else if(ui.radioButtonOff->isChecked()) speed=AndorCamera::fsOff;
+    AndorCamera::FanSpeed speed = AndorCamera::fsHigh;
+    if (ui.radioButtonLow->isChecked()) speed = AndorCamera::fsLow;
+    else if (ui.radioButtonOff->isChecked()) speed = AndorCamera::fsOff;
 
-   ((AndorCamera*)pCamera)->setHeatsinkFanSpeed(speed); //TODO: check return value
+    AndorCamera *cam = (AndorCamera *)parentImagine->dataAcqThread.pCamera;
+    cam->setHeatsinkFanSpeed(speed); //TODO: check return value
 
-   this->hide();
+    this->hide();
 }

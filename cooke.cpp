@@ -7,505 +7,472 @@
 
 #include "pco_errt.h"
 #include <iostream>
+#include <QtDebug>
+#include "data_acq_thread.hpp"
+#include "imagine.h"
+
 #define PCO_ERRT_H_CREATE_OBJECT
+
+int const COOKE_EXCEPTION = 47;
+const int CookeCamera::nBufs = 2;
 
 bool CookeCamera::init()
 {
-   errorMsg="Camera Initialization failed when: ";
+    errorMsg = "Camera Initialization failed when: ";
 
-   errorCode=PCO_OpenCamera(&hCamera, 0);
+    errorCode = PCO_OpenCamera(&hCamera, 0);
 
-   if(errorCode!=PCO_NOERROR){
-      char msg[16384];
-      PCO_GetErrorText(errorCode, msg, 16384);
-      cout << msg << endl;
-      errorMsg+="call PCO_OpenCamera";
-      return false;
-   }
+    if (errorCode != PCO_NOERROR){
+        char msg[16384];
+        PCO_GetErrorText(errorCode, msg, 16384);
+        cout << msg << endl;
+        errorMsg += "call PCO_OpenCamera";
+        return false;
+    }
 
-   errorCode = PCO_GetGeneral(hCamera, &strGeneral);// Get infos from camera
-   if (errorCode != PCO_NOERROR)
-   {
-      errorMsg+="PCO_GetGeneral";
-      return false;
-   }
+    errorCode = PCO_GetGeneral(hCamera, &strGeneral);// Get infos from camera
+    if (errorCode != PCO_NOERROR)
+    {
+        errorMsg += "PCO_GetGeneral";
+        return false;
+    }
 
-   errorCode = PCO_GetCameraType(hCamera, &strCamType);
-   if (errorCode != PCO_NOERROR)
-   {
-      errorMsg+="PCO_GetCameraType";
-      return false;
-   }
+    errorCode = PCO_GetCameraType(hCamera, &strCamType);
+    if (errorCode != PCO_NOERROR)
+    {
+        errorMsg += "PCO_GetCameraType";
+        return false;
+    }
 
-   errorCode = PCO_GetSensorStruct(hCamera, &strSensor);
-   if (errorCode != PCO_NOERROR)
-   {
-      errorMsg+="PCO_GetSensorStruct";
-      return false;
-   }
+    errorCode = PCO_GetSensorStruct(hCamera, &strSensor);
+    if (errorCode != PCO_NOERROR)
+    {
+        errorMsg += "PCO_GetSensorStruct";
+        return false;
+    }
 
-   errorCode = PCO_GetCameraDescription(hCamera, &strDescription);
-   if (errorCode != PCO_NOERROR)
-   {
-      errorMsg+="PCO_GetCameraDescription";
-      return false;
-   }
+    errorCode = PCO_GetCameraDescription(hCamera, &strDescription);
+    if (errorCode != PCO_NOERROR)
+    {
+        errorMsg += "PCO_GetCameraDescription";
+        return false;
+    }
 
-   errorCode = PCO_GetTimingStruct(hCamera, &strTiming);
-   if (errorCode != PCO_NOERROR)
-   {
-      errorMsg+="PCO_GetTimingStruct";
-      return false;
-   }
+    errorCode = PCO_GetTimingStruct(hCamera, &strTiming);
+    if (errorCode != PCO_NOERROR)
+    {
+        errorMsg += "PCO_GetTimingStruct";
+        return false;
+    }
 
-   errorCode = PCO_GetRecordingStruct(hCamera, &strRecording);
-   if (errorCode != PCO_NOERROR)
-   {
-      errorMsg+="PCO_GetRecordingStruct";
-      return false;
-   }
+    errorCode = PCO_GetRecordingStruct(hCamera, &strRecording);
+    if (errorCode != PCO_NOERROR)
+    {
+        errorMsg += "PCO_GetRecordingStruct";
+        return false;
+    }
 
-   //sensor width/height
-   this->chipHeight=strSensor.strDescription.wMaxVertResStdDESC;
-   this->chipWidth=strSensor.strDescription.wMaxHorzResStdDESC;
+    //sensor width/height
+    this->chipHeight = strSensor.strDescription.wMaxVertResStdDESC;
+    this->chipWidth = strSensor.strDescription.wMaxHorzResStdDESC;
 
-   //model
-   this->model=strCamType.strHardwareVersion.Board[0].szName;
+    //model
+    this->model = strCamType.strHardwareVersion.Board[0].szName;
 
-   int nPixels=chipWidth*chipHeight;
-   
-   //pLiveImage=new PixelValue[nPixels];
-   pLiveImage=(PixelValue*)_aligned_malloc(sizeof(PixelValue)*nPixels, 4*1024);
+    int nPixels = chipWidth*chipHeight;
 
-   //pBlackImage=new PixelValue[nPixels];
-   pBlackImage=(PixelValue*)_aligned_malloc(sizeof(PixelValue)*nPixels, 4*1024);
-   memset(pBlackImage, 0, nPixels*sizeof(PixelValue)); //all zeros
+    //pLiveImage=new PixelValue[nPixels];
+    pLiveImage = (PixelValue*)_aligned_malloc(sizeof(PixelValue)*nPixels, 4 * 1024);
+
+    //pBlackImage=new PixelValue[nPixels];
+    pBlackImage = (PixelValue*)_aligned_malloc(sizeof(PixelValue)*nPixels, 4 * 1024);
+    memset(pBlackImage, 0, nPixels*sizeof(PixelValue)); //all zeros
 
 
-   return true;
+    return true;
 }//init(),
 
 bool CookeCamera::fini()
 {
-   PCO_CloseCamera(hCamera);
+    PCO_CloseCamera(hCamera);
 
-   return true;
+    return true;
 }//fini(),
 
-
-
 bool CookeCamera::setAcqParams(int emGain,
-                     int preAmpGainIdx,
-                     int horShiftSpeedIdx,
-                     int verShiftSpeedIdx,
-                     int verClockVolAmp,
-                     bool isBaselineClamp
-                     ) 
+    int preAmpGainIdx,
+    int horShiftSpeedIdx,
+    int verShiftSpeedIdx,
+    int verClockVolAmp,
+    bool isBaselineClamp
+    )
 {
-   //NOTE: the camera should be in idle state
-   errorCode = PCO_SetRecordingState(hCamera, 0);// stop recording
-   if (errorCode & PCO_WARNING_FIRMWARE_FUNC_ALREADY_OFF) errorCode = PCO_NOERROR;
+    // failure of an safe_pco() call will raise an exception, so we can try/catch for cleanliness
+    try {
+        // get camera description
+        PCO_Description pcDesc;
+        pcDesc.wSize = (ushort)sizeof(PCO_Description);
+        safe_pco(PCO_GetCameraDescription(hCamera, &pcDesc), "failed to get camera description");
+        // for now, we'll just always use the fastest available pixel rate
+        DWORD maxPixRate = 0;
+        for (int i = 0; i < sizeof(pcDesc.dwPixelRateDESC) / sizeof(DWORD); i++) {
+            if (pcDesc.dwPixelRateDESC[i] > maxPixRate) maxPixRate = pcDesc.dwPixelRateDESC[i];
+        }
+        if (maxPixRate) {
+            qDebug() << QString("setting pixel rate to: %1 Hz").arg(maxPixRate);
+        }
+        else {
+            errorMsg = "could not find non-zero pixel rate";
+            throw COOKE_EXCEPTION;
+        }
 
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to stop camera";
-      return false;
-   }
+        // stop recording - necessary for changing camera settings
+        safe_pco(PCO_SetRecordingState(hCamera, 0), "failed to stop camera");
+        // start with default settings
+        safe_pco(PCO_ResetSettingsToDefault(hCamera), "failed to reset camera settings");
+        // skip SetBinning... not applicable to cooke cameras
+        // set roi
+        safe_pco(PCO_SetROI(hCamera, hstart, vstart, hend, vend), "failed to set ROI");
+        // frame trigger mode (0 for auto)
+        safe_pco(PCO_SetTriggerMode(hCamera, 0), "failed to set frame trigger mode");
+        // storage mode (1 for FIFO)
+        safe_pco(PCO_SetStorageMode(hCamera, 1), "failed to set storage mode");
+        // acquisition mode (0 for auto)
+        safe_pco(PCO_SetAcquireMode(hCamera, 0), "failed to set acquisition mode");
+        // timestamp mode (1: bcd; 2: bcd+ascii)
+        safe_pco(PCO_SetTimestampMode(hCamera, 1), "failed to set timestamp mode");
+        // bit alignment (0: MSB aligned; 1: LSB aligned)
+        safe_pco(PCO_SetBitAlignment(hCamera, 1), "failed to set bit alignment mode");
+        // pixel rate (for now just use the fastest rate listed in the cam description)
+        DWORD dwPixelRate = maxPixRate;
+        safe_pco(PCO_SetPixelRate(hCamera, dwPixelRate), "failed to call PCO_SetPixelRate()");
+        // arm the camera to apply the image size settings... needed for the config calls that follow
+        safe_pco(PCO_ArmCamera(hCamera), "failed to arm the camera");
+        // get set roi size, make sure it matches what we meant to set
+        WORD wXResAct = -1, wYResAct = -1, wXResMax, wYResMax;
+        safe_pco(PCO_GetSizes(hCamera, &wXResAct, &wYResAct, &wXResMax, &wYResMax), "failed to get roi size");
+        assert(wXResAct == hend - hstart + 1 && wYResAct == vend - vstart + 1);
+        // interface output format (interface 2 for DVI)
+        // note that the wFormat passed here is copied from the code before I arrived... seems weird.
+        safe_pco(PCO_SetInterfaceOutputFormat(hCamera, 2, SCCMOS_FORMAT_TOP_CENTER_BOTTOM_CENTER, 0, 0),
+            "failed to call PCO_SetInterfaceOutputFormat()");
 
-   // /*
-   errorCode=PCO_ResetSettingsToDefault(hCamera);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to reset camera settings";
-      return false;
-   }
-   // */
+        // auto-set the transfer params
+        PCO_SetTransferParametersAuto(hCamera, NULL, 0);
+        // TODO: explicitly set the transfer params here
+        // TODO: explicitly set the active lookup table here
+        // Do we really care to do the above, or are we okay as
+        //   long as ROI and pix rate are what we want?
 
-   //for this cooke camera no binning is possible
-   //so skip SetBinning
+        // arm the camera to validate the settings
+        safe_pco(PCO_ArmCamera(hCamera), "failed to arm the camera");
+        // set the image buffer parameters
+        safe_pco(PCO_CamLinkSetImageParameters(hCamera, wXResAct, wYResAct),
+            "failed to call PCO_CamLinkSetImageParameters()");
+    }
+    catch (int e) {
+        if (e != COOKE_EXCEPTION) throw;
+        if (errorCode == PCO_NOERROR) errorCode = -1;
+        return false;
+    }
 
-   //set roi
-   errorCode = PCO_SetROI(hCamera, hstart, vstart, hend, vend);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to set ROI";
-      return false;
-   }
+    /*
+    So if you find yourself having problems with PCO_CamLinkSetImageParameters(), it
+    might be because of a mismatch between your camera settings (specifically the pixel
+    rate and ROI dimensions, see doco FMI), the image parameters set in
+    PCO_SetTransferParameter(), and the active lookup table set in PCO_SetActiveLookupTable().
+    One approach to debugging is to comment out the explicit transfer params and lookup calls
+    and uncomment PCO_SetTransferParametersAuto, see what settings were applied, then plug
+    those value back into the explicit methods (if they suit your needs). We don't just
+    leave auto on because "auto" isn't necessarily garunteed to do the same thing.
 
-   //frame trigger mode
-   errorCode = PCO_SetTriggerMode(hCamera, 0);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to set frame trigger mode";
-      return false;
-   }
+    For reference, here are the values that auto-set chose last time we checked:
+    clparams:
+    baudrate: 38400
+    ClockFrequency: 85000000
+    CCline: 0
+    DataFormat: 261
+    Transmit: 1
 
-   errorCode=PCO_SetStorageMode(hCamera, 1); //1: fifo mode
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to set storage mode";
-      return false;
-   }
+    Lookuptable: 0 (disabled)
+    Lookuptable params: 0 (disabled)
+    */
 
-   errorCode=PCO_SetAcquireMode(hCamera, 0); //0: auto
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to set acquisition mode";
-      return false;
-   }
+    //clparams.DataFormat=PCO_CL_DATAFORMAT_5x12L | wFormat; // 12L requires lookup table 0x1612
+    ////clparams.ClockFrequency = 85000000; // see SC2_SDKAddendum.h for valid values - NOT same as pixel freq.
+    ////clparams.Transmit = 0; // single image transmission mode
+    //errorCode=PCO_SetTransferParameter(hCamera, &clparams,sizeof(PCO_SC2_CL_TRANSFER_PARAM)); 
+    //if(errorCode!=PCO_NOERROR) {
+    //   errorMsg="failed to call PCO_SetTransferParameter()";
+    //   return false;
+    //}
 
-   errorCode=PCO_SetTimestampMode(hCamera, 1); //1: bcd; 2: bcd+ascii
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to set timestamp mode";
-      return false;
-   }
+    // set the active lookup table 
+    //WORD wParameter=0;
+    //WORD wIdentifier=0x1612; // 0x1612 for high speed, with x resolution > 1920
+    //errorCode =PCO_SetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
+    //if(errorCode!=PCO_NOERROR) {
+    //   errorMsg="failed to call PCO_SetActiveLookupTable()";
+    //   return false;
+    //}
 
-   errorCode=PCO_SetBitAlignment(hCamera, 1);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to set bit alignment mode";
-      return false;
-   }
+    ////////////////////////////////////////
+    // EVERYTHING BELOW THIS POINT IS FOR DEBUGGING ONLY... COMMENT OUT FOR RELEASE BUILD.
+    ////////////////////////////////////////
+    //// take a look at the transfer parameters that got set...
+    //PCO_SC2_CL_TRANSFER_PARAM clparams;
+    //PCO_GetTransferParameter(hCamera, &clparams, sizeof(PCO_SC2_CL_TRANSFER_PARAM))
+    //// take a look at the lookup table that got activated
+    //WORD wIdentifier=-1, wParameter=-1;
+    //PCO_GetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
+    //// take a look at the available lookup tables
+    //WORD wFormat2;
+    //errorCode = PCO_GetDoubleImageMode(hCamera, &wFormat2);
+    //char Description[256]; BYTE bInputWidth, bOutputWidth;
+    //WORD wNumberOfLuts, wDescLen;
+    //PCO_GetLookupTableInfo(hCamera, 0, &wNumberOfLuts, 0, 0, 0, 0, 0, 0);
+    //for (int i = 0; i < (int)wNumberOfLuts; ++i){
+    //    PCO_GetLookupTableInfo(hCamera, i, &wNumberOfLuts, Description,
+    //        256, &wIdentifier, &bInputWidth, &bOutputWidth, &wFormat2);
+    //    qDebug() << QString("\nlut: %1\n\tdesc: %2\n\tid: %3").arg(i).arg(Description).arg(wIdentifier);
+    //}
 
-   DWORD dwPixelRate=286000000;
-   errorCode=PCO_SetPixelRate(hCamera, dwPixelRate); 
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_SetPixelRate()";
-      return false;
-   }
-
-   errorCode=PCO_GetPixelRate(hCamera, &dwPixelRate);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetPixelRate()";
-      return false;
-   }
-
-   errorCode = PCO_ArmCamera(hCamera);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to arm the camera";
-      return false;
-   }
-
-   PCO_SC2_CL_TRANSFER_PARAM clparams;
-
-   errorCode = PCO_GetTransferParameter(hCamera, &clparams, sizeof(PCO_SC2_CL_TRANSFER_PARAM));
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetTransferParameter()";
-      return false;
-   }
-
-
-   //get size
-   WORD wXResAct=-1; // Actual X Resolution
-   WORD wYResAct = -1; // Actual Y Resolution
-   WORD wXResMax; // Maximum X Resolution
-   WORD wYResMax; // Maximum Y 
-
-   errorCode = PCO_GetSizes(hCamera, &wXResAct, &wYResAct, &wXResMax, &wYResMax);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to get roi size";
-      return false;
-   }
-   assert(wXResAct==hend-hstart+1 && wYResAct==vend-vstart+1);
-
-   //
-   errorCode=PCO_GetPixelRate(hCamera, &dwPixelRate);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetPixelRate()";
-      return false;
-   }
-
-
-   WORD wDestInterface=2,wFormat, wRes1, wRes2;
-   errorCode=PCO_GetInterfaceOutputFormat(hCamera, &wDestInterface, &wFormat, &wRes1, &wRes2);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetInterfaceOutputFormat()";
-      return false;
-   }
-
-   wRes1=wRes2=0;
-   wFormat=SCCMOS_FORMAT_TOP_CENTER_BOTTOM_CENTER;
-   errorCode=PCO_SetInterfaceOutputFormat(hCamera, wDestInterface, wFormat, wRes1, wRes2);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_SetInterfaceOutputFormat()";
-      return false;
-   }
-
-   clparams.DataFormat=PCO_CL_DATAFORMAT_5x12L | wFormat;
-   errorCode=PCO_SetTransferParameter(hCamera, &clparams,sizeof(PCO_SC2_CL_TRANSFER_PARAM)); 
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_SetTransferParameter()";
-      return false;
-   }
-
-   errorCode = PCO_GetTransferParameter(hCamera, &clparams, sizeof(PCO_SC2_CL_TRANSFER_PARAM));
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetTransferParameter()";
-      return false;
-   }
-
-   //PCO_SetInterfaceOutputFormat, p6, 20
-   WORD wFormat2;
-   errorCode=PCO_GetDoubleImageMode(hCamera, &wFormat2);
-
-   char Description[256]; BYTE bInputWidth,bOutputWidth; 
-   WORD wNumberOfLuts, wDescLen, wIdentifier;
-   errorCode=PCO_GetLookupTableInfo(hCamera, 0, &wNumberOfLuts, 0, 0, 0, 0, 0, 0);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to get #LUTs";
-      return false;
-   }
-   int nLuts=wNumberOfLuts;
-   for(int i=0; i<nLuts; ++i){
-      errorCode=PCO_GetLookupTableInfo(hCamera, i, &wNumberOfLuts, Description, 256, &wIdentifier, &bInputWidth, &bOutputWidth, &wFormat2);
-      if(errorCode!=PCO_NOERROR) cout<<"error when get lut "<<i<<"'s info"<<endl;
-      //else cout<<"lut "<<i<<": '"<<Description<<"'"<<
-   }
-
-
-   WORD wParameter=0;
-   wIdentifier=5650; 
-   errorCode =PCO_SetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_SetActiveLookupTable()";
-      return false;
-   }
-
-   errorCode =PCO_GetActiveLookupTable(hCamera, &wIdentifier, &wParameter);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetActiveLookupTable()";
-      return false;
-   }
-
-   //arm the camera to validate the settings
-   //NOTE: you have to arm the camera again in setAcqModeAndTime() due to the trigger setting (i.e. set PCO_SetAcquireMode() again)
-   errorCode = PCO_ArmCamera(hCamera);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to arm the camera";
-      return false;
-   }
-
-   errorCode = PCO_CamLinkSetImageParameters(hCamera, wXResAct, wYResAct);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_CamLinkSetImageParameters()";
-      return false;
-   }
-
-   return true;
+    return true;
 }//setAcqParams(),
 
 double CookeCamera::getCycleTime()
 {
-   DWORD sec, nsec;
-   errorCode=PCO_GetCOCRuntime(hCamera, &sec, &nsec);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to call PCO_GetCOCRuntime()";
-      return -1;
-   }
+    DWORD sec, nsec;
+    errorCode = PCO_GetCOCRuntime(hCamera, &sec, &nsec);
+    if (errorCode != PCO_NOERROR) {
+        errorMsg = "failed to call PCO_GetCOCRuntime()";
+        return -1;
+    }
 
-   return sec+nsec*1e-9;
+    return sec + nsec*1e-9;
 }
 
 
 //params different for live from for save mode
 bool CookeCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
-                          float exposure,
-                          int anFrames,  //used only in kinetic-series mode
-                          TriggerMode triggerMode
-                          )
+    float exposure,
+    int anFrames,  //used only in kinetic-series mode
+    TriggerMode triggerMode
+    )
 {
-   this->genericAcqMode=genericAcqMode;
+    this->genericAcqMode = genericAcqMode;
 
-   this->nFrames=anFrames;
-   this->triggerMode=triggerMode;
+    this->nFrames = anFrames;
+    this->triggerMode = triggerMode;
 
-   errorCode=PCO_NOERROR;
+    errorCode = PCO_NOERROR;
 
-   ///set acqusition trigger mode
-   if(triggerMode==eInternalTrigger){
-      errorCode=PCO_SetAcquireMode(hCamera, 0); //0: auto
-   }
-   else {
-      errorCode=PCO_SetAcquireMode(hCamera, 1); //1: external
+    ///set acqusition trigger mode
+    if (triggerMode == eInternalTrigger){
+        errorCode = PCO_SetAcquireMode(hCamera, 0); //0: auto
+    }
+    else {
+        errorCode = PCO_SetAcquireMode(hCamera, 1); //1: external
 
-   }
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to set acquisition trigger mode";
-      return false;
-   }
+    }
+    if (errorCode != PCO_NOERROR) {
+        errorMsg = "failed to set acquisition trigger mode";
+        return false;
+    }
 
-   ///exposure time
-   errorCode = PCO_SetDelayExposureTime(hCamera, // Timebase: 0-ns; 1-us; 2-ms  
-      (DWORD)(exposure*10000),		// DWORD dwDelay. Make long enough that TTL pulse is recorded (here we use 1%)
-      (DWORD)(exposure*990000),
-      1,		// WORD wTimeBaseDelay,
-      1);	// WORD wTimeBaseExposure
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to set exposure time";
-      return false;
-   }
+    ///exposure time
+    errorCode = PCO_SetDelayExposureTime(hCamera, // Timebase: 0-ns; 1-us; 2-ms  
+        (DWORD)(exposure * 10000),		// DWORD dwDelay. Make long enough that TTL pulse is recorded (here we use 1%)
+        (DWORD)(exposure * 990000),
+        1,		// WORD wTimeBaseDelay,
+        1);	// WORD wTimeBaseExposure
+    if (errorCode != PCO_NOERROR) {
+        errorMsg = "failed to set exposure time";
+        return false;
+    }
 
-   ///arm the camera again
-   errorCode = PCO_ArmCamera(hCamera);
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to arm the camera";
-      return false;
-   }
+    ///arm the camera again
+    errorCode = PCO_ArmCamera(hCamera);
+    if (errorCode != PCO_NOERROR) {
+        errorMsg = "failed to arm the camera";
+        return false;
+    }
 
-   cout<<"frame rate is: "<<1/getCycleTime()<<endl;
+    cout << "frame rate is: " << 1 / getCycleTime() << endl;
 
-   ///take care of image array saving (in mem only)
-   if(genericAcqMode==eAcqAndSave){
-      if(!isSpooling() && !allocImageArray(nFrames,false)){
-         return false;
-      }//if, fail to alloc enough mem
-   }
+    ///take care of image array saving (in mem only)
+    if (genericAcqMode == eAcqAndSave){
+        if (!isSpooling() && !allocImageArray(nFrames, false)){
+            return false;
+        }//if, fail to alloc enough mem
+    }
 
 
-   return true;
+    return true;
 }
-
 
 long CookeCamera::getAcquiredFrameCount()
 {
-   if(!mpLock->tryLock()) return -1;
-   long result=nAcquiredFrames;
-   mpLock->unlock();
-   return result;
+    if (!mpLock->tryLock()) return -1;
+    long result = nAcquiredFrames;
+    mpLock->unlock();
+    return result;
 }
 
 bool CookeCamera::startAcq()
 {
-   CLockGuard tGuard(mpLock);
-   nAcquiredFrames=0; 
+    CLockGuard tGuard(mpLock);
+    nAcquiredFrames = 0;
 
-   //camera's internal frame counter can be reset by ARM which is too costly we maintain our own counter
-   firstFrameCounter=-1;
+    //camera's internal frame counter can be reset by ARM which is too costly we maintain our own counter
+    firstFrameCounter = -1;
 
-   totalGap=0;
+    totalGap = 0;
 
-   ///alloc the ring buffer for data transfer from card to pc
-   for(int i=0; i<nBufs; ++i){
-      mBufIndex[i]= -1;
-      mEvent[i]= NULL;
-      mRingBuf[i] = NULL;
+    ///alloc the ring buffer for data transfer from card to pc
+    for (int i = 0; i < nBufs; ++i){
+        mBufIndex[i] = -1;
+        mEvent[i] = NULL;
+        mRingBuf[i] = NULL;
 
-      errorCode = PCO_AllocateBuffer(hCamera, (SHORT*)&mBufIndex[i], chipWidth * chipHeight * sizeof(DWORD), &mRingBuf[i], &mEvent[i]);
-      if(errorCode!=PCO_NOERROR) {
-         errorMsg="failed to allocate buffer";
-         return false;
-      }
+        errorCode = PCO_AllocateBuffer(hCamera, (SHORT*)&mBufIndex[i],
+            chipWidth * chipHeight * sizeof(DWORD), &mRingBuf[i], &mEvent[i]);
+        if (errorCode != PCO_NOERROR) {
+            errorMsg = "failed to allocate buffer";
+            return false;
+        }
 
-      //in fifo mode, frameIdxInCamRam are 0 for all buffers?
-      int frameIdxInCamRam=0;
-      errorCode = PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i]);// Add buffer to the driver queue
-      if(errorCode!=PCO_NOERROR) {
-         errorMsg="failed to add buffer";
-         return false;
-      }
-   }
+        //in fifo mode, frameIdxInCamRam are 0 for all buffers?
+        int frameIdxInCamRam = 0;
+        errorCode = PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i]);// Add buffer to the driver queue
+        if (errorCode != PCO_NOERROR) {
+            errorMsg = "failed to add buffer";
+            return false;
+        }
+    }
+    Timer_g gt = parentAcqThread->parentImagine->gTimer;
+    cout << "b4 new WorkerThread(): " << gt.read() << endl;
 
-   cout<<"b4 new WorkerThread(): "<<gTimer.read()<<endl;
+    workerThread = new CookeWorkerThread(this);
+    cout << "after new WorkerThread(): " << gt.read() << endl;
+    workerThread->start();
 
-   workerThread=new WorkerThread(this);
-   cout<<"after new WorkerThread(): "<<gTimer.read()<<endl;
-   workerThread->start();
+    cout << "after workerThread->start(): " << gt.read() << endl;
 
-   cout<<"after workerThread->start(): "<<gTimer.read()<<endl;
+    errorCode = PCO_SetRecordingState(hCamera, 1); //1: run
+    if (errorCode != PCO_NOERROR) {
+        errorMsg = "failed to start camera";
+        return false;
+    }
 
-   errorCode = PCO_SetRecordingState(hCamera, 1); //1: run
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to start camera";
-      return false;
-   }
+    cout << "after set rec state to 1/run: " << gt.read() << endl;
 
-   cout<<"after set rec state to 1/run: "<<gTimer.read()<<endl;
-
-   return true;
+    return true;
 }//startAcq(),
-
 
 bool CookeCamera::stopAcq()
 {
-   //not rely on the "wait abandon"!!!
-   workerThread->requestStop();
-   workerThread->wait();
+    //not rely on the "wait abandon"!!!
+    workerThread->requestStop();
+    workerThread->wait();
 
-   errorCode = PCO_SetRecordingState(hCamera, 0);// stop recording
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to stop camera";
-      return false;
-   }
+    errorCode = PCO_SetRecordingState(hCamera, 0);// stop recording
+    if (errorCode != PCO_NOERROR) {
+        errorMsg = "failed to stop camera";
+        return false;
+    }
 
+    Timer_g gt = parentAcqThread->parentImagine->gTimer;
+    cout << "b4 PCO_RemoveBuffer: " << gt.read() << endl;
 
-   cout<<"b4 PCO_RemoveBuffer: "<<gTimer.read()<<endl;
+    //reverse of PCO_AddBuffer()
+    errorCode = PCO_RemoveBuffer(hCamera);   // If there's still a buffer in the driver queue, remove it
+    if (errorCode != PCO_NOERROR) {
+        errorMsg = "failed to stop camera";
+        return false;
+    }
 
-   //reverse of PCO_AddBuffer()
-   errorCode=PCO_RemoveBuffer(hCamera);   // If there's still a buffer in the driver queue, remove it
-   if(errorCode!=PCO_NOERROR) {
-      errorMsg="failed to stop camera";
-      return false;
-   }
+    cout << "after PCO_RemoveBuffer: " << gt.read() << endl;
 
-   cout<<"after PCO_RemoveBuffer: "<<gTimer.read()<<endl;
+    for (int i = 0; i < nBufs; ++i){
+        //reverse of PCO_AllocateBuffer()
+        //ResetEvent(mEvent[0]);
+        //ResetEvent(mEvent[1]);
 
-   for(int i=0; i<nBufs; ++i){
-      //reverse of PCO_AllocateBuffer()
-      //ResetEvent(mEvent[0]);
-      //ResetEvent(mEvent[1]);
+        //TODO: what about the events associated w/ the buffers
+        PCO_FreeBuffer(hCamera, mBufIndex[i]);    // Frees the memory that was allocated for the buffer
+    }
 
-      //TODO: what about the events associated w/ the buffers
-      PCO_FreeBuffer(hCamera, mBufIndex[i]);    // Frees the memory that was allocated for the buffer
-   }
+    delete workerThread;
+    workerThread = nullptr;
 
-   delete workerThread;
-   workerThread=nullptr;
+    cout << "total # of black frames: " << totalGap << endl;
 
-   cout<<"total # of black frames: "<<totalGap<<endl;
-
-   return true;
+    return true;
 }//stopAcq(),
 
 long CookeCamera::extractFrameCounter(PixelValue* rawData)
 {
-   unsigned long result=0;
-   for(int i=0; i<4; ++i){
-      unsigned hex=rawData[i];
-      result=result*100+hex/16*10+hex%16;
-   }
+    unsigned long result = 0;
+    for (int i = 0; i < 4; ++i){
+        unsigned hex = rawData[i];
+        result = result * 100 + hex / 16 * 10 + hex % 16;
+    }
 
-   return result;
+    return result;
 }
 
 bool CookeCamera::getLatestLiveImage(PixelValue * frame)
 {
-   if(!mpLock->tryLock()) return false;
+    if (!mpLock->tryLock()) return false;
 
-   if(nAcquiredFrames<=0)  {
-      mpLock->unlock();  
-      return false;
-   }
+    if (nAcquiredFrames <= 0)  {
+        mpLock->unlock();
+        return false;
+    }
 
-   int nPixels=getImageHeight()*getImageWidth();
-   memcpy_g(frame, pLiveImage, nPixels*sizeof(PixelValue));
+    int nPixels = getImageHeight()*getImageWidth();
+    memcpy_g(frame, pLiveImage, nPixels*sizeof(PixelValue));
 
-   mpLock->unlock();
-   return true;
+    mpLock->unlock();
+    return true;
 }
-
 
 //return false if, say, can't open the spooling file to save
 //NOTE: have to call this b4 setAcqModeAndTime() to avoid out-of-mem
 bool CookeCamera::setSpooling(string filename)
 {
-   if(ofsSpooling){
-      delete ofsSpooling; //the file is closed too
-      ofsSpooling=nullptr;
-   }
+    if (ofsSpooling){
+        delete ofsSpooling; //the file is closed too
+        ofsSpooling = nullptr;
+    }
 
-   Camera::setSpooling(filename);
+    Camera::setSpooling(filename);
 
-   if(isSpooling()){
-      int bufsize_in_4kb=5529600*2*8/(4*1024); //8 frames, about 80M in bytes
+    if (isSpooling()){
+        int bufsize_in_4kb = 5529600 * 2 * 8 / (4 * 1024); //8 frames, about 80M in bytes
 #ifdef _WIN64
-      bufsize_in_4kb*=1;
+        bufsize_in_4kb *= 1;
 #endif
-      ofsSpooling=new FastOfstream(filename.c_str(), bufsize_in_4kb);
-      return *ofsSpooling;
-   }
-   else return true;
+        ofsSpooling = new FastOfstream(filename.c_str(), bufsize_in_4kb);
+        return *ofsSpooling;
+    }
+    else return true;
 
+}
+
+void CookeCamera::safe_pco(int errCode, string errMsg)
+{
+    // set errorMsg and throw an exception if you get a not-ok error code
+    if (errCode != PCO_NOERROR && (errCode & PCO_ERROR_CODE_MASK) != 0) {
+        //if (errCode != PCO_NOERROR) {
+
+        // it might be nice to use this to give slightly more informative debug messages
+        char msg[16384];
+        PCO_GetErrorText(errCode, msg, 16384);
+        cout << msg << endl;
+        errorCode = errCode;
+        errorMsg = errMsg;
+        throw COOKE_EXCEPTION; // could throw an exception class w/informative message... but meh.
+    }
 }

@@ -26,10 +26,10 @@ using std::string;
 
 
 template<typename T> string toString(T aValue) { //don't define as toString(T& rValue) b/c 
-   ostringstream result;                        //I want toString(1) is legal
-   result<<aValue;
+    ostringstream result;                        //I want toString(1) is legal
+    result << aValue;
 
-   return result.str();
+    return result.str();
 }
 
 

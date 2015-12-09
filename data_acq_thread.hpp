@@ -22,30 +22,51 @@
 
 #include "andor_g.hpp"
 #include "daq.hpp"
-
-extern QString positionerType;
+#include "camera_g.hpp"
+#include "positioner.hpp"
 
 class QImage;
 class NiDaqAi;
+class Imagine;
 
 class DataAcqThread : public QThread
 {
     Q_OBJECT
 
 public:
-    DataAcqThread(QObject *parent = 0);
+    DataAcqThread(Camera *cam = nullptr, Positioner *pos = nullptr, QObject *parent = 0);
     ~DataAcqThread();
 
     void startAcq();
     void stopAcq(); //note: this func call is non-blocking
 
-    bool preparePositioner(bool isForward=true);
+    bool preparePositioner(bool isForward = true);
+
+    // setter for the camera and positioner... use this instead of setting the var directly
+    // yeah, I could make the var private... so can you!
+    void setCamera(Camera *cam);
+    void setPositioner(Positioner *pos);
+
+    // de-globalized vars in need of a proper home...
+    int curStimIndex = 0;
+    vector<pair<int, int> > stimuli; //first: stim (valve), second: time (stack#)
+    volatile bool isUpdatingImage;
+
+    // this thread's camera
+    Camera* pCamera = nullptr;
+
+    // this thread's positioner, if not null
+    // COMPUTER, ENHANCE: should probably move ownership up a couple levels at some point
+    Positioner* pPositioner = nullptr;
+
+    // the Imagine instance that owns this thread
+    Imagine *parentImagine = nullptr;
 
     //intended camera params:
-    int nStacks, 
-       nFramesPerStack;
+    int nStacks,
+        nFramesPerStack;
     double exposureTime, //in sec
-       idleTimeBwtnStacks; //in sec
+        idleTimeBwtnStacks; //in sec
     double piezoTravelBackTime; //in sec
     int gain;
     int preAmpGainIdx;
@@ -79,7 +100,7 @@ public:
     QString comment;
 
     bool isLive;
-    int idxCurStack; 
+    int idxCurStack;
 
 signals:
     void imageDisplayReady(const QImage &image, long idx);

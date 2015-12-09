@@ -15,26 +15,25 @@
 #include <qglobal.h>
 #include <qcolor.h>
 
-#include "qwt_plot_item.h" 
+#include <qwt_plot_histogram.h>
 
 class QwtIntervalData;
 class QString;
 
-class HistogramItem: public QwtPlotItem
+class HistogramItem : public QwtPlotHistogram
 {
 public:
     explicit HistogramItem(const QString &title = QString::null);
-    explicit HistogramItem(const QwtText &title);
+//    explicit HistogramItem(const QwtText &title);
     virtual ~HistogramItem();
 
-    void setData(const QwtIntervalData &data);
-    const QwtIntervalData &data() const;
+    //void setData(const QwtIntervalData &data);
 
     void setColor(const QColor &);
     QColor color() const;
 
-    virtual QwtDoubleRect boundingRect() const;
-
+//    virtual QwtDoubleRect boundingRect() const;
+	/*
     virtual int rtti() const;
 
     virtual void draw(QPainter *, const QwtScaleMap &xMap, 
@@ -61,6 +60,7 @@ private:
 
     class PrivateData;
     PrivateData *d_data;
+	*/
 };
 
 #endif

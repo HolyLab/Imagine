@@ -3,11 +3,12 @@
 #include <qstring.h>
 #include <qpainter.h>
 #include <qwt_plot.h>
-#include <qwt_interval_data.h>
+#include <qwt_plot_histogram.h>
 #include <qwt_painter.h>
 #include <qwt_scale_map.h>
 #include "histogram_item.h"
 
+/*
 class HistogramItem::PrivateData
 {
 public:
@@ -22,18 +23,19 @@ HistogramItem::HistogramItem(const QwtText &title):
 {
     init();
 }
+*/
 
 HistogramItem::HistogramItem(const QString &title):
-    QwtPlotItem(QwtText(title))
+    QwtPlotHistogram(title)
 {
-    init();
+	setStyle(QwtPlotHistogram::Columns);
 }
 
 HistogramItem::~HistogramItem()
 {
-    delete d_data;
+//    delete d_data;
 }
-
+/*
 void HistogramItem::init()
 {
     d_data = new PrivateData();
@@ -70,16 +72,19 @@ const QwtIntervalData &HistogramItem::data() const
 {
     return d_data->data;
 }
-
+*/
 void HistogramItem::setColor(const QColor &color)
 {
+	/*
     if ( d_data->color != color )
     {
         d_data->color = color;
         itemChanged();
     }
+	*/
+	setBrush(QBrush(color));
 }
-
+/*
 QColor HistogramItem::color() const
 {
     return d_data->color;
@@ -283,3 +288,4 @@ void HistogramItem::drawBar(QPainter *painter,
 
    painter->restore();
 }
+*/

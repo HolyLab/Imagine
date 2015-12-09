@@ -28,99 +28,98 @@ using namespace std;
 
 extern QString daq;
 
-
 AiThread::AiThread(QObject *parent, QString ainame, int readBufSize, int driverBufSize, int scanrate)
-: QThread(parent)
+    : QThread(parent)
 {
-   this->readBufSize=readBufSize; 
-   this->driverBufSize=driverBufSize; 
+    this->readBufSize = readBufSize;
+    this->driverBufSize = driverBufSize;
 
-   //TODO: error checking for ai
-   vector<int> chanList; 
-   //chanList.push_back(0);
-   for(int i=0; i<4; ++i){
-      chanList.push_back(i);
-   }
-   this->chanList=chanList;
+    //TODO: error checking for ai
+    vector<int> chanList;
+    //chanList.push_back(0);
+    for (int i = 0; i < 4; ++i){
+        chanList.push_back(i);
+    }
+    this->chanList = chanList;
 
-   ofs=nullptr;
+    ofs = nullptr;
 
-   ai=nullptr;
+    ai = nullptr;
 
-   if(daq=="ni") ai=new NiDaqAi(ainame, chanList);
-   else if(daq=="dummy") ai=new DummyDaqAi(chanList);
-   else {
-      throw Daq::EInitDevice("exception: the AI device is unsupported");
-   }
+    if (daq == "ni") ai = new NiDaqAi(ainame, chanList);
+    else if (daq == "dummy") ai = new DummyDaqAi(chanList);
+    else {
+        throw Daq::EInitDevice("exception: the AI device is unsupported");
+    }
 
 
-   ai->cfgTiming(scanrate, driverBufSize);
+    ai->cfgTiming(scanrate, driverBufSize);
 
-   //reserve space:
-   //int tnSamplesToReserve=scanrate*chanList.size()*100; //100sec data
-   //data.reserve(tnSamplesToReserve);
+    //reserve space:
+    //int tnSamplesToReserve=scanrate*chanList.size()*100; //100sec data
+    //data.reserve(tnSamplesToReserve);
 }
 
 AiThread::~AiThread()
 {
-   if(ai)delete ai;
+    if (ai)delete ai;
 }
 
 //return false if ai's start() failed.
 bool AiThread::startAcq()
 {
-   stopRequested=false;
-   ai->start();   //TODO: check return value
-   this->start();
+    stopRequested = false;
+    ai->start();   //TODO: check return value
+    this->start();
 
-   return true;
+    return true;
 }
 
 void AiThread::stopAcq()
 {
-   stopRequested=true;
-   wait(); //block calling thread until AiThread associated thread is done.
+    stopRequested = true;
+    wait(); //block calling thread until AiThread associated thread is done.
 }
 
 void AiThread::run()
 {
-   uInt16* readBuf=new uInt16[readBufSize*chanList.size()];
-   //ScopedPtr_g<uInt16>(readBuf, true); //note: unamed temp var will be free at cur line
-   unique_ptr<uInt16[]> ttScopedPtr(readBuf);
+    uInt16* readBuf = new uInt16[readBufSize*chanList.size()];
+    //ScopedPtr_g<uInt16>(readBuf, true); //note: unamed temp var will be free at cur line
+    unique_ptr<uInt16[]> ttScopedPtr(readBuf);
 
-   while(!stopRequested){
-      ai->read(readBufSize, readBuf);
-      {//local scope to make auto-unlock work
-         unique_ptr<QMutex, void(*)(QMutex*)> locker(&mutex, [](QMutex* m){m->unlock();});
-         mutex.lock();
+    while (!stopRequested){
+        ai->read(readBufSize, readBuf);
+        {//local scope to make auto-unlock work
+            unique_ptr<QMutex, void(*)(QMutex*)> locker(&mutex, [](QMutex* m){m->unlock(); });
+            mutex.lock();
 
-         for(int i=0; i<readBufSize*chanList.size(); ++i){
-            data.push_back(readBuf[i]);
-         }//for,
-	 if(ofs) mSave(*ofs);
-      }//local scope to make auto-unlock work
-   }//while, user not requested stop
+            for (int i = 0; i < readBufSize*chanList.size(); ++i){
+                data.push_back(readBuf[i]);
+            }//for,
+            if (ofs) mSave(*ofs);
+        }//local scope to make auto-unlock work
+    }//while, user not requested stop
 }//run()
 
 //NOTE: lockless
 bool AiThread::mSave(ofstream& ofsAi)
 {
-   if(data.size()==0) return true;
+    if (data.size() == 0) return true;
 
-   bool result=ofsAi.write((const char*)&data[0], //note: take advantage that items in a vector are stored contiguously
-      sizeof(uInt16)*data.size());
-   data.clear();
-   data.shrink_to_fit();
+    ofsAi.write((const char*)&data[0],
+        sizeof(uInt16)*data.size());
+    data.clear();
+    data.shrink_to_fit();
 
-   return result;	
+    return ofsAi.good();
 }
 
 //same as mSave() but w/ lock
 bool AiThread::save(ofstream& ofsAi)
 {
-   //QMutexLocker locker(&mutex);
-   unique_ptr<QMutex, std::function<void(QMutex*)>> locker(&mutex, [](QMutex* m){m->unlock();});
-   mutex.lock();
-   
-   return mSave(ofsAi);
+    //QMutexLocker locker(&mutex);
+    unique_ptr<QMutex, std::function<void(QMutex*)>> locker(&mutex, [](QMutex* m){m->unlock(); });
+    mutex.lock();
+
+    return mSave(ofsAi);
 }

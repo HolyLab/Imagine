@@ -19,6 +19,8 @@
 #include <QDialog>
 #include "ui_temperaturedialog.h"
 
+class Imagine;
+
 class TemperatureDialog : public QDialog
 {
     Q_OBJECT
@@ -27,15 +29,15 @@ public:
     TemperatureDialog(QWidget *parent = 0);
     ~TemperatureDialog();
 
-
+    Imagine *imagineParent;
     Ui::TemperatureDialogClass ui;
-public slots:
+    public slots:
     int updateTemperature();
 private:
 
-private slots:
+    private slots :
         void on_btnSet_clicked();
-        void on_radioButtonOn_toggled(bool);
+    void on_radioButtonOn_toggled(bool);
 
 };
 

@@ -249,12 +249,13 @@ public:
       if(isError()){
          throw EInitDevice("exception when call DAQmxGetAIRawSampSize()");
       }
-      //TODO: above func set sampleSize to 16, which is incorrect. 
-      //      should be 12. a Temp fix:
-      sampleSize=12;
+	  //TODO: above func set sampleSize to 16, which is incorrect. 
+	  //      should be 12. a Temp fix: (or not?)
+	  //sampleSize=12;
 
-      maxDigitalValue=2047; //TODO: pow(2,sampleSize)-1;
-      minDigitalValue=-2048;
+	  maxDigitalValue = pow(2.0, int(sampleSize) - 1) - 1;
+	  minDigitalValue = -pow(2.0, int(sampleSize) - 1);
+
       maxPhyValue=10;
       minPhyValue=-10;
    }//ctor, NiDaqAi
