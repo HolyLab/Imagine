@@ -20,7 +20,7 @@
 #include <QThread>
 #include <QWaitCondition>
 
-#include "andor_g.hpp"
+//#include "andor_g.hpp"
 #include "daq.hpp"
 #include "camera_g.hpp"
 #include "positioner.hpp"

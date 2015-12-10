@@ -29,13 +29,13 @@ using namespace std;
 #include "imagine.h"
 #include "ImgApplication.h"
 
-#include "andor_g.hpp"
-#include "avt_g.hpp"
+//#include "andor_g.hpp"
+//#include "avt_g.hpp"
 #include "cooke.hpp"
 #include "pco_errt.h"
 
 #include "actuators/voltage/volpiezo.hpp"
-#include "Piezo_Controller.hpp"
+//#include "Piezo_Controller.hpp"
 #include "Actuator_Controller.hpp"
 #include "actuators/dummy/dummypiezo.hpp"
 #include "ni_daq_g.hpp"
@@ -164,6 +164,7 @@ int main(int argc, char *argv[])
         aoname = se->globalObject().property("aoname").toString();
         ainame = se->globalObject().property("ainame").toString();
     }
+
     cout << "using " << cameraVendor.toStdString() << " camera, "
         << positionerType.toStdString() << " positioner, "
         << daq.toStdString() << " daq." << endl;
@@ -204,11 +205,11 @@ int main(int argc, char *argv[])
     splash->showMessage(QString("Initialize the %1 actuator ...").arg(positionerType), align, col);
     Positioner *pos = nullptr;
     if (positionerType == "volpiezo") pos = new VolPiezo(ainame, aoname);
-    else if (positionerType == "pi") pos = new Piezo_Controller;
-#ifndef _WIN64
-    else if (positionerType == "thor") pos = new Actuator_Controller;
-#endif
-    else if (positionerType == "dummy") pos = new DummyPiezo;
+//    else if (positionerType == "pi") pos = new Piezo_Controller;
+//#ifndef _WIN64
+//    else if (positionerType == "thor") pos = new Actuator_Controller;
+//#endif
+//    else if (positionerType == "dummy") pos = new DummyPiezo;
     else {
         QMessageBox::critical(0, "Imagine", "Unsupported positioner."
             , QMessageBox::Ok, QMessageBox::NoButton);
@@ -242,9 +243,10 @@ int main(int argc, char *argv[])
     // pointer will be deleted in clean-up of its owning data_acq_thread.
     splash->showMessage(QString("Initializing (%1) camera 1 ...").arg(cameraVendor), align, col);
     Camera *cam1;
-    if (cameraVendor == "avt") cam1 = new AvtCamera;
-    else if (cameraVendor == "andor") cam1 = new AndorCamera;
-    else if (cameraVendor == "cooke") cam1 = new CookeCamera;
+//    if (cameraVendor == "avt") cam1 = new AvtCamera;
+//    else if (cameraVendor == "andor") cam1 = new AndorCamera;
+//    else if (cameraVendor == "cooke") cam1 = new CookeCamera;
+	if (cameraVendor == "cooke") cam1 = new CookeCamera;
     else {
         QMessageBox::critical(0, "Imagine", "Unsupported camera.", QMessageBox::Ok, QMessageBox::NoButton);
         return 1;
@@ -262,9 +264,10 @@ int main(int argc, char *argv[])
         // sorry for the copy pasta. perhaps put this in a function later
         splash->showMessage(QString("Initializing (%1) camera 2 ...").arg(cameraVendor), align, col);
         
-        if (cameraVendor == "avt") cam2 = new AvtCamera;
-        else if (cameraVendor == "andor") cam2 = new AndorCamera;
-        else if (cameraVendor == "cooke") cam2 = new CookeCamera;
+//        if (cameraVendor == "avt") cam2 = new AvtCamera;
+//        else if (cameraVendor == "andor") cam2 = new AndorCamera;
+//        else if (cameraVendor == "cooke") cam2 = new CookeCamera;
+		if (cameraVendor == "cooke") cam2 = new CookeCamera;
         else {
             QMessageBox::critical(0, "Imagine", "Unsupported camera.", QMessageBox::Ok, QMessageBox::NoButton);
             return 1;

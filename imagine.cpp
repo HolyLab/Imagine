@@ -49,16 +49,16 @@
 
 using namespace std;
 
-#include "andor_g.hpp"
+//#include "andor_g.hpp"
 #include "ni_daq_g.hpp"
-#include "temperaturedialog.h"
-#include "fanctrldialog.h"
+//#include "temperaturedialog.h"
+//#include "fanctrldialog.h" //only for Andor camera
 #include "positioner.hpp"
 #include "timer_g.hpp"
 #include "spoolthread.h"
 
-TemperatureDialog * temperatureDialog = NULL;
-FanCtrlDialog* fanCtrlDialog = NULL;
+//TemperatureDialog * temperatureDialog = NULL;
+//FanCtrlDialog* fanCtrlDialog = NULL;
 ImagineStatus curStatus;
 ImagineAction curAction;
 
@@ -193,7 +193,7 @@ Imagine::Imagine(Camera *cam, Positioner *pos, QWidget *parent, Qt::WindowFlags 
         ui.spinBoxGain->setMaximum(gainRange.second);
     }
 
-    if (isAndor){
+/*    if (isAndor){
         //fill in horizontal shift speed (i.e. read out rate):
         vector<float> horSpeeds = ((AndorCamera*)dataAcqThread.pCamera)->getHorShiftSpeeds();
         for (int i = 0; i < horSpeeds.size(); ++i){
@@ -239,13 +239,14 @@ Imagine::Imagine(Camera *cam, Positioner *pos, QWidget *parent, Qt::WindowFlags 
         ui.comboBoxVertClockVolAmp->setCurrentIndex(0);
 
     }//if, is andor camera
-    else{
+*/
+//    else{
         ui.comboBoxHorReadoutRate->setEnabled(false);
         ui.comboBoxPreAmpGains->setEnabled(false);
         ui.comboBoxVertShiftSpeed->setEnabled(false);
         ui.comboBoxVertClockVolAmp->setEnabled(false);
         ui.cbBaseLineClamp->setEnabled(false);
-    }
+//    }
 
     ui.spinBoxHend->setValue(camera.getChipWidth());
     ui.spinBoxVend->setValue(camera.getChipHeight());
@@ -1053,7 +1054,7 @@ void Imagine::on_actionCloseShutter_triggered()
    ui.actionCloseShutter->setEnabled(true);
 }
 
-void Imagine::on_actionTemperature_triggered()
+/* void Imagine::on_actionTemperature_triggered()  //only for Andor camera
 {
     //
     if (!temperatureDialog){
@@ -1067,6 +1068,7 @@ void Imagine::on_actionTemperature_triggered()
     }
     temperatureDialog->exec();
 }
+*/
 
 void Imagine::closeEvent(QCloseEvent *event)
 {
@@ -1084,7 +1086,7 @@ void Imagine::closeEvent(QCloseEvent *event)
 
     bool isAndor = camera.vendor == "andor";
 
-    if (isAndor){
+/*    if (isAndor){
         //TODO: ask user wait for temperature rising.
         //   like andor mcd, if temperature is too low,  event->ignore();
         int temperature = 20; //assume room temperature
@@ -1099,6 +1101,7 @@ void Imagine::closeEvent(QCloseEvent *event)
         }
         ((AndorCamera*)dataAcqThread.pCamera)->switchCooler(false); //switch off cooler
     }
+*/
 
     //shutdown camera
     //see: QMessageBox Class Reference
@@ -1195,7 +1198,7 @@ void Imagine::on_btnApply_clicked()
     Camera& camera = *dataAcqThread.pCamera;
 
     QString triggerModeStr = ui.comboBoxTriggerMode->currentText();
-    AndorCamera::TriggerMode triggerMode;
+    Camera::TriggerMode triggerMode;
     if (triggerModeStr == "External Start") triggerMode = Camera::eExternalStart;
     else if (triggerModeStr == "Internal")  triggerMode = Camera::eInternalTrigger;
     else {
@@ -1561,6 +1564,7 @@ void Imagine::on_actionExit_triggered()
     close();
 }
 
+/*
 void Imagine::on_actionHeatsinkFan_triggered()
 {
     if (!fanCtrlDialog){
@@ -1568,5 +1572,6 @@ void Imagine::on_actionHeatsinkFan_triggered()
     }
     fanCtrlDialog->exec();
 }
+*/
 
 #pragma endregion

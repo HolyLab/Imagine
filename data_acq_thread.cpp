@@ -33,13 +33,13 @@ using namespace std;
 
 #include "data_acq_thread.hpp"
 
-#include "andor_g.hpp"
+//#include "andor_g.hpp"
 #include "timer_g.hpp"
 #include "ni_daq_g.hpp"
 #include "ai_thread.hpp"
 #include "fast_ofstream.hpp"
 #include "positioner.hpp"
-#include "Piezo_Controller.hpp"
+//#include "Piezo_Controller.hpp"
 #include "spoolthread.h"
 #include "imagine.h"
 
@@ -400,11 +400,13 @@ nextStack:
         .arg(gt.read(), 10, 'f', 4) //width=10, fixed point, 4 decimal digits 
         );
 
+/*
     if (isAndor && isUseSpool) {
         QString stemName = camFilename.arg(idxCurStack, 4, 10, QLatin1Char('0'));
         //enable spool
         ((AndorCamera*)(&camera))->enableSpool((char*)(stemName.toStdString().c_str()), 10);
     }
+*/
 
     if (hasPos) pPositioner->optimizeCmd();
 
@@ -610,17 +612,18 @@ nextStack:
 
     ///disable spool
     if (isUseSpool){
-        if (isAndor) ((AndorCamera*)(&camera))->enableSpool(NULL, 10); //disable spooling
-        else if (isCooke || isAvt) camera.setSpooling(""); //disable spooling which also closes file
+        /*if (isAndor) ((AndorCamera*)(&camera))->enableSpool(NULL, 10); //disable spooling
+        else */
+		if (isCooke || isAvt) camera.setSpooling(""); //disable spooling which also closes file
     }
 
-    if (isPiezo){
+/*    if (isPiezo){  //not for voltage-controlled piezo from piezosystem jena
         Piezo_Controller* p = dynamic_cast<Piezo_Controller*>(pPositioner);
         if (p && !p->dumpFeedbackData(positionerFeedbackFile)) {
             emit newStatusMsgReady("Failed to dump piezo feedback data");
         }
     }
-
+*/
     ///reset the actuator to its exact starting pos
     if (hasPos) {
         emit newStatusMsgReady("Now resetting the actuator to its exact starting pos ...");

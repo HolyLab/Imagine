@@ -29,7 +29,7 @@ class HistogramItem;
 #include "ui_imagine.h"
 
 #include "data_acq_thread.hpp"
-#include "andor_g.hpp"
+//#include "andor_g.hpp"
 #include "positioner.hpp"
 #include "timer_g.hpp"
 #include "Pixmapper.h"
@@ -92,9 +92,9 @@ private:
     void updateStatus(ImagineStatus newStatus, ImagineAction newAction);
     double zpos2voltage(double um); //z-position to piezo voltage
     void updateImage();
-    void updateHist(const AndorCamera::PixelValue * frame,
+	void updateHist(const Camera::PixelValue * frame,
         const int imageW, const int imageH);
-    void updateIntenCurve(const AndorCamera::PixelValue * frame,
+    void updateIntenCurve(const Camera::PixelValue * frame,
         const int imageW, const int imageH, const int frameIdx);
 
     bool checkRoi();
@@ -103,7 +103,7 @@ private:
     QPoint calcPos(const QPoint& pos);
 
 private slots:
-    void on_actionHeatsinkFan_triggered();
+//    void on_actionHeatsinkFan_triggered();
     void on_actionExit_triggered();
     void on_btnFastDecPosAndMove_clicked();
     void on_btnDecPosAndMove_clicked();
@@ -125,7 +125,7 @@ private slots:
     void on_actionStop_triggered();
     void on_actionOpenShutter_triggered();
     void on_actionCloseShutter_triggered();
-    void on_actionTemperature_triggered();
+    //void on_actionTemperature_triggered();
     void on_actionAutoScaleOnFirstFrame_triggered();
     void on_actionContrastMin_triggered();
     void on_actionContrastMax_triggered();

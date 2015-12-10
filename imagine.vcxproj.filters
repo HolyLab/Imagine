@@ -45,9 +45,6 @@
     <ClCompile Include="data_acq_thread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="fanctrldialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="histogram_item.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -60,16 +57,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="temperaturedialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="andor_g.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="camera_g.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="avt_g.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="misc.cpp">
@@ -114,9 +102,6 @@
     <ClCompile Include="shutterctrl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="actuators\pi\Piezo_Controller.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="actuators\voltage\volpiezo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -132,8 +117,6 @@
     <ClCompile Include="qtgen\Debug\moc_data_acq_thread.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="qtgen\Debug\moc_fanctrldialog.cpp">
-      <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="qtgen\Debug\moc_imagelabel.cpp">
       <Filter>Generated Files</Filter>
@@ -144,8 +127,7 @@
     <ClCompile Include="qtgen\Debug\moc_Pixmapper.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="qtgen\Debug\moc_temperaturedialog.cpp">
-      <Filter>Generated Files</Filter>
+      <Filter>Header Files\Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="qtgen\qrc_imagine.cpp">
       <Filter>Source Files</Filter>
@@ -167,13 +149,7 @@
     <CustomBuild Include="ai_thread.hpp">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="andor_g.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="data_acq_thread.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="fanctrldialog.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="imagelabel.h">
@@ -188,16 +164,7 @@
     <CustomBuild Include="scoped_ptr_g.hpp">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="temperaturedialog.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="fanctrldialog.ui">
-      <Filter>Form Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="imagine.ui">
-      <Filter>Form Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="temperaturedialog.ui">
       <Filter>Form Files</Filter>
     </CustomBuild>
     <CustomBuild Include="imagine.qrc">
@@ -222,19 +189,10 @@
     <CustomBuild Include="pi_actuator\Actuator_Controller.hpp">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="pi_piezo\Piezo_Controller.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="shutterctrl.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="actuators\voltage\volpiezo.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Atmcd32d.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="avt_g.hpp">
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="camera_g.hpp">
@@ -262,12 +220,6 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="positioner.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="PvApi.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="PvRegIo.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="timer_g.hpp">
@@ -390,19 +342,16 @@
     <None Include="$(FodyPath)\*.*" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource1.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="qtgen\ui_fanctrldialog.h">
+    <ResourceCompile Include="imagine21.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ArduinoSerial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="qtgen\ui_imagine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="qtgen\ui_temperaturedialog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ArduinoSerial.h">
+    <ClInclude Include="resource1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
