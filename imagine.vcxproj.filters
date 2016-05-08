@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
@@ -29,11 +29,6 @@
     </Filter>
     <Filter Include="Header Files\Generated Files\Release">
       <UniqueIdentifier>{9ee71f03-35a8-465f-86cd-ea084d511ad9}</UniqueIdentifier>
-      <Extensions>cpp;moc</Extensions>
-      <SourceControlFiles>False</SourceControlFiles>
-    </Filter>
-    <Filter Include="Header Files\Generated Files\Template">
-      <UniqueIdentifier>{b5fc9478-04af-4d98-a117-3ced73e9b370}</UniqueIdentifier>
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
@@ -72,28 +67,13 @@
     <ClCompile Include="qtgen\Debug\moc_cookeworkerthread.cpp">
       <Filter>Header Files\Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="qtgen\Release\moc_cookeworkerthread.cpp">
-      <Filter>Header Files\Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\Template\moc_cookeworkerthread.cpp">
-      <Filter>Header Files\Generated Files\Template</Filter>
-    </ClCompile>
     <ClCompile Include="qtgen\Debug\moc_spoolthread.cpp">
       <Filter>Header Files\Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\Release\moc_spoolthread.cpp">
-      <Filter>Header Files\Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="qtgen\Template\moc_spoolthread.cpp">
-      <Filter>Header Files\Generated Files\Template</Filter>
     </ClCompile>
     <ClCompile Include="spoolthread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="positioner.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pi_actuator\Actuator_Controller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="fast_ofstream.cpp">
@@ -141,105 +121,60 @@
     <ClCompile Include="qtgen\Debug\moc_ImgApplication.cpp">
       <Filter>Header Files\Generated Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="ai_thread.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="data_acq_thread.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="imagelabel.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="imagine.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="ni_daq_g.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="scoped_ptr_g.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="imagine.ui">
-      <Filter>Form Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="imagine.qrc">
-      <Filter>Resource Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="imagine.ico" />
-    <CustomBuild Include="cookeworkerthread.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="spoolthread.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="daq.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="actuators\dummy\dummypiezo.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="dummy_daq.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="pi_actuator\Actuator_Controller.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="shutterctrl.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="actuators\voltage\volpiezo.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="camera_g.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="circbuf.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="cooke.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="fast_ofstream.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="histogram_item.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="lockguard.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="misc.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="NIDAQmx.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="positioner.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="timer_g.hpp">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Resources\start_acq.bmp">
-      <Filter>Resource Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Resources\start_live.bmp">
-      <Filter>Resource Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Resources\stop.bmp">
-      <Filter>Resource Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Pixmapper.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="ArduinoThread.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="ImgApplication.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
+    <ClCompile Include="qtgen\Debug\moc_ai_thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_ArduinoThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_data_acq_thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_imagelabel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_imagine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_ImgApplication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_Pixmapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_cookeworkerthread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_spoolthread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_ai_thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_ArduinoThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_data_acq_thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_imagelabel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_imagine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_ImgApplication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_Pixmapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_cookeworkerthread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qtgen\Debug\moc_spoolthread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="$(FodyPath)\*.*" />
@@ -393,7 +328,146 @@
     <None Include="$(FodyPath)\*.*" />
     <None Include="$(FodyPath)\*.*" />
     <None Include="$(FodyPath)\*.*" />
-    <None Include="packages.config" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
+    <None Include="$(FodyPath)\*.*" />
     <None Include="$(FodyPath)\*.*" />
     <None Include="$(FodyPath)\*.*" />
     <None Include="$(FodyPath)\*.*" />
@@ -488,19 +562,100 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="imagine21.rc" />
+    <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <ItemGroup>
+    <CustomBuild Include="FodyWeavers.xml" />
+    <CustomBuild Include="packages.config" />
+    <CustomBuild Include="PropertySheet.props" />
+    <CustomBuild Include="ai_thread.hpp">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="ArduinoSerial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="qtgen\ui_imagine.h">
+    <ClInclude Include="ArduinoThread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="camera_g.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="circbuf.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cooke.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cookeworkerthread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="curvedata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="daq.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="data_acq_thread.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dummy_daq.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fast_ofstream.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="histogram_item.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="imagelabel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageLib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="imagine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImgApplication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lockguard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="memcpy_g.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="misc.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ni_daq_g.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Pixmapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="positioner.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Xml Include="FodyWeavers.xml" />
+    <ClInclude Include="shutterctrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spoolthread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="timer_g.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dummy_camera.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

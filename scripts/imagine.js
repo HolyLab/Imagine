@@ -1,3 +1,10 @@
+if(rig=="dummy"){
+	var camera="dummy";
+	var positioner = "dummy";
+	var daq="dummy";
+}
+
+
 if(rig=="hs-ocpi"){
 	//camera:
 	var camera = "cooke";

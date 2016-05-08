@@ -25,6 +25,7 @@ using namespace std;
 #include <QScriptProgram>
 #include <QScriptable>
 #include <QMetaType>
+#include <string>
 
 #include "imagine.h"
 #include "ImgApplication.h"
@@ -36,7 +37,7 @@ using namespace std;
 
 #include "actuators/voltage/volpiezo.hpp"
 //#include "Piezo_Controller.hpp"
-#include "Actuator_Controller.hpp"
+//#include "Actuator_Controller.hpp"
 #include "actuators/dummy/dummypiezo.hpp"
 #include "ni_daq_g.hpp"
 #include "dummy_daq.hpp"
@@ -124,7 +125,7 @@ int main(int argc, char *argv[])
     ImgApplication a(argc, argv);
 
     //rig = "hs-ocpi";
-    rig = "ocpi-2";
+    rig = string("dummy");
     if (argc == 2) {
         rig = argv[1];
         cout << "The rig is: " << rig << endl;
@@ -150,7 +151,9 @@ int main(int argc, char *argv[])
     QScriptValue svRunSetDio = se->newFunction(setDioWrapper);
     se->globalObject().setProperty("setDio", svRunSetDio);
 
-    if (!loadScript(QString::fromStdString("imagine.js"))){
+
+
+    if (!loadScript(QString("imagine.js"))){
         return 1;
     }
     QString cameraVendor = se->globalObject().property("camera").toString();
@@ -165,11 +168,13 @@ int main(int argc, char *argv[])
         ainame = se->globalObject().property("ainame").toString();
     }
 
+	//QTextStream out(cout); // cout.rdbuf());
     cout << "using " << cameraVendor.toStdString() << " camera, "
         << positionerType.toStdString() << " positioner, "
-        << daq.toStdString() << " daq." << endl;
+        << daq.toStdString() << "\n";
+	//out.flush(); //still not working for some reason.  was stdout redirected?
 
-    if (cameraVendor != "avt" && cameraVendor != "andor" && cameraVendor != "cooke"){
+    if (cameraVendor != "avt" && cameraVendor != "andor" && cameraVendor != "cooke" && cameraVendor != "dummy") {
         QMessageBox::critical(0, "Imagine", "Unsupported camera."
             , QMessageBox::Ok, QMessageBox::NoButton);
 
@@ -185,9 +190,9 @@ int main(int argc, char *argv[])
     const char* homedir = getenv("USERPROFILE");
     string filename = string(homedir) + "/preset.js";
     if (!tr2::sys::exists(tr2::sys::path(filename))){
-        filename = "preset.js";
+        filename = string("preset.js");
     }
-    cout << "preset file is: " << filename << endl;
+    cout << "preset file is: " << string(filename) << endl;
     if (!loadScript(QString::fromStdString(filename))){
         return 1;
     }
@@ -209,7 +214,7 @@ int main(int argc, char *argv[])
 //#ifndef _WIN64
 //    else if (positionerType == "thor") pos = new Actuator_Controller;
 //#endif
-//    else if (positionerType == "dummy") pos = new DummyPiezo;
+    else if (positionerType == "dummy") pos = new DummyPiezo;
     else {
         QMessageBox::critical(0, "Imagine", "Unsupported positioner."
             , QMessageBox::Ok, QMessageBox::NoButton);
@@ -247,16 +252,19 @@ int main(int argc, char *argv[])
 //    else if (cameraVendor == "andor") cam1 = new AndorCamera;
 //    else if (cameraVendor == "cooke") cam1 = new CookeCamera;
 	if (cameraVendor == "cooke") cam1 = new CookeCamera;
+	else if (cameraVendor == "dummy") cam1 = new CookeCamera;
     else {
         QMessageBox::critical(0, "Imagine", "Unsupported camera.", QMessageBox::Ok, QMessageBox::NoButton);
         return 1;
     }
-    if (!cam1->init()){
-        splash->showMessage("Failed to initialize camera 1.", align, col);
-        QMessageBox::critical(splash, "Imagine", "Failed to initialize camera 1.",
-        QMessageBox::Ok, QMessageBox::NoButton);
-        return 1;
-    }
+	if (cameraVendor != "dummy") {
+		if (!cam1->init()){
+			splash->showMessage("Failed to initialize camera 1.", align, col);
+			QMessageBox::critical(splash, "Imagine", "Failed to initialize camera 1.",
+				QMessageBox::Ok, QMessageBox::NoButton);
+			return 1;
+		}
+	}
 
     Camera *cam2 = nullptr;
     if (nCams > 1) {
@@ -268,6 +276,7 @@ int main(int argc, char *argv[])
 //        else if (cameraVendor == "andor") cam2 = new AndorCamera;
 //        else if (cameraVendor == "cooke") cam2 = new CookeCamera;
 		if (cameraVendor == "cooke") cam2 = new CookeCamera;
+		else if (cameraVendor == "dummy") cam2 = new CookeCamera; // DummyCamera;
         else {
             QMessageBox::critical(0, "Imagine", "Unsupported camera.", QMessageBox::Ok, QMessageBox::NoButton);
             return 1;

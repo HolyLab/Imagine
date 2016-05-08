@@ -3,10 +3,13 @@
 * install visual studio 2013
 * install NI's SDK (dvd; or download it from NI's website)
 * install Qt version 5.4.1
-* install Qt creator version 2.7.2 x64
 * install Qt addin for visual studio
+* build boost 1_57_0 (64 bit address model)
+* build qwt 6.1.2
 * install boost (NOTE: user newer version, see below; OLD: see the correct version from the imagine2 project settings->Configuration Properties->C/C++->General->Additional Include Directories)
 * install visual c++ 2013 redistributable
+
+
 * Set up Visual Studio project settings:
   - A big help here is to build one of the Qt demo projects and see what libs get added
   - Project->Properties->C/C++->Additional include directories, make sure it points to the Qt dirs and anything else
@@ -24,7 +27,7 @@ or probably more easily:
   open the Visual Studio tools directory under the Start menu, select "Developer's command prompt"
 cd C:\src\boost_1_57_0
 bootstrap.bat
-.\b2 address-model=64
+.\b2 address-model=64 toolset=msvc-12.0
 
 Compiling qwt:
 Open the "Developer's command prompt" as above
@@ -49,3 +52,30 @@ Getting the cigarette aligned:
 Remove the objective
 Without lenses or coverslip, align the cigarette so the beam passes through it and maintains circularity
 Insert lenses, but do not attach coverslip. Check the light sheet.
+
+need to set QTDIR, QWTDIR, BOOSTDIR, and IMAGINEDIR
+need to target version 8.1 using VS 2015 toolset (8.1-targeted apps are backwards compatible with windows 7)
+add QTDIR to system PATH
+
+%%%%building Qt (NOT WORTH THE EFFORT)
+	install activepython and activeperl from activestate.com
+	install ruby using "rubyinstaller" for windows
+	install ICU (look for prebuilt msvc2015 binaries)
+	1. Put the following in a .cmd file, substituting paths as appropriate and execute it from the visual studio developer command prompt
+	CALL "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
+	SET _ROOT=C:\qt5\5.5\src
+	SET ICU_DIST=C:\src\icu-56.1-vs2015
+	SET PATH=%_ROOT%\qtbase\bin;%_ROOT%\gnuwin32\bin;%PATH%
+	SET PATH=%PATH%;%ICU_DIST%\bin;%ICU_DIST%\lib
+	SET PATH=%PATH%;C:\Ruby22-x64\bin
+	SET INCLUDE=%INCLUDE%;%ICU_DIST%\include
+	SET LIB=%LIB%;%ICU_DIST%\lib
+	SET QMAKESPEC=win32-msvc2015
+	SET _ROOT=
+	2. Navigate to the qt 5.5 source directory and execute this line
+	configure.bat -debug-and-release -nomake examples -opensource -opengl dynamic -icu -nomake examples -skip qtwebkit-examples -opensource
+	2. QT5 build command with vs2015 (call vcvarsall x64 and then navigate to directory first)
+	configure.bat -debug-and-release -nomake examples -opensource -opengl dynamic
+	OR do everything with the script here (needs modification)
+	https://blog.afach.de/?page_id=399
+%%%%%%

@@ -1,32 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin%3b$(PATH)</LocalDebuggerEnvironment>
-    <LocalDebuggerCommandArguments>bakewell</LocalDebuggerCommandArguments>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-  </PropertyGroup>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerEnvironment>PATH="$(QTDIR)\bin%3b$(QWTDIR)\lib%3bC:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\bin64%3b$(PATH)</LocalDebuggerEnvironment>
-    <LocalDebuggerCommandArguments>dummy</LocalDebuggerCommandArguments>
+    <LocalDebuggerEnvironment>$(ExecutablePath)
+$(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin%3b$(PATH)</LocalDebuggerEnvironment>
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)\scripts</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerEnvironment>PATH="$(QTDIR)\bin%3b"C:\Program Files (x86)\National Instruments\Shared\ExternalCompilerSupport\C\lib64\msvc%3b$(QTDIR)\bin%3b$(QTDIR)\bin%3b$(QWTDIR)\lib%3bC:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\bin64%3b$(PATH)</LocalDebuggerEnvironment>
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)\scripts</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerWorkingDirectory>./scripts</LocalDebuggerWorkingDirectory>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
-    <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin%3b$(PATH)</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
-    <LocalDebuggerEnvironment>PATH="$(QTDIR)\bin%3b$(PATH)</LocalDebuggerEnvironment>
-  </PropertyGroup>
-  <PropertyGroup>
-    <LocalDebuggerWorkingDirectory Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerWorkingDirectory Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\scripts</LocalDebuggerWorkingDirectory>
-    <ShowAllFiles>false</ShowAllFiles>
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)\scripts</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

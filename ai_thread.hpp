@@ -25,9 +25,10 @@ using std::ofstream;
 #include <QMutex>
 #include <QThread>
 #include <QWaitCondition>
+#include <QObject>
 
 #include "daq.hpp"
-//#include "ni_daq_g.hpp"
+#include "ni_daq_g.hpp"
 
 
 class AiThread : public QThread

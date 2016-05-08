@@ -1,7 +1,7 @@
 #pragma once
 #include <QtSerialPort/qserialport.h>
 #include <QtSerialPort/qserialportinfo.h>
-#include "qbytearray.h"
+#include <qbytearray.h>
 
 // time we'll wait for arduino to restart after connecting (ms)
 #define ARDUINO_WAIT_TIME 2000

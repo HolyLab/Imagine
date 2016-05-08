@@ -19,6 +19,7 @@ using std::endl;
 //class Camera:
    int	errorCode;    //these two are paired. For andor's, errorCode meanings are defined by 
    string errorMsg;   //   atmcd32d.h. 
+   bool fake_camera = true;
 
 //class CookeCamera:
 HANDLE hCamera;
@@ -449,29 +450,30 @@ nextRound:
 
 int main(int argc, char* argv[])
 {
-   int nFrames; 
-   double exposure;
-   int nRounds;
-   if(argc!=4) {
-      cerr<<"usage: "<<argv[0]<<" #frames exposure #rounds"<<endl;
-      cerr<<"Now use the default: 1000 frames w/ 0.05s exposure and 3 rounds"<<endl;
-      exposure=0.05; nFrames=1000; nRounds=3;
-   }
-   else {
-      nFrames=atoi(argv[1]);
-      exposure=atof(argv[2]);
-      nRounds=atoi(argv[3]);
-   }
+	if (!fake_camera) {
+		int nFrames;
+		double exposure;
+		int nRounds;
+		if (argc != 4) {
+			cerr << "usage: " << argv[0] << " #frames exposure #rounds" << endl;
+			cerr << "Now use the default: 1000 frames w/ 0.05s exposure and 3 rounds" << endl;
+			exposure = 0.05; nFrames = 1000; nRounds = 3;
+		}
+		else {
+			nFrames = atoi(argv[1]);
+			exposure = atof(argv[2]);
+			nRounds = atoi(argv[3]);
+		}
 
-   void* buf=_aligned_malloc(2560*2160*2, 4*1024);
+		void* buf = _aligned_malloc(2560 * 2160 * 2, 4 * 1024);
 
-   if(!test(nFrames, exposure, nRounds, buf)){
-      cerr<<"test failed: "<<errorMsg<<endl;
-      return 1;
-   }
+		if (!test(nFrames, exposure, nRounds, buf)) {
+			cerr << "test failed: " << errorMsg << endl;
+			return 1;
+		}
 
-   cout<<"test succeeded!"<<endl;
-
+		cout << "test succeeded!" << endl;
+	}
    //getc(stdin);
 
    return 0;

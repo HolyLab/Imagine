@@ -14,6 +14,7 @@
 **-------------------------------------------------------------------------*/
 
 #include <QtGui>
+#include <QtCore>
 
 #include <math.h>
 #include <fstream>
