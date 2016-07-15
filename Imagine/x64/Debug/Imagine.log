@@ -1,0 +1,39 @@
+﻿  cooke.cpp
+  cookeworkerthread.cpp
+  data_acq_thread.cpp
+  moc_cookeworkerthread.cpp
+  moc_imagine.cpp
+  moc_ImgApplication.cpp
+  imagine.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\math.h(996): warning C4005: 'M_E': macro redefinition
+  C:\Qt_new\5.7\msvc2015_64\include\QtCore\qmath.h(152): note: see previous definition of 'M_E'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\math.h(997): warning C4005: 'M_LOG2E': macro redefinition
+  C:\Qt_new\5.7\msvc2015_64\include\QtCore\qmath.h(156): note: see previous definition of 'M_LOG2E'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\math.h(998): warning C4005: 'M_LOG10E': macro redefinition
+  C:\Qt_new\5.7\msvc2015_64\include\QtCore\qmath.h(160): note: see previous definition of 'M_LOG10E'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\math.h(999): warning C4005: 'M_LN2': macro redefinition
+  C:\Qt_new\5.7\msvc2015_64\include\QtCore\qmath.h(164): note: see previous definition of 'M_LN2'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\math.h(1000): warning C4005: 'M_LN10': macro redefinition
+  C:\Qt_new\5.7\msvc2015_64\include\QtCore\qmath.h(168): note: see previous definition of 'M_LN10'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\math.h(1001): warning C4005: 'M_PI': macro redefinition
+  C:\Qt_new\5.7\msvc2015_64\include\QtCore\qmath.h(172): note: see previous definition of 'M_PI'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\math.h(1002): warning C4005: 'M_PI_2': macro redefinition
+  C:\Qt_new\5.7\msvc2015_64\include\QtCore\qmath.h(176): note: see previous definition of 'M_PI_2'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\math.h(1003): warning C4005: 'M_PI_4': macro redefinition
+  C:\Qt_new\5.7\msvc2015_64\include\QtCore\qmath.h(180): note: see previous definition of 'M_PI_4'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\math.h(1004): warning C4005: 'M_1_PI': macro redefinition
+  C:\Qt_new\5.7\msvc2015_64\include\QtCore\qmath.h(184): note: see previous definition of 'M_1_PI'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\math.h(1005): warning C4005: 'M_2_PI': macro redefinition
+  C:\Qt_new\5.7\msvc2015_64\include\QtCore\qmath.h(188): note: see previous definition of 'M_2_PI'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\math.h(1006): warning C4005: 'M_2_SQRTPI': macro redefinition
+  C:\Qt_new\5.7\msvc2015_64\include\QtCore\qmath.h(192): note: see previous definition of 'M_2_SQRTPI'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\math.h(1007): warning C4005: 'M_SQRT2': macro redefinition
+  C:\Qt_new\5.7\msvc2015_64\include\QtCore\qmath.h(196): note: see previous definition of 'M_SQRT2'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\math.h(1008): warning C4005: 'M_SQRT1_2': macro redefinition
+  C:\Qt_new\5.7\msvc2015_64\include\QtCore\qmath.h(200): note: see previous definition of 'M_SQRT1_2'
+  ImgApplication.cpp
+  main.cpp
+  spoolthread.cpp
+  Generating Code...
+  Imagine.vcxproj -> C:\Users\cody\src\imagine_new2\Imagine\x64\Debug\Imagine.exe
+  Imagine.vcxproj -> C:\Users\cody\src\imagine_new2\Imagine\x64\Debug\Imagine.pdb (Full PDB)
