@@ -35,11 +35,12 @@
 #include <qwt_plot_grid.h>
 #include <qwt_plot_marker.h>
 #include <qwt_scale_engine.h>
+#include <qwt_plot_histogram.h>
 #include <qwt_symbol.h>
 #include <qwt_plot_curve.h>
 #include <QDesktopWidget>
 
-#include "histogram_item.h"
+//#include "histogram_item.h"
 //#include "curvedata.h"
 
 #include <vector>
@@ -428,7 +429,7 @@ void Imagine::updateHist(const Camera::PixelValue * frame,
             break;
 
     //now binning
-    int nBins = histPlot->width() / 2;
+	int nBins = histPlot->width() / 3; //3 display pixels per bin?
     int totalWidth = maxintensity; //1<<14;
     double binWidth = double(totalWidth) / nBins;
 
@@ -446,7 +447,7 @@ void Imagine::updateHist(const Camera::PixelValue * frame,
             count += counts[istart++];
             width++;
         }
-        double value = (width > 0) ? (double(count) / width)*binWidth : 0;
+        double value = (width > 0) ? (double(count) / width)*binWidth : 1;
         if (value > maxcount)
             maxcount = value;
         intervals[i] = QwtIntervalSample(value, start, end);
@@ -497,8 +498,14 @@ void Imagine::preparePlots()
     grid->setMinorPen(QPen(Qt::gray, 0, Qt::DotLine));
     grid->attach(histPlot);
 
-    histogram = new HistogramItem();
-    histogram->setColor(Qt::darkCyan);
+	histogram = new QwtPlotHistogram(); // HistogramItem();
+    histogram->setPen(Qt::darkCyan);
+	histogram->setBrush(QBrush(Qt::darkCyan));
+	histogram->setBaseline(1.0); //baseline will be subtracted from pixel intensities
+	histogram->setItemAttribute(QwtPlotItem::AutoScale, true);
+	histogram->setItemAttribute(QwtPlotItem::Legend, true);
+	histogram->setZ(20.0);
+	histogram->setStyle(QwtPlotHistogram::Columns);
     histogram->attach(histPlot);
 
     ///todo: make it more robust by query Camera class

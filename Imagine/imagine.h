@@ -19,11 +19,12 @@
 #include <QtWidgets/QMainWindow>
 #include <QTimer>
 
+
 class QScrollArea;
 class QString;
 class QwtPlot;
 class QwtPlotCurve;
-class HistogramItem;
+class QwtPlotHistogramItem;
 //class CurveData;
 
 #include "ui_imagine.h"
@@ -33,6 +34,7 @@ class HistogramItem;
 #include "positioner.hpp"
 #include "timer_g.hpp"
 #include "Pixmapper.h"
+#include <qwt_plot_histogram.h>
 
 enum ImagineStatus { eIdle = 0, eRunning, eStopping };
 enum ImagineAction { eNoAction = 0, eAcqAndSave, eLive };
@@ -80,7 +82,7 @@ private:
     int minPixelValueByUser, maxPixelValueByUser;
     int nContinousBlackFrames;
     QwtPlot *histPlot;
-    HistogramItem *histogram;
+    QwtPlotHistogram *histogram;
     QwtPlot *intenPlot;
     QwtPlotCurve *intenCurve;
     //    CurveData *intenCurveData;
