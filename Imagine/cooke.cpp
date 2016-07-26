@@ -257,28 +257,55 @@ double CookeCamera::getCycleTime()
 bool CookeCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
     float exposure,
     int anFrames,  //used only in kinetic-series mode
-    TriggerMode triggerMode
+    AcqTriggerMode acqTriggerMode,
+	ExpTriggerMode expTriggerMode
     )
 {
     this->genericAcqMode = genericAcqMode;
 
     this->nFrames = anFrames;
-    this->triggerMode = triggerMode;
+    this->acqTriggerMode = acqTriggerMode;
+	this->expTriggerMode = expTriggerMode;
 
     errorCode = PCO_NOERROR;
 
-    ///set acqusition trigger mode
-    if (triggerMode == eInternalTrigger){
-        errorCode = PCO_SetAcquireMode(hCamera, 0); //0: auto
+    ///set acquisition trigger mode
+	//Note that there are also additional modes accessible via PCO_SetAcquireModeEx.  They may require a firmware upgrade.
+    if (acqTriggerMode == eInternalTrigger){
+        errorCode = PCO_SetAcquireMode(hCamera, 0); //0: auto, all triggered images are read out
     }
-    else {
-        errorCode = PCO_SetAcquireMode(hCamera, 1); //1: external
-
-    }
+	else if (acqTriggerMode == eExternal) {
+		errorCode = PCO_SetAcquireMode(hCamera, 1); //1: acquisition only occurs for trigger signals received
+													// while a HIGH signal is detected at SMA #2
+													//The camera's frame counter may reset, not sure
+	}
     if (errorCode != PCO_NOERROR) {
         errorMsg = "failed to set acquisition trigger mode";
         return false;
     }
+
+	///set exposure trigger mode
+	if (expTriggerMode == eAuto) {
+		errorCode = PCO_SetTriggerMode(hCamera, 0); //0: auto, camera is in charge of timing
+	}
+	else if (expTriggerMode == eSoftwareTrigger) {
+		errorCode = PCO_SetTriggerMode(hCamera, 1); //1: trigger only by a "force trigger" command, good for single images
+	}
+	else if (expTriggerMode == eExternalStart) {
+		errorCode = PCO_SetTriggerMode(hCamera, 2); //2: external start via SMA input #1, uses pre-set exposure time
+													//Busy status at SMA #3 determines if new trigger will be accepted
+													//(HIGH signal means busy).  LOW is < 0.8V and HIGH is > 2.0V
+	}
+	else {
+		errorCode = PCO_SetTriggerMode(hCamera, 3); //3: external exposure control, pulse length dictates exposure
+													//HiGH means expose.  Busy status is available as above.
+													//10s is maximum exposure time
+	}
+	if (errorCode != PCO_NOERROR) {
+		errorMsg = "failed to set exposure trigger mode";
+		return false;
+	}
+
 
     ///exposure time
     errorCode = PCO_SetDelayExposureTime(hCamera, // Timebase: 0-ns; 1-us; 2-ms  

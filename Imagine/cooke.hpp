@@ -134,7 +134,8 @@ public:
     bool setAcqModeAndTime(GenericAcqMode genericAcqMode,
         float exposure,
         int anFrames,  //used only in kinetic-series mode
-        TriggerMode triggerMode
+        AcqTriggerMode acqTriggerMode,
+		ExpTriggerMode expTriggerMode
         );
 
 

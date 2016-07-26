@@ -101,6 +101,8 @@ void getCamCount(int *camCount) {
     // to iterate through camera numbers, starting with 0, and see how many
     // unique cameras we can open before getting an exception. great...
 
+	//TODO: this may be cleaned up by useing PCO_OpenCameraEx
+
     HANDLE tCam = nullptr;
     int tErr = 0;
     int camNum = 0;
@@ -124,8 +126,8 @@ int main(int argc, char *argv[])
 {
     ImgApplication a(argc, argv);
 
-    //rig = "hs-ocpi";
-    rig = string("dummy");
+    rig = "ocpi-2";
+    //rig = string("dummy");
     if (argc == 2) {
         rig = argv[1];
         cout << "The rig is: " << rig << endl;

@@ -740,11 +740,12 @@ bool Imagine::loadPreset()
     if (sv.isValid()) ui.doubleSpinBoxExpTime->setValue(sv.toNumber());
     sv = preset.property("idleTime");
     if (sv.isValid()) ui.doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(sv.toNumber());
-    sv = preset.property("triggerMode");
+    sv = preset.property("acqTriggerMode");
     if (sv.isValid()){
         QString ttStr = sv.toString();
         ui.comboBoxTriggerMode->setCurrentIndex(ttStr == "internal");
     }
+	//TODO: add expTriggerMode as a preset
     sv = preset.property("gain");
     if (sv.isValid()) ui.spinBoxGain->setValue(sv.toNumber());
 
@@ -949,6 +950,7 @@ void Imagine::on_actionStartAcqAndSave_triggered()
 
     dataAcqThread.isLive = false;
     dataAcqThread.startAcq();
+	//TODO:  Here is where we should synchronize recording from two cameras (if user wants)
     updateStatus(eRunning, eAcqAndSave);
 }
 
@@ -1204,14 +1206,24 @@ void Imagine::on_btnApply_clicked()
 
     Camera& camera = *dataAcqThread.pCamera;
 
-    QString triggerModeStr = ui.comboBoxTriggerMode->currentText();
-    Camera::TriggerMode triggerMode;
-    if (triggerModeStr == "External Start") triggerMode = Camera::eExternalStart;
-    else if (triggerModeStr == "Internal")  triggerMode = Camera::eInternalTrigger;
+    QString acqTriggerModeStr = ui.comboBoxTriggerMode->currentText();
+	QString expTriggerModeStr = "Auto";
+    Camera::AcqTriggerMode acqTriggerMode;
+	Camera::ExpTriggerMode expTriggerMode;
+    if (acqTriggerModeStr == "External Start") acqTriggerMode = Camera::eExternal;
+	else if (acqTriggerModeStr == "Internal")  acqTriggerMode = Camera::eInternalTrigger;
     else {
         assert(0); //if code goes here, it is a bug
     }
-    dataAcqThread.triggerMode = triggerMode;
+	//TODO: add exposure trigger mode to UI
+	if (expTriggerModeStr == "External Start") expTriggerMode = Camera::eExternalStart;
+	else if (expTriggerModeStr == "Auto")  expTriggerMode = Camera::eAuto;
+	else if (expTriggerModeStr == "External Control")  expTriggerMode = Camera::eExternalControl;
+	else {
+		assert(0); //if code goes here, it is a bug
+	}
+    dataAcqThread.acqTriggerMode = acqTriggerMode;
+	dataAcqThread.expTriggerMode = expTriggerMode;
 
     dataAcqThread.piezoStartPosUm = ui.doubleSpinBoxStartPos->value();
     dataAcqThread.piezoStopPosUm = ui.doubleSpinBoxStopPos->value();
@@ -1287,7 +1299,8 @@ void Imagine::on_btnApply_clicked()
         paramOK = camera.setAcqModeAndTime(Camera::eLive,
             dataAcqThread.exposureTime,
             dataAcqThread.nFramesPerStack,
-            Camera::eInternalTrigger  //use internal trigger
+            dataAcqThread.acqTriggerMode, //Camera::eInternalTrigger  //use internal trigger
+			dataAcqThread.expTriggerMode
             );
         dataAcqThread.cycleTime = camera.getCycleTime();
         updateStatus(QString("Camera: applied params: ") + camera.getErrorMsg().c_str());

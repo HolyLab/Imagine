@@ -37,6 +37,7 @@ void ImgApplication::initUI(Camera *cam1, Positioner *pos, Camera *cam2) {
         imgTwo = w2p;
         imgTwo->setWindowTitle("Imagine (2)");
         imgOne->setWindowTitle("Imagine (1)");
+		//TODO: all synchronizing record buttons
     }
 }
 

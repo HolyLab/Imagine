@@ -196,7 +196,8 @@ void DataAcqThread::run_live()
     bool suc = camera.setAcqModeAndTime(Camera::eLive,
         this->exposureTime,
         this->nFramesPerStack,
-        Camera::eInternalTrigger  //use internal trigger
+        Camera::eInternalTrigger,  //use internal trigger
+		Camera::eAuto //use auto exposure triggering.  Could be nice to use the user-specified trigger mode instead.
         );
     emit newStatusMsgReady(QString("Camera: set acq mode and time: %1")
         .arg(camera.getErrorMsg().c_str()));
@@ -299,7 +300,7 @@ void DataAcqThread::run_acq_and_save()
         camera.setSpooling(camFilename.toStdString());
     }
 
-    bool startCameraOnce = isCooke && triggerMode == Camera::eExternalStart;
+    bool startCameraOnce = isCooke && acqTriggerMode == Camera::eExternal;
 
     int framefactor = startCameraOnce ? this->nStacks : 1;
 
@@ -307,7 +308,8 @@ void DataAcqThread::run_acq_and_save()
     camera.setAcqModeAndTime(Camera::eAcqAndSave,
         this->exposureTime,
         this->nFramesPerStack*framefactor,
-        this->triggerMode);
+        this->acqTriggerMode,
+		this->expTriggerMode);
     emit newStatusMsgReady(QString("Camera: set acq mode and time: %1")
         .arg(camera.getErrorMsg().c_str()));
 
@@ -413,7 +415,7 @@ nextStack:
     cout << "b4 start camera & piezo: " << gt.read() << endl;
 
     bool isPiezo = hasPos && pPositioner->posType == PiezoControlPositioner;
-    if (triggerMode == Camera::eExternalStart){
+    if (acqTriggerMode == Camera::eExternal){
         if (!startCameraOnce && !isPiezo){
             camera.startAcq();
             double timeToWait = 0.1;

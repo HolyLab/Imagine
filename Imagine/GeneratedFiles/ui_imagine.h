@@ -282,8 +282,9 @@ public:
         dockWidgetContents->setObjectName(QStringLiteral("dockWidgetContents"));
         hboxLayout = new QHBoxLayout(dockWidgetContents);
         hboxLayout->setSpacing(6);
-        hboxLayout->setContentsMargins(9, 9, 9, 9);
+        hboxLayout->setContentsMargins(11, 11, 11, 11);
         hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
+        hboxLayout->setContentsMargins(9, 9, 9, 9);
         tableWidgetStimDisplay = new QTableWidget(dockWidgetContents);
         if (tableWidgetStimDisplay->columnCount() < 3)
             tableWidgetStimDisplay->setColumnCount(3);
@@ -304,12 +305,13 @@ public:
         dockWidgetContents1->setObjectName(QStringLiteral("dockWidgetContents1"));
         vboxLayout = new QVBoxLayout(dockWidgetContents1);
         vboxLayout->setSpacing(6);
-        vboxLayout->setContentsMargins(9, 9, 9, 9);
+        vboxLayout->setContentsMargins(11, 11, 11, 11);
         vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
+        vboxLayout->setContentsMargins(9, 9, 9, 9);
         hboxLayout1 = new QHBoxLayout();
         hboxLayout1->setSpacing(6);
-        hboxLayout1->setContentsMargins(0, 0, 0, 0);
         hboxLayout1->setObjectName(QStringLiteral("hboxLayout1"));
+        hboxLayout1->setContentsMargins(0, 0, 0, 0);
         label_22 = new QLabel(dockWidgetContents1);
         label_22->setObjectName(QStringLiteral("label_22"));
 
@@ -344,8 +346,9 @@ public:
         dockWidgetContents2->setObjectName(QStringLiteral("dockWidgetContents2"));
         vboxLayout1 = new QVBoxLayout(dockWidgetContents2);
         vboxLayout1->setSpacing(6);
-        vboxLayout1->setContentsMargins(9, 9, 9, 9);
+        vboxLayout1->setContentsMargins(11, 11, 11, 11);
         vboxLayout1->setObjectName(QStringLiteral("vboxLayout1"));
+        vboxLayout1->setContentsMargins(9, 9, 9, 9);
         tabWidgetCfg = new QTabWidget(dockWidgetContents2);
         tabWidgetCfg->setObjectName(QStringLiteral("tabWidgetCfg"));
         tabWidgetCfg->setMinimumSize(QSize(0, 410));
@@ -353,12 +356,13 @@ public:
         tabGeneral->setObjectName(QStringLiteral("tabGeneral"));
         vboxLayout2 = new QVBoxLayout(tabGeneral);
         vboxLayout2->setSpacing(6);
-        vboxLayout2->setContentsMargins(9, 9, 9, 9);
+        vboxLayout2->setContentsMargins(11, 11, 11, 11);
         vboxLayout2->setObjectName(QStringLiteral("vboxLayout2"));
+        vboxLayout2->setContentsMargins(9, 9, 9, 9);
         hboxLayout2 = new QHBoxLayout();
         hboxLayout2->setSpacing(6);
-        hboxLayout2->setContentsMargins(0, 0, 0, 0);
         hboxLayout2->setObjectName(QStringLiteral("hboxLayout2"));
+        hboxLayout2->setContentsMargins(0, 0, 0, 0);
         label = new QLabel(tabGeneral);
         label->setObjectName(QStringLiteral("label"));
 
@@ -396,14 +400,16 @@ public:
         tabCamera->setObjectName(QStringLiteral("tabCamera"));
         vboxLayout3 = new QVBoxLayout(tabCamera);
         vboxLayout3->setSpacing(6);
-        vboxLayout3->setContentsMargins(9, 9, 9, 9);
+        vboxLayout3->setContentsMargins(11, 11, 11, 11);
         vboxLayout3->setObjectName(QStringLiteral("vboxLayout3"));
+        vboxLayout3->setContentsMargins(9, 9, 9, 9);
         groupBox = new QGroupBox(tabCamera);
         groupBox->setObjectName(QStringLiteral("groupBox"));
         gridLayout = new QGridLayout(groupBox);
         gridLayout->setSpacing(6);
-        gridLayout->setContentsMargins(9, 9, 9, 9);
+        gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName(QStringLiteral("gridLayout"));
+        gridLayout->setContentsMargins(9, 9, 9, 9);
         label_32 = new QLabel(groupBox);
         label_32->setObjectName(QStringLiteral("label_32"));
 
@@ -499,14 +505,15 @@ public:
 
         hboxLayout3 = new QHBoxLayout();
         hboxLayout3->setSpacing(6);
-        hboxLayout3->setContentsMargins(0, 0, 0, 0);
         hboxLayout3->setObjectName(QStringLiteral("hboxLayout3"));
+        hboxLayout3->setContentsMargins(0, 0, 0, 0);
         groupBox_2 = new QGroupBox(tabCamera);
         groupBox_2->setObjectName(QStringLiteral("groupBox_2"));
         gridLayout1 = new QGridLayout(groupBox_2);
         gridLayout1->setSpacing(6);
-        gridLayout1->setContentsMargins(9, 9, 9, 9);
+        gridLayout1->setContentsMargins(11, 11, 11, 11);
         gridLayout1->setObjectName(QStringLiteral("gridLayout1"));
+        gridLayout1->setContentsMargins(9, 9, 9, 9);
         comboBoxPreAmpGains = new QComboBox(groupBox_2);
         comboBoxPreAmpGains->setObjectName(QStringLiteral("comboBoxPreAmpGains"));
 
@@ -545,8 +552,9 @@ public:
         groupBox_3->setObjectName(QStringLiteral("groupBox_3"));
         gridLayout2 = new QGridLayout(groupBox_3);
         gridLayout2->setSpacing(6);
-        gridLayout2->setContentsMargins(9, 9, 9, 9);
+        gridLayout2->setContentsMargins(11, 11, 11, 11);
         gridLayout2->setObjectName(QStringLiteral("gridLayout2"));
+        gridLayout2->setContentsMargins(9, 9, 9, 9);
         label_18 = new QLabel(groupBox_3);
         label_18->setObjectName(QStringLiteral("label_18"));
         label_18->setWordWrap(true);
@@ -599,7 +607,7 @@ public:
         spinBoxHend->setGeometry(QRect(201, 20, 61, 22));
         spinBoxHend->setMinimum(1);
         spinBoxHend->setMaximum(2560);
-        spinBoxHend->setValue(1);
+        spinBoxHend->setValue(8);
         spinBoxVstart = new QSpinBox(tabBinning);
         spinBoxVstart->setObjectName(QStringLiteral("spinBoxVstart"));
         spinBoxVstart->setGeometry(QRect(80, 60, 51, 22));
@@ -610,7 +618,7 @@ public:
         spinBoxVend->setGeometry(QRect(200, 60, 61, 22));
         spinBoxVend->setMinimum(1);
         spinBoxVend->setMaximum(2160);
-        spinBoxVend->setValue(2160);
+        spinBoxVend->setValue(8);
         btnUseZoomWindow = new QPushButton(tabBinning);
         btnUseZoomWindow->setObjectName(QStringLiteral("btnUseZoomWindow"));
         btnUseZoomWindow->setGeometry(QRect(24, 100, 241, 23));
@@ -622,8 +630,9 @@ public:
         tabStim->setObjectName(QStringLiteral("tabStim"));
         vboxLayout4 = new QVBoxLayout(tabStim);
         vboxLayout4->setSpacing(6);
-        vboxLayout4->setContentsMargins(9, 9, 9, 9);
+        vboxLayout4->setContentsMargins(11, 11, 11, 11);
         vboxLayout4->setObjectName(QStringLiteral("vboxLayout4"));
+        vboxLayout4->setContentsMargins(9, 9, 9, 9);
         cbStim = new QCheckBox(tabStim);
         cbStim->setObjectName(QStringLiteral("cbStim"));
 
@@ -631,8 +640,8 @@ public:
 
         hboxLayout4 = new QHBoxLayout();
         hboxLayout4->setSpacing(6);
-        hboxLayout4->setContentsMargins(0, 0, 0, 0);
         hboxLayout4->setObjectName(QStringLiteral("hboxLayout4"));
+        hboxLayout4->setContentsMargins(0, 0, 0, 0);
         label_13 = new QLabel(tabStim);
         label_13->setObjectName(QStringLiteral("label_13"));
 
@@ -963,7 +972,7 @@ public:
         QObject::connect(dwHist, SIGNAL(visibilityChanged(bool)), actionHistogram, SLOT(setChecked(bool)));
         QObject::connect(dwIntenCurve, SIGNAL(visibilityChanged(bool)), actionIntensity, SLOT(setChecked(bool)));
 
-        tabWidgetCfg->setCurrentIndex(1);
+        tabWidgetCfg->setCurrentIndex(2);
         comboBoxTriggerMode->setCurrentIndex(1);
 
 

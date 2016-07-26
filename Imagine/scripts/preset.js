@@ -13,7 +13,7 @@ if(rig=="dummy"){
       framesPerStack:20,
       exposureTime:0.03,
       idleTime:0.7,
-      triggerMode: "external", //internal or external
+      acqTriggerMode: "external", //internal or external
       gain:0,
    };
 }
@@ -31,7 +31,7 @@ if(rig=="hs-ocpi"){
       framesPerStack:89,
       exposureTime:0.0107,
       idleTime:0.7,
-      triggerMode: "internal", //internal or external
+      acqTriggerMode: "internal", //internal or external
       gain:0,
    };
 }
@@ -49,7 +49,7 @@ if(rig=="bakewell"){
       framesPerStack:100,
       exposureTime:0.02,
       idleTime:0.7,
-      triggerMode: "internal", //internal or external
+      acqTriggerMode: "internal", //internal or external
       gain:24,
    };
    if(positioner=="thor"){
@@ -72,7 +72,7 @@ if(rig=="ocpi-1"){
       framesPerStack:20,
       exposureTime:0.03,
       idleTime:0.7,
-      triggerMode: "external", //internal or external
+      acqTriggerMode: "external", //internal or external
       gain:0,
    };
 }
@@ -90,7 +90,7 @@ if(rig=="ocpi-2"){
       framesPerStack:20,
       exposureTime:0.03,
       idleTime:0.7,
-      triggerMode: "internal", //internal or external
+      acqTriggerMode: "internal", //internal or external
       gain:0,
    };
 }

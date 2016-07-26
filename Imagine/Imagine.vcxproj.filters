@@ -125,9 +125,6 @@
     <ClCompile Include="fast_ofstream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="histogram_item.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="imagelabel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -214,9 +211,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fast_ofstream.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="histogram_item.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ImageLib.h">

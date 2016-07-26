@@ -113,7 +113,7 @@ public:
             CLockGuard tGuard(camera->mpLock);
 
             ///work around sdk bug
-            if (nEvents == 1 && camera->triggerMode == Camera::eExternalStart){
+            if (nEvents == 1 && camera->acqTriggerMode == Camera::eExternal){
                 goto skipSponEvent;
             }
 

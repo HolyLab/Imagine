@@ -33,18 +33,24 @@ public:
     enum ExtraErrorCodeType {
         eOutOfMem,
     };
-    enum TriggerMode {
+    enum AcqTriggerMode { //see p. 117 of PCO sdk manual
         eInternalTrigger = 0,
-        eExternalStart = 6,
+        eExternal = 6,
     };
-
+	enum ExpTriggerMode {
+		eAuto = 7,
+		eSoftwareTrigger = 8, //an exposure can only be started by a force trigger command
+		eExternalStart = 9,
+		eExternalControl = 10
+	};
     enum GenericAcqMode{
         eLive,
         eAcqAndSave,
     };
 
     GenericAcqMode  genericAcqMode;
-    TriggerMode     triggerMode;
+    AcqTriggerMode     acqTriggerMode;
+	ExpTriggerMode  expTriggerMode;
     string vendor;
 
     // dataAcqThread that owns this camera
@@ -140,7 +146,8 @@ public:
     virtual bool setAcqModeAndTime(GenericAcqMode genericAcqMode,
         float exposure,
         int anFrames,  //used only in kinetic-series mode
-        TriggerMode triggerMode
+        AcqTriggerMode acqTriggerMode,
+		ExpTriggerMode expTriggerMode
         ) = 0;
 
 
