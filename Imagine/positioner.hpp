@@ -38,7 +38,7 @@ public:
     Positioner(){ setDim(0); }
     virtual ~Positioner(){ clearCmd(); }
 
-    PositionerType posType = NullPositioner;
+	PositionerType posType = VolPiezoPositioner; // NullPositioner;
     DataAcqThread *parentAcqThread = nullptr;
 
     virtual string getLastErrorMsg(){ return lastErrorMsg; }
@@ -48,8 +48,9 @@ public:
 
     virtual double minPos() = 0; // the min value of the position
     virtual double maxPos() = 0; // the max value of the position. NOTE: the unit is macro
+	virtual double maxSpeed() = 0; // maximum speed to allow the piezo to travel, in um per second
     virtual bool curPos(double* pos) = 0; // current position in um
-    virtual bool moveTo(double to) = 0; //move as quick as possible
+    virtual bool moveTo(double to) = 0; //move at maximum safe speed
 
     //// cmd related:
     virtual bool addMovement(double from, double to, double duration, int trigger);

@@ -1469,12 +1469,48 @@ void Imagine::on_spinBoxNumOfDecimalDigits_valueChanged(int newValue)
         box->setDecimals(newValue); });
 }
 
+void Imagine::set_safe_piezo_params()
+{
+	//check whether settings are within the speed limits of the piezo
+	Positioner *pos = dataAcqThread.pPositioner;
+	double max_speed = pos->maxSpeed();
+	double start = (double)ui.doubleSpinBoxStartPos->value();
+	double stop = (double)ui.doubleSpinBoxStopPos->value();
+	double min_s_needed = (stop - start) / max_speed;
+	double cur_idle_time = (double)ui.doubleSpinBoxBoxIdleTimeBtwnStacks->value();
+	double cur_travel_back = (double)ui.doubleSpinBoxPiezoTravelBackTime->value();
+	//reset to respect maximum speed limit if necessary
+	double safe_idle_time = max(min_s_needed, cur_idle_time);
+	double safe_travel_back = max(min_s_needed, cur_travel_back);
+	ui.doubleSpinBoxPiezoTravelBackTime->setValue(safe_travel_back);
+	ui.doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(safe_idle_time);
+}
+
 void Imagine::on_doubleSpinBoxBoxIdleTimeBtwnStacks_valueChanged(double newValue)
 {
-    if (ui.cbAutoSetPiezoTravelBackTime->isChecked()){
-        ui.doubleSpinBoxPiezoTravelBackTime->setValue(newValue / 2);
+	if (!(ui.cbAutoSetPiezoTravelBackTime->isChecked())) {
+		set_safe_piezo_params();
+	}
+	else{// can probably ditch this
+        ui.doubleSpinBoxPiezoTravelBackTime->setValue(newValue / 2); //this may trigger safe piezo params function
+		set_safe_piezo_params();
     }
 
+}
+
+void Imagine::on_doubleSpinBoxPiezoTravelBackTime_valueChanged(double newValue)
+{
+	set_safe_piezo_params();
+}
+
+void Imagine::on_doubleSpinBoxStartPos_valueChanged(double newValue)
+{
+	set_safe_piezo_params();
+}
+
+void Imagine::on_doubleSpinBoxStopPos_valueChanged(double newValue)
+{
+	set_safe_piezo_params();
 }
 
 void Imagine::on_cbAutoSetPiezoTravelBackTime_stateChanged(int /* state */)

@@ -21,9 +21,17 @@ bool VolPiezo::curPos(double* pos)
     return true;
 }
 
-
 bool VolPiezo::moveTo(double to)
 {
+	double* cur_pos;
+	double duration;
+	curPos(cur_pos);
+	duration = (abs(to - *cur_pos) / maxSpeed()) * 1e6;
+	vector<Movement* > orig_movements = movements;
+	vector<Movement* > empty_movements;
+	movements = empty_movements;  //a hack, shouldn't have to hide prepared movements
+	addMovement(max(*cur_pos,0), to, duration, -1);
+	/*
     double vol = zpos2voltage(to);
     if (aoOnce == NULL){
         cleanup();
@@ -39,7 +47,15 @@ bool VolPiezo::moveTo(double to)
     catch (...){
         return false;
     }
-
+	*/
+	prepareCmd();
+	runCmd();
+	Sleep(200); //otherwise it seems to be cleared before nidaq can use it.
+	clearCmd();
+	cleanup();
+	movements = orig_movements;
+	prepareCmd(); //prepare again, leaving the movement command list as we found it.
+	
     return true;
 }//moveTo(),
 
@@ -51,7 +67,7 @@ bool VolPiezo::addMovement(double from, double to, double duration, int trigger)
 
     if (movements.size() == 1){
         Movement& m = *movements[0];
-        m.duration += 0.06;
+        m.duration += 0.06; //why are we doing this?
     }
     return result;
 }//addMovement(),
@@ -75,7 +91,7 @@ bool VolPiezo::prepareCmd()
     ao = new NiDaqAo(aoname, aoChannels);
 
     double totalTime = 0;
-    for (unsigned idx = 0; idx < movements.size(); ++idx) totalTime += movements[idx]->duration / 1e6; //macrosec to sec
+    for (unsigned idx = 0; idx < movements.size(); ++idx) totalTime += movements[idx]->duration / 1e6; //microsec to sec
 
     int scanRateAo = 10000; //TODO: hard coded
 
@@ -160,8 +176,8 @@ bool VolPiezo::waitCmd()
     //stop ao task:
     ao->stop();
 
-    //wait 200ms to have Piezo settled (so ai thread can record its final position)
-    Sleep(0.2 * 1000); // *1000: sec -> ms
+    //wait 50ms to have Piezo settled (so ai thread can record its final position)
+    Sleep(0.05 * 1000); // *1000: sec -> ms
 
     return true;
 }

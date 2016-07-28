@@ -33,7 +33,7 @@ void ImgApplication::initUI(Camera *cam1, Positioner *pos, Camera *cam2) {
     // init second window if needed
     Imagine *w2p = nullptr;
     if (cam2 != NULL) {
-        w2p = new Imagine(cam2, nullptr);
+		w2p = new Imagine(cam2, pos); // nullptr);
         imgTwo = w2p;
         imgTwo->setWindowTitle("Imagine (2)");
         imgOne->setWindowTitle("Imagine (1)");

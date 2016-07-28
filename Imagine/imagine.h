@@ -143,7 +143,11 @@ private slots:
     void on_doubleSpinBoxCurPos_valueChanged(double newValue);
     void on_spinBoxSpinboxSteps_valueChanged(int newValue);
     void on_spinBoxNumOfDecimalDigits_valueChanged(int newValue);
+	void set_safe_piezo_params();
     void on_doubleSpinBoxBoxIdleTimeBtwnStacks_valueChanged(double newValue);
+	void on_doubleSpinBoxPiezoTravelBackTime_valueChanged(double newValue);
+	void on_doubleSpinBoxStopPos_valueChanged(double newValue);
+	void on_doubleSpinBoxStartPos_valueChanged(double newValue);
     void on_cbAutoSetPiezoTravelBackTime_stateChanged(int state);
     void readPiezoCurPos();
     void onModified();

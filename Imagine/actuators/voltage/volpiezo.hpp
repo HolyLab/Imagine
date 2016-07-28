@@ -19,6 +19,7 @@ public:
 
     double minPos(){ return 0; }
     double maxPos(){ return 800; }
+	double maxSpeed(){ return 2000; } //microns per second
     bool curPos(double* pos);
     bool moveTo(double to);
 

@@ -11,6 +11,7 @@ public:
 
    double minPos(){return 0;}
    double maxPos(){return 1000; }
+   double maxSpeed() { return 4000; }
    bool curPos(double* pos){*pos=500; return true;}
    bool moveTo(double to){ return true;}
 
