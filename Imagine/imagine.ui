@@ -209,7 +209,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>2</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -483,7 +483,7 @@
               </widget>
              </item>
              <item row="4" column="1">
-              <widget class="QComboBox" name="comboBoxTriggerMode">
+              <widget class="QComboBox" name="comboBoxAcqTriggerMode">
                <property name="currentIndex">
                 <number>0</number>
                </property>
@@ -510,7 +510,7 @@
               </widget>
              </item>
              <item row="6" column="1">
-              <widget class="QComboBox" name="comboBoxTriggerMode_2">
+              <widget class="QComboBox" name="comboBoxExpTriggerMode">
                <property name="currentIndex">
                 <number>0</number>
                </property>
