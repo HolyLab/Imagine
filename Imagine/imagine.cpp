@@ -170,8 +170,8 @@ Imagine::Imagine(Camera *cam, Positioner *pos, QWidget *parent, Qt::WindowFlags 
 
     //trigger mode combo box
     if (pos != NULL && pos->posType == ActuatorPositioner){
-        ui.comboBoxTriggerMode->setEnabled(false);
-        ui.comboBoxTriggerMode->setCurrentIndex(1);
+        ui.comboBoxAcqTriggerMode->setEnabled(false);
+        ui.comboBoxAcqTriggerMode->setCurrentIndex(1);
     }
 
     Camera& camera = *dataAcqThread.pCamera;
@@ -742,7 +742,7 @@ bool Imagine::loadPreset()
     sv = preset.property("acqTriggerMode");
     if (sv.isValid()){
         QString ttStr = sv.toString();
-        ui.comboBoxTriggerMode->setCurrentIndex(ttStr == "internal");
+        ui.comboBoxAcqTriggerMode->setCurrentIndex(ttStr == "internal");
     }
 	//TODO: add expTriggerMode as a preset
     sv = preset.property("gain");
@@ -1205,11 +1205,11 @@ void Imagine::on_btnApply_clicked()
 
     Camera& camera = *dataAcqThread.pCamera;
 
-    QString acqTriggerModeStr = ui.comboBoxTriggerMode->currentText();
-	QString expTriggerModeStr = "Auto";
+    QString acqTriggerModeStr = ui.comboBoxAcqTriggerMode->currentText();
+ 	QString expTriggerModeStr = ui.comboBoxExpTriggerMode->currentText();
     Camera::AcqTriggerMode acqTriggerMode;
 	Camera::ExpTriggerMode expTriggerMode;
-    if (acqTriggerModeStr == "External Start") acqTriggerMode = Camera::eExternal;
+    if (acqTriggerModeStr == "External") acqTriggerMode = Camera::eExternal;
 	else if (acqTriggerModeStr == "Internal")  acqTriggerMode = Camera::eInternalTrigger;
     else {
         assert(0); //if code goes here, it is a bug
