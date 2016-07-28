@@ -246,7 +246,6 @@ Imagine::Imagine(Camera *cam, Positioner *pos, QWidget *parent, Qt::WindowFlags 
         ui.comboBoxPreAmpGains->setEnabled(false);
         ui.comboBoxVertShiftSpeed->setEnabled(false);
         ui.comboBoxVertClockVolAmp->setEnabled(false);
-        ui.cbBaseLineClamp->setEnabled(false);
 //    }
 
     ui.spinBoxHend->setValue(camera.getChipWidth());
@@ -1234,7 +1233,6 @@ void Imagine::on_btnApply_clicked()
     dataAcqThread.nFramesPerStack = ui.spinBoxFramesPerStack->value();
     dataAcqThread.exposureTime = ui.doubleSpinBoxExpTime->value();
     dataAcqThread.idleTimeBwtnStacks = ui.doubleSpinBoxBoxIdleTimeBtwnStacks->value();
-    dataAcqThread.isBaselineClamp = ui.cbBaseLineClamp->isChecked();
 
     dataAcqThread.horShiftSpeedIdx = ui.comboBoxHorReadoutRate->currentIndex();
     dataAcqThread.preAmpGainIdx = ui.comboBoxPreAmpGains->currentIndex();
@@ -1288,8 +1286,7 @@ void Imagine::on_btnApply_clicked()
             dataAcqThread.preAmpGainIdx,
             dataAcqThread.horShiftSpeedIdx,
             dataAcqThread.verShiftSpeedIdx,
-            dataAcqThread.verClockVolAmp,
-            dataAcqThread.isBaselineClamp
+            dataAcqThread.verClockVolAmp
             );
         if (!paramOK) {
             updateStatus(QString("Camera: applied params: ") + camera.getErrorMsg().c_str());

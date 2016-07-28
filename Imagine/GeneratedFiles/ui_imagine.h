@@ -97,19 +97,21 @@ public:
     QGroupBox *groupBox;
     QGridLayout *gridLayout;
     QLabel *label_32;
-    QComboBox *comboBoxTriggerMode;
-    QCheckBox *cbBaseLineClamp;
     QLabel *label_3;
-    QLabel *label_4;
     QLabel *label_5;
+    QLabel *label_33;
     QLabel *label_5_2;
+    QLabel *label_4;
+    QSpinBox *spinBoxFramesPerStack;
     QDoubleSpinBox *doubleSpinBoxExpTime;
     QSpinBox *spinBoxNumOfStacks;
-    QSpinBox *spinBoxFramesPerStack;
-    QDoubleSpinBox *doubleSpinBoxBoxIdleTimeBtwnStacks;
     QSpinBox *spinBoxAngle;
-    QLabel *label_33;
     QDoubleSpinBox *doubleSpinBoxUmPerPxlXy;
+    QDoubleSpinBox *doubleSpinBoxBoxIdleTimeBtwnStacks;
+    QLabel *label_5_3;
+    QComboBox *comboBoxTriggerMode;
+    QLabel *label_5_4;
+    QComboBox *comboBoxTriggerMode_2;
     QHBoxLayout *hboxLayout3;
     QGroupBox *groupBox_2;
     QGridLayout *gridLayout1;
@@ -413,38 +415,40 @@ public:
         label_32 = new QLabel(groupBox);
         label_32->setObjectName(QStringLiteral("label_32"));
 
-        gridLayout->addWidget(label_32, 5, 0, 1, 1);
-
-        comboBoxTriggerMode = new QComboBox(groupBox);
-        comboBoxTriggerMode->setObjectName(QStringLiteral("comboBoxTriggerMode"));
-
-        gridLayout->addWidget(comboBoxTriggerMode, 4, 0, 1, 1);
-
-        cbBaseLineClamp = new QCheckBox(groupBox);
-        cbBaseLineClamp->setObjectName(QStringLiteral("cbBaseLineClamp"));
-        cbBaseLineClamp->setChecked(true);
-
-        gridLayout->addWidget(cbBaseLineClamp, 4, 1, 1, 1);
+        gridLayout->addWidget(label_32, 7, 0, 1, 1);
 
         label_3 = new QLabel(groupBox);
         label_3->setObjectName(QStringLiteral("label_3"));
 
         gridLayout->addWidget(label_3, 0, 0, 1, 1);
 
-        label_4 = new QLabel(groupBox);
-        label_4->setObjectName(QStringLiteral("label_4"));
-
-        gridLayout->addWidget(label_4, 1, 0, 1, 1);
-
         label_5 = new QLabel(groupBox);
         label_5->setObjectName(QStringLiteral("label_5"));
 
         gridLayout->addWidget(label_5, 2, 0, 1, 1);
 
+        label_33 = new QLabel(groupBox);
+        label_33->setObjectName(QStringLiteral("label_33"));
+
+        gridLayout->addWidget(label_33, 8, 0, 1, 1);
+
         label_5_2 = new QLabel(groupBox);
         label_5_2->setObjectName(QStringLiteral("label_5_2"));
 
         gridLayout->addWidget(label_5_2, 3, 0, 1, 1);
+
+        label_4 = new QLabel(groupBox);
+        label_4->setObjectName(QStringLiteral("label_4"));
+
+        gridLayout->addWidget(label_4, 1, 0, 1, 1);
+
+        spinBoxFramesPerStack = new QSpinBox(groupBox);
+        spinBoxFramesPerStack->setObjectName(QStringLiteral("spinBoxFramesPerStack"));
+        spinBoxFramesPerStack->setMinimum(1);
+        spinBoxFramesPerStack->setMaximum(999999999);
+        spinBoxFramesPerStack->setValue(100);
+
+        gridLayout->addWidget(spinBoxFramesPerStack, 1, 1, 1, 1);
 
         doubleSpinBoxExpTime = new QDoubleSpinBox(groupBox);
         doubleSpinBoxExpTime->setObjectName(QStringLiteral("doubleSpinBoxExpTime"));
@@ -463,13 +467,21 @@ public:
 
         gridLayout->addWidget(spinBoxNumOfStacks, 0, 1, 1, 1);
 
-        spinBoxFramesPerStack = new QSpinBox(groupBox);
-        spinBoxFramesPerStack->setObjectName(QStringLiteral("spinBoxFramesPerStack"));
-        spinBoxFramesPerStack->setMinimum(1);
-        spinBoxFramesPerStack->setMaximum(999999999);
-        spinBoxFramesPerStack->setValue(100);
+        spinBoxAngle = new QSpinBox(groupBox);
+        spinBoxAngle->setObjectName(QStringLiteral("spinBoxAngle"));
+        spinBoxAngle->setMinimum(-1);
+        spinBoxAngle->setMaximum(360);
+        spinBoxAngle->setValue(-1);
 
-        gridLayout->addWidget(spinBoxFramesPerStack, 1, 1, 1, 1);
+        gridLayout->addWidget(spinBoxAngle, 7, 1, 1, 1);
+
+        doubleSpinBoxUmPerPxlXy = new QDoubleSpinBox(groupBox);
+        doubleSpinBoxUmPerPxlXy->setObjectName(QStringLiteral("doubleSpinBoxUmPerPxlXy"));
+        doubleSpinBoxUmPerPxlXy->setDecimals(4);
+        doubleSpinBoxUmPerPxlXy->setMinimum(-1);
+        doubleSpinBoxUmPerPxlXy->setValue(-1);
+
+        gridLayout->addWidget(doubleSpinBoxUmPerPxlXy, 8, 1, 1, 1);
 
         doubleSpinBoxBoxIdleTimeBtwnStacks = new QDoubleSpinBox(groupBox);
         doubleSpinBoxBoxIdleTimeBtwnStacks->setObjectName(QStringLiteral("doubleSpinBoxBoxIdleTimeBtwnStacks"));
@@ -479,26 +491,25 @@ public:
 
         gridLayout->addWidget(doubleSpinBoxBoxIdleTimeBtwnStacks, 3, 1, 1, 1);
 
-        spinBoxAngle = new QSpinBox(groupBox);
-        spinBoxAngle->setObjectName(QStringLiteral("spinBoxAngle"));
-        spinBoxAngle->setMinimum(-1);
-        spinBoxAngle->setMaximum(360);
-        spinBoxAngle->setValue(-1);
+        label_5_3 = new QLabel(groupBox);
+        label_5_3->setObjectName(QStringLiteral("label_5_3"));
 
-        gridLayout->addWidget(spinBoxAngle, 5, 1, 1, 1);
+        gridLayout->addWidget(label_5_3, 4, 0, 1, 1);
 
-        label_33 = new QLabel(groupBox);
-        label_33->setObjectName(QStringLiteral("label_33"));
+        comboBoxTriggerMode = new QComboBox(groupBox);
+        comboBoxTriggerMode->setObjectName(QStringLiteral("comboBoxTriggerMode"));
 
-        gridLayout->addWidget(label_33, 6, 0, 1, 1);
+        gridLayout->addWidget(comboBoxTriggerMode, 4, 1, 1, 1);
 
-        doubleSpinBoxUmPerPxlXy = new QDoubleSpinBox(groupBox);
-        doubleSpinBoxUmPerPxlXy->setObjectName(QStringLiteral("doubleSpinBoxUmPerPxlXy"));
-        doubleSpinBoxUmPerPxlXy->setDecimals(4);
-        doubleSpinBoxUmPerPxlXy->setMinimum(-1);
-        doubleSpinBoxUmPerPxlXy->setValue(-1);
+        label_5_4 = new QLabel(groupBox);
+        label_5_4->setObjectName(QStringLiteral("label_5_4"));
 
-        gridLayout->addWidget(doubleSpinBoxUmPerPxlXy, 6, 1, 1, 1);
+        gridLayout->addWidget(label_5_4, 6, 0, 1, 1);
+
+        comboBoxTriggerMode_2 = new QComboBox(groupBox);
+        comboBoxTriggerMode_2->setObjectName(QStringLiteral("comboBoxTriggerMode_2"));
+
+        gridLayout->addWidget(comboBoxTriggerMode_2, 6, 1, 1, 1);
 
 
         vboxLayout3->addWidget(groupBox);
@@ -973,7 +984,8 @@ public:
         QObject::connect(dwIntenCurve, SIGNAL(visibilityChanged(bool)), actionIntensity, SLOT(setChecked(bool)));
 
         tabWidgetCfg->setCurrentIndex(2);
-        comboBoxTriggerMode->setCurrentIndex(1);
+        comboBoxTriggerMode->setCurrentIndex(0);
+        comboBoxTriggerMode_2->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(ImagineClass);
@@ -1016,29 +1028,42 @@ public:
         tabWidgetCfg->setTabText(tabWidgetCfg->indexOf(tabGeneral), QApplication::translate("ImagineClass", "General", 0));
         groupBox->setTitle(QApplication::translate("ImagineClass", "time/duration", 0));
         label_32->setText(QApplication::translate("ImagineClass", "Angle from horizontal (deg):", 0));
-        comboBoxTriggerMode->clear();
-        comboBoxTriggerMode->insertItems(0, QStringList()
-         << QApplication::translate("ImagineClass", "External Start", 0)
-         << QApplication::translate("ImagineClass", "Internal", 0)
-        );
-        cbBaseLineClamp->setText(QApplication::translate("ImagineClass", "Baseline Clamp", 0));
         label_3->setText(QApplication::translate("ImagineClass", "#stacks:", 0));
-        label_4->setText(QApplication::translate("ImagineClass", "#frames/stack:", 0));
 #ifndef QT_NO_TOOLTIP
         label_5->setToolTip(QApplication::translate("ImagineClass", "That is, msec/frame", 0));
 #endif // QT_NO_TOOLTIP
         label_5->setText(QApplication::translate("ImagineClass", "exposure time(s):", 0));
+        label_33->setText(QApplication::translate("ImagineClass", "um per pixle (xy plane):", 0));
 #ifndef QT_NO_TOOLTIP
         label_5_2->setToolTip(QApplication::translate("ImagineClass", "That is, msec/frame", 0));
 #endif // QT_NO_TOOLTIP
         label_5_2->setText(QApplication::translate("ImagineClass", "idle time between stacks(s):", 0));
+        label_4->setText(QApplication::translate("ImagineClass", "#frames/stack:", 0));
 #ifndef QT_NO_TOOLTIP
         spinBoxAngle->setToolTip(QApplication::translate("ImagineClass", "-1 means n/a", 0));
 #endif // QT_NO_TOOLTIP
-        label_33->setText(QApplication::translate("ImagineClass", "um per pixle (xy plane):", 0));
 #ifndef QT_NO_TOOLTIP
         doubleSpinBoxUmPerPxlXy->setToolTip(QApplication::translate("ImagineClass", "-1 means n/a", 0));
 #endif // QT_NO_TOOLTIP
+#ifndef QT_NO_TOOLTIP
+        label_5_3->setToolTip(QApplication::translate("ImagineClass", "That is, msec/frame", 0));
+#endif // QT_NO_TOOLTIP
+        label_5_3->setText(QApplication::translate("ImagineClass", "Acquisition trigger mode:", 0));
+        comboBoxTriggerMode->clear();
+        comboBoxTriggerMode->insertItems(0, QStringList()
+         << QApplication::translate("ImagineClass", "External", 0)
+         << QApplication::translate("ImagineClass", "Internal", 0)
+        );
+#ifndef QT_NO_TOOLTIP
+        label_5_4->setToolTip(QApplication::translate("ImagineClass", "That is, msec/frame", 0));
+#endif // QT_NO_TOOLTIP
+        label_5_4->setText(QApplication::translate("ImagineClass", "Exposure trigger mode:", 0));
+        comboBoxTriggerMode_2->clear();
+        comboBoxTriggerMode_2->insertItems(0, QStringList()
+         << QApplication::translate("ImagineClass", "Auto", 0)
+         << QApplication::translate("ImagineClass", "External Start", 0)
+         << QApplication::translate("ImagineClass", "External Control", 0)
+        );
         groupBox_2->setTitle(QApplication::translate("ImagineClass", "horizontal pixel shift", 0));
         label_14->setText(QApplication::translate("ImagineClass", "Gain:", 0));
 #ifndef QT_NO_TOOLTIP

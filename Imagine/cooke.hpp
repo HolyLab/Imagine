@@ -126,8 +126,7 @@ public:
         int preAmpGainIdx,
         int horShiftSpeedIdx,
         int verShiftSpeedIdx,
-        int verClockVolAmp,
-        bool isBaselineClamp
+        int verClockVolAmp
         );
 
     //params different for live from for save mode

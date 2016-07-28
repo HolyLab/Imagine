@@ -73,7 +73,6 @@ public:
     int horShiftSpeedIdx;
     int verShiftSpeedIdx;
     int verClockVolAmp;
-    bool isBaselineClamp;
     Camera::AcqTriggerMode acqTriggerMode;
 	Camera::ExpTriggerMode expTriggerMode;
     int hstart, hend, vstart, vend; //binning params

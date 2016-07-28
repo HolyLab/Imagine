@@ -103,8 +103,7 @@ bool CookeCamera::setAcqParams(int emGain,
     int preAmpGainIdx,
     int horShiftSpeedIdx,
     int verShiftSpeedIdx,
-    int verClockVolAmp,
-    bool isBaselineClamp
+    int verClockVolAmp
     )
 {
     // failure of an safe_pco() call will raise an exception, so we can try/catch for cleanliness
