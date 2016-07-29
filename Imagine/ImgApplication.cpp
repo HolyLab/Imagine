@@ -30,10 +30,10 @@ void ImgApplication::initUI(Camera *cam1, Positioner *pos, Camera *cam2) {
     Imagine *w1p = new Imagine(cam1, pos);
     imgOne = w1p;
 
-    // init second window if needed
+    // init second window if needed.  The first window is "master", meaning that it controls the positioner.
     Imagine *w2p = nullptr;
     if (cam2 != NULL) {
-		w2p = new Imagine(cam2, pos); // nullptr);
+		w2p = new Imagine(cam2, pos, w1p);
         imgTwo = w2p;
         imgTwo->setWindowTitle("Imagine (2)");
         imgOne->setWindowTitle("Imagine (1)");

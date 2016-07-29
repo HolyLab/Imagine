@@ -65,18 +65,20 @@ DataAcqThread::DataAcqThread(Camera *cam, Positioner *pos, QObject *parent)
 
 DataAcqThread::~DataAcqThread()
 {
-    mutex.lock();
-    abort = true;
-    condition.wakeOne();
-    mutex.unlock();
+	mutex.lock();
+	abort = true;
+	condition.wakeOne();
+	mutex.unlock();
 
-    // TODO: clean up the camera, if needed
-    if (pCamera->vendor == "cooke"){
-        SpoolThread::freeMemPool();
-    }
+	// TODO: clean up the camera, if needed
+	if (pCamera->vendor == "cooke") {
+		SpoolThread::freeMemPool();
+	}
 
-    delete pCamera;
-    delete pPositioner;
+	delete pCamera;
+	if ((parentImagine->masterImagine) == NULL) {
+	delete pPositioner;
+	}
 
     wait();
 }

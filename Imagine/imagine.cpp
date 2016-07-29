@@ -74,9 +74,10 @@ int nUpdateImage;
 
 #pragma region LIFECYCLE
 
-Imagine::Imagine(Camera *cam, Positioner *pos, QWidget *parent, Qt::WindowFlags flags)
+Imagine::Imagine(Camera *cam, Positioner *pos, Imagine *mImagine, QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
 {
+	Imagine *masterImagine = mImagine;
     // pass the camera and positioner to the dataAcqThread
     dataAcqThread.setCamera(cam);
     dataAcqThread.setPositioner(pos);
@@ -116,6 +117,11 @@ Imagine::Imagine(Camera *cam, Positioner *pos, QWidget *parent, Qt::WindowFlags 
     //ui.tabWidgetCfg->setTabEnabled(4,false); //may confuse user
     ui.tabWidgetCfg->removeTab(5); //shutter
     ui.tabWidgetCfg->removeTab(5); //now ai becomes 5,  so tab ai is removed as well.
+	//remove positioner tab from slave window
+	//TODO: Give stimulus tab the same treatment (It's in position #3)
+	if (masterImagine != NULL) {
+		ui.tabWidgetCfg->removeTab(4);
+	}
 
     //adjust size
     QRect tRect = geometry();
@@ -1214,7 +1220,6 @@ void Imagine::on_btnApply_clicked()
     else {
         assert(0); //if code goes here, it is a bug
     }
-	//TODO: add exposure trigger mode to UI
 	if (expTriggerModeStr == "External Start") expTriggerMode = Camera::eExternalStart;
 	else if (expTriggerModeStr == "Auto")  expTriggerMode = Camera::eAuto;
 	else if (expTriggerModeStr == "External Control")  expTriggerMode = Camera::eExternalControl;
