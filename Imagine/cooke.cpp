@@ -370,6 +370,7 @@ bool CookeCamera::startAcq()
 
         //in fifo mode, frameIdxInCamRam are 0 for all buffers?
         int frameIdxInCamRam = 0;
+		//TODO: Switch this to the newer PCO_AddBufferEx
         errorCode = PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i]);// Add buffer to the driver queue
         if (errorCode != PCO_NOERROR) {
             errorMsg = "failed to add buffer";
