@@ -308,8 +308,8 @@ bool CookeCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 
     ///exposure time
     errorCode = PCO_SetDelayExposureTime(hCamera, // Timebase: 0-ns; 1-us; 2-ms  
-        (DWORD)(exposure * 10000),		// DWORD dwDelay. Make long enough that TTL pulse is recorded (here we use 1%)
-        (DWORD)(exposure * 990000),
+		(DWORD)(0),
+		(DWORD)(exposure * 1000000),
         1,		// WORD wTimeBaseDelay,
         1);	// WORD wTimeBaseExposure
     if (errorCode != PCO_NOERROR) {
