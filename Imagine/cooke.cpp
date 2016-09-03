@@ -153,8 +153,8 @@ bool CookeCamera::setAcqParams(int emGain,
         assert(wXResAct == hend - hstart + 1 && wYResAct == vend - vstart + 1);
         // interface output format (interface 2 for DVI)
         // note that the wFormat passed here is copied from the code before I arrived... seems weird.
-        safe_pco(PCO_SetInterfaceOutputFormat(hCamera, 2, SCCMOS_FORMAT_TOP_CENTER_BOTTOM_CENTER, 0, 0),
-            "failed to call PCO_SetInterfaceOutputFormat()");
+       // safe_pco(PCO_SetInterfaceOutputFormat(hCamera, 2, SCCMOS_FORMAT_TOP_CENTER_BOTTOM_CENTER, 0, 0),
+       //     "failed to call PCO_SetInterfaceOutputFormat()");
 
         // auto-set the transfer params
         PCO_SetTransferParametersAuto(hCamera, NULL, 0);
