@@ -157,7 +157,7 @@ bool CookeCamera::setAcqParams(int emGain,
        //     "failed to call PCO_SetInterfaceOutputFormat()");
 
         // auto-set the transfer params
-        PCO_SetTransferParametersAuto(hCamera, NULL, 0);
+        safe_pco(PCO_SetTransferParametersAuto(hCamera, NULL, 0), "failed to set transfer parameters");
         // TODO: explicitly set the transfer params here
         // TODO: explicitly set the active lookup table here
         // Do we really care to do the above, or are we okay as
