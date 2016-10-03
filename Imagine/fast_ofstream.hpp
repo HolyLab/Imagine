@@ -58,9 +58,11 @@ public:
         allBuf = (char*)_aligned_malloc(bufsize * 2, 4 * 1024); //2 bufs
         if (!allBuf) throw EAllocBuf();
         buf = allBuf; //initially, cur buf is the first one
-
+        //TODO: bring back FILE_FLAG_NO_BUFFERING for performance.  First need to handle case where xpix * ypix *2 is not divisible by 4096 (4k sector size).
+        //      This is especially important for PCO.Edge 4.2 cameras, for which almost all possible ROIs violate this rule.
+        //      This is challenging because the _NO_BUFFERING flag additionally requires that all writes begin at sector boundaries.
         hFile = CreateFileA(filename.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
-            FILE_ATTRIBUTE_NORMAL | FILE_FLAG_NO_BUFFERING,
+            FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH, // | FILE_FLAG_NO_BUFFERING,
             NULL);
         if (hFile == INVALID_HANDLE_VALUE){
             throw EOpenFile();
