@@ -52,7 +52,7 @@ public:
     static bool allocMemPool(long long sz){
         if (sz < 0){
 #ifdef _WIN64
-            memPoolSize = (long long)5529600 * 2 * 600; //600 full frames. TODO: make this user-configuable
+            memPoolSize = (long long)4194304 * 2 * 200; //200 full frames. 5529600 for PCO.Edge 5.5 TODO: make this user-configuable
 #else
             memPoolSize=5529600*2*30; //30 full frames
 #endif
