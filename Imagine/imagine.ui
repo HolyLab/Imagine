@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>849</width>
-    <height>716</height>
+    <height>1403</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -171,13 +171,13 @@
       <x>20</x>
       <y>130</y>
       <width>362</width>
-      <height>481</height>
+      <height>532</height>
      </rect>
     </property>
     <property name="minimumSize">
      <size>
       <width>362</width>
-      <height>479</height>
+      <height>532</height>
      </size>
     </property>
     <property name="windowTitle">
@@ -202,14 +202,20 @@
       </property>
       <item>
        <widget class="QTabWidget" name="tabWidgetCfg">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>410</height>
+          <height>463</height>
          </size>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>7</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -1476,6 +1482,47 @@
            <number>0</number>
           </property>
          </widget>
+         <widget class="QLabel" name="label_34">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>400</y>
+            <width>141</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="lineWidth">
+           <number>3</number>
+          </property>
+          <property name="text">
+           <string>Positioner is controlled by:</string>
+          </property>
+         </widget>
+         <widget class="QComboBox" name="comboBoxPositionerOwner">
+          <property name="geometry">
+           <rect>
+            <x>190</x>
+            <y>400</y>
+            <width>101</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <item>
+           <property name="text">
+            <string>Camera 1</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Camera 2</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Either</string>
+           </property>
+          </item>
+         </widget>
         </widget>
         <widget class="QWidget" name="tabShutter">
          <attribute name="title">
@@ -1600,14 +1647,17 @@
    <widget class="ImageLabel" name="labelImage">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>300</y>
+      <x>300</x>
+      <y>1000</y>
       <width>121</width>
       <height>101</height>
      </rect>
     </property>
     <property name="text">
      <string>labelImage</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
     </property>
    </widget>
    <widget class="QDockWidget" name="dwHist">
@@ -1635,8 +1685,8 @@
    <widget class="QDockWidget" name="dwIntenCurve">
     <property name="geometry">
      <rect>
-      <x>450</x>
-      <y>10</y>
+      <x>440</x>
+      <y>70</y>
       <width>241</width>
       <height>121</height>
      </rect>

@@ -1226,9 +1226,21 @@ void Imagine::on_btnApply_clicked()
     dataAcqThread.acqTriggerMode = acqTriggerMode;
 	dataAcqThread.expTriggerMode = expTriggerMode;
 
-    dataAcqThread.piezoStartPosUm = ui.doubleSpinBoxStartPos->value();
-    dataAcqThread.piezoStopPosUm = ui.doubleSpinBoxStopPos->value();
-    dataAcqThread.piezoTravelBackTime = ui.doubleSpinBoxPiezoTravelBackTime->value();
+    //TODO: fix this hack
+
+    //QPointer<Ui_ImagineClass>
+    Ui_ImagineClass* temp_ui = NULL;
+    if (masterImagine == NULL) {
+        temp_ui = &ui;
+    }
+    else {
+        temp_ui = &masterImagine->ui;
+    }
+
+    dataAcqThread.piezoStartPosUm = (*temp_ui).doubleSpinBoxStartPos->value();
+    dataAcqThread.piezoStopPosUm = (*temp_ui).doubleSpinBoxStopPos->value();
+    dataAcqThread.piezoTravelBackTime = (*temp_ui).doubleSpinBoxPiezoTravelBackTime->value();
+
     dataAcqThread.isBiDirectionalImaging = ui.cbBidirectionalImaging->isChecked();
 
     dataAcqThread.nStacks = ui.spinBoxNumOfStacks->value();
