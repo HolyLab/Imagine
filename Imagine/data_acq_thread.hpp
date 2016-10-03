@@ -24,6 +24,7 @@
 #include "daq.hpp"
 #include "camera_g.hpp"
 #include "positioner.hpp"
+#include "ai_thread.hpp"
 
 class QImage;
 class NiDaqAi;
@@ -61,6 +62,9 @@ public:
 
     // the Imagine instance that owns this thread
     Imagine *parentImagine = nullptr;
+
+    //the analog input acquisition thread owned by this thread
+    AiThread *aiThread = NULL;
 
     //intended camera params:
     int nStacks,

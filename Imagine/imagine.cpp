@@ -77,7 +77,7 @@ int nUpdateImage;
 Imagine::Imagine(Camera *cam, Positioner *pos, Imagine *mImagine, QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
 {
-	Imagine *masterImagine = mImagine;
+    masterImagine = mImagine;
     // pass the camera and positioner to the dataAcqThread
     dataAcqThread.setCamera(cam);
     dataAcqThread.setPositioner(pos);
@@ -359,9 +359,6 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Imagine *mImagine, QWidget *paren
     int y = (rect.height() - this->height()) / 2;
     this->move(x, y);
 
-    if (dataAcqThread.pCamera->vendor == "cooke"){
-        SpoolThread::allocMemPool(-1); //use default size
-    }
 }
 
 Imagine::~Imagine()

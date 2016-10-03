@@ -15,6 +15,7 @@ SpoolThread::SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *paren
     circBuf = nullptr;
     tmpItem = nullptr;
     parentThread = (CookeWorkerThread*)parent;
+    allocMemPool(-1);
 
     // grab the timer...
     Timer_g gt = parentThread->camera->parentAcqThread->parentImagine->gTimer;

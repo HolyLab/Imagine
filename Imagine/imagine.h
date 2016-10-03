@@ -51,7 +51,7 @@ class Imagine : public QMainWindow
     Q_OBJECT
     QThread pixmapperThread;
 public:
-    Imagine(Camera *cam, Positioner *pos = nullptr, Imagine *mImagine = nullptr,
+    Imagine(Camera *cam, Positioner *pos = NULL, Imagine *mImagine = NULL,
         QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~Imagine();
     DataAcqThread dataAcqThread;
@@ -77,7 +77,6 @@ protected:
 
 
 private:
-    Ui::ImagineClass ui;
     QScrollArea* scrollArea;
     int minPixelValue, maxPixelValue;
     int minPixelValueByUser, maxPixelValueByUser;
@@ -159,7 +158,8 @@ private slots:
     void zoom_onMousePressed(QMouseEvent*);
     void zoom_onMouseMoved(QMouseEvent*);
     void zoom_onMouseReleased(QMouseEvent*);
-
+public:
+    Ui::ImagineClass ui;
 public slots:
     // handle pixmap of recently acquired frame
     void handlePixmap(const QPixmap &pxmp, const QImage &img);

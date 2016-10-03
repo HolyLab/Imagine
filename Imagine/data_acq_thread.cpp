@@ -73,9 +73,8 @@ DataAcqThread::~DataAcqThread()
 	// TODO: clean up the camera, if needed
 
 	delete pCamera;
-	if ((parentImagine->masterImagine) == NULL) {
-	delete pPositioner;
-	}
+    if (aiThread != NULL) delete aiThread;
+    if ((parentImagine->masterImagine) == NULL) delete pPositioner;
 
     wait();
 }
