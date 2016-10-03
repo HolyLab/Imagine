@@ -34,8 +34,8 @@ private:
     char * tmpItem;
     char * circBufData;
 
-    static char * memPool;
-    static long long memPoolSize;
+    char * memPool;
+    long long memPoolSize;
 
     QWaitCondition bufNotEmpty;
     QWaitCondition bufNotFull;
@@ -49,7 +49,7 @@ private:
     CookeWorkerThread *parentThread;
 
 public:
-    static bool allocMemPool(long long sz){
+    bool allocMemPool(long long sz){
         if (sz < 0){
 #ifdef _WIN64
             memPoolSize = (long long)4194304 * 2 * 200; //200 full frames. 5529600 for PCO.Edge 5.5 TODO: make this user-configuable
@@ -58,11 +58,10 @@ public:
 #endif
         }//if, use default
         else memPoolSize = sz;
-
         memPool = (char*)_aligned_malloc(memPoolSize, 1024 * 64);
         return memPool;
     }
-    static void freeMemPool(){
+    void freeMemPool(){
         _aligned_free(memPool);
         memPool = nullptr;
         memPoolSize = 0;

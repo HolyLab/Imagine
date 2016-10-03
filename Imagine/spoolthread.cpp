@@ -3,8 +3,6 @@
 #include "cookeworkerthread.h"
 #include "imagine.h"
 
-char * SpoolThread::memPool = nullptr;
-long long SpoolThread::memPoolSize = 0;
 
 // Moved methods that refer to workerThread into here...
 // Eventually it might be nice to bring this class in line with the
@@ -29,7 +27,7 @@ SpoolThread::SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *paren
 
     this->itemSize = itemSize;
 
-    int circBufCap = memPoolSize / itemSize;
+    int circBufCap = memPoolSize / itemSize;  //memPoolSize is set in spoolthread.h
     cout << "b4 new CircularBuf: " << gt.read() << endl;
 
     circBuf = new CircularBuf(circBufCap);
@@ -64,6 +62,7 @@ SpoolThread::SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *paren
 }//ctor,
 
 SpoolThread::~SpoolThread(){
+    freeMemPool();
     delete circBuf;
     delete[] tmpItem;
     delete mpLock;
