@@ -71,9 +71,6 @@ DataAcqThread::~DataAcqThread()
 	mutex.unlock();
 
 	// TODO: clean up the camera, if needed
-	if (pCamera->vendor == "cooke") {
-		SpoolThread::freeMemPool();
-	}
 
 	delete pCamera;
 	if ((parentImagine->masterImagine) == NULL) {
