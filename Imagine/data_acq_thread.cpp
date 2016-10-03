@@ -313,13 +313,33 @@ void DataAcqThread::run_acq_and_save()
     //get the real params used by the camera:
     cycleTime = camera.getCycleTime();
 
-    if (hasPos) pPositioner->setPCount();
+    //TODO: fix this ugliness
+    string wTitle = (*parentImagine).windowTitle().toStdString();
+    string posOwner = "";
+    if ((*parentImagine).masterImagine != NULL) {
+        posOwner = (*parentImagine).masterImagine->ui.comboBoxPositionerOwner->currentText().toStdString();
+    }
+    else {
+        posOwner = (*parentImagine).ui.comboBoxPositionerOwner->currentText().toStdString();
+    }
 
-    preparePositioner(); //nec for volpiezo
+    bool ownPos = false;
+    if (!wTitle.compare("Imagine (2)") && !posOwner.compare("Camera 2")) {
+        ownPos = true;
+    }
+    else if (!wTitle.compare("Imagine (1)") && !posOwner.compare("Camera 1")) {
+        ownPos = true;
+    }
+    else if (!posOwner.compare("Either")) {
+        ownPos = true;
+    }
+
+    if (hasPos && ownPos) pPositioner->setPCount();
+    if (ownPos) preparePositioner(); //nec for volpiezo
 
     //prepare for AI:
     QString ainame = se->globalObject().property("ainame").toString();
-    AiThread * aiThread = new AiThread(0, ainame, 10000, 50000, 10000);
+    aiThread = new AiThread(0, ainame, 10000, 50000, 10000);
     unique_ptr<AiThread> uniPtrAiThread(aiThread);
 
     //after all devices are prepared, now we can save the file header:
@@ -407,7 +427,7 @@ nextStack:
     }
 */
 
-    if (hasPos) pPositioner->optimizeCmd();
+    if (hasPos && ownPos) pPositioner->optimizeCmd(); //This function currently does nothing for voltage positioner.  Is this okay?
 
     cout << "b4 start camera & piezo: " << gt.read() << endl;
 
@@ -420,7 +440,7 @@ nextStack:
             QThread::msleep(timeToWait * 1000); // *1000: sec -> ms
         }
         //genSquareSpike(10);
-        if (hasPos) {
+        if (hasPos && ownPos) {
             cout << "b4 pPositioner->runCmd: " << gt.read() << endl;
             pPositioner->runCmd();
             cout << "after pPositioner->runCmd: " << gt.read() << endl;
@@ -431,12 +451,13 @@ nextStack:
         }
     }
     else {
-        if (hasPos) pPositioner->runCmd();
+        //Camera takes a while to start, so do this before starting positioner
         if (!startCameraOnce) {
             cout << "b4 camera.startacq: " << gt.read() << endl;
             camera.startAcq();
             cout << "after camera.startacq: " << gt.read() << endl;
         }
+        if (hasPos && ownPos) pPositioner->runCmd();
     }
 
     cout << "after start camera & piezo: " << gt.read() << endl;
@@ -543,13 +564,17 @@ nextStack:
         cout << "after stop camera: " << gt.read() << endl;
     }
 
-    if (hasPos) {
+    if (hasPos && ownPos) {
         cout << "b4 wait piezo: " << gt.read() << endl;
         //genSquareSpike(50);
         pPositioner->waitCmd();
+        //TODO: allow piezo reset to happen asynchronously.
+        //Thus it can reset while the camera is prepared for the next stack, speeding up multi-stack acquisition significantly.
+        //Alternatively, we could just speed up the camera prep.  (i.e. we shouldn't have to destroy and re-create image buffers between
+        //stacks, etc)
         cout << "after wait piezo: " << gt.read() << endl;
     }
-    genSquareSpike(70);
+    //genSquareSpike(70);
 
     //TMP: trigger off camera
     //digOut->updateOutputBuf(5,false);
@@ -557,7 +582,7 @@ nextStack:
 
     idxCurStack++;  //post: it is #stacks we got so far
     if (idxCurStack < this->nStacks && !stopRequested){
-        if (isBiDirectionalImaging){
+        if (isBiDirectionalImaging && ownPos){
             cout << "b4 preparePositioner: " << gt.read() << endl;
             preparePositioner(idxCurStack % 2 == 0);
             cout << "after preparePositioner: " << gt.read() << endl;
@@ -624,7 +649,7 @@ nextStack:
     }
 */
     ///reset the actuator to its exact starting pos
-    if (hasPos) {
+    if (hasPos && ownPos) {
         emit newStatusMsgReady("Now resetting the actuator to its exact starting pos ...");
         emit resetActuatorPosReady();
     }
