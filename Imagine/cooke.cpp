@@ -242,6 +242,7 @@ bool CookeCamera::setAcqParams(int emGain,
 double CookeCamera::getCycleTime()
 {
     DWORD sec, nsec;
+    //TODO: this is probably inaccurate when using external exposure triggering (returns only exposure time)
     errorCode = PCO_GetCOCRuntime(hCamera, &sec, &nsec);
     if (errorCode != PCO_NOERROR) {
         errorMsg = "failed to call PCO_GetCOCRuntime()";

@@ -94,6 +94,7 @@ public:
             ///wait for events
             int waitResult = WaitForMultipleObjects(camera->nBufs, camera->mEvent, false, 10000);
             nEvents++;
+			//TODO: the logic block below is what causes external acquisitions to time out. needs fix.
             if (waitResult < WAIT_OBJECT_0 || waitResult >= WAIT_OBJECT_0 + camera->nBufs) {
                 break; //break the while
                 //todo: should we try to keep going? SEE: CSC2Class::SC2Thread()

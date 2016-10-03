@@ -11,3 +11,6 @@
 *.*sdf
 *scc
 /qtgen
+moc_*.cpp
+qrc_imagine.cpp
+ui_imagine.h
