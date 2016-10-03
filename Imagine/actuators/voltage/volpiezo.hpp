@@ -17,6 +17,7 @@ public:
     }
     ~VolPiezo(){ delete aoOnce; delete ao; }
 
+	//TODO: make these configurable elsewhere.  may be better to subclass VolPiezo for individual positioner models
     double minPos(){ return 0; }
     double maxPos(){ return 800; }
 	double maxSpeed(){ return 2000; } //microns per second

@@ -153,11 +153,11 @@ bool CookeCamera::setAcqParams(int emGain,
         assert(wXResAct == hend - hstart + 1 && wYResAct == vend - vstart + 1);
         // interface output format (interface 2 for DVI)
         // note that the wFormat passed here is copied from the code before I arrived... seems weird.
-        safe_pco(PCO_SetInterfaceOutputFormat(hCamera, 2, SCCMOS_FORMAT_TOP_CENTER_BOTTOM_CENTER, 0, 0),
-            "failed to call PCO_SetInterfaceOutputFormat()");
+       // safe_pco(PCO_SetInterfaceOutputFormat(hCamera, 2, SCCMOS_FORMAT_TOP_CENTER_BOTTOM_CENTER, 0, 0),
+       //     "failed to call PCO_SetInterfaceOutputFormat()");
 
         // auto-set the transfer params
-        PCO_SetTransferParametersAuto(hCamera, NULL, 0);
+        safe_pco(PCO_SetTransferParametersAuto(hCamera, NULL, 0), "failed to set transfer parameters");
         // TODO: explicitly set the transfer params here
         // TODO: explicitly set the active lookup table here
         // Do we really care to do the above, or are we okay as
@@ -308,8 +308,8 @@ bool CookeCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 
     ///exposure time
     errorCode = PCO_SetDelayExposureTime(hCamera, // Timebase: 0-ns; 1-us; 2-ms  
-        (DWORD)(exposure * 10000),		// DWORD dwDelay. Make long enough that TTL pulse is recorded (here we use 1%)
-        (DWORD)(exposure * 990000),
+		(DWORD)(0),
+		(DWORD)(exposure * 1000000),
         1,		// WORD wTimeBaseDelay,
         1);	// WORD wTimeBaseExposure
     if (errorCode != PCO_NOERROR) {
@@ -370,6 +370,7 @@ bool CookeCamera::startAcq()
 
         //in fifo mode, frameIdxInCamRam are 0 for all buffers?
         int frameIdxInCamRam = 0;
+		//TODO: Switch this to the newer PCO_AddBufferEx
         errorCode = PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i]);// Add buffer to the driver queue
         if (errorCode != PCO_NOERROR) {
             errorMsg = "failed to add buffer";

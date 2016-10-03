@@ -51,12 +51,13 @@ class Imagine : public QMainWindow
     Q_OBJECT
     QThread pixmapperThread;
 public:
-    Imagine(Camera *cam, Positioner *pos = nullptr,
+    Imagine(Camera *cam, Positioner *pos = nullptr, Imagine *mImagine = nullptr,
         QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~Imagine();
     DataAcqThread dataAcqThread;
     Timer_g gTimer;
     
+	Imagine *masterImagine; //Positioner and stimulus control / interface is restricted to only the master instance
     Pixmapper *pixmapper = nullptr;
     bool isPixmapping = false;
     QPixmap pixmap;

@@ -100,6 +100,7 @@ public:
         _aligned_free(pLiveImage);
         _aligned_free(pBlackImage);
 
+        delete workerThread;
         delete mpLock;
     }
 
