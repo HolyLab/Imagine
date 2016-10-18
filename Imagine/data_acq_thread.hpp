@@ -126,7 +126,7 @@ private:
     QWaitCondition condition;
     bool restart;
     bool abort;
-    volatile bool stopRequested;
+    volatile bool stopRequested; 
 };
 
 #endif  //DATA_ACQ_THREAD_HPP

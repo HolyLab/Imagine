@@ -13,9 +13,10 @@ double VolPiezo::zpos2voltage(double um)
 bool VolPiezo::curPos(double* pos)
 {
     NiDaqAiReadOne ai(ainame, 0); //channel 0: piezo
-    int reading;
+    float64 reading;
     ai.readOne(reading); //TODO: check error
-    double vol = ai.toPhyUnit(reading);
+//    double vol = ai.toPhyUnit(reading);
+	double vol = reading;
     *pos = vol / 10 * this->maxPos();
 
     return true;
@@ -31,23 +32,8 @@ bool VolPiezo::moveTo(double to)
 	vector<Movement* > empty_movements;
 	movements = empty_movements;  //a hack, shouldn't have to hide prepared movements
 	addMovement(max(*cur_pos,0), to, duration, -1);
-	/*
-    double vol = zpos2voltage(to);
-    if (aoOnce == NULL){
-        cleanup();
-        int aoChannelForPiezo = 0; //TODO: put this configurable
-        aoOnce = new NiDaqAoWriteOne(aoname, aoChannelForPiezo);
-        Sleep(0.5 * 1000); //sleep 0.5s 
-    }
-    uInt16 sampleValue = aoOnce->toDigUnit(vol);
-    //temp commented: 
-    try{
-        assert(aoOnce->writeOne(sampleValue));
-    }
-    catch (...){
-        return false;
-    }
-	*/
+
+
 	prepareCmd();
 	runCmd();
 	Sleep(200); //otherwise it seems to be cleared before nidaq can use it.
@@ -67,7 +53,7 @@ bool VolPiezo::addMovement(double from, double to, double duration, int trigger)
 
     if (movements.size() == 1){
         Movement& m = *movements[0];
-        m.duration += 0.06; //why are we doing this?
+        //m.duration += 0.06; //why are we doing this?
     }
     return result;
 }//addMovement(),
@@ -103,8 +89,10 @@ bool VolPiezo::prepareCmd()
     }
 
     double piezoStartPos, piezoStopPos, preStop;
-    uInt16 * bufAo = ao->getOutputBuf();
-    uInt16 * buf = bufAo - 1;
+    //uInt16 * bufAo = ao->getOutputBuf();
+	float64 * bufAo = ao->getOutputBuf();
+    //uInt16 * buf = bufAo - 1;
+	float64 * buf = bufAo - 1;
     for (unsigned idx = 0; idx < movements.size(); ++idx){
         const Movement& m = *movements[idx];
         if (_isnan(m.from)) piezoStartPos = preStop;
@@ -115,24 +103,28 @@ bool VolPiezo::prepareCmd()
         preStop = piezoStopPos;
 
         //get buffer address and generate waveform:
-        int aoStartValue = ao->toDigUnit(piezoStartPos);
-        int aoStopValue = ao->toDigUnit(piezoStopPos);
+        //int aoStartValue = ao->toDigUnit(piezoStartPos);
+        //int aoStopValue = ao->toDigUnit(piezoStopPos);
+		double aoStartValue = piezoStartPos;
+		double aoStopValue = piezoStopPos;
 
         int nScansNow = int(scanRateAo*m.duration / 1e6);
         if (idx == movements.size() - 1){
             nScansNow = ao->nScans - (buf - bufAo + 1);
         }//if, need roundup correction
         for (int i = 0; i < nScansNow; i++){
-            *++buf = uInt16(double(i) / nScansNow*(aoStopValue - aoStartValue) + aoStartValue);
+            //*++buf = uInt16(double(i) / nScansNow*(aoStopValue - aoStartValue) + aoStartValue);
+			*++buf = double(i) / nScansNow*(aoStopValue - aoStartValue) + aoStartValue;
         }
         if (nScansNow>0 || (nScansNow == 0 && idx != 0)){//todo: if nScansNow==0 && idx==0, do this at end of for loop
-            *buf = aoStopValue; //precisely set the last sample; or if move in 0 sec, rewrite last move's last sample
+            *buf = float64(aoStopValue); //precisely set the last sample; or if move in 0 sec, rewrite last move's last sample
         }
     }//for, each movement
 
+
     /// now the trigger
-    int aoTTLHigh = ao->toDigUnit(5.0);
-    int aoTTLLow = ao->toDigUnit(0);
+	int aoTTLHigh = 5.0; // ao->toDigUnit(5.0);
+	int aoTTLLow = 0.0; // ao->toDigUnit(0);
     bufAo += ao->nScans;
     buf = bufAo;
     for (int i = 0; i < ao->nScans; i++){
@@ -172,12 +164,12 @@ bool VolPiezo::runCmd()
 bool VolPiezo::waitCmd()
 {
     //wait until piezo's orig position is reset
-    ao->wait(-1); //wait forever
+    ao->wait(-1); //wait until DAQ task is finished
     //stop ao task:
     ao->stop();
 
     //wait 50ms to have Piezo settled (so ai thread can record its final position)
-    Sleep(0.05 * 1000); // *1000: sec -> ms
+    //Sleep(0.05 * 1000); // *1000: sec -> ms
 
     return true;
 }

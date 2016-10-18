@@ -13,6 +13,7 @@ using std::endl;
 #include "spoolthread.h"
 #include "data_acq_thread.hpp"
 #include "imagine.h"
+#include "pco_errt.h"
 
 #include <QThread>
 
@@ -29,7 +30,9 @@ private:
     CookeCamera* camera;
     SpoolThread* spoolingThread;
 
-    volatile bool shouldStop; //todo: do we need a lock to guard it?
+    //camera->isRecording is modified when camera buffers are removed (i.e. between stacks)
+    //shouldStop is modified when the acquisition is complete (i.e. after a sequence of stacks)
+    volatile bool shouldStop;
 
 public:
     CookeWorkerThread(CookeCamera * camera, QObject *parent = 0)
@@ -65,7 +68,10 @@ public:
 
     void requestStop(){
         shouldStop = true;
-        if (spoolingThread)spoolingThread->requestStop();
+        if (spoolingThread) {
+            spoolingThread->requestStop();
+            spoolingThread->wait();
+        }
     }
 
     void append2seq(CookeCamera::PixelValue* frame, int frameIdx, int nPixelsPerFrame){
@@ -88,22 +94,29 @@ public:
         DWORD dwStatusDrv;
         int negIndices = 0;
         Timer_g gt = this->camera->parentAcqThread->parentImagine->gTimer;
+        WORD bitsPerPixel = 16; //TODO: hardcoded
 
         while (true){
             //if(shouldStop) break;
             ///wait for events
-            int waitResult = WaitForMultipleObjects(camera->nBufs, camera->mEvent, false, 10000);
-            nEvents++;
+            int waitResult = WaitForMultipleObjects(camera->nBufs, camera->mEvent, false, 2000);
 			//TODO: the logic block below is what causes external acquisitions to time out. maybe fixed?
-            if (waitResult < WAIT_OBJECT_0 || waitResult >= WAIT_OBJECT_0 + camera->nBufs) {
-                if(shouldStop) break; //break the while
-                else {
-                    int waitResult = WaitForMultipleObjects(camera->nBufs, camera->mEvent, false, 10000); //wait again
-                }
-                //todo: should we try to keep going? SEE: CSC2Class::SC2Thread()
+            while ((waitResult < WAIT_OBJECT_0 || waitResult >= WAIT_OBJECT_0 + camera->nBufs) && !shouldStop) {
+                int waitResult = WaitForMultipleObjects(camera->nBufs, camera->mEvent, false, 2000); //wait again
             }//if, WAIT_ABANDONED, WAIT_TIMEOUT or WAIT_FAILED
+                //todo: should we try to keep going? SEE: CSC2Class::SC2Thread()
+            if (shouldStop) break;
+            nEvents++;
             int eventIdx = waitResult - WAIT_OBJECT_0;
-            int err = PCO_GetBufferStatus(camera->hCamera, camera->mBufIndex[eventIdx], &dwStatusDll, &dwStatusDrv);
+            /*
+            camera->safe_pco(PCO_GetBufferStatus(camera->hCamera, camera->mBufIndex[eventIdx], &dwStatusDll, &dwStatusDrv), "buffer status returned error");
+            if (dwStatusDrv != 0) {
+                char msg[16384];
+                PCO_GetErrorText(dwStatusDrv, msg, 16384);
+                cout << msg << endl;
+            }
+            */
+            /*
             if (err != 0) {
                 cerr << "PCO_GetBufferStatus error: " << hex << err << endl;
                 break;
@@ -113,95 +126,112 @@ public:
                 cerr << "PCO_GetBufferStatus dwStatusDrv(hex): " << hex << dwStatusDrv << endl;
                 break;
             }
+            */
 
-            CLockGuard tGuard(camera->mpLock);
+            CLockGuard tGuard(camera->mpLock); //wraps and acquires the lock
 
             ///work around sdk bug
             if (nEvents == 1 && camera->acqTriggerMode == Camera::eExternal){
                 goto skipSponEvent;
             }
 
-            CookeCamera::PixelValue* rawData = camera->mRingBuf[eventIdx];
-            long counter = camera->extractFrameCounter(rawData);
-            if (camera->nAcquiredFrames == 0) {
-                camera->firstFrameCounter = counter;
-                assert(counter >= 0);
-                cout << "first frame's counter is " << counter << ", at time: " << gt.read() << endl;
-                genSquareSpike(20);
-            }
-            int curFrameIdx = counter - camera->firstFrameCounter;
+            if (camera->isRecording) {
+                CookeCamera::PixelValue* rawData = camera->mRingBuf[eventIdx];
+                long counter = camera->extractFrameCounter(rawData);
+                //the two cases below can come up since we don't stop this thread between stacks
+                if (counter == 0 || (counter > camera->nFrames && camera->genericAcqMode != Camera::eLive)) {
+                    //reset event
+                    ResetEvent(camera->mEvent[eventIdx]);
+                    continue;
+                }
+                if (camera->nAcquiredFrames == 0) {
+                    camera->firstFrameCounter = counter;
+                    assert(counter >= 0);
+                    cout << "first frame's counter is " << counter << ", at time: " << gt.read() << endl;
+                    genSquareSpike(20);
+                }
+                int curFrameIdx = counter - camera->firstFrameCounter;
 
 #ifdef _DEBUG
-            curFrameIndices.push_back(curFrameIdx);
+                curFrameIndices.push_back(curFrameIdx);
 #endif
 
 
-            if (curFrameIdx < 0){
-                if (++negIndices < 16) goto skipSponEvent;//NOTE: hard coded 16
-                else {
-                    __debugbreak();
+                if (curFrameIdx < 0) {
+                    if (++negIndices < 16) goto skipSponEvent;//NOTE: hard coded 16
+                    else {
+                        __debugbreak();
+                    }
                 }
-            }
-            assert(curFrameIdx >= 0);
-            long nPixelsPerFrame = camera->getImageHeight()*camera->getImageWidth();
+                assert(curFrameIdx >= 0);
+                long nPixelsPerFrame = camera->getImageHeight()*camera->getImageWidth();
 
-            //fill the gap w/ black images
-            int gapWidth = 0;
-            for (int frameIdx = camera->nAcquiredFrames; frameIdx < min(camera->nFrames, curFrameIdx); ++frameIdx){
-                if (camera->genericAcqMode == Camera::eAcqAndSave){
-                    append2seq(camera->pBlackImage, frameIdx, nPixelsPerFrame);
+                //fill the gap w/ black images
+                int gapWidth = 0;
+                //TODO: use a timer to decide when we've missed a frame.                
+                for (int frameIdx = camera->nAcquiredFrames; frameIdx < min(camera->nFrames, curFrameIdx); ++frameIdx){
+                    if (camera->genericAcqMode == Camera::eAcqAndSave){
+                        append2seq(camera->pBlackImage, frameIdx, nPixelsPerFrame);
+                    }
+                    gapWidth++;
                 }
-                gapWidth++;
-            }
-            if (gapWidth) {
-                //tmp: __debugbreak();
-                cout << "fill " << gapWidth << " frames with black images (start at frame idx=" << camera->nAcquiredFrames << ")" << endl;
-                camera->totalGap += gapWidth;
+                
+                if (gapWidth) {
+                    //tmp: __debugbreak();
+                    cout << "fill " << gapWidth << " frames with black images (start at frame idx=" << camera->nAcquiredFrames << ")" << endl;
+                    camera->totalGap += gapWidth;
 #ifdef _DEBUG
-                nBlackFrames.push_back(gapWidth);
-                blackFrameStartIndices.push_back(camera->nAcquiredFrames);
+                    nBlackFrames.push_back(gapWidth);
+                    blackFrameStartIndices.push_back(camera->nAcquiredFrames);
 #endif
-            }
-
-            //fill the frame array and live image
-            if (curFrameIdx < camera->nFrames){
-                if (camera->genericAcqMode == Camera::eAcqAndSave){
-                    append2seq(rawData, curFrameIdx, nPixelsPerFrame);
                 }
 
-                memcpy_g(camera->pLiveImage, rawData, sizeof(CookeCamera::PixelValue)*nPixelsPerFrame);
-                camera->nAcquiredFrames = max(curFrameIdx + 1, camera->nAcquiredFrames); //don't got back
-            }
-            else {
-                if (camera->genericAcqMode == Camera::eAcqAndSave){
-                    memcpy_g(camera->pLiveImage, camera->pBlackImage, sizeof(Camera::PixelValue)*nPixelsPerFrame);
-                    camera->nAcquiredFrames = camera->nFrames;
+                //fill the frame array and live image
+                if (curFrameIdx < camera->nFrames) { //nFrames is the number of frames per stack
+                    if (camera->genericAcqMode == Camera::eAcqAndSave) {
+                        append2seq(rawData, curFrameIdx, nPixelsPerFrame);
+                    }
+
+                    memcpy_g(camera->pLiveImage, rawData, sizeof(CookeCamera::PixelValue)*nPixelsPerFrame);
+                    camera->nAcquiredFrames = max(curFrameIdx + 1, camera->nAcquiredFrames); //don't got back
                 }
                 else {
-                    memcpy_g(camera->pLiveImage, rawData, sizeof(Camera::PixelValue)*nPixelsPerFrame);
-                    camera->nAcquiredFrames = curFrameIdx + 1;
+                    if (camera->genericAcqMode == Camera::eAcqAndSave) {
+                        memcpy_g(camera->pLiveImage, camera->pBlackImage, sizeof(Camera::PixelValue)*nPixelsPerFrame);
+                        camera->nAcquiredFrames = camera->nFrames;
+                    }
+                    else {
+                        memcpy_g(camera->pLiveImage, rawData, sizeof(CookeCamera::PixelValue)*nPixelsPerFrame);
+                        camera->nAcquiredFrames = curFrameIdx + 1;
+                    }
                 }
-            }
-
+            } // if(!shouldStop)
         skipSponEvent:
 
             //reset event
             ResetEvent(camera->mEvent[eventIdx]);
 
-            if (shouldStop) break;
+            if (shouldStop) {
+                tGuard.unlock();
+                break;
+            }
 
             ///then add back the buffer
             if (camera->nAcquiredFrames < camera->nFrames || camera->genericAcqMode == Camera::eLive){
                 //in fifo mode, frameIdxInCamRam are 0 for both buffers?
                 int frameIdxInCamRam = 0;
-                camera->errorCode = PCO_AddBuffer(camera->hCamera, frameIdxInCamRam, frameIdxInCamRam, camera->mBufIndex[eventIdx]);// Add buffer to the driver queue
+                //TODO: switch to PCO_AddBufferExtern to improve performance
+                camera->safe_pco(PCO_AddBufferEx(camera->hCamera, frameIdxInCamRam, frameIdxInCamRam, camera->mBufIndex[eventIdx], camera->getImageWidth(), camera->getImageHeight(), bitsPerPixel), "failed to add buffer");// Add buffer to the driver queue
+                //camera->safe_pco(PCO_AddBuffer(camera->hCamera, frameIdxInCamRam, frameIdxInCamRam, camera->mBufIndex[eventIdx]), "failed to add buffer");// Add buffer to the driver queue
+                tGuard.unlock();
                 if (camera->errorCode != PCO_NOERROR) {
                     camera->errorMsg = "failed to add buffer";
                     break; //break the while
                 }
             }
             else {
-                break;
+                tGuard.unlock();
+                continue; // break;
             }
         }//while,
 #if defined(_DEBUG)

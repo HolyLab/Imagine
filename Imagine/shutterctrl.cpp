@@ -59,7 +59,10 @@ bool openShutterDevice(const QString& dev)
         qDebug() << "Parity                 : " << port->parity();
         qDebug() << "Stop bits              : " << port->stopBits();
         qDebug() << "Flow                   : " << port->flowControl();
-        qDebug() << "Char timeout, msec     : " << port->charIntervalTimeout();
+        qDebug() << "Char timeout, 
+		
+		
+		c     : " << port->charIntervalTimeout();
         */
     }
 

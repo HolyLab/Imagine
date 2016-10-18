@@ -50,6 +50,7 @@ private:
     long nAcquiredFrames;
     //lock used to coordinate accessing to nAcquiredFrames & pLiveImage
     QMutex* mpLock;
+    bool isRecording;
 
     // nBufs is defined in cpp file - these arrays should have the same length as nBufs
     static const int nBufs;
@@ -74,6 +75,7 @@ public:
         workerThread = nullptr;
 
         ofsSpooling = nullptr;
+
 
         vendor = "cooke";
 
@@ -143,7 +145,11 @@ public:
 
     bool getLatestLiveImage(PixelValue * frame);
 
+    bool prepCameraOnce();
+
     bool startAcq();
+
+    bool stopAcqFinal();
 
     bool stopAcq();
 

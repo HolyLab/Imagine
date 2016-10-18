@@ -84,9 +84,11 @@ void AiThread::stopAcq()
 
 void AiThread::run()
 {
-    uInt16* readBuf = new uInt16[readBufSize*chanList.size()];
+    //uInt16* readBuf = new uInt16[readBufSize*chanList.size()];
+	float64* readBuf = new float64[readBufSize*chanList.size()];
     //ScopedPtr_g<uInt16>(readBuf, true); //note: unamed temp var will be free at cur line
-    unique_ptr<uInt16[]> ttScopedPtr(readBuf);
+    //unique_ptr<uInt16[]> ttScopedPtr(readBuf);
+	unique_ptr<float64[]> ttScopedPtr(readBuf);
 
     while (!stopRequested){
         ai->read(readBufSize, readBuf);

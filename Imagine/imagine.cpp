@@ -1486,13 +1486,27 @@ void Imagine::on_spinBoxNumOfDecimalDigits_valueChanged(int newValue)
 void Imagine::set_safe_piezo_params()
 {
 	//check whether settings are within the speed limits of the piezo
+    //TODO: also check whether the speed during an imaging scan is within this speed limit
 	Positioner *pos = dataAcqThread.pPositioner;
+    double cur_travel_back, start, stop;
 	double max_speed = pos->maxSpeed();
-	double start = (double)ui.doubleSpinBoxStartPos->value();
-	double stop = (double)ui.doubleSpinBoxStopPos->value();
+    if (masterImagine == NULL) {
+        start = (double)ui.doubleSpinBoxStartPos->value();
+        stop = (double)ui.doubleSpinBoxStopPos->value();
+    }
+    else {
+        start = (double)masterImagine->ui.doubleSpinBoxStartPos->value();
+        stop = (double)masterImagine->ui.doubleSpinBoxStopPos->value();
+    }
+
 	double min_s_needed = (stop - start) / max_speed;
 	double cur_idle_time = (double)ui.doubleSpinBoxBoxIdleTimeBtwnStacks->value();
-	double cur_travel_back = (double)ui.doubleSpinBoxPiezoTravelBackTime->value();
+    if (masterImagine == NULL) {
+        cur_travel_back = (double)ui.doubleSpinBoxPiezoTravelBackTime->value();
+    }
+    else {
+        cur_travel_back = (double)masterImagine->ui.doubleSpinBoxPiezoTravelBackTime->value();
+    }
 	//reset to respect maximum speed limit if necessary
 	double safe_idle_time = max(min_s_needed, cur_idle_time);
 	double safe_travel_back = max(min_s_needed, cur_travel_back);

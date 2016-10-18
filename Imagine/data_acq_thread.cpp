@@ -31,6 +31,7 @@ using namespace std;
 #include <QScriptable>
 #include <QMetaType>
 
+#include "cooke.hpp"
 #include "data_acq_thread.hpp"
 
 //#include "andor_g.hpp"
@@ -150,7 +151,7 @@ bool DataAcqThread::preparePositioner(bool isForward)
         pPositioner->addMovement(piezoStartPosUm, piezoStopPosUm, nFramesPerStack*cycleTime*1e6, 1);
         pPositioner->addMovement(piezoStopPosUm, piezoStartPosUm, piezoTravelBackTime*1e6, -1); //move back directly without prepare
     }//else, uni-directional recording
-    pPositioner->addMovement(numeric_limits<double>::quiet_NaN(), numeric_limits<double>::quiet_NaN(), 0, 0); //no movement, only stop the trigger
+   // pPositioner->addMovement(numeric_limits<double>::quiet_NaN(), numeric_limits<double>::quiet_NaN(), 0, 0); //no movement, only stop the trigger
 
     if (pPositioner->posType == ActuatorPositioner) pPositioner->setDim(oldAxis);
 
@@ -174,6 +175,7 @@ void DataAcqThread::startAcq()
 void DataAcqThread::stopAcq()
 {
     stopRequested = true;
+    //Sleep(2000); // Allow event-waiting to finish
 }
 
 void DataAcqThread::run()
@@ -209,6 +211,8 @@ void DataAcqThread::run_live()
     unique_ptr<Camera::PixelValue[]> uniPtrFrame(frame);
 
     Timer_g timer;
+
+    camera.prepCameraOnce();
     timer.start();
 
     camera.startAcq();
@@ -236,7 +240,7 @@ void DataAcqThread::run_live()
             }
 
             //copy data
-            QByteArray data16((const char*)frame, imageW*imageH * 2);
+            QByteArray data16 = QByteArray::fromRawData((const char*)frame, imageW*imageH * 2); //image display buffer
             emit imageDataReady(data16, nFramesGot - 1, imageW, imageH); //-1: due to 0-based indexing
 
             nDisplayUpdating++;
@@ -254,7 +258,7 @@ void DataAcqThread::run_live()
     }//while, user did not requested stop
 
     camera.stopAcq(); //TODO: check return value
-
+    camera.stopAcqFinal();
 
     QString ttMsg = "Live mode is stopped";
     emit newStatusMsgReady(ttMsg);
@@ -265,22 +269,11 @@ void DataAcqThread::run_acq_and_save()
     Camera& camera = *pCamera;
     Timer_g gt = parentImagine->gTimer;
 
-    bool isAndor = camera.vendor == "andor";
     bool isCooke = camera.vendor == "cooke";
-    bool isAvt = camera.vendor == "avt";
     bool hasPos = pPositioner != NULL;
 
-    if (isAndor){
-        isUseSpool = true;  //TODO: make ui aware this
-    }
-    else if (isCooke){
+    if (isCooke){
         isUseSpool = true;
-    }
-    else if (isAvt){
-        isUseSpool = true;
-    }
-    else {
-        isUseSpool = false;
     }
 
     ////prepare for AO AI and camera:
@@ -293,7 +286,7 @@ void DataAcqThread::run_acq_and_save()
     string positionerFeedbackFile = replaceExtName(headerFilename, "pos").toStdString();
 
     //if cooke/avt, setSpooling() here!!! (to avoid out-of-mem when setAcqModeAndTime())
-    if ((isCooke || isAvt) && isUseSpool){
+    if (isCooke && isUseSpool){
         camera.setSpooling(camFilename.toStdString());
     }
 
@@ -344,10 +337,6 @@ void DataAcqThread::run_acq_and_save()
 
     //after all devices are prepared, now we can save the file header:
     QString stackDir = replaceExtName(camFilename, "stacks");
-    if (isUseSpool && isAndor){
-        QDir::current().mkpath(stackDir);
-        camFilename = stackDir + "\\stack_%1_";
-    }
 
     saveHeader(headerFilename, aiThread->ai);
 
@@ -381,6 +370,8 @@ void DataAcqThread::run_acq_and_save()
     //start AI
     aiThread->startAcq();
 
+    camera.prepCameraOnce();
+
     if (startCameraOnce)
         camera.startAcq();
 
@@ -394,10 +385,10 @@ void DataAcqThread::run_acq_and_save()
     long nFramesDoneStack = this->nFramesPerStack;
 
     gt.start(); //seq's start time is 0, the new ref pt
-
-nextStack:
+    
+nextStack:  //code below is repeated every stack
     double stackStartTime = gt.read();
-    cout << "b4 open laser: " << stackStartTime << endl;
+    cout << "b4 open laser: " << gt.read() << endl;
 
     //open laser shutter
     digOut->updateOutputBuf(4, true);
@@ -406,8 +397,10 @@ nextStack:
     {
         QScriptValue jsFunc = se->globalObject().property("onShutterOpen");
         if (jsFunc.isFunction()) {
-            se->globalObject().setProperty("currentStackIndex", idxCurStack);
-            jsFunc.call();
+         //   below code was disabled because it (rarely) caused the following error:
+         //  Unhandled exception at 0x000007FEE019F326 (Qt5Scriptd.dll) in Imagine.exe: 0xC0000005: Access violation writing location 0x00000000BBADBEEF.
+         //   se->globalObject().setProperty("currentStackIndex", idxCurStack);
+         //   jsFunc.call();
         }
     }
 
@@ -437,7 +430,7 @@ nextStack:
             camera.startAcq();
             double timeToWait = 0.1;
             //TODO: maybe I should use busy waiting?
-            QThread::msleep(timeToWait * 1000); // *1000: sec -> ms
+            //QThread::msleep(timeToWait * 1000); // *1000: sec -> ms
         }
         //genSquareSpike(10);
         if (hasPos && ownPos) {
@@ -475,7 +468,7 @@ nextStack:
     while (!stopRequested || this->nStacks > 1){
         nFramesGotForStackCur = camera.getAcquiredFrameCount();
         if (nFramesGotForStackCur == -1){
-            Sleep(30);
+            Sleep(10);
             continue;
         }
         if (nFramesGotForStackCur >= nFramesDoneStack){
@@ -487,22 +480,23 @@ nextStack:
 
             //get the latest frame:
             if (!camera.getLatestLiveImage(frame)) {
-                Sleep(30);
+                Sleep(10);
                 continue;
             }
-            //copy data
-            QByteArray data16((const char*)frame, imageW*imageH * 2);
+            //copy data to display buffer
+            QByteArray data16 = QByteArray::fromRawData((const char*)frame, imageW*imageH * 2); //image display buffer
             emit imageDataReady(data16, nFramesGotForStack - 1 - (nFramesDoneStack - nFramesPerStack), imageW, imageH); //-1: due to 0-based indexing
-            Sleep(50);
         }
     }//while, camera is not idle
 
     //get the last frame if nec
+    /*
     if (nFramesGotForStack < nFramesDoneStack){
         camera.getLatestLiveImage(frame);
         QByteArray data16((const char*)frame, imageW*imageH * 2);
         emit imageDataReady(data16, nFramesPerStack - 1, imageW, imageH); //-1: due to 0-based indexing
     }
+    */
 
     nFramesDoneStack += startCameraOnce ? nFramesPerStack : 0;
 
@@ -554,10 +548,6 @@ nextStack:
 
     cout << "b4 flush ai data: " << gt.read() << endl;
 
-    ///save ai data:
-    aiThread->save(*ofsAi);
-    ofsAi->flush();
-
     if (!startCameraOnce) {
         cout << "b4 stop camera: " << gt.read() << endl;
         camera.stopAcq();
@@ -568,10 +558,6 @@ nextStack:
         cout << "b4 wait piezo: " << gt.read() << endl;
         //genSquareSpike(50);
         pPositioner->waitCmd();
-        //TODO: allow piezo reset to happen asynchronously.
-        //Thus it can reset while the camera is prepared for the next stack, speeding up multi-stack acquisition significantly.
-        //Alternatively, we could just speed up the camera prep.  (i.e. we shouldn't have to destroy and re-create image buffers between
-        //stacks, etc)
         cout << "after wait piezo: " << gt.read() << endl;
     }
     //genSquareSpike(70);
@@ -590,10 +576,10 @@ nextStack:
         double timePerStack = nFramesPerStack*cycleTime + idleTimeBwtnStacks;
         double stackEndingTime = gt.read();
         double timeToWait = timePerStack*idxCurStack - stackEndingTime;
-        if (timeToWait < 0){
+        if ((timeToWait < 0) && ownPos){
             emit newLogMsgReady("WARNING: overrun(overall progress): idle time is too short.");
         }
-        if (stackEndingTime - stackStartTime > timePerStack){
+        if ((stackEndingTime - stackStartTime > timePerStack) && ownPos){
             nOverrunStacks++;
             emit newLogMsgReady("WARNING: overrun(current stack): idle time is too short.");
         }
@@ -608,6 +594,12 @@ nextStack:
 
         if (!stopRequested) goto nextStack;
     }//if, there're more stacks and no stop requested
+
+    camera.stopAcqFinal();
+
+    ///save ai data:
+    aiThread->save(*ofsAi);
+    ofsAi->flush();
 
     //fire post-seq stimulus:
     if (applyStim){
@@ -638,7 +630,7 @@ nextStack:
     if (isUseSpool){
         /*if (isAndor) ((AndorCamera*)(&camera))->enableSpool(NULL, 10); //disable spooling
         else */
-		if (isCooke || isAvt) camera.setSpooling(""); //disable spooling which also closes file
+		if (isCooke) camera.setSpooling(""); //disable spooling which also closes file
     }
 
 /*    if (isPiezo){  //not for voltage-controlled piezo from piezosystem jena

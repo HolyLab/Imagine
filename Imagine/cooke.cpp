@@ -346,9 +346,43 @@ long CookeCamera::getAcquiredFrameCount()
     return result;
 }
 
+bool CookeCamera::prepCameraOnce()
+{
+    DWORD imgSize = getImageHeight() * getImageWidth() * sizeof(DWORD);
+    ///alloc the ring buffer for data transfer from card to pc
+    for (int i = 0; i < nBufs; ++i) {
+        mBufIndex[i] = -1;
+        mEvent[i] = NULL;
+        mRingBuf[i] = NULL;
+
+        //TODO: why aren't we allocating only the memory needed for the ROI? seems we allocate full chip
+        safe_pco(PCO_AllocateBuffer(hCamera, (SHORT*)&mBufIndex[i],
+            imgSize, &mRingBuf[i], &mEvent[i]), "failed to allocate buffer");
+        //safe_pco(PCO_AllocateBuffer(hCamera, (SHORT*)&mBufIndex[i],
+        //    chipWidth * chipHeight * sizeof(DWORD), &mRingBuf[i], &mEvent[i]), "failed to allocate buffer");
+    }
+
+    Timer_g gt = parentAcqThread->parentImagine->gTimer;
+    cout << "b4 new WorkerThread(): " << gt.read() << endl;
+    workerThread = new CookeWorkerThread(this);
+    cout << "after new WorkerThread(): " << gt.read() << endl;
+    workerThread->start();
+    cout << "after workerThread->start(): " << gt.read() << endl;
+    return true;
+}
+
 bool CookeCamera::startAcq()
 {
     CLockGuard tGuard(mpLock);
+    WORD bitsPerPixel = 16; //TODO: hardcoded
+    for (int i = 0; i < nBufs; ++i) {
+        //in fifo mode, frameIdxInCamRam are 0 for all buffers?
+        int frameIdxInCamRam = 0;
+        //TODO: switch to PCO_AddBufferExtern to improve performance
+        //safe_pco(PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i]), "failed to add buffer");// Add buffer to the driver queue
+        safe_pco(PCO_AddBufferEx(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i], getImageWidth(), getImageHeight(), bitsPerPixel), "failed to add buffer");// Add buffer to the driver queue
+    }
+
     nAcquiredFrames = 0;
 
     //camera's internal frame counter can be reset by ARM which is too costly we maintain our own counter
@@ -356,86 +390,71 @@ bool CookeCamera::startAcq()
 
     totalGap = 0;
 
-    ///alloc the ring buffer for data transfer from card to pc
-    for (int i = 0; i < nBufs; ++i){
-        mBufIndex[i] = -1;
-        mEvent[i] = NULL;
-        mRingBuf[i] = NULL;
-
-        errorCode = PCO_AllocateBuffer(hCamera, (SHORT*)&mBufIndex[i],
-            chipWidth * chipHeight * sizeof(DWORD), &mRingBuf[i], &mEvent[i]);
-        if (errorCode != PCO_NOERROR) {
-            errorMsg = "failed to allocate buffer";
-            return false;
-        }
-
-        //in fifo mode, frameIdxInCamRam are 0 for all buffers?
-        int frameIdxInCamRam = 0;
-		//TODO: Switch this to the newer PCO_AddBufferEx
-        errorCode = PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i]);// Add buffer to the driver queue
-        if (errorCode != PCO_NOERROR) {
-            errorMsg = "failed to add buffer";
-            return false;
-        }
-    }
     Timer_g gt = parentAcqThread->parentImagine->gTimer;
-    cout << "b4 new WorkerThread(): " << gt.read() << endl;
 
-    workerThread = new CookeWorkerThread(this);
-    cout << "after new WorkerThread(): " << gt.read() << endl;
-    workerThread->start();
+    safe_pco(PCO_SetRecordingState(hCamera, 1), "failed to start camera recording"); //1: run
+    isRecording = true;
 
-    cout << "after workerThread->start(): " << gt.read() << endl;
-
+    /*
     errorCode = PCO_SetRecordingState(hCamera, 1); //1: run
     if (errorCode != PCO_NOERROR) {
         errorMsg = "failed to start camera";
         return false;
     }
-
+    */
     cout << "after set rec state to 1/run: " << gt.read() << endl;
 
     return true;
 }//startAcq(),
 
-bool CookeCamera::stopAcq()
+bool CookeCamera::stopAcqFinal()
 {
     //not rely on the "wait abandon"!!!
     workerThread->requestStop();
     workerThread->wait();
 
-    errorCode = PCO_SetRecordingState(hCamera, 0);// stop recording
-    if (errorCode != PCO_NOERROR) {
-        errorMsg = "failed to stop camera";
-        return false;
-    }
-
-    Timer_g gt = parentAcqThread->parentImagine->gTimer;
-    cout << "b4 PCO_RemoveBuffer: " << gt.read() << endl;
-
-    //reverse of PCO_AddBuffer()
-    errorCode = PCO_RemoveBuffer(hCamera);   // If there's still a buffer in the driver queue, remove it
-    if (errorCode != PCO_NOERROR) {
-        errorMsg = "failed to stop camera";
-        return false;
-    }
-
-    cout << "after PCO_RemoveBuffer: " << gt.read() << endl;
-
-    for (int i = 0; i < nBufs; ++i){
+    for (int i = 0; i < nBufs; ++i) {
         //reverse of PCO_AllocateBuffer()
         //ResetEvent(mEvent[0]);
         //ResetEvent(mEvent[1]);
 
         //TODO: what about the events associated w/ the buffers
-        PCO_FreeBuffer(hCamera, mBufIndex[i]);    // Frees the memory that was allocated for the buffer
+        safe_pco(PCO_FreeBuffer(hCamera, mBufIndex[i]), "failed to free image buffer");    // Frees the memory that was allocated for the buffer
     }
-
     delete workerThread;
     workerThread = nullptr;
-
     cout << "total # of black frames: " << totalGap << endl;
 
+    return true;
+}
+
+bool CookeCamera::stopAcq()
+{
+    //acquire lock so that workerThread doesn't try to read a cancelled buffer
+    CLockGuard tGuard(mpLock); //wraps and acquires the lock
+
+    //stopping before removing the buffer seems slightly faster
+    safe_pco(PCO_SetRecordingState(hCamera, 0), "failed to stop camera recording");// stop recording
+
+    Timer_g gt = parentAcqThread->parentImagine->gTimer;
+    cout << "b4 PCO_RemoveBuffer: " << gt.read() << endl;
+
+    //reverse of PCO_AddBuffer()
+    safe_pco(PCO_RemoveBuffer(hCamera), "failed to stop camera");   // If there's still a buffer in the driver queue, remove it
+
+    cout << "after PCO_RemoveBuffer: " << gt.read() << endl;
+
+    isRecording = false;
+
+    //tGuard.unlock();
+    /*
+    errorCode = PCO_SetRecordingState(hCamera, 0);// stop recording
+    if (errorCode != PCO_NOERROR) {
+        errorMsg = "failed to stop camera";
+        return false;
+    }
+    */
+//    safe_pco(PCO_ArmCamera(hCamera), "failed to arm the camera");
     return true;
 }//stopAcq(),
 
@@ -454,7 +473,7 @@ bool CookeCamera::getLatestLiveImage(PixelValue * frame)
 {
     if (!mpLock->tryLock()) return false;
 
-    if (nAcquiredFrames <= 0)  {
+    if (nAcquiredFrames <= 0 || !isRecording)  {
         mpLock->unlock();
         return false;
     }

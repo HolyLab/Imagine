@@ -104,11 +104,13 @@ public:
 //note: this class manages its output buffer itself.
 class NiDaqAo: public NiDaq, public DaqAo {
    sample_t *    dataU16; 
+   float64 *    dataF64;
 
 public:
    //create ao channel and add the channel to task
    NiDaqAo(QString devstring, const vector<int> & chs): Daq(chs), NiDaq(chs), DaqAo(chs){
       dataU16=0;
+	  dataF64 = 0;
       string dev = devstring.toStdString();
       cout << "About to initialize AO device " << dev << endl;
       //string dev="Dev1/ao";
@@ -145,6 +147,7 @@ public:
 
    //release mem
    virtual ~NiDaqAo(){
+	  if (dataF64) delete[] dataF64;
       if(dataU16) delete[] dataU16;
    }//dtor,
 
@@ -167,7 +170,10 @@ public:
       if(dataU16)delete[] dataU16;
       dataU16=0;
       dataU16=new uInt16[nScans*channels.size()];
-      if(!dataU16){
+	  if (dataF64)delete[] dataF64;
+	  dataF64 = 0;
+	  dataF64 = new float64[nScans*channels.size()];
+      if(!dataF64){
          throw ENoEnoughMem();
       }
 
@@ -176,15 +182,23 @@ public:
 
    //get output buffer address
    //NOTE: data is grouped by channel, i.e. all samples for a channel are close to each other
-   uInt16 * getOutputBuf(){
-      return dataU16;
+   float64 * getOutputBuf(){ //uInt16 * getOutputBuf(){
+      //return dataU16;
+	  return dataF64;
    }//getOutputBuf()
 
    //write waveform to driver's buffer
    bool updateOutputBuf(){
       cout<<"in  updateOutputBuf()"<<endl;
       int32 nScanWritten;
-      errorCode=DAQmxWriteBinaryU16(taskHandle,
+	  char  errBuff[2048] = { '\0' };
+	  /*
+	  float64* dataF64 = new float64[nScans];
+	  for (int i = 0; i < nScans; ++i) {
+		  dataF64[i] = 1.25;
+	  }
+	  */
+/*      errorCode=DAQmxWriteBinaryU16(taskHandle,
          nScans, 
          false,  //don't auto start
          DAQmx_Val_WaitInfinitely,
@@ -192,8 +206,21 @@ public:
          dataU16,
          &nScanWritten,
          NULL //reserved
-         );
-      
+         ); */
+	  if (DAQmxFailed(errorCode = (DAQmxWriteAnalogF64(taskHandle,
+		  nScans,
+		  false,
+		  DAQmx_Val_WaitInfinitely,
+		  DAQmx_Val_GroupByChannel, //data layout, all samples for a channel then for another channel
+		  dataF64,
+		  &nScanWritten,
+		  NULL
+		  )))) goto Error;
+
+	  Error:
+		if (DAQmxFailed(errorCode))
+			DAQmxGetExtendedErrorInfo(errBuff, 2048);
+
       cout<<"out updateOutputBuf()"<<endl;
       return !isError();
    }//updateOutputBuf(),
@@ -219,6 +246,8 @@ public:
 class NiDaqAi: public NiDaq, public DaqAi {
    //uInt16 *    dataU16; //it is better that user supplies the read buf
 public:
+	int32 numScalingCoeffs = 0;
+	float64* scalingCoeffs;
    //create AI channels and add the channels to the task
    NiDaqAi(QString devstring,const vector<int> & chs): Daq(chs), NiDaq(chs), DaqAi(chs){
       //todo: next line is unnecessary?
@@ -230,11 +259,10 @@ public:
       for(unsigned int i=1; i<channels.size(); ++i){
          chanList+=", "+dev+toString(channels[i]);
       }
-
       errorCode=DAQmxCreateAIVoltageChan(taskHandle,
          chanList.c_str(),  //channels to acquire
          "",          //nameToAssignToChannel
-         DAQmx_Val_RSE , //terminalConfig. todo: should be DAQmx_Val_NRSE? 
+         DAQmx_Val_Diff, //NRSE , //terminalConfig. todo: should be DAQmx_Val_NRSE? 
          -10.0,   //input range: minVal 
          10.0,    //input range: maxVal
          DAQmx_Val_Volts, //unit
@@ -258,11 +286,22 @@ public:
 
       maxPhyValue=10;
       minPhyValue=-10;
+
+	  // Obtain the number of coefficients.  All channels in a single task will have the same number of
+	  // coefficients so we will just look at the first channel.
+	  // Passing a NULL and a 0 as the array and number of samples respectively
+	  // causes the function to return the number of samples instead of an error.
+	  // Positive number errors are not considered errors and will not halt execution
+	  numScalingCoeffs = DAQmxGetAIDevScalingCoeff(taskHandle, "", NULL, 0);
+	  // Allocate Memory for coefficient array
+	  scalingCoeffs = (float64*)(malloc(sizeof(float64)*numScalingCoeffs));
+	  // Get Coefficients
+	  DAQmxGetAIDevScalingCoeff(taskHandle, "", scalingCoeffs, numScalingCoeffs);
    }//ctor, NiDaqAi
 
    //dtor:
    virtual ~NiDaqAi(){
-      
+	   delete[] scalingCoeffs;
    }//dtor, NiDaqAi
 
    //set scan rate and driver's input buffer size in scans
@@ -280,10 +319,20 @@ public:
    }//cfgTiming(),
 
    //read input from driver
-   bool read(int nScans, uInt16 * buf){
-      int32 nScansReaded;
+   //bool read(int nScans, uInt16 * buf){
+   bool read(int nScans, float64 * buf) {
+	  int32 nScansRead;
+	  errorCode=DAQmxReadAnalogF64(taskHandle,
+		  nScans, 
+		  DAQmx_Val_WaitInfinitely,    //timeToWait
+		  DAQmx_Val_GroupByScanNumber, //data layout, here save all data in scan by scan
+		  buf, 
+		  nScans*channels.size(), 
+		  &nScansRead, 
+		  NULL //reserved
+		  );
 
-      errorCode=DAQmxReadBinaryU16(taskHandle,
+      /*errorCode=DAQmxReadBinaryU16(taskHandle,
          nScans,  //numSampsPerChan
          DAQmx_Val_WaitInfinitely,    //timeToWait
          DAQmx_Val_GroupByScanNumber, //data layout, here save all data in scan by scan
@@ -292,17 +341,30 @@ public:
          &nScansReaded,
          NULL  //reserved
          );
-
+		 */
 #if defined(DEBUG_AI)
       if(isError()){
          getErrorMsg();
       }
 #endif
 
-      assert(nScans==nScansReaded || isError());
+      assert(nScans==nScansRead || isError());
 
       return !isError();
    }//readInput(),
+
+   double toPhyUnit(int digValue) {
+		// Set offset as initial value
+		float64 scaledData = scalingCoeffs[0]; //first element of coefficients is offset
+		// Calculate gain error with the remaining coefficients (for M Series
+		// There are 3.  For E-Series there is only 1.
+		for (int32 k = 1; k<numScalingCoeffs; k++) {
+			scaledData +=
+				scalingCoeffs[k] * pow(digValue, (float)k);
+		}
+		scaledData = (digValue / pow(2, 15))*10.0;
+		return scaledData;
+   }
 
 };//class, NiDaqAi
 
@@ -365,17 +427,23 @@ public:
    }//dtor,
 
    //return true if success
-   bool readOne(int & reading){
-      int16 tReading;
-      if(!ai->start()) return false;
-      if(!ai->read(1, (uInt16*)&tReading)) return false;
-      if(!ai->stop()) return false;
-      reading=tReading;
-
+   bool readOne(float64 & reading) {
+	   if (!ai->start()) return false;
+	   if (!ai->read(1, &reading)) return false;
+	   if (!ai->stop()) return false;
+	   //TODO: convert negative voltages
+	   /*
+	   if (*tReading < pow(2, 15)) {
+		   reading = -1 * (int)(pow(2, 16) - *tReading);
+	   }
+	   else {
+	   reading = (int)tReading;
+		}
+		*/
       return true;
    }//readOne()
 
-   double toPhyUnit(double digValue){
+   double toPhyUnit(int digValue){
       return ai->toPhyUnit(digValue);
    }
 };//class, NiDaqAiReadOne
@@ -401,8 +469,9 @@ public:
    //return true if success
    bool writeOne(int valueToOutput){
       cout<<"in  writeOne()"<<endl;
-      uInt16* buf=ao->getOutputBuf();
-      buf[0]=valueToOutput;
+      //uInt16* buf=ao->getOutputBuf();
+	  float64* buf = ao->getOutputBuf();
+      buf[0]=float64(valueToOutput);
       buf[1]=buf[0];
       if(!ao->updateOutputBuf()) {
          cout<<ao->getErrorMsg()<<endl;
