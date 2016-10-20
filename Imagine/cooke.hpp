@@ -76,7 +76,7 @@ public:
 
         ofsSpooling = nullptr;
 
-
+        bytesPerPixel = 2; //TODO: hardcoded
         vendor = "cooke";
 
         strGeneral.wSize = sizeof(strGeneral);// initialize all structure size members

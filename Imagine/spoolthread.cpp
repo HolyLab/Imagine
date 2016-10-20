@@ -52,7 +52,7 @@ SpoolThread::SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *paren
     //todo: provide way to check out-of-mem etc.. e.g., if(circBufData==nullptr) isInGoodState=false;
     //          If FastOfstream obj fails (i.e. write error), isInGoodState is set to false too.
 
-    mpLock = new QMutex;
+    spoolingLock = new QMutex;
 
     shouldStop = false;
 
@@ -66,5 +66,5 @@ SpoolThread::~SpoolThread(){
     freeMemPool();
     delete circBuf;
     delete[] tmpItem;
-    delete mpLock;
+    delete spoolingLock;
 }//dtor

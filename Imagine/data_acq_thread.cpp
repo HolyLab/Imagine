@@ -52,13 +52,13 @@ const string headerMagic = "IMAGINE";
 
 #pragma region Lifecycle
 
-DataAcqThread::DataAcqThread(Camera *cam, Positioner *pos, QObject *parent)
+DataAcqThread::DataAcqThread(CookeCamera *cam, Positioner *pos, Imagine* parentImag, QObject *parent)
     : QThread(parent)
 {
     restart = false;
     abort = false;
     isLive = true;
-    parentImagine = (Imagine*)parent;
+    parentImagine = (Imagine*)parentImag;
     setCamera(cam);
     // not that this was allocated with 'new', so you need to delete when you die
     pPositioner = pos;
@@ -66,11 +66,12 @@ DataAcqThread::DataAcqThread(Camera *cam, Positioner *pos, QObject *parent)
 
 DataAcqThread::~DataAcqThread()
 {
+    /*
 	mutex.lock();
 	abort = true;
 	condition.wakeOne();
 	mutex.unlock();
-
+    */
 	// TODO: clean up the camera, if needed
 
 	delete pCamera;
@@ -107,9 +108,10 @@ QString linize(QString lines)
 
 #pragma region Camera
 
-void DataAcqThread::setCamera(Camera *cam) {
+void DataAcqThread::setCamera(CookeCamera *cam) {
     // make sure that the camera knows who its parent is.
     pCamera = cam;
+    
     if (cam != NULL) cam->parentAcqThread = this;
 }
 
@@ -157,7 +159,7 @@ bool DataAcqThread::preparePositioner(bool isForward)
 
     if (pPositioner->testCmd())  pPositioner->prepareCmd();
     else return false;
-
+    
     return true;
 
 }
@@ -189,7 +191,7 @@ void DataAcqThread::run()
 
 void DataAcqThread::run_live()
 {
-    Camera& camera = *pCamera;
+    CookeCamera& camera = *pCamera;
 
     //prepare for camera:
     bool suc = camera.setAcqModeAndTime(Camera::eLive,
@@ -266,7 +268,7 @@ void DataAcqThread::run_live()
 
 void DataAcqThread::run_acq_and_save()
 {
-    Camera& camera = *pCamera;
+    CookeCamera& camera = *pCamera;
     Timer_g gt = parentImagine->gTimer;
 
     bool isCooke = camera.vendor == "cooke";
@@ -345,8 +347,10 @@ void DataAcqThread::run_acq_and_save()
     aiThread->setOfstream(ofsAi);
 
     FastOfstream *ofsCam = NULL;
+
     if (!isUseSpool){
-        ofsCam = new FastOfstream(camFilename.toStdString());
+        __int64 total_in_bytes = camera.getImageHeight() * camera.getImageWidth() * 2 * nFramesPerStack * nStacks;
+        ofsCam = new FastOfstream(camFilename.toStdString(), total_in_bytes);
         assert(*ofsCam);
     }
 
@@ -484,7 +488,7 @@ nextStack:  //code below is repeated every stack
                 continue;
             }
             //copy data to display buffer
-            QByteArray data16 = QByteArray::fromRawData((const char*)frame, imageW*imageH * 2); //image display buffer
+            QByteArray data16 = QByteArray((const char*)frame, imageW*imageH * 2); //image display buffer
             emit imageDataReady(data16, nFramesGotForStack - 1 - (nFramesDoneStack - nFramesPerStack), imageW, imageH); //-1: due to 0-based indexing
         }
     }//while, camera is not idle
@@ -680,7 +684,7 @@ QString replaceExtName(QString filename, QString newExtname);
 
 bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
 {
-    Camera& camera = *pCamera;
+    CookeCamera& camera = *pCamera;
 
     ofstream header(filename.toStdString().c_str(),
         ios::out | ios::trunc);

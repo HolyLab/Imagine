@@ -4,7 +4,8 @@
 #include "qapplication.h"
 #include "qstring.h"
 #include "imagine.h"
-#include "camera_g.hpp"
+//#include "camera_g.hpp"
+#include "cooke.hpp"
 #include "positioner.hpp"
 #include "ArduinoThread.h"
 
@@ -26,7 +27,7 @@ public:
     ArduinoThread *ardThread = nullptr;
 
     // Initialize the main window(s)
-    void ImgApplication::initUI(Camera *cam1, Positioner *pos, Camera *cam2 = nullptr);
+    void ImgApplication::initUI(CookeCamera *cam1, Positioner *pos, CookeCamera *cam2 = nullptr);
 
     // Show the main window(s).
     void ImgApplication::showUi();

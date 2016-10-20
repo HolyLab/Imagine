@@ -44,8 +44,31 @@ public:
     class EOpenFile{};
     class EAllocBuf{};
 
+    //from MSDN
+    __int64 fileSeek(HANDLE hf, __int64 distance, DWORD MoveMethod)
+    {
+        LARGE_INTEGER li;
+
+        li.QuadPart = distance;
+
+        li.LowPart = SetFilePointer(hf,
+            li.LowPart,
+            &li.HighPart,
+            MoveMethod);
+
+        if (li.LowPart == INVALID_SET_FILE_POINTER && GetLastError()
+            != NO_ERROR)
+        {
+            li.QuadPart = -1;
+            if (MoveMethod == 0) OutputDebugStringW(L"File seeking forward failed\n");
+            if (MoveMethod == 2) OutputDebugStringW(L"File seeking backward failed\n");
+        }
+
+        return li.QuadPart;
+    }
+
     //@param bufsize default 64M
-    FastOfstream(const string& filename, int bufsize_in_4kb = 65536 / 4){
+    FastOfstream(const string& filename, __int64 total_size_bytes, int bufsize_in_4kb = 65536 / 4){
         allBuf = nullptr;
         hFile = INVALID_HANDLE_VALUE;
         isGood = false;
@@ -62,11 +85,19 @@ public:
         //      This is especially important for PCO.Edge 4.2 cameras, for which almost all possible ROIs violate this rule.
         //      This is challenging because the _NO_BUFFERING flag additionally requires that all writes begin at sector boundaries.
         hFile = CreateFileA(filename.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
-            FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH, // | FILE_FLAG_NO_BUFFERING,
+            FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH | FILE_FLAG_SEQUENTIAL_SCAN, // | FILE_FLAG_NO_BUFFERING,
             NULL);
-        if (hFile == INVALID_HANDLE_VALUE){
+
+        if (hFile == INVALID_HANDLE_VALUE) {
             throw EOpenFile();
         }
+
+        //Ask file system to try to allocate a contiguous file on disk.  No guarantees.
+        //seek to end of file
+        fileSeek(hFile, total_size_bytes, 0);
+        SetEndOfFile(hFile);
+        //seek back to beginning
+        fileSeek(hFile, -total_size_bytes, 2);
 
         isGood = true;
     }
@@ -83,6 +114,7 @@ public:
         //leave the remainder in cur buf
         while (true){
             if (datasize == bufsize){
+                OutputDebugStringW(L"Flushing output file stream from fast ofstream write\n");
                 flush(); //NOTE: will update datasize too
                 if (!isGood) break;
             }

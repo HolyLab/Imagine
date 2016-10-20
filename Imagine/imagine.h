@@ -51,10 +51,10 @@ class Imagine : public QMainWindow
     Q_OBJECT
     QThread pixmapperThread;
 public:
-    Imagine(Camera *cam, Positioner *pos = NULL, Imagine *mImagine = NULL,
+    Imagine(CookeCamera *cam, Positioner *pos = NULL, Imagine *mImagine = NULL,
         QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~Imagine();
-    DataAcqThread dataAcqThread;
+    DataAcqThread *dataAcqThread;
     Timer_g gTimer;
     
 	Imagine *masterImagine; //Positioner and stimulus control / interface is restricted to only the master instance
@@ -90,13 +90,13 @@ private:
     bool modified;
     bool paramOK;
 
-    void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
+    void calcMinMaxValues(CookeCamera::PixelValue * frame, int imageW, int imageH);
     void updateStatus(ImagineStatus newStatus, ImagineAction newAction);
     double zpos2voltage(double um); //z-position to piezo voltage
     void updateImage();
-	void updateHist(const Camera::PixelValue * frame,
+	void updateHist(const CookeCamera::PixelValue * frame,
         const int imageW, const int imageH);
-    void updateIntenCurve(const Camera::PixelValue * frame,
+    void updateIntenCurve(const CookeCamera::PixelValue * frame,
         const int imageW, const int imageH, const int frameIdx);
 
     bool checkRoi();

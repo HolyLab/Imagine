@@ -57,7 +57,10 @@ public:
     DataAcqThread *parentAcqThread = nullptr;
 
     int  hbin, vbin, hstart, hend, vstart, vend; //image binning params. 1-based.
-    //for hend and vend: <0 means chip width (or height)
+                                                 //for hend and vend: <0 means chip width (or height)
+
+    int nStacks, nFramesPerStack, bytesPerPixel, imageSizePixels, imageSizeBytes; 
+
 
 protected:
     string model;
@@ -73,7 +76,6 @@ protected:
 
     // image Buffers
     PixelValue * pImageArray;	 // main image buffer read from card
-    int imageArraySize; //in pixel
 
     string spoolingFilename;
 
@@ -109,6 +111,8 @@ public:
     int getChipHeight(){
         return chipHeight;
     }
+
+    void updateImageParams();
 
     //todo: to verify
     int getImageWidth(){

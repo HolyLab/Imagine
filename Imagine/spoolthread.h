@@ -39,7 +39,7 @@ private:
 
     QWaitCondition bufNotEmpty;
     QWaitCondition bufNotFull;
-    QMutex* mpLock;
+    QMutex* spoolingLock;
 
     Timer_g timer;
 
@@ -79,16 +79,16 @@ public:
 
     //add one item to the ring buf. Blocked when full.
     void appendItem(char* item){
-        mpLock->lock();
+        spoolingLock->lock();
         while (circBuf->full() && !shouldStop){
-            bufNotFull.wait(mpLock);
+            bufNotFull.wait(spoolingLock);
         }
         if (shouldStop)goto finishup;
         int idx = circBuf->put();
         memcpy_g(circBufData + idx*size_t(itemSize), item, itemSize);
         bufNotEmpty.wakeAll();
     finishup:
-        mpLock->unlock();
+        spoolingLock->unlock();
     }//appendItem(),
 
 
@@ -101,13 +101,13 @@ public:
 
         while (true){
         lockAgain:
-            if (!mpLock->tryLock()){
+            if (!spoolingLock->tryLock()){
                 timerReading = timer.readInNanoSec();
                 while (timer.readInNanoSec() - timerReading < 1000 * 1000 * 7); //busy wait for 7ms
                 goto lockAgain;
             }
             while (circBuf->empty() && !shouldStop){
-                bufNotEmpty.wait(mpLock); //wait 4 not empty
+                bufNotEmpty.wait(spoolingLock); //wait 4 not empty
             }
             if (shouldStop) goto finishup;
         getAgain:
@@ -118,11 +118,12 @@ public:
                 goto getAgain;
             }
             bufNotFull.wakeAll();
-            mpLock->unlock();
+            spoolingLock->unlock();
 
             //now flush if nec. 
             //todo: take care aggressive "get" above ( ... nEmptySlots < 64 ... )
             if (this->ofsSpooling->remainingBufSize() < itemSize){
+                OutputDebugStringW(L"Flushing output file stream from spoolthread run\n");
                 this->ofsSpooling->flush();
             }
         }//while,
@@ -131,7 +132,7 @@ public:
             int idx = circBuf->get();
             this->ofsSpooling->write(circBufData + idx*size_t(itemSize), itemSize);
         }
-        mpLock->unlock();
+        spoolingLock->unlock();
 
 #if defined(_DEBUG)
         cerr << "leave cooke spooling thread run()" << endl;

@@ -168,6 +168,8 @@ bool CookeCamera::setAcqParams(int emGain,
         // set the image buffer parameters
         safe_pco(PCO_CamLinkSetImageParameters(hCamera, wXResAct, wYResAct),
             "failed to call PCO_CamLinkSetImageParameters()");
+
+        qDebug() << QString("Finished setting camera acq parameters");
     }
     catch (int e) {
         if (e != COOKE_EXCEPTION) throw;
@@ -340,7 +342,12 @@ bool CookeCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 
 long CookeCamera::getAcquiredFrameCount()
 {
-    if (!mpLock->tryLock()) return -1;
+    //TODO / WARNING: a bug triggered by the unlock() call mysteriously disappeared after adding the lockResult allocation below
+    //First thought was that this was a bug in our code that is very sensitive to timing
+    //But after lookin through our code I'm wondering if this could be more of an issue with Qt's mutex
+    WORD lockResult = mpLock->tryLock();
+    if (!lockResult) return -1;
+    //if (!mpLock->tryLock()) return -1;
     long result = nAcquiredFrames;
     mpLock->unlock();
     return result;
@@ -348,16 +355,16 @@ long CookeCamera::getAcquiredFrameCount()
 
 bool CookeCamera::prepCameraOnce()
 {
-    DWORD imgSize = getImageHeight() * getImageWidth() * sizeof(DWORD);
     ///alloc the ring buffer for data transfer from card to pc
     for (int i = 0; i < nBufs; ++i) {
         mBufIndex[i] = -1;
-        mEvent[i] = NULL;
-        mRingBuf[i] = NULL;
+        //mEvent[i] = NULL;
+        mEvent[i] = CreateEvent(0, TRUE, FALSE, NULL);
+        //mRingBuf[i] = NULL;
+        mRingBuf[i] = (PixelValue*)_aligned_malloc(imageSizeBytes, 4 * 1024);
 
-        //TODO: why aren't we allocating only the memory needed for the ROI? seems we allocate full chip
-        safe_pco(PCO_AllocateBuffer(hCamera, (SHORT*)&mBufIndex[i],
-            imgSize, &mRingBuf[i], &mEvent[i]), "failed to allocate buffer");
+        //safe_pco(PCO_AllocateBuffer(hCamera, (SHORT*)&mBufIndex[i],
+        //    imageSizeBytes, &mRingBuf[i], &mEvent[i]), "failed to allocate buffer");
         //safe_pco(PCO_AllocateBuffer(hCamera, (SHORT*)&mBufIndex[i],
         //    chipWidth * chipHeight * sizeof(DWORD), &mRingBuf[i], &mEvent[i]), "failed to allocate buffer");
     }
@@ -374,13 +381,16 @@ bool CookeCamera::prepCameraOnce()
 bool CookeCamera::startAcq()
 {
     CLockGuard tGuard(mpLock);
-    WORD bitsPerPixel = 16; //TODO: hardcoded
+    DWORD driverStatus=0;
+    WORD wActSeg=0;
     for (int i = 0; i < nBufs; ++i) {
         //in fifo mode, frameIdxInCamRam are 0 for all buffers?
         int frameIdxInCamRam = 0;
+        PCO_GetActiveRamSegment(hCamera, &wActSeg);
         //TODO: switch to PCO_AddBufferExtern to improve performance
         //safe_pco(PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i]), "failed to add buffer");// Add buffer to the driver queue
-        safe_pco(PCO_AddBufferEx(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i], getImageWidth(), getImageHeight(), bitsPerPixel), "failed to add buffer");// Add buffer to the driver queue
+        //safe_pco(PCO_AddBufferEx(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i], getImageWidth(), getImageHeight(), bytesPerPixel), "failed to add buffer");// Add buffer to the driver queue
+        safe_pco(PCO_AddBufferExtern(hCamera, mEvent[i], wActSeg, frameIdxInCamRam, frameIdxInCamRam, 0, mRingBuf[i], imageSizeBytes, &driverStatus), "failed to add external buffer");// Add buffer to the driver queue
     }
 
     nAcquiredFrames = 0;
@@ -412,15 +422,16 @@ bool CookeCamera::stopAcqFinal()
     //not rely on the "wait abandon"!!!
     workerThread->requestStop();
     workerThread->wait();
-
+    /*
     for (int i = 0; i < nBufs; ++i) {
         //reverse of PCO_AllocateBuffer()
         //ResetEvent(mEvent[0]);
         //ResetEvent(mEvent[1]);
 
         //TODO: what about the events associated w/ the buffers
-        safe_pco(PCO_FreeBuffer(hCamera, mBufIndex[i]), "failed to free image buffer");    // Frees the memory that was allocated for the buffer
+        //safe_pco(PCO_FreeBuffer(hCamera, mBufIndex[i]), "failed to free image buffer");    // Frees the memory that was allocated for the buffer
     }
+    */
     delete workerThread;
     workerThread = nullptr;
     cout << "total # of black frames: " << totalGap << endl;
@@ -498,10 +509,11 @@ bool CookeCamera::setSpooling(string filename)
 
     if (isSpooling()){
         int bufsize_in_4kb = 5529600 * 2 * 8 / (4 * 1024); //8 frames, about 80M in bytes
+        __int64 total_in_bytes = imageSizeBytes * nFramesPerStack * nStacks;
 #ifdef _WIN64
         bufsize_in_4kb *= 1;
 #endif
-        ofsSpooling = new FastOfstream(filename.c_str(), bufsize_in_4kb);
+        ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_4kb);
         return *ofsSpooling;
     }
     else return true;

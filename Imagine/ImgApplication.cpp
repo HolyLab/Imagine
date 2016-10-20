@@ -7,7 +7,7 @@ const char *ARDUINO_PORT = "COM4";
 
 ImgApplication::ImgApplication(int &argc, char **argv) : QApplication(argc, argv){
     // for now, we'll just start the arduino thread immediately
-    startArduinoThread(ARDUINO_PORT);
+    //startArduinoThread(ARDUINO_PORT);
 }
 
 ImgApplication::~ImgApplication() {
@@ -25,9 +25,11 @@ void ImgApplication::showUi() {
     if (imgTwo != NULL) imgTwo->show();
 }
 
-void ImgApplication::initUI(Camera *cam1, Positioner *pos, Camera *cam2) {
+void ImgApplication::initUI(CookeCamera *cam1, Positioner *pos, CookeCamera *cam2) {
+    qDebug() << QString("initializing UI instance(s)");
     // init first window
     Imagine *w1p = new Imagine(cam1, pos, NULL);
+    qDebug() << QString("initializied first UI instance");
     imgOne = w1p;
 
     // init second window if needed.  The first window is "master", meaning that it controls the positioner.
@@ -39,6 +41,7 @@ void ImgApplication::initUI(Camera *cam1, Positioner *pos, Camera *cam2) {
         imgOne->setWindowTitle("Imagine (1)");
 		//TODO: all synchronizing record buttons
     }
+    qDebug() << QString("finished initializing UI instance(s)");
 }
 
 #pragma endregion

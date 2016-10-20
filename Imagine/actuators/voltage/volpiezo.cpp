@@ -24,14 +24,14 @@ bool VolPiezo::curPos(double* pos)
 
 bool VolPiezo::moveTo(double to)
 {
-	double* cur_pos;
+	double cur_pos = 0;
 	double duration;
-	curPos(cur_pos);
-	duration = (abs(to - *cur_pos) / maxSpeed()) * 1e6;
+	curPos(&cur_pos);
+	duration = (abs(to - cur_pos) / maxSpeed()) * 1e6;
 	vector<Movement* > orig_movements = movements;
 	vector<Movement* > empty_movements;
 	movements = empty_movements;  //a hack, shouldn't have to hide prepared movements
-	addMovement(max(*cur_pos,0), to, duration, -1);
+	addMovement(max(cur_pos,0), to, duration, -1);
 
 
 	prepareCmd();

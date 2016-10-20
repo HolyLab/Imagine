@@ -25,7 +25,7 @@ Camera::Camera()
     vend = 8; //
 
     pImageArray = NULL;
-    imageArraySize = 0;
+    imageSizePixels = 0;
 
     nFrames = 100;  //todo: make this as a param
 
@@ -45,7 +45,7 @@ void Camera::freeImageArray()
     if (pImageArray){
         delete[]pImageArray;
         pImageArray = NULL;
-        imageArraySize = 0;
+        imageSizePixels = 0;
     }
 }
 
@@ -54,11 +54,11 @@ bool Camera::allocImageArray(int nFrames, bool shouldReallocAnyway)
 {
     int nPixels = getImageWidth()*getImageHeight()*nFrames;
 
-    if (shouldReallocAnyway || nPixels > imageArraySize){
+    if (shouldReallocAnyway || nPixels > imageSizePixels){
         if (pImageArray){
             delete[]pImageArray;
             pImageArray = nullptr;
-            imageArraySize = 0;
+            imageSizePixels = 0;
         }
     }//if, should delete old allocation
 
@@ -72,7 +72,7 @@ bool Camera::allocImageArray(int nFrames, bool shouldReallocAnyway)
             errorMsg = "no enough memory";
             return false;
         }//if, fail to alloc enough mem
-        imageArraySize = nPixels;
+        imageSizePixels = nPixels;
     }//if, no allocated space before
 
     return true;
@@ -91,3 +91,9 @@ bool Camera::setSpooling(string filename)
     return true;
 }//setSpooling(),
 
+void Camera::updateImageParams() {
+    imageSizePixels = getImageWidth() * getImageHeight();
+    nStacks = parentAcqThread->nStacks;
+    nFramesPerStack = parentAcqThread->nFramesPerStack;
+    imageSizeBytes = imageSizePixels * 2; //TODO: hardcoded 2
+}

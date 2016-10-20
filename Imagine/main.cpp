@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
     // init the first (only?) camera.
     // pointer will be deleted in clean-up of its owning data_acq_thread.
     splash->showMessage(QString("Initializing (%1) camera 1 ...").arg(cameraVendor), align, col);
-    Camera *cam1;
+    CookeCamera *cam1;
 //    if (cameraVendor == "avt") cam1 = new AvtCamera;
 //    else if (cameraVendor == "andor") cam1 = new AndorCamera;
 //    else if (cameraVendor == "cooke") cam1 = new CookeCamera;
@@ -268,7 +268,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-    Camera *cam2 = nullptr;
+    CookeCamera *cam2 = nullptr;
     if (nCams > 1) {
         // init the second camera
         // sorry for the copy pasta. perhaps put this in a function later
@@ -292,7 +292,8 @@ int main(int argc, char *argv[])
     }
 
     // get rid of the status message
-    delete splash;
+//    delete splash;
+    splash->deleteLater();
 
     // init and show the ui
     a.initUI(cam1, pos, cam2);

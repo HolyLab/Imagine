@@ -22,7 +22,8 @@
 
 //#include "andor_g.hpp"
 #include "daq.hpp"
-#include "camera_g.hpp"
+//#include "camera_g.hpp"
+#include "cooke.hpp"
 #include "positioner.hpp"
 #include "ai_thread.hpp"
 
@@ -35,7 +36,7 @@ class DataAcqThread : public QThread
     Q_OBJECT
 
 public:
-    DataAcqThread(Camera *cam = nullptr, Positioner *pos = nullptr, QObject *parent = 0);
+    DataAcqThread(CookeCamera *cam = nullptr, Positioner *pos = nullptr, Imagine *parentImag = nullptr, QObject *parent = 0);
     ~DataAcqThread();
 
     void startAcq();
@@ -45,7 +46,7 @@ public:
 
     // setter for the camera and positioner... use this instead of setting the var directly
     // yeah, I could make the var private... so can you!
-    void setCamera(Camera *cam);
+    void setCamera(CookeCamera *cam);
     void setPositioner(Positioner *pos);
 
     // de-globalized vars in need of a proper home...
@@ -54,7 +55,7 @@ public:
     volatile bool isUpdatingImage;
 
     // this thread's camera
-    Camera* pCamera = nullptr;
+    CookeCamera* pCamera = nullptr;
 
     // this thread's positioner, if not null
     // COMPUTER, ENHANCE: should probably move ownership up a couple levels at some point
@@ -77,8 +78,8 @@ public:
     int horShiftSpeedIdx;
     int verShiftSpeedIdx;
     int verClockVolAmp;
-    Camera::AcqTriggerMode acqTriggerMode;
-	Camera::ExpTriggerMode expTriggerMode;
+    CookeCamera::AcqTriggerMode acqTriggerMode;
+	CookeCamera::ExpTriggerMode expTriggerMode;
     int hstart, hend, vstart, vend; //binning params
     int angle;
     double umPerPxlXy;
@@ -122,8 +123,8 @@ private:
     bool saveHeader(QString filename, DaqAi* ai);
     void fireStimulus(int valve);
 
-    QMutex mutex;
-    QWaitCondition condition;
+    //QMutex mutex;
+    //QWaitCondition condition;
     bool restart;
     bool abort;
     volatile bool stopRequested; 
