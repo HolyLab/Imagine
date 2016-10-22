@@ -30,8 +30,7 @@ private:
     FastOfstream *ofsSpooling; //NOTE: SpoolThread is not the owner
 
     CircularBuf * circBuf;
-    int itemSize; //todo: change to long long
-    char * tmpItem;
+    long long itemSize;
     char * circBufData;
 
     char * memPool;
@@ -52,7 +51,7 @@ public:
     bool allocMemPool(long long sz){
         if (sz < 0){
 #ifdef _WIN64
-            memPoolSize = (long long)4194304 * 2 * 200; //200 full frames. 5529600 for PCO.Edge 5.5 TODO: make this user-configuable
+            memPoolSize = (long long)4194304 * 2 * 100; //100 full frames. 5529600 for PCO.Edge 5.5 TODO: make this user-configuable
 #else
             memPoolSize=5529600*2*30; //30 full frames
 #endif
@@ -68,7 +67,7 @@ public:
     }
 
     // ctor and dtor
-    SpoolThread::SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *parent = 0);
+    SpoolThread::SpoolThread(FastOfstream *ofsSpooling, long long itemSize, QObject *parent = 0);
     SpoolThread::~SpoolThread();
 
     void requestStop(){
@@ -101,11 +100,13 @@ public:
 
         while (true){
         lockAgain:
-            if (!spoolingLock->tryLock()){
+            spoolingLock->lock();
+            /*            if (!spoolingLock->tryLock()){
                 timerReading = timer.readInNanoSec();
                 while (timer.readInNanoSec() - timerReading < 1000 * 1000 * 7); //busy wait for 7ms
                 goto lockAgain;
             }
+            */
             while (circBuf->empty() && !shouldStop){
                 bufNotEmpty.wait(spoolingLock); //wait 4 not empty
             }
@@ -122,10 +123,13 @@ public:
 
             //now flush if nec. 
             //todo: take care aggressive "get" above ( ... nEmptySlots < 64 ... )
+            //(see below) shouldn't the ofstream be able to decide for itself when to flush?
+            /*
             if (this->ofsSpooling->remainingBufSize() < itemSize){
                 OutputDebugStringW(L"Flushing output file stream from spoolthread run\n");
                 this->ofsSpooling->flush();
             }
+            */
         }//while,
     finishup:
         while (!circBuf->empty()){

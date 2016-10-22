@@ -68,7 +68,8 @@ public:
     }
 
     //@param bufsize default 64M
-    FastOfstream(const string& filename, __int64 total_size_bytes, int bufsize_in_4kb = 65536 / 4){
+    FastOfstream(const string& filename, __int64 total_size_bytes, int bufsize_in_8kb = 65536 / 8){
+    //FastOfstream(const string& filename, __int64 total_size_bytes, int bufsize_in_4kb = 65536 / 4) {
         allBuf = nullptr;
         hFile = INVALID_HANDLE_VALUE;
         isGood = false;
@@ -76,9 +77,12 @@ public:
         nWrites = 0;
         timer.start();
 
-        bufsize = bufsize_in_4kb * 4 * 1024;
+        //The RAID, as configured, uses an 8K unit size...
+        bufsize = bufsize_in_8kb * 8 * 1024;
+        //bufsize = bufsize_in_4kb * 4 * 1024;
         datasize = 0;
-        allBuf = (char*)_aligned_malloc(bufsize * 2, 4 * 1024); //2 bufs
+        //allBuf = (char*)_aligned_malloc(bufsize * 2, 4 * 1024); //2 bufs
+        allBuf = (char*)_aligned_malloc(bufsize * 2, 8 * 1024); //2 bufs
         if (!allBuf) throw EAllocBuf();
         buf = allBuf; //initially, cur buf is the first one
         //TODO: bring back FILE_FLAG_NO_BUFFERING for performance.  First need to handle case where xpix * ypix *2 is not divisible by 4096 (4k sector size).

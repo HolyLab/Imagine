@@ -508,12 +508,15 @@ bool CookeCamera::setSpooling(string filename)
     Camera::setSpooling(filename);
 
     if (isSpooling()){
-        int bufsize_in_4kb = 5529600 * 2 * 8 / (4 * 1024); //8 frames, about 80M in bytes
-        __int64 total_in_bytes = imageSizeBytes * nFramesPerStack * nStacks;
+        //int bufsize_in_4kb = chipWidth * chipHeight * 2 * 8 / (4 * 1024); //8 frames, about 80M in bytes
+        int bufsize_in_8kb = chipWidth * chipHeight * 2 * 16 / (8 * 1024); //16 frames
+        __int64 total_in_bytes = __int64(imageSizeBytes) * nFramesPerStack * nStacks;
 #ifdef _WIN64
-        bufsize_in_4kb *= 1;
+        //bufsize_in_4kb *= 1;
+        bufsize_in_8kb *= 1;
 #endif
-        ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_4kb);
+        //ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_4kb);
+        ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_8kb);
         return *ofsSpooling;
     }
     else return true;

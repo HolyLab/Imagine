@@ -9,11 +9,10 @@
 // style used elsewhere in this codebase, with most code in the .cpp.
 
 //PRE: itemsize: the size (in bytes) of each item in the circ buf
-SpoolThread::SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *parent)
+SpoolThread::SpoolThread(FastOfstream *ofsSpooling, long long itemSize, QObject *parent)
     : QThread(parent){
     this->ofsSpooling = ofsSpooling;
     circBuf = nullptr;
-    tmpItem = nullptr;
     parentThread = (CookeWorkerThread*)parent;
     allocMemPool(-1);
 
@@ -47,7 +46,6 @@ SpoolThread::SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *paren
 #else
     assert((unsigned long)circBufData % (1024 * 64) == 0);
 #endif
-    tmpItem = new char[itemSize]; //todo: align
 
     //todo: provide way to check out-of-mem etc.. e.g., if(circBufData==nullptr) isInGoodState=false;
     //          If FastOfstream obj fails (i.e. write error), isInGoodState is set to false too.
@@ -65,6 +63,5 @@ SpoolThread::SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *paren
 SpoolThread::~SpoolThread(){
     freeMemPool();
     delete circBuf;
-    delete[] tmpItem;
     delete spoolingLock;
 }//dtor
