@@ -342,6 +342,7 @@ bool CookeCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 
 long CookeCamera::getAcquiredFrameCount()
 {
+
     //TODO / WARNING: a bug triggered by the unlock() call mysteriously disappeared after adding the lockResult allocation below
     //First thought was that this was a bug in our code that is very sensitive to timing
     //But after lookin through our code I'm wondering if this could be more of an issue with Qt's mutex
@@ -373,7 +374,7 @@ bool CookeCamera::prepCameraOnce()
     cout << "b4 new WorkerThread(): " << gt.read() << endl;
     workerThread = new CookeWorkerThread(this);
     cout << "after new WorkerThread(): " << gt.read() << endl;
-    workerThread->start();
+    workerThread->start(QThread::TimeCriticalPriority);
     cout << "after workerThread->start(): " << gt.read() << endl;
     return true;
 }
@@ -482,6 +483,7 @@ long CookeCamera::extractFrameCounter(PixelValue* rawData)
 
 bool CookeCamera::getLatestLiveImage(PixelValue * frame)
 {
+    /*
     if (!mpLock->tryLock()) return false;
 
     if (nAcquiredFrames <= 0 || !isRecording)  {
@@ -493,6 +495,7 @@ bool CookeCamera::getLatestLiveImage(PixelValue * frame)
     memcpy_g(frame, pLiveImage, nPixels*sizeof(PixelValue));
 
     mpLock->unlock();
+    */
     return true;
 }
 
@@ -509,7 +512,7 @@ bool CookeCamera::setSpooling(string filename)
 
     if (isSpooling()){
         //int bufsize_in_4kb = chipWidth * chipHeight * 2 * 8 / (4 * 1024); //8 frames, about 80M in bytes
-        int bufsize_in_8kb = chipWidth * chipHeight * 2 * 16 / (8 * 1024); //16 frames
+        __int64 bufsize_in_8kb = __int64(imageSizeBytes) * 16 / (8 * 1024); //16 frames
         __int64 total_in_bytes = __int64(imageSizeBytes) * nFramesPerStack * nStacks;
 #ifdef _WIN64
         //bufsize_in_4kb *= 1;

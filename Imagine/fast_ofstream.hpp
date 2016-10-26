@@ -9,6 +9,7 @@
 #include <future>
 #include <iostream>
 #include <vector>
+#include <string>
 using namespace std;
 
 #include "timer_g.hpp"
@@ -33,7 +34,6 @@ class FastOfstream {
     //for debug
     int nWrites;
     vector<double> times;
-    Timer_g timer;
 
     friend bool realWrite(FastOfstream* stream, char* buf, int datasize);
 
@@ -43,6 +43,7 @@ class FastOfstream {
 public:
     class EOpenFile{};
     class EAllocBuf{};
+    Timer_g timer; //public so we can access from realWrite
 
     //from MSDN
     __int64 fileSeek(HANDLE hf, __int64 distance, DWORD MoveMethod)
@@ -68,7 +69,7 @@ public:
     }
 
     //@param bufsize default 64M
-    FastOfstream(const string& filename, __int64 total_size_bytes, int bufsize_in_8kb = 65536 / 8){
+    FastOfstream(const string& filename, __int64 total_size_bytes, __int64 bufsize_in_8kb = 65536 / 8){
     //FastOfstream(const string& filename, __int64 total_size_bytes, int bufsize_in_4kb = 65536 / 4) {
         allBuf = nullptr;
         hFile = INVALID_HANDLE_VALUE;
@@ -89,7 +90,7 @@ public:
         //      This is especially important for PCO.Edge 4.2 cameras, for which almost all possible ROIs violate this rule.
         //      This is challenging because the _NO_BUFFERING flag additionally requires that all writes begin at sector boundaries.
         hFile = CreateFileA(filename.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
-            FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH | FILE_FLAG_SEQUENTIAL_SCAN, // | FILE_FLAG_NO_BUFFERING,
+            FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH | FILE_FLAG_SEQUENTIAL_SCAN | FILE_FLAG_NO_BUFFERING,
             NULL);
 
         if (hFile == INVALID_HANDLE_VALUE) {
@@ -154,6 +155,7 @@ public:
             ///wait for previous write's finish
             if (async_future.valid()){
                 isGood = async_future.get();
+                OutputDebugStringW((wstring(L"Time after async get:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
             }
 
             if (datasize == 0 || !isGood) goto skip_write;

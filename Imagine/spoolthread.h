@@ -80,7 +80,9 @@ public:
     void appendItem(char* item){
         spoolingLock->lock();
         while (circBuf->full() && !shouldStop){
+            OutputDebugStringW((wstring(L"Begin wait for circbuf to empty:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
             bufNotFull.wait(spoolingLock);
+            OutputDebugStringW((wstring(L"End wait for circbuf to empty:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
         }
         if (shouldStop)goto finishup;
         int idx = circBuf->put();
@@ -108,7 +110,9 @@ public:
             }
             */
             while (circBuf->empty() && !shouldStop){
+                OutputDebugStringW((wstring(L"Begin wait for circbuf to fill:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
                 bufNotEmpty.wait(spoolingLock); //wait 4 not empty
+                OutputDebugStringW((wstring(L"End wait for circbuf to fill:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
             }
             if (shouldStop) goto finishup;
         getAgain:

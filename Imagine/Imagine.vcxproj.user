@@ -6,6 +6,7 @@
     <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin;$(QWTDIR)\lib;C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\bin64%3b$(PATH)</LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)/scripts</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerDebuggerType>Mixed</LocalDebuggerDebuggerType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <QTDIR>C:\Qt_5_7\5.7\msvc2015_64</QTDIR>
