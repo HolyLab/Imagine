@@ -36,7 +36,7 @@ private:
     char * memPool;
     long long memPoolSize;
 
-    QWaitCondition bufNotEmpty;
+    //QWaitCondition bufNotEmpty;
     QWaitCondition bufNotFull;
     QMutex* spoolingLock;
 
@@ -73,7 +73,7 @@ public:
     void requestStop(){
         shouldStop = true;
         bufNotFull.wakeAll();
-        bufNotEmpty.wakeAll();
+        //bufNotEmpty.wakeAll();
     }
 
     //add one item to the ring buf. Blocked when full.
@@ -84,46 +84,72 @@ public:
             bufNotFull.wait(spoolingLock);
             OutputDebugStringW((wstring(L"End wait for circbuf to empty:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
         }
-        if (shouldStop)goto finishup;
+        if (shouldStop) spoolingLock->unlock();
         int idx = circBuf->put();
-        memcpy_g(circBufData + idx*size_t(itemSize), item, itemSize);
-        bufNotEmpty.wakeAll();
-    finishup:
         spoolingLock->unlock();
+        //OutputDebugStringW((wstring(L"Begin copy to circbuf:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
+        //takes about 1.9 milliseconds for a full frame on PCO.Edge 4.2
+        //bufNotEmpty.wakeAll();
+        memcpy_g(circBufData + idx*size_t(itemSize), item, itemSize);
+        //OutputDebugStringW((wstring(L"End copy to circbuf:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
+        //OutputDebugStringW((wstring(L"Waking fast ofstream thread:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
+        //bufNotEmpty.wakeAll();
+   // finishup:
+        //OutputDebugStringW((wstring(L"unlocking spooling lock:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
+    //    spoolingLock->unlock();
     }//appendItem(),
-
-
+    /*
+    void writeLast() {
+        spoolingLock->lock();
+        assert(circBuf->size() == 1); //assert that there is only one left in circ buff
+        int idx = circBuf->get();//write the last frame to disk
+        this->ofsSpooling->write(circBufData + idx*size_t(itemSize), itemSize);
+        spoolingLock->unlock();
+    }
+    */
     void run(){
 #if defined(_DEBUG)
         cerr << "enter cooke spooling thread run()" << endl;
 #endif
 
         long long timerReading;
+        int curSize;
+        int idx;
 
         while (true){
-        lockAgain:
+            //lockAgain:
             spoolingLock->lock();
-            /*            if (!spoolingLock->tryLock()){
-                timerReading = timer.readInNanoSec();
-                while (timer.readInNanoSec() - timerReading < 1000 * 1000 * 7); //busy wait for 7ms
-                goto lockAgain;
-            }
-            */
-            while (circBuf->empty() && !shouldStop){
-                OutputDebugStringW((wstring(L"Begin wait for circbuf to fill:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
-                bufNotEmpty.wait(spoolingLock); //wait 4 not empty
-                OutputDebugStringW((wstring(L"End wait for circbuf to fill:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
-            }
             if (shouldStop) goto finishup;
-        getAgain:
-            int nEmptySlots = circBuf->capacity() - circBuf->size();
-            int idx = circBuf->get();
-            this->ofsSpooling->write(circBufData + idx*size_t(itemSize), itemSize);
-            if (false && nEmptySlots < 64){
-                goto getAgain;
+            curSize = circBuf->size();
+            if (curSize > 1) {
+                idx = circBuf->get();
+                spoolingLock->unlock();
+                this->ofsSpooling->write(circBufData + idx*size_t(itemSize), itemSize);
+                bufNotFull.wakeAll();
+                /*            if (!spoolingLock->tryLock()){
+                    timerReading = timer.readInNanoSec();
+                    while (timer.readInNanoSec() - timerReading < 1000 * 1000 * 7); //busy wait for 7ms
+                    goto lockAgain;
+                }
+                */
             }
-            bufNotFull.wakeAll();
-            spoolingLock->unlock();
+            else {
+                spoolingLock->unlock();
+                Sleep(10); //let the circular buffer fill a little
+                continue;
+                // while (circBuf->empty() && !shouldStop) {
+                        //OutputDebugStringW((wstring(L"Begin wait for circbuf to fill:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
+                //        bufNotEmpty.wait(spoolingLock); //wait 4 not empty
+                        //OutputDebugStringW((wstring(L"Fast ofstream thread awoke:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
+                        //OutputDebugStringW((wstring(L"End wait for circbuf to fill:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
+            }
+        //getAgain:
+            //int nEmptySlots = circBuf->capacity() - circBuf->size();
+
+            //if (false && nEmptySlots < 64){
+            //    goto getAgain;
+            //}
+
 
             //now flush if nec. 
             //todo: take care aggressive "get" above ( ... nEmptySlots < 64 ... )

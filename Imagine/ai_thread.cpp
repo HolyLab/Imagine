@@ -71,7 +71,7 @@ bool AiThread::startAcq()
 {
     stopRequested = false;
     ai->start();   //TODO: check return value
-    this->start();
+    this->start(QThread::LowestPriority);
 
     return true;
 }

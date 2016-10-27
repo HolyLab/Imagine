@@ -13,7 +13,7 @@ ImgApplication::ImgApplication(int &argc, char **argv) : QApplication(argc, argv
 ImgApplication::~ImgApplication() {
     if (imgOne != NULL) delete(imgOne);
     if (imgTwo != NULL) delete(imgTwo);
-    killArduinoThread();
+    //killArduinoThread();
 }
 
 #pragma endregion

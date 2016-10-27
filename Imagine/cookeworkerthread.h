@@ -106,6 +106,7 @@ public:
             while ((waitResult < WAIT_OBJECT_0 || waitResult >= WAIT_OBJECT_0 + camera->nBufs) && !shouldStop) {
                 int waitResult = WaitForMultipleObjects(camera->nBufs, camera->mEvent, false, 2000); //wait again
             }//if, WAIT_ABANDONED, WAIT_TIMEOUT or WAIT_FAILED
+           //OutputDebugStringW((wstring(L"Begin processing frame: ") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //todo: should we try to keep going? SEE: CSC2Class::SC2Thread()
             if (shouldStop) break;
             nEvents++;
@@ -251,6 +252,7 @@ public:
                     camera->errorMsg = "failed to add buffer";
                     break; //break the while
                 }
+                //OutputDebugStringW((wstring(L"End processing frame: ") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
             }
             else {
                 tGuard.unlock();

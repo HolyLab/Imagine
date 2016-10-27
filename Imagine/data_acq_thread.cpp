@@ -171,7 +171,7 @@ bool DataAcqThread::preparePositioner(bool isForward)
 void DataAcqThread::startAcq()
 {
     stopRequested = false;
-    this->start();
+    this->start(QThread::LowestPriority);
 }
 
 void DataAcqThread::stopAcq()

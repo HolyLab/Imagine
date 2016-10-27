@@ -1,6 +1,8 @@
 #ifndef CIRCBUF_HPP
 #define CIRCBUF_HPP
 
+#include <atomic>
+
 /*
    the data is in [head tail). Let's say the capacity is 8.
    EG: empty: [0 0), [5 5)

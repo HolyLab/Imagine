@@ -134,7 +134,10 @@ public:
             }
             */
             //alternative:
+            //OutputDebugStringW((wstring(L"Begin copy to file buf:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
+            //takes about 1.9 milliseconds for a full frame on PCO.Edge 4.2
             memcpy_g(buf + datasize, moredata, amount2cp);
+            //OutputDebugStringW((wstring(L"End copy to file buf:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
             datasize += amount2cp;
             moredata += amount2cp;
 
