@@ -47,7 +47,7 @@ public:
                 this);
             cout << "after new spoolthread: " << gt.read() << endl;
 
-            spoolingThread->start(QThread::TimeCriticalPriority);
+            spoolingThread->start(QThread::NormalPriority);
         }
         else {
             spoolingThread = nullptr;
@@ -96,21 +96,36 @@ public:
         int negIndices = 0;
         Timer_g gt = this->camera->parentAcqThread->parentImagine->gTimer;
         long frameCount = 0;
-
+        int eventIdx = 1;
+        HANDLE mEventSwapped[2] = {camera->mEvent[1], camera-> mEvent[0]};
+        int waitResult;
 
         while (true){
             //if(shouldStop) break;
             ///wait for events
-            int waitResult = WaitForMultipleObjects(camera->nBufs, camera->mEvent, false, 2000);
+            if (eventIdx == 1) { // if the previous frame was from event 1, set event 0 as first priority
+                waitResult = WaitForMultipleObjects(camera->nBufs, camera->mEvent, false, 2000);
+            }
+            else { //if the previous frame was from event 0, set event 1 as first priority
+                waitResult = WaitForMultipleObjects(camera->nBufs, mEventSwapped, false, 2000);
+                if (waitResult == 0 || waitResult == 1) waitResult = (int)!(bool(waitResult)); //keep indices relative to mEvent
+            }
 			//TODO: the logic block below is what causes external acquisitions to time out. maybe fixed?
             while ((waitResult < WAIT_OBJECT_0 || waitResult >= WAIT_OBJECT_0 + camera->nBufs) && !shouldStop) {
-                int waitResult = WaitForMultipleObjects(camera->nBufs, camera->mEvent, false, 2000); //wait again
+                //wait again
+                if (eventIdx == 1) {
+                    waitResult = WaitForMultipleObjects(camera->nBufs, camera->mEvent, false, 2000);
+                }
+                else {
+                    waitResult = WaitForMultipleObjects(camera->nBufs, mEventSwapped, false, 2000);
+                    if (waitResult == 0 || waitResult == 1) waitResult = (int)!(bool(waitResult)); //keep indices relative to mEvent
+                }
             }//if, WAIT_ABANDONED, WAIT_TIMEOUT or WAIT_FAILED
            //OutputDebugStringW((wstring(L"Begin processing frame: ") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //todo: should we try to keep going? SEE: CSC2Class::SC2Thread()
             if (shouldStop) break;
             nEvents++;
-            int eventIdx = waitResult - WAIT_OBJECT_0;
+            eventIdx = waitResult - WAIT_OBJECT_0;
             CLockGuard tGuard(camera->mpLock); //wraps and acquires the lock
 
             /*

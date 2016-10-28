@@ -171,7 +171,7 @@ bool DataAcqThread::preparePositioner(bool isForward)
 void DataAcqThread::startAcq()
 {
     stopRequested = false;
-    this->start(QThread::LowestPriority);
+    this->start(QThread::IdlePriority);
 }
 
 void DataAcqThread::stopAcq()
@@ -274,7 +274,7 @@ void DataAcqThread::run_acq_and_save()
     bool isCooke = camera.vendor == "cooke";
     bool hasPos = pPositioner != NULL;
 
-    if (isCooke){
+    if (isCooke) {
         isUseSpool = true;
     }
 
@@ -288,7 +288,7 @@ void DataAcqThread::run_acq_and_save()
     string positionerFeedbackFile = replaceExtName(headerFilename, "pos").toStdString();
 
     //if cooke/avt, setSpooling() here!!! (to avoid out-of-mem when setAcqModeAndTime())
-    if (isCooke && isUseSpool){
+    if (isCooke && isUseSpool) {
         camera.setSpooling(camFilename.toStdString());
     }
 
@@ -301,7 +301,7 @@ void DataAcqThread::run_acq_and_save()
         this->exposureTime,
         this->nFramesPerStack*framefactor,
         this->acqTriggerMode,
-		this->expTriggerMode);
+        this->expTriggerMode);
     emit newStatusMsgReady(QString("Camera: set acq mode and time: %1")
         .arg(camera.getErrorMsg().c_str()));
 
@@ -348,7 +348,7 @@ void DataAcqThread::run_acq_and_save()
 
     FastOfstream *ofsCam = NULL;
 
-    if (!isUseSpool){
+    if (!isUseSpool) {
         __int64 total_in_bytes = camera.getImageHeight() * camera.getImageWidth() * 2 * nFramesPerStack * nStacks;
         ofsCam = new FastOfstream(camFilename.toStdString(), total_in_bytes);
         assert(*ofsCam);
@@ -372,7 +372,7 @@ void DataAcqThread::run_acq_and_save()
     }
 
     //start AI
-    aiThread->startAcq();
+    if (ownPos) aiThread->startAcq();
 
     camera.prepCameraOnce();
 
@@ -380,7 +380,7 @@ void DataAcqThread::run_acq_and_save()
         camera.startAcq();
 
     //start stimuli[0] if necessary
-    if (applyStim && stimuli[0].second == 0){
+    if (applyStim && stimuli[0].second == 0) {
         curStimIndex = 0;
         fireStimulus(stimuli[curStimIndex].first);
     }//if, first stimulus should be fired before stack_0
@@ -389,7 +389,7 @@ void DataAcqThread::run_acq_and_save()
     long nFramesDoneStack = this->nFramesPerStack;
 
     gt.start(); //seq's start time is 0, the new ref pt
-    
+
 nextStack:  //code below is repeated every stack
     double stackStartTime = gt.read();
     cout << "b4 open laser: " << gt.read() << endl;
@@ -401,10 +401,10 @@ nextStack:  //code below is repeated every stack
     {
         QScriptValue jsFunc = se->globalObject().property("onShutterOpen");
         if (jsFunc.isFunction()) {
-         //   below code was disabled because it (rarely) caused the following error:
-         //  Unhandled exception at 0x000007FEE019F326 (Qt5Scriptd.dll) in Imagine.exe: 0xC0000005: Access violation writing location 0x00000000BBADBEEF.
-         //   se->globalObject().setProperty("currentStackIndex", idxCurStack);
-         //   jsFunc.call();
+            //   below code was disabled because it (rarely) caused the following error:
+            //  Unhandled exception at 0x000007FEE019F326 (Qt5Scriptd.dll) in Imagine.exe: 0xC0000005: Access violation writing location 0x00000000BBADBEEF.
+            //   se->globalObject().setProperty("currentStackIndex", idxCurStack);
+            //   jsFunc.call();
         }
     }
 
@@ -416,21 +416,21 @@ nextStack:  //code below is repeated every stack
         .arg(gt.read(), 10, 'f', 4) //width=10, fixed point, 4 decimal digits 
         );
 
-/*
-    if (isAndor && isUseSpool) {
-        QString stemName = camFilename.arg(idxCurStack, 4, 10, QLatin1Char('0'));
-        //enable spool
-        ((AndorCamera*)(&camera))->enableSpool((char*)(stemName.toStdString().c_str()), 10);
-    }
-*/
+    /*
+        if (isAndor && isUseSpool) {
+            QString stemName = camFilename.arg(idxCurStack, 4, 10, QLatin1Char('0'));
+            //enable spool
+            ((AndorCamera*)(&camera))->enableSpool((char*)(stemName.toStdString().c_str()), 10);
+        }
+    */
 
     if (hasPos && ownPos) pPositioner->optimizeCmd(); //This function currently does nothing for voltage positioner.  Is this okay?
 
     cout << "b4 start camera & piezo: " << gt.read() << endl;
 
     bool isPiezo = hasPos && pPositioner->posType == PiezoControlPositioner;
-    if (acqTriggerMode == Camera::eExternal){
-        if (!startCameraOnce && !isPiezo){
+    if (acqTriggerMode == Camera::eExternal) {
+        if (!startCameraOnce && !isPiezo) {
             camera.startAcq();
             double timeToWait = 0.1;
             //TODO: maybe I should use busy waiting?
@@ -443,7 +443,7 @@ nextStack:  //code below is repeated every stack
             cout << "after pPositioner->runCmd: " << gt.read() << endl;
         }
 
-        if (!startCameraOnce && isPiezo){
+        if (!startCameraOnce && isPiezo) {
             camera.startAcq();
         }
     }
@@ -469,17 +469,17 @@ nextStack:  //code below is repeated every stack
 
     long nFramesGotForStack = 0;
     long nFramesGotForStackCur;
-    while (!stopRequested || this->nStacks > 1){
+    while (!stopRequested || this->nStacks > 1) {
         nFramesGotForStackCur = camera.getAcquiredFrameCount();
-        if (nFramesGotForStackCur == -1){
+        if (nFramesGotForStackCur == -1) {
             Sleep(10);
             continue;
         }
-        if (nFramesGotForStackCur >= nFramesDoneStack){
+        if (nFramesGotForStackCur >= nFramesDoneStack) {
             break;
         }
 
-        if (nFramesGotForStack != nFramesGotForStackCur && !isUpdatingImage){
+        if (nFramesGotForStack != nFramesGotForStackCur && !isUpdatingImage) {
             nFramesGotForStack = nFramesGotForStackCur;
 
             //get the latest frame:
@@ -511,7 +511,7 @@ nextStack:  //code below is repeated every stack
     digOut->write();
     {
         QScriptValue jsFunc = se->globalObject().property("onShutterClose");
-        if (jsFunc.isFunction()){
+        if (jsFunc.isFunction()) {
             se->globalObject().setProperty("currentStackIndex", idxCurStack);
             jsFunc.call();
         }
@@ -520,15 +520,15 @@ nextStack:  //code below is repeated every stack
     //update stimulus if necessary:  idxCurStack
     if (applyStim
         && curStimIndex + 1 < stimuli.size()
-        && stimuli[curStimIndex + 1].second == idxCurStack + 1){
+        && stimuli[curStimIndex + 1].second == idxCurStack + 1) {
         curStimIndex++;
         fireStimulus(stimuli[curStimIndex].first);
     }//if, should update stimulus
 
-    if (!isUseSpool){
+    if (!isUseSpool) {
         //get camera's data:
         bool result = camera.transferData();
-        if (!result){
+        if (!result) {
             emit newStatusMsgReady(QString(camera.getErrorMsg().c_str())
                 + QString("(errCode=%1)").arg(camera.getErrorCode()));
             return;
@@ -538,12 +538,12 @@ nextStack:  //code below is repeated every stack
     ////save data to files:
 
     ///save camera's data:
-    if (!isUseSpool){
+    if (!isUseSpool) {
         Camera::PixelValue * imageArray = camera.getImageArray();
         double timerValue = gt.read();
         ofsCam->write((const char*)imageArray,
             sizeof(Camera::PixelValue)*nFramesPerStack*imageW*imageH);
-        if (!*ofsCam){
+        if (!*ofsCam) {
             //TODO: deal with the error
         }//if, error occurs when write camera data
         cout << "time for writing the stack: " << gt.read() - timerValue << endl;
@@ -571,8 +571,8 @@ nextStack:  //code below is repeated every stack
     //digOut->write();
 
     idxCurStack++;  //post: it is #stacks we got so far
-    if (idxCurStack < this->nStacks && !stopRequested){
-        if (isBiDirectionalImaging && ownPos){
+    if (idxCurStack < this->nStacks && !stopRequested) {
+        if (isBiDirectionalImaging && ownPos) {
             cout << "b4 preparePositioner: " << gt.read() << endl;
             preparePositioner(idxCurStack % 2 == 0);
             cout << "after preparePositioner: " << gt.read() << endl;
@@ -580,10 +580,10 @@ nextStack:  //code below is repeated every stack
         double timePerStack = nFramesPerStack*cycleTime + idleTimeBwtnStacks;
         double stackEndingTime = gt.read();
         double timeToWait = timePerStack*idxCurStack - stackEndingTime;
-        if ((timeToWait < 0) && ownPos){
+        if ((timeToWait < 0) && ownPos) {
             emit newLogMsgReady("WARNING: overrun(overall progress): idle time is too short.");
         }
-        if ((stackEndingTime - stackStartTime > timePerStack) && ownPos){
+        if ((stackEndingTime - stackStartTime > timePerStack) && ownPos) {
             nOverrunStacks++;
             emit newLogMsgReady("WARNING: overrun(current stack): idle time is too short.");
         }
@@ -591,7 +591,7 @@ nextStack:  //code below is repeated every stack
         double maxWaitTime = 2; //in seconds. The frequency to check stop signal
     repeatWait:
         timeToWait = timePerStack*idxCurStack - gt.read();
-        if (timeToWait > 0.01){
+        if (timeToWait > 0.01) {
             QThread::msleep(min(maxWaitTime, timeToWait) * 1000); // *1000: sec -> ms
         }//if, need wait more than 10ms
         if (timeToWait > maxWaitTime && !stopRequested) goto repeatWait;
@@ -602,17 +602,21 @@ nextStack:  //code below is repeated every stack
     camera.stopAcqFinal();
 
     ///save ai data:
-    aiThread->save(*ofsAi);
-    ofsAi->flush();
+    if (ownPos) {
+        aiThread->save(*ofsAi);
+        ofsAi->flush();
+    }
 
     //fire post-seq stimulus:
-    if (applyStim){
+    if (applyStim) {
         int postSeqStim = 0; //TODO: get this value from stim file header
         fireStimulus(postSeqStim);
     }
 
-    aiThread->stopAcq();
-    aiThread->save(*ofsAi);
+    if (ownPos) {
+        aiThread->stopAcq();
+        aiThread->save(*ofsAi);
+    }   
 
     if (startCameraOnce)
         camera.stopAcq();
@@ -623,7 +627,7 @@ nextStack:  //code below is repeated every stack
         ofsCam = nullptr;
     }
 
-    ofsAi->close();
+    
 
     {
         QScriptValue jsFunc = se->globalObject().property("onShutterFini");

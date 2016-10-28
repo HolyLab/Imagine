@@ -51,7 +51,7 @@ public:
     bool allocMemPool(long long sz){
         if (sz < 0){
 #ifdef _WIN64
-            memPoolSize = (long long)4194304 * 2 * 100; //100 full frames. 5529600 for PCO.Edge 5.5 TODO: make this user-configuable
+            memPoolSize = (long long)4194304 * 2 * 200; //200 full frames. 5529600 for PCO.Edge 5.5 TODO: make this user-configuable
 #else
             memPoolSize=5529600*2*30; //30 full frames
 #endif
@@ -135,6 +135,7 @@ public:
             }
             else {
                 spoolingLock->unlock();
+                //OutputDebugStringW((wstring(L"Circ buf is empty: ") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
                 Sleep(10); //let the circular buffer fill a little
                 continue;
                 // while (circBuf->empty() && !shouldStop) {

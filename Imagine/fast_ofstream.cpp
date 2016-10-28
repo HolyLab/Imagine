@@ -22,9 +22,9 @@ write_more:
     //write a few bytes extra
     if (remainder != 0) datasize = datasize - remainder + 4096;
 
-    OutputDebugStringW((wstring(L"Time before realWrite:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
+    //OutputDebugStringW((wstring(L"Time before realWrite:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
     bool isGood = WriteFile(stream->hFile, pFrom, datasize, &dwWritten, NULL);
-    OutputDebugStringW((wstring(L"Time after realWrite:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
+    //OutputDebugStringW((wstring(L"Time after realWrite:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
     nBytesWritten = (int)dwWritten;
     stream->times.push_back(stream->timer.read() - timerValue);
     if (!isGood) {

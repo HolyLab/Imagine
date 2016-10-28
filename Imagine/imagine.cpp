@@ -93,8 +93,7 @@ Imagine::Imagine(CookeCamera *cam, Positioner *pos, Imagine *mImagine, QWidget *
     connect(&pixmapperThread, &QThread::finished, pixmapper, &QObject::deleteLater);
     connect(this, &Imagine::makePixmap, pixmapper, &Pixmapper::handleImg);
     connect(pixmapper, &Pixmapper::pixmapReady, this, &Imagine::handlePixmap);
-    pixmapperThread.start();
-    pixmapperThread.setPriority(QThread::LowPriority);
+    pixmapperThread.start(QThread::IdlePriority);
 
     qDebug() << QString("finished pixmapper setup");
 
