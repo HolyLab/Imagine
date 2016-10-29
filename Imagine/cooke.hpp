@@ -24,6 +24,7 @@ class CookeWorkerThread;
 class CookeCamera : public Camera {
 public:
     friend class CookeWorkerThread;
+    friend class SpoolThread;
 
 private:
     HANDLE hCamera;
@@ -44,6 +45,10 @@ private:
     //todo: alignment
     PixelValue* pBlackImage;
 
+    //for streaming images to disk
+    long long memPoolSize;
+    char * memPool;
+
     long firstFrameCounter; //first first frame's counter value
     long long totalGap;
 
@@ -57,6 +62,9 @@ private:
     WORD mBufIndex[2]; //m_wBufferNr
     HANDLE mEvent[2];//m_hEvent
     PixelValue* mRingBuf[2]; //m_pic12
+
+    CircularBuf *circBuf;
+    QMutex *circBufLock;
 
     CookeWorkerThread* workerThread;
 
@@ -101,6 +109,7 @@ public:
         //delete[] pBlackImage;
         _aligned_free(pLiveImage);
         _aligned_free(pBlackImage);
+        freeMemPool();
 
         delete workerThread;
         delete mpLock;
@@ -140,6 +149,8 @@ public:
 		ExpTriggerMode expTriggerMode
         );
 
+    bool allocMemPool(long long sz);
+    void freeMemPool();
 
     long getAcquiredFrameCount();
 

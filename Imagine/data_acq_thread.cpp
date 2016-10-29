@@ -62,6 +62,7 @@ DataAcqThread::DataAcqThread(CookeCamera *cam, Positioner *pos, Imagine* parentI
     setCamera(cam);
     // not that this was allocated with 'new', so you need to delete when you die
     pPositioner = pos;
+    allocMemPool(-1);
 }
 
 DataAcqThread::~DataAcqThread()
@@ -76,7 +77,6 @@ DataAcqThread::~DataAcqThread()
 
 	delete pCamera;
     if ((parentImagine->masterImagine) == NULL) delete pPositioner;
-
     wait();
 }
 
@@ -271,12 +271,8 @@ void DataAcqThread::run_acq_and_save()
     CookeCamera& camera = *pCamera;
     Timer_g gt = parentImagine->gTimer;
 
-    bool isCooke = camera.vendor == "cooke";
     bool hasPos = pPositioner != NULL;
 
-    if (isCooke) {
-        isUseSpool = true;
-    }
 
     ////prepare for AO AI and camera:
 
@@ -287,10 +283,8 @@ void DataAcqThread::run_acq_and_save()
     ///piezo feedback data file (only for PI piezo)
     string positionerFeedbackFile = replaceExtName(headerFilename, "pos").toStdString();
 
-    //if cooke/avt, setSpooling() here!!! (to avoid out-of-mem when setAcqModeAndTime())
-    if (isCooke && isUseSpool) {
-        camera.setSpooling(camFilename.toStdString());
-    }
+
+    camera.setSpooling(camFilename.toStdString());
 
     bool startCameraOnce = isCooke && acqTriggerMode == Camera::eExternal;
 
@@ -348,20 +342,10 @@ void DataAcqThread::run_acq_and_save()
 
     FastOfstream *ofsCam = NULL;
 
-    if (!isUseSpool) {
-        __int64 total_in_bytes = camera.getImageHeight() * camera.getImageWidth() * 2 * nFramesPerStack * nStacks;
-        ofsCam = new FastOfstream(camFilename.toStdString(), total_in_bytes);
-        assert(*ofsCam);
-    }
-
     isUpdatingImage = false;
 
-    int imageW = camera.getImageWidth();
-    int imageH = camera.getImageHeight();
-
-    int nPixels = imageW*imageH;
     //Camera::PixelValue * frame=new Camera::PixelValue[nPixels];
-    Camera::PixelValue * frame = (Camera::PixelValue*)_aligned_malloc(sizeof(Camera::PixelValue)*nPixels, 4 * 1024);
+    Camera::PixelValue * frame = (Camera::PixelValue*)_aligned_malloc(sizeof(Camera::PixelValue)*camera->imageSizePixels, 4 * 1024);
     unique_ptr<Camera::PixelValue, decltype(_aligned_free)*> uniPtrFrame(frame, _aligned_free);
 
     idxCurStack = 0;

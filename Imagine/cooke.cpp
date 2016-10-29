@@ -79,18 +79,41 @@ bool CookeCamera::init()
     //model
     this->model = strCamType.strHardwareVersion.Board[0].szName;
 
-    int nPixels = chipWidth*chipHeight;
-
     //pLiveImage=new PixelValue[nPixels];
-    pLiveImage = (PixelValue*)_aligned_malloc(sizeof(PixelValue)*nPixels, 4 * 1024);
+    this->pLiveImage = (PixelValue*)_aligned_malloc(sizeof(PixelValue)*imageSizePixels, 4 * 1024);
 
     //pBlackImage=new PixelValue[nPixels];
-    pBlackImage = (PixelValue*)_aligned_malloc(sizeof(PixelValue)*nPixels, 4 * 1024);
+    this->pBlackImage = (PixelValue*)_aligned_malloc(sizeof(PixelValue)*imageSizePixels, 4 * 1024);
     memset(pBlackImage, 0, nPixels*sizeof(PixelValue)); //all zeros
+    
+    allocMemPool(-1);
 
+    //these get initialized and deleted by prepCameraOnce() and stopCameraFinal()
+    this->circBuf = nullptr;
+    this->circBufLock = nullptr;
+
+    cout << "b4 new CircularBuf: " << gt.read() << endl;
 
     return true;
 }//init(),
+
+bool CookeCamera::allocMemPool(long long sz) {
+    if (sz < 0) {
+#ifdef _WIN64
+        memPoolSize = (long long)4194304 * 2 * 200; //200 full frames. 5529600 for PCO.Edge 5.5 TODO: make this user-configuable
+#else
+        memPoolSize = 5529600 * 2 * 30; //30 full frames
+#endif
+    }//if, use default
+    else memPoolSize = sz;
+    memPool = (char*)_aligned_malloc(memPoolSize, 1024 * 64);
+    return memPool;
+}
+void CookeCamera::freeMemPool() {
+    _aligned_free(memPool);
+    memPool = nullptr;
+    memPoolSize = 0;
+}
 
 bool CookeCamera::fini()
 {
@@ -356,13 +379,20 @@ long CookeCamera::getAcquiredFrameCount()
 
 bool CookeCamera::prepCameraOnce()
 {
+    int circBufCap = memPoolSize / imageSizeBytes;  //memPoolSize is set in spoolthread.h
+    circBuf = new CircularBuf(circBufCap);
+    circBufLock = new QMutex;
+
+
     ///alloc the ring buffer for data transfer from card to pc
     for (int i = 0; i < nBufs; ++i) {
         mBufIndex[i] = -1;
         //mEvent[i] = NULL;
         mEvent[i] = CreateEvent(0, TRUE, FALSE, NULL);
         //mRingBuf[i] = NULL;
-        mRingBuf[i] = (PixelValue*)_aligned_malloc(imageSizeBytes, 4 * 1024);
+        int idx = circBuf->put();
+        mRingBuf[i] = (PixelValue*)(memPool + idx*size_t(imageSizeBytes));
+        //mRingBuf[i] = (PixelValue*)_aligned_malloc(imageSizeBytes, 4 * 1024);
 
         //safe_pco(PCO_AllocateBuffer(hCamera, (SHORT*)&mBufIndex[i],
         //    imageSizeBytes, &mRingBuf[i], &mEvent[i]), "failed to allocate buffer");
@@ -372,7 +402,8 @@ bool CookeCamera::prepCameraOnce()
 
     Timer_g gt = parentAcqThread->parentImagine->gTimer;
     cout << "b4 new WorkerThread(): " << gt.read() << endl;
-    workerThread = new CookeWorkerThread(this);
+    spoolThread = new SpoolThread(ofsSpooling, imageSizeBytes, &circBuf, &circBufLock)
+    workerThread = new CookeWorkerThread(this, &circBuf, &circBufLock, &memPool);
     cout << "after new WorkerThread(): " << gt.read() << endl;
     workerThread->start(QThread::TimeCriticalPriority);
     cout << "after workerThread->start(): " << gt.read() << endl;
@@ -387,7 +418,6 @@ bool CookeCamera::startAcq()
     for (int i = 0; i < nBufs; ++i) {
         //in fifo mode, frameIdxInCamRam are 0 for all buffers?
         int frameIdxInCamRam = 0;
-        PCO_GetActiveRamSegment(hCamera, &wActSeg);
         //TODO: switch to PCO_AddBufferExtern to improve performance
         //safe_pco(PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i]), "failed to add buffer");// Add buffer to the driver queue
         //safe_pco(PCO_AddBufferEx(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i], getImageWidth(), getImageHeight(), bytesPerPixel), "failed to add buffer");// Add buffer to the driver queue
@@ -422,7 +452,11 @@ bool CookeCamera::stopAcqFinal()
 {
     //not rely on the "wait abandon"!!!
     workerThread->requestStop();
+    spoolingThread->requestStop();
     workerThread->wait();
+    spoolingThread->wait();
+
+    delete circBuf;
     /*
     for (int i = 0; i < nBufs; ++i) {
         //reverse of PCO_AllocateBuffer()
@@ -510,21 +544,19 @@ bool CookeCamera::setSpooling(string filename)
 
     Camera::setSpooling(filename);
 
-    if (isSpooling()){
-        //int bufsize_in_4kb = chipWidth * chipHeight * 2 * 8 / (4 * 1024); //8 frames, about 80M in bytes
-        //__int64 bufsize_in_8kb = __int64(imageSizeBytes) * 8 / (8 * 1024); //8 frames
-        __int64 bufsize_in_32kb = __int64(imageSizeBytes) * 8 / (32 * 1024); //8 frames
-        __int64 total_in_bytes = __int64(imageSizeBytes) * nFramesPerStack * nStacks;
+    //int bufsize_in_4kb = chipWidth * chipHeight * 2 * 8 / (4 * 1024); //8 frames, about 80M in bytes
+    //__int64 bufsize_in_8kb = __int64(imageSizeBytes) * 8 / (8 * 1024); //8 frames
+    __int64 bufsize_in_32kb = __int64(imageSizeBytes) * 8 / (32 * 1024); //8 frames
+    __int64 total_in_bytes = __int64(imageSizeBytes) * nFramesPerStack * nStacks;
 #ifdef _WIN64
-        //bufsize_in_4kb *= 1;
-        //bufsize_in_8kb *= 1;
-        bufsize_in_32kb *= 1;
+    //bufsize_in_4kb *= 1;
+    //bufsize_in_8kb *= 1;
+    bufsize_in_32kb *= 1;
 #endif
-        //ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_4kb);
-        //ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_8kb);
-        ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_32kb);
-        return *ofsSpooling;
-    }
+    //ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_4kb);
+    //ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_8kb);
+    ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_32kb);
+    return *ofsSpooling;
     else return true;
 
 }
