@@ -6,6 +6,7 @@
 #include <QMutex>
 
 #include "camera_g.hpp"
+#include "circbuf.hpp"
 
 #include "sc2_SDKStructures.h"
 #include "SC2_CamExport.h"
@@ -20,6 +21,7 @@
 // in the future it would be nice to make use of cookworkerthread.cpp,
 // then forward declare this class in that one, rather than this.
 class CookeWorkerThread;
+class SpoolThread;
 
 class CookeCamera : public Camera {
 public:
@@ -53,8 +55,6 @@ private:
     long long totalGap;
 
     long nAcquiredFrames;
-    //lock used to coordinate accessing to nAcquiredFrames & pLiveImage
-    QMutex* mpLock;
     bool isRecording;
 
     // nBufs is defined in cpp file - these arrays should have the same length as nBufs
@@ -67,6 +67,7 @@ private:
     QMutex *circBufLock;
 
     CookeWorkerThread* workerThread;
+    SpoolThread* spoolThread;
 
     FastOfstream *ofsSpooling;
 
@@ -78,9 +79,11 @@ public:
 
         firstFrameCounter = -1;
         nAcquiredFrames = 0;
-        mpLock = new QMutex;
+
+        circBufLock = new QMutex;
 
         workerThread = nullptr;
+        spoolThread = nullptr;
 
         ofsSpooling = nullptr;
 
@@ -112,7 +115,6 @@ public:
         freeMemPool();
 
         delete workerThread;
-        delete mpLock;
     }
 
     string getErrorMsg(){

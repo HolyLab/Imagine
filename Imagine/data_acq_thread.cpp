@@ -62,7 +62,6 @@ DataAcqThread::DataAcqThread(CookeCamera *cam, Positioner *pos, Imagine* parentI
     setCamera(cam);
     // not that this was allocated with 'new', so you need to delete when you die
     pPositioner = pos;
-    allocMemPool(-1);
 }
 
 DataAcqThread::~DataAcqThread()
@@ -206,10 +205,7 @@ void DataAcqThread::run_live()
 
     isUpdatingImage = false;
 
-    int imageW = camera.getImageWidth();
-    int imageH = camera.getImageHeight();
-    int nPixels = imageW*imageH;
-    Camera::PixelValue * frame = new Camera::PixelValue[nPixels];
+    Camera::PixelValue * frame = new Camera::PixelValue[camera.imageSizePixels];
     unique_ptr<Camera::PixelValue[]> uniPtrFrame(frame);
 
     Timer_g timer;
@@ -242,8 +238,8 @@ void DataAcqThread::run_live()
             }
 
             //copy data
-            QByteArray data16 = QByteArray::fromRawData((const char*)frame, imageW*imageH * 2); //image display buffer
-            emit imageDataReady(data16, nFramesGot - 1, imageW, imageH); //-1: due to 0-based indexing
+            QByteArray data16 = QByteArray::fromRawData((const char*)frame, camera.imageSizeBytes); //image display buffer
+            emit imageDataReady(data16, nFramesGot - 1, camera.getImageWidth(), camera.getImageHeight()); //-1: due to 0-based indexing
 
             nDisplayUpdating++;
             if (nDisplayUpdating % 10 == 0){
@@ -283,10 +279,11 @@ void DataAcqThread::run_acq_and_save()
     ///piezo feedback data file (only for PI piezo)
     string positionerFeedbackFile = replaceExtName(headerFilename, "pos").toStdString();
 
+    if (camera.genericAcqMode != Camera::eLive) {
+        camera.setSpooling(camFilename.toStdString());
+    }
 
-    camera.setSpooling(camFilename.toStdString());
-
-    bool startCameraOnce = isCooke && acqTriggerMode == Camera::eExternal;
+    bool startCameraOnce = (acqTriggerMode == Camera::eExternal);
 
     int framefactor = startCameraOnce ? this->nStacks : 1;
 
@@ -345,7 +342,7 @@ void DataAcqThread::run_acq_and_save()
     isUpdatingImage = false;
 
     //Camera::PixelValue * frame=new Camera::PixelValue[nPixels];
-    Camera::PixelValue * frame = (Camera::PixelValue*)_aligned_malloc(sizeof(Camera::PixelValue)*camera->imageSizePixels, 4 * 1024);
+    Camera::PixelValue * frame = (Camera::PixelValue*)_aligned_malloc(sizeof(Camera::PixelValue*)*(camera.imageSizePixels), 4 * 1024);
     unique_ptr<Camera::PixelValue, decltype(_aligned_free)*> uniPtrFrame(frame, _aligned_free);
 
     idxCurStack = 0;
@@ -472,8 +469,8 @@ nextStack:  //code below is repeated every stack
                 continue;
             }
             //copy data to display buffer
-            QByteArray data16 = QByteArray((const char*)frame, imageW*imageH * 2); //image display buffer
-            emit imageDataReady(data16, nFramesGotForStack - 1 - (nFramesDoneStack - nFramesPerStack), imageW, imageH); //-1: due to 0-based indexing
+            QByteArray data16 = QByteArray((const char*)frame, camera.imageSizeBytes); //image display buffer
+            emit imageDataReady(data16, nFramesGotForStack - 1 - (nFramesDoneStack - nFramesPerStack), camera.getImageWidth(), camera.getImageHeight()); //-1: due to 0-based indexing
         }
     }//while, camera is not idle
 
@@ -519,22 +516,6 @@ nextStack:  //code below is repeated every stack
         }
     }
 
-    ////save data to files:
-
-    ///save camera's data:
-    if (!isUseSpool) {
-        Camera::PixelValue * imageArray = camera.getImageArray();
-        double timerValue = gt.read();
-        ofsCam->write((const char*)imageArray,
-            sizeof(Camera::PixelValue)*nFramesPerStack*imageW*imageH);
-        if (!*ofsCam) {
-            //TODO: deal with the error
-        }//if, error occurs when write camera data
-        cout << "time for writing the stack: " << gt.read() - timerValue << endl;
-        //ofsCam->flush();
-    }//if, save data to file and not using spool
-
-    cout << "b4 flush ai data: " << gt.read() << endl;
 
     if (!startCameraOnce) {
         cout << "b4 stop camera: " << gt.read() << endl;
@@ -585,6 +566,7 @@ nextStack:  //code below is repeated every stack
 
     camera.stopAcqFinal();
 
+    cout << "b4 flush ai data: " << gt.read() << endl;
     ///save ai data:
     if (ownPos) {
         aiThread->save(*ofsAi);
@@ -619,10 +601,8 @@ nextStack:  //code below is repeated every stack
     }
 
     ///disable spool
-    if (isUseSpool){
-        /*if (isAndor) ((AndorCamera*)(&camera))->enableSpool(NULL, 10); //disable spooling
-        else */
-		if (isCooke) camera.setSpooling(""); //disable spooling which also closes file
+    if (camera.genericAcqMode!=Camera::eLive){
+        camera.setSpooling(""); //disable spooling which also closes file
     }
 
 /*    if (isPiezo){  //not for voltage-controlled piezo from piezosystem jena

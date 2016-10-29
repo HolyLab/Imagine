@@ -43,9 +43,9 @@ public:
 
         //cout<<"after _aligned_malloc: "<<gt.read()<<endl;
 #ifdef _WIN64
-        assert((unsigned long long)circBufData % (1024 * 64) == 0);
+        assert((unsigned long long)(camera->memPool) % (1024 * 64) == 0);
 #else
-        assert((unsigned long)circBufData % (1024 * 64) == 0);
+        assert((unsigned long)(camera->memPool) % (1024 * 64) == 0);
 #endif
 
 
@@ -119,7 +119,7 @@ public:
                     ResetEvent(camera->mEvent[eventIdx]);
                     continue;
                 }
-                if (camera->nAcquiredFrames == 0) {
+                if (frameCount == 0) {
                     camera->firstFrameCounter = counter;
                     assert(counter >= 0);
                     cout << "first frame's counter is " << counter << ", at time: " << gt.read() << endl;
@@ -139,6 +139,7 @@ public:
                 }
                 assert(curFrameIdx >= 0);
 
+                //update circular buffer and framecount to include the frame being handled
                 camera->circBufLock->lock();
                 int slotsLeft = camera->circBuf->capacity() - camera->circBuf->size();
                 //never fill the last slot.  drop the frame instead.
@@ -147,6 +148,8 @@ public:
                     camera->circBufLock->unlock();
                     goto prepareNextEvent;
                 }
+                camera->nAcquiredFrames += 1; //it's only safe to write when we have the lock
+                frameCount += 1;
                 camera->circBuf->put();
                 camera->circBufLock->unlock();
 
@@ -154,7 +157,7 @@ public:
                 int gapWidth = 0;
                 //TODO: use a timer to decide when we've missed a frame.
                 /*
-                for (int frameIdx = camera->nAcquiredFrames; frameIdx < min(camera->nFrames, curFrameIdx); ++frameIdx){
+                for (int frameIdx = camera->frameCount; frameIdx < min(camera->nFrames, curFrameIdx); ++frameIdx){
                     if (camera->genericAcqMode == Camera::eAcqAndSave){
                         append2seq(camera->pBlackImage, frameIdx, nPixelsPerFrame);
                     }
@@ -169,7 +172,7 @@ public:
                     camera->totalGap += gapWidth;
 #ifdef _DEBUG
                     nBlackFrames.push_back(gapWidth);
-                    blackFrameStartIndices.push_back(camera->nAcquiredFrames);
+                    blackFrameStartIndices.push_back(frameCount);
 #endif
                 }
             } // if(!shouldStop)
@@ -181,7 +184,7 @@ public:
             if (shouldStop) break;
 
             ///then add back the buffer
-            if (camera->nAcquiredFrames < camera->nFrames || camera->genericAcqMode == Camera::eLive){
+            if (frameCount < camera->nFrames || camera->genericAcqMode == Camera::eLive){
                 currentSlot = camera->circBuf->peekPut();
                 camera->mRingBuf[eventIdx] = (CookeCamera::PixelValue*)(camera->memPool + currentSlot*size_t(camera->imageSizeBytes));
                 //in fifo mode, frameIdxInCamRam are 0 for both buffers?
@@ -190,7 +193,6 @@ public:
                 //the line below seeems to take at most 74 microseconds to execute on OCPI2 (assuming this doesn't depend on image size, which it shouldn't)
                 camera->safe_pco(PCO_AddBufferExtern(camera->hCamera, camera->mEvent[eventIdx], 0, frameIdxInCamRam, frameIdxInCamRam, 0, camera->mRingBuf[eventIdx], camera->imageSizeBytes, &dwStatusDrv), "failed to add external buffer");// Add buffer to the driver queue
                 OutputDebugStringW((wstring(L"Event handled for frame #") + to_wstring(curFrameIdx) + wstring(L"\n")).c_str());
-                frameCount += 1;
                 OutputDebugStringW((wstring(L"Handled ") + to_wstring(frameCount) + wstring(L" frames total\n")).c_str());
                 //OutputDebugStringW((wstring(L"Time after add buffer:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //TODO: switch to PCO_AddBufferExtern to improve performance

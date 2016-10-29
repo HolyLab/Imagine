@@ -13,12 +13,10 @@
 SpoolThread::SpoolThread(FastOfstream *ofsSpooling, CookeCamera * camera, QObject *parent)
     : QThread(parent){
     this->ofsSpooling = ofsSpooling;
-
-    parentThread = (CookeWorkerThread*)parent;
-
+    this->camera = camera;
 
     // grab the timer...
-    Timer_g gt = parentThread->camera->parentAcqThread->parentImagine->gTimer;
+    Timer_g gt = camera->parentAcqThread->parentImagine->gTimer;
 
     //NOTE: to make sure fast_ofstream works, we enforce
     // (the precise cond: #bytes2write_in_total is an integer multiple of phy sector size.

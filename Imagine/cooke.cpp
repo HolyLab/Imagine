@@ -18,6 +18,7 @@ const int CookeCamera::nBufs = 2;
 
 bool CookeCamera::init()
 {
+
     errorMsg = "Camera Initialization failed when: ";
 
     errorCode = PCO_OpenCamera(&hCamera, 0);
@@ -84,15 +85,13 @@ bool CookeCamera::init()
 
     //pBlackImage=new PixelValue[nPixels];
     this->pBlackImage = (PixelValue*)_aligned_malloc(sizeof(PixelValue)*imageSizePixels, 4 * 1024);
-    memset(pBlackImage, 0, nPixels*sizeof(PixelValue)); //all zeros
+    memset(pBlackImage, 0, imageSizePixels*sizeof(PixelValue)); //all zeros
     
     allocMemPool(-1);
 
     //these get initialized and deleted by prepCameraOnce() and stopCameraFinal()
     this->circBuf = nullptr;
     this->circBufLock = nullptr;
-
-    cout << "b4 new CircularBuf: " << gt.read() << endl;
 
     return true;
 }//init(),
@@ -369,11 +368,12 @@ long CookeCamera::getAcquiredFrameCount()
     //TODO / WARNING: a bug triggered by the unlock() call mysteriously disappeared after adding the lockResult allocation below
     //First thought was that this was a bug in our code that is very sensitive to timing
     //But after lookin through our code I'm wondering if this could be more of an issue with Qt's mutex
-    WORD lockResult = mpLock->tryLock();
+    WORD lockResult = circBufLock->tryLock();
     if (!lockResult) return -1;
     //if (!mpLock->tryLock()) return -1;
     long result = nAcquiredFrames;
-    mpLock->unlock();
+    circBufLock->unlock();
+
     return result;
 }
 
@@ -402,8 +402,9 @@ bool CookeCamera::prepCameraOnce()
 
     Timer_g gt = parentAcqThread->parentImagine->gTimer;
     cout << "b4 new WorkerThread(): " << gt.read() << endl;
-    spoolThread = new SpoolThread(ofsSpooling, imageSizeBytes, &circBuf, &circBufLock)
-    workerThread = new CookeWorkerThread(this, &circBuf, &circBufLock, &memPool);
+    spoolThread = new SpoolThread(ofsSpooling, this);
+    spoolThread->start(QThread::NormalPriority);
+    workerThread = new CookeWorkerThread(this);
     cout << "after new WorkerThread(): " << gt.read() << endl;
     workerThread->start(QThread::TimeCriticalPriority);
     cout << "after workerThread->start(): " << gt.read() << endl;
@@ -412,7 +413,6 @@ bool CookeCamera::prepCameraOnce()
 
 bool CookeCamera::startAcq()
 {
-    CLockGuard tGuard(mpLock);
     DWORD driverStatus=0;
     WORD wActSeg=0;
     for (int i = 0; i < nBufs; ++i) {
@@ -452,9 +452,9 @@ bool CookeCamera::stopAcqFinal()
 {
     //not rely on the "wait abandon"!!!
     workerThread->requestStop();
-    spoolingThread->requestStop();
+    spoolThread->requestStop();
     workerThread->wait();
-    spoolingThread->wait();
+    spoolThread->wait();
 
     delete circBuf;
     /*
@@ -468,6 +468,8 @@ bool CookeCamera::stopAcqFinal()
     }
     */
     delete workerThread;
+    delete spoolThread;
+    spoolThread = nullptr;
     workerThread = nullptr;
     cout << "total # of black frames: " << totalGap << endl;
 
@@ -476,8 +478,7 @@ bool CookeCamera::stopAcqFinal()
 
 bool CookeCamera::stopAcq()
 {
-    //acquire lock so that workerThread doesn't try to read a cancelled buffer
-    CLockGuard tGuard(mpLock); //wraps and acquires the lock
+    //acquire lock so that workerThread doesn't try to read a cancelled buffer?
 
     //stopping before removing the buffer seems slightly faster
     safe_pco(PCO_SetRecordingState(hCamera, 0), "failed to stop camera recording");// stop recording
@@ -557,8 +558,6 @@ bool CookeCamera::setSpooling(string filename)
     //ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_8kb);
     ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_32kb);
     return *ofsSpooling;
-    else return true;
-
 }
 
 void CookeCamera::safe_pco(int errCode, string errMsg)

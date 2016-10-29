@@ -12,6 +12,8 @@ using std::endl;
 
 #include "fast_ofstream.hpp"
 #include "circbuf.hpp"
+#include "cooke.hpp"
+
 #include "memcpy_g.h"
 
 #include <QThread>
@@ -21,8 +23,6 @@ using std::endl;
 #include <QWaitCondition>
 
 #include "timer_g.hpp"
-
-class CookeWorkerThread;
 
 class SpoolThread : public QThread {
     Q_OBJECT
@@ -35,9 +35,6 @@ private:
     Timer_g timer;
 
     volatile bool shouldStop; //todo: do we need a lock to guard it?
-
-    // this is only here so we can get access to the damn gTimer...
-    CookeWorkerThread *parentThread;
 
 public:
 
@@ -63,22 +60,22 @@ public:
 
         while (true){
             //lockAgain:
-            camera->circBufLock->lock();
+            (camera->circBufLock)->lock();
             if (shouldStop) goto finishup;
             curSize = camera->circBuf->size();
             if (curSize > 1) {
-                idx = circBuf->get();
+                idx = camera->circBuf->get();
                 frameCount += 1;
+                camera->nAcquiredFrames = frameCount; // max(curFrameIdx + 1, camera->nAcquiredFrames); //don't got back
                 camera->circBufLock->unlock();
-                if (camera->genericAcqMode == Camera::eAcqAndSave)
+                if (camera->genericAcqMode != Camera::eLive)
                     this->ofsSpooling->write(camera->memPool + idx*size_t(camera->imageSizeBytes), camera->imageSizeBytes);
                 bufNotFull.wakeAll();
                 //fill the live image
                 //OutputDebugStringW((wstring(L"Time before copy:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //the line below takes ~600 microseconds on a 2060 x 512 image
                 //memcpy_g(camera->pLiveImage, camera->memPool + idx*size_t(camera->imageSizeBytes), camera->imageSizeBytes);
-                //OutputDebugStringW((wstring(L"Time after copy:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
-                camera->nAcquiredFrames = max(curFrameIdx + 1, camera->nAcquiredFrames); //don't got back
+                //OutputDebugStringW((wstring(L"Time after copy:") + to_wstring(gt.read()) + wstring(L"\n")).c_str()); 
             }
             else {
                 camera->circBufLock->unlock();
@@ -93,9 +90,11 @@ public:
             }
         }//while,
     finishup:
-        while (!camera->circBuf->empty()){
-            int idx = camera->circBuf->get();
-            this->ofsSpooling->write(camera->memPool + idx*size_t(camera->imageSizeBytes), camera->imageSizeBytes);
+        if (camera->genericAcqMode != Camera::eLive) {
+            while (!camera->circBuf->empty()) {
+                int idx = camera->circBuf->get();
+                this->ofsSpooling->write(camera->memPool + idx*size_t(camera->imageSizeBytes), camera->imageSizeBytes);
+            }
         }
         camera->circBufLock->unlock();
 
