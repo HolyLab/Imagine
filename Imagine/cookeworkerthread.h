@@ -71,7 +71,7 @@ public:
         int eventIdx = 1;
         HANDLE mEventSwapped[2] = {camera->mEvent[1], camera-> mEvent[0]};
         int waitResult;
-        int currentSlot;
+        int nextSlot;
         long frameCount = 0;
         int curFrameIdx = 0;
 
@@ -108,7 +108,7 @@ public:
             }
 
             if (camera->isRecording) {
-                CookeCamera::PixelValue* rawData = camera->mRingBuf[eventIdx];
+                CookeCamera::PixelValue* rawData = (Camera::PixelValue*)(camera->mRingBuf[eventIdx]);
                 //OutputDebugStringW((wstring(L"Time before extract frame counter:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //wow, this takes as much as 260 microseconds sometimes -- but usually about 90 microseconds
                 long counter = camera->extractFrameCounter(rawData);
@@ -142,15 +142,16 @@ public:
                 //update circular buffer and framecount to include the frame being handled
                 camera->circBufLock->lock();
                 int slotsLeft = camera->circBuf->capacity() - camera->circBuf->size();
-                //never fill the last slot.  drop the frame instead.
-                if (slotsLeft == 1) {
+                //never fill the last two slots.  drop the frame instead.
+                if (slotsLeft <= 2) {
                     OutputDebugStringW((wstring(L"Dropping frame #") + to_wstring(curFrameIdx) + wstring(L"\n")).c_str());
                     camera->circBufLock->unlock();
+                    nextSlot = camera->circBuf->peekPut();
                     goto prepareNextEvent;
                 }
                 camera->nAcquiredFrames += 1; //it's only safe to write when we have the lock
                 frameCount += 1;
-                camera->circBuf->put();
+                nextSlot = (camera->circBuf->put() + 2) % camera->circBuf->capacity();
                 camera->circBufLock->unlock();
 
                 //fill the gap w/ black images
@@ -185,13 +186,14 @@ public:
 
             ///then add back the buffer
             if (frameCount < camera->nFrames || camera->genericAcqMode == Camera::eLive){
-                currentSlot = camera->circBuf->peekPut();
-                camera->mRingBuf[eventIdx] = (CookeCamera::PixelValue*)(camera->memPool + currentSlot*size_t(camera->imageSizeBytes));
+                int temp_ = nextSlot*size_t(camera->imageSizeBytes);
+                camera->mRingBuf[eventIdx] = camera->memPool + nextSlot*size_t(camera->imageSizeBytes);
                 //in fifo mode, frameIdxInCamRam are 0 for both buffers?
                 int frameIdxInCamRam = 0;
+                //OutputDebugStringW((wstring(L"Next frame pointer:") + to_wstring((unsigned)static_cast<void*>(camera->mRingBuf[eventIdx]))).c_str());
                 //OutputDebugStringW((wstring(L"Time before add buffer:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //the line below seeems to take at most 74 microseconds to execute on OCPI2 (assuming this doesn't depend on image size, which it shouldn't)
-                camera->safe_pco(PCO_AddBufferExtern(camera->hCamera, camera->mEvent[eventIdx], 0, frameIdxInCamRam, frameIdxInCamRam, 0, camera->mRingBuf[eventIdx], camera->imageSizeBytes, &dwStatusDrv), "failed to add external buffer");// Add buffer to the driver queue
+                camera->safe_pco(PCO_AddBufferExtern(camera->hCamera, camera->mEvent[eventIdx], 0, frameIdxInCamRam, frameIdxInCamRam, 0, static_cast<void*>(camera->mRingBuf[eventIdx]), camera->imageSizeBytes, &dwStatusDrv), "failed to add external buffer");// Add buffer to the driver queue
                 OutputDebugStringW((wstring(L"Event handled for frame #") + to_wstring(curFrameIdx) + wstring(L"\n")).c_str());
                 OutputDebugStringW((wstring(L"Handled ") + to_wstring(frameCount) + wstring(L" frames total\n")).c_str());
                 //OutputDebugStringW((wstring(L"Time after add buffer:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());

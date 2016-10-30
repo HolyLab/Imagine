@@ -77,15 +77,19 @@ bool CookeCamera::init()
     this->chipHeight = strSensor.strDescription.wMaxVertResStdDESC;
     this->chipWidth = strSensor.strDescription.wMaxHorzResStdDESC;
 
+    this->bytesPerPixel = 2;
+    this->imageSizePixels = chipHeight * chipWidth;
+    this->imageSizeBytes = imageSizePixels*bytesPerPixel;
+
     //model
     this->model = strCamType.strHardwareVersion.Board[0].szName;
 
     //pLiveImage=new PixelValue[nPixels];
-    this->pLiveImage = (PixelValue*)_aligned_malloc(sizeof(PixelValue)*imageSizePixels, 4 * 1024);
+    this->pLiveImage = (PixelValue*)_aligned_malloc(imageSizeBytes, 4 * 1024);
 
     //pBlackImage=new PixelValue[nPixels];
-    this->pBlackImage = (PixelValue*)_aligned_malloc(sizeof(PixelValue)*imageSizePixels, 4 * 1024);
-    memset(pBlackImage, 0, imageSizePixels*sizeof(PixelValue)); //all zeros
+    this->pBlackImage = (PixelValue*)_aligned_malloc(imageSizeBytes, 4 * 1024);
+    memset(pBlackImage, 0, imageSizeBytes); //all zeros
     
     allocMemPool(-1);
 
@@ -99,7 +103,7 @@ bool CookeCamera::init()
 bool CookeCamera::allocMemPool(long long sz) {
     if (sz < 0) {
 #ifdef _WIN64
-        memPoolSize = (long long)4194304 * 2 * 200; //200 full frames. 5529600 for PCO.Edge 5.5 TODO: make this user-configuable
+        memPoolSize = (long long)4218880 * 2 * 200; //200 full frames. 5529600 for PCO.Edge 5.5 TODO: make this user-configuable
 #else
         memPoolSize = 5529600 * 2 * 30; //30 full frames
 #endif
@@ -390,8 +394,8 @@ bool CookeCamera::prepCameraOnce()
         //mEvent[i] = NULL;
         mEvent[i] = CreateEvent(0, TRUE, FALSE, NULL);
         //mRingBuf[i] = NULL;
-        int idx = circBuf->put();
-        mRingBuf[i] = (PixelValue*)(memPool + idx*size_t(imageSizeBytes));
+        //mRingBuf[i] = (PixelValue*)(memPool + idx*size_t(imageSizeBytes));
+        mRingBuf[i] = memPool + (circBuf->peekPut() + i) * size_t(imageSizeBytes);
         //mRingBuf[i] = (PixelValue*)_aligned_malloc(imageSizeBytes, 4 * 1024);
 
         //safe_pco(PCO_AllocateBuffer(hCamera, (SHORT*)&mBufIndex[i],
@@ -421,7 +425,7 @@ bool CookeCamera::startAcq()
         //TODO: switch to PCO_AddBufferExtern to improve performance
         //safe_pco(PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i]), "failed to add buffer");// Add buffer to the driver queue
         //safe_pco(PCO_AddBufferEx(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i], getImageWidth(), getImageHeight(), bytesPerPixel), "failed to add buffer");// Add buffer to the driver queue
-        safe_pco(PCO_AddBufferExtern(hCamera, mEvent[i], wActSeg, frameIdxInCamRam, frameIdxInCamRam, 0, mRingBuf[i], imageSizeBytes, &driverStatus), "failed to add external buffer");// Add buffer to the driver queue
+        safe_pco(PCO_AddBufferExtern(hCamera, mEvent[i], wActSeg, frameIdxInCamRam, frameIdxInCamRam, 0, static_cast<void*>(mRingBuf[i]), imageSizeBytes, &driverStatus), "failed to add external buffer");// Add buffer to the driver queue
     }
 
     nAcquiredFrames = 0;
@@ -432,6 +436,8 @@ bool CookeCamera::startAcq()
     totalGap = 0;
 
     Timer_g gt = parentAcqThread->parentImagine->gTimer;
+
+    //safe_pco(PCO_ArmCamera(hCamera), "failed to arm the camera"); //doesn't help
 
     safe_pco(PCO_SetRecordingState(hCamera, 1), "failed to start camera recording"); //1: run
     isRecording = true;
@@ -457,16 +463,16 @@ bool CookeCamera::stopAcqFinal()
     spoolThread->wait();
 
     delete circBuf;
-    /*
-    for (int i = 0; i < nBufs; ++i) {
+    
+    //for (int i = 0; i < nBufs; ++i) {
         //reverse of PCO_AllocateBuffer()
         //ResetEvent(mEvent[0]);
         //ResetEvent(mEvent[1]);
 
         //TODO: what about the events associated w/ the buffers
         //safe_pco(PCO_FreeBuffer(hCamera, mBufIndex[i]), "failed to free image buffer");    // Frees the memory that was allocated for the buffer
-    }
-    */
+    //}
+    
     delete workerThread;
     delete spoolThread;
     spoolThread = nullptr;
@@ -480,14 +486,16 @@ bool CookeCamera::stopAcq()
 {
     //acquire lock so that workerThread doesn't try to read a cancelled buffer?
 
+    //reverse of PCO_AddBuffer()
+    safe_pco(PCO_RemoveBuffer(hCamera), "failed to stop camera");   // If there's still a buffer in the driver queue, remove it
+
     //stopping before removing the buffer seems slightly faster
     safe_pco(PCO_SetRecordingState(hCamera, 0), "failed to stop camera recording");// stop recording
 
     Timer_g gt = parentAcqThread->parentImagine->gTimer;
     cout << "b4 PCO_RemoveBuffer: " << gt.read() << endl;
 
-    //reverse of PCO_AddBuffer()
-    safe_pco(PCO_RemoveBuffer(hCamera), "failed to stop camera");   // If there's still a buffer in the driver queue, remove it
+
 
     cout << "after PCO_RemoveBuffer: " << gt.read() << endl;
 
@@ -531,7 +539,8 @@ bool CookeCamera::getLatestLiveImage(PixelValue * frame)
 
     mpLock->unlock();
     */
-    return true;
+    //return true;
+    return false;
 }
 
 //return false if, say, can't open the spooling file to save

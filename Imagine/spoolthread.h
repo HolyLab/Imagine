@@ -60,10 +60,11 @@ public:
 
         while (true){
             //lockAgain:
-            (camera->circBufLock)->lock();
+            camera->circBufLock->lock();
             if (shouldStop) goto finishup;
             curSize = camera->circBuf->size();
-            if (curSize > 1) {
+            if (curSize > 2) {
+                OutputDebugStringW((wstring(L"Current size of circ buf:") + to_wstring(curSize)+ wstring(L"\n")).c_str());
                 idx = camera->circBuf->get();
                 frameCount += 1;
                 camera->nAcquiredFrames = frameCount; // max(curFrameIdx + 1, camera->nAcquiredFrames); //don't got back

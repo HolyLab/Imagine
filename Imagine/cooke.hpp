@@ -61,7 +61,7 @@ private:
     static const int nBufs;
     WORD mBufIndex[2]; //m_wBufferNr
     HANDLE mEvent[2];//m_hEvent
-    PixelValue* mRingBuf[2]; //m_pic12
+    char* mRingBuf[2]; //m_pic12
 
     CircularBuf *circBuf;
     QMutex *circBufLock;
@@ -115,6 +115,7 @@ public:
         freeMemPool();
 
         delete workerThread;
+        delete spoolThread;
     }
 
     string getErrorMsg(){
