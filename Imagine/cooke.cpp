@@ -417,7 +417,6 @@ bool CookeCamera::prepCameraOnce()
 
 bool CookeCamera::startAcq()
 {
-    DWORD driverStatus=0;
     WORD wActSeg=0;
     for (int i = 0; i < nBufs; ++i) {
         //in fifo mode, frameIdxInCamRam are 0 for all buffers?
@@ -425,7 +424,9 @@ bool CookeCamera::startAcq()
         //TODO: switch to PCO_AddBufferExtern to improve performance
         //safe_pco(PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i]), "failed to add buffer");// Add buffer to the driver queue
         //safe_pco(PCO_AddBufferEx(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i], getImageWidth(), getImageHeight(), bytesPerPixel), "failed to add buffer");// Add buffer to the driver queue
-        safe_pco(PCO_AddBufferExtern(hCamera, mEvent[i], wActSeg, frameIdxInCamRam, frameIdxInCamRam, 0, static_cast<void*>(mRingBuf[i]), imageSizeBytes, &driverStatus), "failed to add external buffer");// Add buffer to the driver queue
+        safe_pco(PCO_AddBufferExtern(hCamera, mEvent[i], wActSeg, frameIdxInCamRam, frameIdxInCamRam, 0, static_cast<void*>(mRingBuf[i]), imageSizeBytes, &(driverStatus[i])), "failed to add external buffer");// Add buffer to the driver queue
+        OutputDebugStringW((wstring(L"Added a buffer\n")).c_str());
+        printPcoError(driverStatus[i]);
     }
 
     nAcquiredFrames = 0;
@@ -441,6 +442,8 @@ bool CookeCamera::startAcq()
 
     safe_pco(PCO_SetRecordingState(hCamera, 1), "failed to start camera recording"); //1: run
     isRecording = true;
+
+    workerThread->resume();
 
     /*
     errorCode = PCO_SetRecordingState(hCamera, 1); //1: run
@@ -477,6 +480,10 @@ bool CookeCamera::stopAcqFinal()
     delete spoolThread;
     spoolThread = nullptr;
     workerThread = nullptr;
+
+    delete ofsSpooling; //the file is closed too
+    ofsSpooling = nullptr;
+
     cout << "total # of black frames: " << totalGap << endl;
 
     return true;
@@ -484,13 +491,17 @@ bool CookeCamera::stopAcqFinal()
 
 bool CookeCamera::stopAcq()
 {
-    //acquire lock so that workerThread doesn't try to read a cancelled buffer?
 
-    //reverse of PCO_AddBuffer()
-    safe_pco(PCO_RemoveBuffer(hCamera), "failed to stop camera");   // If there's still a buffer in the driver queue, remove it
+    workerThread->pause(); //removes pending buffers as well
+
+    //acquire lock so that workerThread doesn't try to read a cancelled buffer?
 
     //stopping before removing the buffer seems slightly faster
     safe_pco(PCO_SetRecordingState(hCamera, 0), "failed to stop camera recording");// stop recording
+
+    //reverse of PCO_AddBuffer()
+    //safe_pco(PCO_RemoveBuffer(hCamera), "failed to stop camera");   // If there's still a buffer in the driver queue, remove it
+
 
     Timer_g gt = parentAcqThread->parentImagine->gTimer;
     cout << "b4 PCO_RemoveBuffer: " << gt.read() << endl;
@@ -500,7 +511,9 @@ bool CookeCamera::stopAcq()
     cout << "after PCO_RemoveBuffer: " << gt.read() << endl;
 
     isRecording = false;
-
+    OutputDebugStringW((wstring(L"Stopped camera acquisition\n")).c_str());
+    printPcoError(driverStatus[0]);
+    printPcoError(driverStatus[1]);
     //tGuard.unlock();
     /*
     errorCode = PCO_SetRecordingState(hCamera, 0);// stop recording
@@ -574,13 +587,20 @@ void CookeCamera::safe_pco(int errCode, string errMsg)
     // set errorMsg and throw an exception if you get a not-ok error code
     if (errCode != PCO_NOERROR && (errCode & PCO_ERROR_CODE_MASK) != 0) {
         //if (errCode != PCO_NOERROR) {
-
         // it might be nice to use this to give slightly more informative debug messages
-        char msg[16384];
-        PCO_GetErrorText(errCode, msg, 16384);
-        cout << msg << endl;
+        printPcoError(errCode);
         errorCode = errCode;
         errorMsg = errMsg;
         throw COOKE_EXCEPTION; // could throw an exception class w/informative message... but meh.
     }
+}
+
+void CookeCamera::printPcoError(int errCode) {
+    char msg[16384];
+    PCO_GetErrorText(errCode, msg, 16384);
+    std::string msgs = string(msg);
+    std::wstring msgw;
+    msgw.assign(msgs.begin(), msgs.end());
+    cout << msg << endl;
+    OutputDebugStringW((wstring(L"\nPCO error text: ") + msgw).c_str());
 }

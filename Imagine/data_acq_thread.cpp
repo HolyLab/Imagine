@@ -279,18 +279,16 @@ void DataAcqThread::run_acq_and_save()
     ///piezo feedback data file (only for PI piezo)
     string positionerFeedbackFile = replaceExtName(headerFilename, "pos").toStdString();
 
-    if (camera.genericAcqMode != Camera::eLive) {
-        camera.setSpooling(camFilename.toStdString());
-    }
-
     bool startCameraOnce = (acqTriggerMode == Camera::eExternal);
 
-    int framefactor = startCameraOnce ? this->nStacks : 1;
+    //int framefactor = startCameraOnce ? this->nStacks : 1;
+
+    camera.setSpooling(camFilename.toStdString());
 
     ///camera.setAcqModeAndTime(AndorCamera::eKineticSeries,
     camera.setAcqModeAndTime(Camera::eAcqAndSave,
         this->exposureTime,
-        this->nFramesPerStack*framefactor,
+        this->nFramesPerStack*this->nStacks,
         this->acqTriggerMode,
         this->expTriggerMode);
     emit newStatusMsgReady(QString("Camera: set acq mode and time: %1")
@@ -598,11 +596,6 @@ nextStack:  //code below is repeated every stack
     {
         QScriptValue jsFunc = se->globalObject().property("onShutterFini");
         if (jsFunc.isFunction()) jsFunc.call();
-    }
-
-    ///disable spool
-    if (camera.genericAcqMode!=Camera::eLive){
-        camera.setSpooling(""); //disable spooling which also closes file
     }
 
 /*    if (isPiezo){  //not for voltage-controlled piezo from piezosystem jena

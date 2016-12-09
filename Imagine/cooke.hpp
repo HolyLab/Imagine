@@ -61,6 +61,7 @@ private:
     static const int nBufs;
     WORD mBufIndex[2]; //m_wBufferNr
     HANDLE mEvent[2];//m_hEvent
+    DWORD driverStatus[2];
     char* mRingBuf[2]; //m_pic12
 
     CircularBuf *circBuf;
@@ -184,6 +185,7 @@ public:
     bool setSpooling(string filename);
 
     void safe_pco(int errCode, string errMsg);
+    void printPcoError(int errCode);
 
 };//class, CookeCamera
 

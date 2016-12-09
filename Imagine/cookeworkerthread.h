@@ -31,6 +31,8 @@ private:
     //camera->isRecording is modified when camera buffers are removed (i.e. between stacks)
     //shouldStop is modified when the acquisition is complete (i.e. after a sequence of stacks)
     volatile bool shouldStop;
+    std::atomic_bool shouldPause;
+    std::atomic_bool isPaused;
 
 public:
     CookeWorkerThread(CookeCamera * camera, QObject *parent = 0)
@@ -56,6 +58,20 @@ public:
 
     void requestStop(){shouldStop = true;}
 
+    void pause() {
+        shouldPause = true;
+        while (!isPaused) {
+            QThread::msleep(10); //milliseconds
+        }
+    }
+
+    void resume() {
+        if (isPaused) {
+            shouldPause = false;
+            isPaused = false;
+        }
+    }
+
     void run(){
         long nEvents = 0;
 #if defined(_DEBUG)
@@ -63,9 +79,7 @@ public:
         curFrameIndices.reserve(camera->nFrames);
         cerr << "enter cooke worker thread run()" << endl;
 #endif
-        DWORD dwStatusDll=0;
-        DWORD dwStatusDrv=0;
-        WORD wActSeg=0;
+        WORD wActSeg = 0;
         int negIndices = 0;
         Timer_g gt = this->camera->parentAcqThread->parentImagine->gTimer;
         int eventIdx = 1;
@@ -74,8 +88,14 @@ public:
         int nextSlot;
         long frameCount = 0;
         int curFrameIdx = 0;
+        int nwaits = 0; //the  number of wait results that didn't match an event or time out
 
         while (true){
+            if (isPaused) {
+                if (shouldStop) break;
+                QThread::msleep(10); //milliseconds
+                continue;
+            }
             //if(shouldStop) break;
             ///wait for events
             if (eventIdx == 1) { // if the previous frame was from event 1, set event 0 as first priority
@@ -86,7 +106,8 @@ public:
                 if (waitResult == 0 || waitResult == 1) waitResult = (int)!(bool(waitResult)); //keep indices relative to mEvent
             }
 			//TODO: the logic block below is what causes external acquisitions to time out. maybe fixed?
-            while ((waitResult < WAIT_OBJECT_0 || waitResult >= WAIT_OBJECT_0 + camera->nBufs) && !shouldStop) {
+            while ((waitResult < WAIT_OBJECT_0 || waitResult >= WAIT_OBJECT_0 + camera->nBufs) && !shouldStop && !shouldPause) {
+                if (!(waitResult == 258)) nwaits += 1;
                 //wait again
                 if (eventIdx == 1) {
                     waitResult = WaitForMultipleObjects(camera->nBufs, camera->mEvent, false, 2000);
@@ -99,7 +120,14 @@ public:
            //OutputDebugStringW((wstring(L"Begin processing frame: ") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //todo: should we try to keep going? SEE: CSC2Class::SC2Thread()
 
+            //TODO: the two conditionals below are repeated in prepareNextEvent.  A bit ugly, could improve.
             if (shouldStop) break;
+            if (shouldPause) {
+                camera->safe_pco(PCO_RemoveBuffer(camera->hCamera), "failed to stop camera");
+                isPaused = true; //TODO: maybe better to use a Qt wait event to avoid the sleep statement in beginning of the while loop above?
+                continue;
+            }
+
             nEvents++;
             eventIdx = waitResult - WAIT_OBJECT_0;
             ///work around sdk bug
@@ -141,6 +169,8 @@ public:
 
                 //update circular buffer and framecount to include the frame being handled
                 camera->circBufLock->lock();
+                camera->nAcquiredFrames += 1; //it's only safe to write when we have the lock
+                frameCount += 1;
                 int slotsLeft = camera->circBuf->capacity() - camera->circBuf->size();
                 //never fill the last two slots.  drop the frame instead.
                 if (slotsLeft <= 2) {
@@ -149,8 +179,6 @@ public:
                     nextSlot = camera->circBuf->peekPut();
                     goto prepareNextEvent;
                 }
-                camera->nAcquiredFrames += 1; //it's only safe to write when we have the lock
-                frameCount += 1;
                 nextSlot = (camera->circBuf->put() + 2) % camera->circBuf->capacity();
                 camera->circBufLock->unlock();
 
@@ -179,13 +207,21 @@ public:
             } // if(!shouldStop)
         prepareNextEvent:
 
+            OutputDebugStringW((wstring(L"Event handled for frame #") + to_wstring(curFrameIdx) + wstring(L"\n")).c_str());
+            OutputDebugStringW((wstring(L"Handled ") + to_wstring(frameCount) + wstring(L" frames total\n")).c_str());
             //reset event
             ResetEvent(camera->mEvent[eventIdx]);
 
             if (shouldStop) break;
+            if (shouldPause) {
+                camera->safe_pco(PCO_RemoveBuffer(camera->hCamera), "failed to stop camera");
+                isPaused = true; //TODO: maybe better to use a Qt wait event to avoid the sleep statement in beginning of the while loop above?
+                continue;
+            }
+
 
             ///then add back the buffer
-            if (frameCount < camera->nFrames || camera->genericAcqMode == Camera::eLive){
+            if (frameCount < (camera->nFrames - 1) || camera->genericAcqMode == Camera::eLive){
                 int temp_ = nextSlot*size_t(camera->imageSizeBytes);
                 camera->mRingBuf[eventIdx] = camera->memPool + nextSlot*size_t(camera->imageSizeBytes);
                 //in fifo mode, frameIdxInCamRam are 0 for both buffers?
@@ -193,9 +229,8 @@ public:
                 //OutputDebugStringW((wstring(L"Next frame pointer:") + to_wstring((unsigned)static_cast<void*>(camera->mRingBuf[eventIdx]))).c_str());
                 //OutputDebugStringW((wstring(L"Time before add buffer:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //the line below seeems to take at most 74 microseconds to execute on OCPI2 (assuming this doesn't depend on image size, which it shouldn't)
-                camera->safe_pco(PCO_AddBufferExtern(camera->hCamera, camera->mEvent[eventIdx], 0, frameIdxInCamRam, frameIdxInCamRam, 0, static_cast<void*>(camera->mRingBuf[eventIdx]), camera->imageSizeBytes, &dwStatusDrv), "failed to add external buffer");// Add buffer to the driver queue
-                OutputDebugStringW((wstring(L"Event handled for frame #") + to_wstring(curFrameIdx) + wstring(L"\n")).c_str());
-                OutputDebugStringW((wstring(L"Handled ") + to_wstring(frameCount) + wstring(L" frames total\n")).c_str());
+                camera->safe_pco(PCO_AddBufferExtern(camera->hCamera, camera->mEvent[eventIdx], wActSeg, frameIdxInCamRam, frameIdxInCamRam, 0, static_cast<void*>(camera->mRingBuf[eventIdx]), camera->imageSizeBytes, &(camera->driverStatus[eventIdx])), "failed to add external buffer");// Add buffer to the driver queue
+
                 //OutputDebugStringW((wstring(L"Time after add buffer:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //TODO: switch to PCO_AddBufferExtern to improve performance
                 //camera->safe_pco(PCO_AddBufferEx(camera->hCamera, frameIdxInCamRam, frameIdxInCamRam, camera->mBufIndex[eventIdx], camera->getImageWidth(), camera->getImageHeight(), bytesPerPixel), "failed to add buffer");// Add buffer to the driver queue
