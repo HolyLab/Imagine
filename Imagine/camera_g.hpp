@@ -89,7 +89,7 @@ public:
         return errorCode;
     }
 
-    virtual long getAcquiredFrameCount() = 0; // #frames acquired so far
+    //virtual long getAcquiredFrameCount() = 0; // #frames acquired for the current stack so far
 
     virtual bool getLatestLiveImage(PixelValue * frame) = 0;
 

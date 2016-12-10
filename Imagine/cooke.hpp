@@ -27,6 +27,8 @@ class CookeCamera : public Camera {
 public:
     friend class CookeWorkerThread;
     friend class SpoolThread;
+    std::atomic_int32_t nAcquiredFrames;
+    std::atomic_int32_t nAcquiredStacks;
 
 private:
     HANDLE hCamera;
@@ -54,7 +56,6 @@ private:
     long firstFrameCounter; //first first frame's counter value
     long long totalGap;
 
-    long nAcquiredFrames;
     bool isRecording;
 
     // nBufs is defined in cpp file - these arrays should have the same length as nBufs
@@ -80,6 +81,7 @@ public:
 
         firstFrameCounter = -1;
         nAcquiredFrames = 0;
+        nAcquiredStacks = 0;
 
         circBufLock = new QMutex;
 
@@ -156,7 +158,7 @@ public:
     bool allocMemPool(long long sz);
     void freeMemPool();
 
-    long getAcquiredFrameCount();
+    //long getAcquiredFrameCount();
 
     bool getLatestLiveImage(PixelValue * frame);
 

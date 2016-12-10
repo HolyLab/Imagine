@@ -270,7 +270,7 @@ bool CookeCamera::setAcqParams(int emGain,
 double CookeCamera::getCycleTime()
 {
     DWORD sec, nsec;
-    //TODO: this is probably inaccurate when using external exposure triggering (returns only exposure time)
+    //TODO: this is probably inaccurate when using external exposure triggering (returns only exposure time?)
     errorCode = PCO_GetCOCRuntime(hCamera, &sec, &nsec);
     if (errorCode != PCO_NOERROR) {
         errorMsg = "failed to call PCO_GetCOCRuntime()";
@@ -366,6 +366,7 @@ bool CookeCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
     return true;
 }
 
+/*
 long CookeCamera::getAcquiredFrameCount()
 {
 
@@ -380,13 +381,14 @@ long CookeCamera::getAcquiredFrameCount()
 
     return result;
 }
+*/
 
 bool CookeCamera::prepCameraOnce()
 {
     int circBufCap = memPoolSize / imageSizeBytes;  //memPoolSize is set in spoolthread.h
     circBuf = new CircularBuf(circBufCap);
     circBufLock = new QMutex;
-
+    nAcquiredStacks = 0;
 
     ///alloc the ring buffer for data transfer from card to pc
     for (int i = 0; i < nBufs; ++i) {
@@ -417,6 +419,7 @@ bool CookeCamera::prepCameraOnce()
 
 bool CookeCamera::startAcq()
 {
+    QThread::msleep(1);
     WORD wActSeg=0;
     for (int i = 0; i < nBufs; ++i) {
         //in fifo mode, frameIdxInCamRam are 0 for all buffers?
@@ -491,7 +494,7 @@ bool CookeCamera::stopAcqFinal()
 
 bool CookeCamera::stopAcq()
 {
-
+    OutputDebugStringW((wstring(L"stopAcq() requests a pause\n")).c_str());
     workerThread->pause(); //removes pending buffers as well
 
     //acquire lock so that workerThread doesn't try to read a cancelled buffer?
@@ -500,15 +503,15 @@ bool CookeCamera::stopAcq()
     safe_pco(PCO_SetRecordingState(hCamera, 0), "failed to stop camera recording");// stop recording
 
     //reverse of PCO_AddBuffer()
-    //safe_pco(PCO_RemoveBuffer(hCamera), "failed to stop camera");   // If there's still a buffer in the driver queue, remove it
+    //safe_pco(PCO_CancelImages(hCamera), "failed to stop camera");   // If there's still a buffer in the driver queue, remove it
 
 
     Timer_g gt = parentAcqThread->parentImagine->gTimer;
-    cout << "b4 PCO_RemoveBuffer: " << gt.read() << endl;
+    cout << "b4 PCO_CancelImages: " << gt.read() << endl;
 
 
 
-    cout << "after PCO_RemoveBuffer: " << gt.read() << endl;
+    cout << "after PCO_CancelImages: " << gt.read() << endl;
 
     isRecording = false;
     OutputDebugStringW((wstring(L"Stopped camera acquisition\n")).c_str());

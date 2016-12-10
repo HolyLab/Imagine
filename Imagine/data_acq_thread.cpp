@@ -222,7 +222,7 @@ void DataAcqThread::run_live()
     long nFramesGot = 0;
     long nFramesGotCur;
     while (!stopRequested){
-        nFramesGotCur = camera.getAcquiredFrameCount();
+        nFramesGotCur = camera.nAcquiredFrames.load();
         if (nFramesGotCur == -1){
             Sleep(20);
             continue;
@@ -296,6 +296,7 @@ void DataAcqThread::run_acq_and_save()
 
     //get the real params used by the camera:
     cycleTime = camera.getCycleTime();
+    double timePerStack = nFramesPerStack*cycleTime;
 
     //TODO: fix this ugliness
     string wTitle = (*parentImagine).windowTitle().toStdString();
@@ -343,7 +344,7 @@ void DataAcqThread::run_acq_and_save()
     Camera::PixelValue * frame = (Camera::PixelValue*)_aligned_malloc(sizeof(Camera::PixelValue*)*(camera.imageSizePixels), 4 * 1024);
     unique_ptr<Camera::PixelValue, decltype(_aligned_free)*> uniPtrFrame(frame, _aligned_free);
 
-    idxCurStack = 0;
+    idxCurStack = 0; //stack we are currently working on.  We will keep this in sync with camera->nAcquiredStacks
 
     {
         QScriptValue jsFunc = se->globalObject().property("onShutterInit");
@@ -365,12 +366,10 @@ void DataAcqThread::run_acq_and_save()
     }//if, first stimulus should be fired before stack_0
 
     int nOverrunStacks = 0;
-    long nFramesDoneStack = this->nFramesPerStack;
 
     gt.start(); //seq's start time is 0, the new ref pt
 
 nextStack:  //code below is repeated every stack
-    double stackStartTime = gt.read();
     cout << "b4 open laser: " << gt.read() << endl;
 
     //open laser shutter
@@ -436,7 +435,8 @@ nextStack:  //code below is repeated every stack
         if (hasPos && ownPos) pPositioner->runCmd();
     }
 
-    cout << "after start camera & piezo: " << gt.read() << endl;
+    double stackStartTime = gt.read();
+    cout << "after start camera & piezo: " << stackStartTime << endl;
 
     //TMP: trigger camera
     //digOut->updateOutputBuf(5,true);
@@ -446,21 +446,13 @@ nextStack:  //code below is repeated every stack
         .arg(camera.getErrorMsg().c_str()));
 
 
-    long nFramesGotForStack = 0;
-    long nFramesGotForStackCur;
-    while (!stopRequested || this->nStacks > 1) {
-        nFramesGotForStackCur = camera.getAcquiredFrameCount();
-        if (nFramesGotForStackCur == -1) {
-            Sleep(10);
-            continue;
-        }
-        if (nFramesGotForStackCur >= nFramesDoneStack) {
-            break;
-        }
+    long nFramesGotForStack;
+    long nFramesShownForStack;
+    while (!stopRequested) {
+        nFramesGotForStack = camera.nAcquiredFrames.load();
 
-        if (nFramesGotForStack != nFramesGotForStackCur && !isUpdatingImage) {
-            nFramesGotForStack = nFramesGotForStackCur;
-
+        if (nFramesGotForStack > nFramesShownForStack && !isUpdatingImage) {
+            nFramesShownForStack = nFramesGotForStack;
             //get the latest frame:
             if (!camera.getLatestLiveImage(frame)) {
                 Sleep(10);
@@ -468,20 +460,27 @@ nextStack:  //code below is repeated every stack
             }
             //copy data to display buffer
             QByteArray data16 = QByteArray((const char*)frame, camera.imageSizeBytes); //image display buffer
-            emit imageDataReady(data16, nFramesGotForStack - 1 - (nFramesDoneStack - nFramesPerStack), camera.getImageWidth(), camera.getImageHeight()); //-1: due to 0-based indexing
+            emit imageDataReady(data16, nFramesGotForStack - 1,  camera.getImageWidth(), camera.getImageHeight()); //-1: due to 0-based indexing
+        }
+        long temp_nstacks = camera.nAcquiredStacks.load();
+        if (idxCurStack < temp_nstacks) {
+            idxCurStack = temp_nstacks;
+            OutputDebugStringW((wstring(L"Data acq thread finished stack #") + to_wstring(idxCurStack) + wstring(L"\n")).c_str());
+            break;
         }
     }//while, camera is not idle
 
+    double stackEndingTime = gt.read();
+
     //get the last frame if nec
     /*
-    if (nFramesGotForStack < nFramesDoneStack){
+    if (nFramesShownForStack < nFramesGotForStack){
         camera.getLatestLiveImage(frame);
-        QByteArray data16((const char*)frame, imageW*imageH * 2);
-        emit imageDataReady(data16, nFramesPerStack - 1, imageW, imageH); //-1: due to 0-based indexing
+        QByteArray data16((const char*)frame, camera.imageSizeBytes);
+        emit imageDataReady(data16, nFramesPerStack - 1, camera.getImageWidth(), camera.getImageHeight()); //-1: due to 0-based indexing
     }
     */
-
-    nFramesDoneStack += startCameraOnce ? nFramesPerStack : 0;
+    //nFramesDoneStack += startCameraOnce ? nFramesPerStack : 0;
 
     cout << "b4 close laser: " << gt.read() << endl;
 
@@ -491,7 +490,7 @@ nextStack:  //code below is repeated every stack
     {
         QScriptValue jsFunc = se->globalObject().property("onShutterClose");
         if (jsFunc.isFunction()) {
-            se->globalObject().setProperty("currentStackIndex", idxCurStack);
+            se->globalObject().setProperty("currentStackIndex", camera.nAcquiredStacks.load());
             jsFunc.call();
         }
     }
@@ -533,27 +532,32 @@ nextStack:  //code below is repeated every stack
     //digOut->updateOutputBuf(5,false);
     //digOut->write();
 
-    idxCurStack++;  //post: it is #stacks we got so far
+
     if (idxCurStack < this->nStacks && !stopRequested) {
         if (isBiDirectionalImaging && ownPos) {
             cout << "b4 preparePositioner: " << gt.read() << endl;
             preparePositioner(idxCurStack % 2 == 0);
             cout << "after preparePositioner: " << gt.read() << endl;
         }
-        double timePerStack = nFramesPerStack*cycleTime + idleTimeBwtnStacks;
-        double stackEndingTime = gt.read();
-        double timeToWait = timePerStack*idxCurStack - stackEndingTime;
+        double currentTime = gt.read();
+        double timeToWait = (timePerStack+idleTimeBwtnStacks)*idxCurStack - currentTime;
+        OutputDebugStringW((wstring(L"Waiting for ") + to_wstring(int(timeToWait*1000)) + wstring(L" milliseconds to start next stack\n")).c_str());
+
         if ((timeToWait < 0) && ownPos) {
             emit newLogMsgReady("WARNING: overrun(overall progress): idle time is too short.");
         }
-        if ((stackEndingTime - stackStartTime > timePerStack) && ownPos) {
+        //TODO: warn user when the cycle time of the camera doesn't match the exposure time they ask for.
+        //the camera always returns the minimum cycle time when the user requests a shorter exposure than it can produce.
+        if ((stackEndingTime - stackStartTime > (timePerStack+0.025)) && (expTriggerMode == Camera::eAuto || ownPos)) {
             nOverrunStacks++;
-            emit newLogMsgReady("WARNING: overrun(current stack): idle time is too short.");
+            emit newLogMsgReady("WARNING: overrun(current stack): Either the positioner or the camera cannot keep up:\n");
+            QString temp = QString::fromStdString("      The stack was acquired " + to_string(int((stackEndingTime - stackStartTime- timePerStack) * 1000000)) + " microseconds too slowly.\n");
+            emit newLogMsgReady(temp);
         }
 
         double maxWaitTime = 2; //in seconds. The frequency to check stop signal
     repeatWait:
-        timeToWait = timePerStack*idxCurStack - gt.read();
+        timeToWait = (timePerStack+idleTimeBwtnStacks)*idxCurStack - gt.read();
         if (timeToWait > 0.01) {
             QThread::msleep(min(maxWaitTime, timeToWait) * 1000); // *1000: sec -> ms
         }//if, need wait more than 10ms

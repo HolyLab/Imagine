@@ -105,7 +105,7 @@ public:
     QString comment;
 
     bool isLive;
-    int idxCurStack;
+    int idxCurStack;  //the stack we are working on. Since it's 0-based it's also the number of stacks finished so far
 
 signals:
     void imageDisplayReady(const QImage &image, long idx);
