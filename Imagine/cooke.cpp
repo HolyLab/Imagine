@@ -394,7 +394,8 @@ bool CookeCamera::prepCameraOnce()
     for (int i = 0; i < nBufs; ++i) {
         mBufIndex[i] = -1;
         //mEvent[i] = NULL;
-        mEvent[i] = CreateEvent(0, TRUE, FALSE, NULL);
+        mEvent[i] = CreateEvent(0, FALSE, FALSE, NULL);
+        //mEvent[i] = CreateEvent(0, TRUE, FALSE, NULL);
         //mRingBuf[i] = NULL;
         //mRingBuf[i] = (PixelValue*)(memPool + idx*size_t(imageSizeBytes));
         mRingBuf[i] = memPool + (circBuf->peekPut() + i) * size_t(imageSizeBytes);
@@ -419,7 +420,6 @@ bool CookeCamera::prepCameraOnce()
 
 bool CookeCamera::startAcq()
 {
-    QThread::msleep(1);
     WORD wActSeg=0;
     for (int i = 0; i < nBufs; ++i) {
         //in fifo mode, frameIdxInCamRam are 0 for all buffers?
@@ -427,9 +427,10 @@ bool CookeCamera::startAcq()
         //TODO: switch to PCO_AddBufferExtern to improve performance
         //safe_pco(PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i]), "failed to add buffer");// Add buffer to the driver queue
         //safe_pco(PCO_AddBufferEx(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i], getImageWidth(), getImageHeight(), bytesPerPixel), "failed to add buffer");// Add buffer to the driver queue
+        //printPcoError(driverStatus[i]);
         safe_pco(PCO_AddBufferExtern(hCamera, mEvent[i], wActSeg, frameIdxInCamRam, frameIdxInCamRam, 0, static_cast<void*>(mRingBuf[i]), imageSizeBytes, &(driverStatus[i])), "failed to add external buffer");// Add buffer to the driver queue
-        OutputDebugStringW((wstring(L"Added a buffer\n")).c_str());
-        printPcoError(driverStatus[i]);
+        //OutputDebugStringW((wstring(L"Added a buffer\n")).c_str());
+        //printPcoError(driverStatus[i]);
     }
 
     nAcquiredFrames = 0;
@@ -442,11 +443,12 @@ bool CookeCamera::startAcq()
     Timer_g gt = parentAcqThread->parentImagine->gTimer;
 
     //safe_pco(PCO_ArmCamera(hCamera), "failed to arm the camera"); //doesn't help
+    workerThread->resume();
 
     safe_pco(PCO_SetRecordingState(hCamera, 1), "failed to start camera recording"); //1: run
     isRecording = true;
 
-    workerThread->resume();
+
 
     /*
     errorCode = PCO_SetRecordingState(hCamera, 1); //1: run
@@ -499,7 +501,6 @@ bool CookeCamera::stopAcq()
 
     //acquire lock so that workerThread doesn't try to read a cancelled buffer?
 
-    //stopping before removing the buffer seems slightly faster
     safe_pco(PCO_SetRecordingState(hCamera, 0), "failed to stop camera recording");// stop recording
 
     //reverse of PCO_AddBuffer()
@@ -549,9 +550,10 @@ bool CookeCamera::getLatestLiveImage(PixelValue * frame)
         mpLock->unlock();
         return false;
     }
-
-    int nPixels = getImageHeight()*getImageWidth();
-    memcpy_g(frame, pLiveImage, nPixels*sizeof(PixelValue));
+    //maybe instead store the most recent circbuf index as (peekput()-1), then unlock, then copy from circbuf.  
+    //the above strategy should be safe as long as the circular buffer does not overflow
+    //Also why not just assign and return pLiveImage instead of copying?  Should be fine, may want to implement a max frame rate somewhere (not here)
+    memcpy_g(frame, pLiveImage, imageSizeBytes);
 
     mpLock->unlock();
     */

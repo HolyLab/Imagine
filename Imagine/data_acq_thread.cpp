@@ -370,6 +370,7 @@ void DataAcqThread::run_acq_and_save()
     gt.start(); //seq's start time is 0, the new ref pt
 
 nextStack:  //code below is repeated every stack
+    double stackStartTime = gt.read();
     cout << "b4 open laser: " << gt.read() << endl;
 
     //open laser shutter
@@ -435,7 +436,7 @@ nextStack:  //code below is repeated every stack
         if (hasPos && ownPos) pPositioner->runCmd();
     }
 
-    double stackStartTime = gt.read();
+
     cout << "after start camera & piezo: " << stackStartTime << endl;
 
     //TMP: trigger camera
@@ -470,7 +471,6 @@ nextStack:  //code below is repeated every stack
         }
     }//while, camera is not idle
 
-    double stackEndingTime = gt.read();
 
     //get the last frame if nec
     /*
@@ -540,6 +540,7 @@ nextStack:  //code below is repeated every stack
             cout << "after preparePositioner: " << gt.read() << endl;
         }
         double currentTime = gt.read();
+        double stackEndingTime = gt.read();
         double timeToWait = (timePerStack+idleTimeBwtnStacks)*idxCurStack - currentTime;
         OutputDebugStringW((wstring(L"Waiting for ") + to_wstring(int(timeToWait*1000)) + wstring(L" milliseconds to start next stack\n")).c_str());
 
@@ -548,10 +549,10 @@ nextStack:  //code below is repeated every stack
         }
         //TODO: warn user when the cycle time of the camera doesn't match the exposure time they ask for.
         //the camera always returns the minimum cycle time when the user requests a shorter exposure than it can produce.
-        if ((stackEndingTime - stackStartTime > (timePerStack+0.025)) && (expTriggerMode == Camera::eAuto || ownPos)) {
+        if ((stackEndingTime - stackStartTime > (timePerStack+idleTimeBwtnStacks)) && (expTriggerMode == Camera::eAuto || ownPos)) {
             nOverrunStacks++;
-            emit newLogMsgReady("WARNING: overrun(current stack): Either the positioner or the camera cannot keep up:\n");
-            QString temp = QString::fromStdString("      The stack was acquired " + to_string(int((stackEndingTime - stackStartTime- timePerStack) * 1000000)) + " microseconds too slowly.\n");
+            emit newLogMsgReady("WARNING: overrun(current stack): Probably the positioner cannot keep up:\n");
+            QString temp = QString::fromStdString("      The stack was acquired " + to_string(int((stackEndingTime - stackStartTime- (timePerStack+idleTimeBwtnStacks)) * 1000000)) + " microseconds too slowly.\n");
             emit newLogMsgReady(temp);
         }
 

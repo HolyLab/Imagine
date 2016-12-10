@@ -42,8 +42,10 @@ public:
         Timer_g gt = this->camera->parentAcqThread->parentImagine->gTimer;
 
         shouldStop = false;
-        shouldPause = false;
-        isPaused = false;
+        //it's important that the thread begin in the paused state, otherwise the camera driver throws unintelligible errors
+        //this seems to be because the driver doesn't like receiving an event that we are already waiting for
+        shouldPause = true;
+        isPaused = true;
 
         //cout<<"after _aligned_malloc: "<<gt.read()<<endl;
 #ifdef _WIN64
@@ -98,8 +100,9 @@ public:
 
         while (true) {
             if (isPaused) { //Wait until resumed.
+                //TODO: wait for a Qt event instead
                 if (shouldStop) break;
-                QThread::msleep(10); //milliseconds
+                QThread::msleep(1); //milliseconds
                 continue;
             }
             //if(shouldStop) break;
@@ -130,6 +133,8 @@ public:
             if (shouldStop) break;
             if (shouldPause) {
                 camera->safe_pco(PCO_CancelImages(camera->hCamera), "failed to stop camera");
+                //ResetEvent(camera->mEvent[0]);
+                //ResetEvent(camera->mEvent[1]);
                 isPaused = true; //TODO: maybe better to use a Qt wait event to avoid the sleep statement in beginning of the while loop above?
                 continue;
             }
@@ -150,7 +155,7 @@ public:
                 //the two cases below can come up since we don't stop this thread between stacks
                 if (counter == 0 || (counter > camera->nFrames && camera->genericAcqMode != Camera::eLive)) {
                     //reset event
-                    ResetEvent(camera->mEvent[eventIdx]);
+                    //ResetEvent(camera->mEvent[eventIdx]);
                     continue;
                 }
                 if (camera->nAcquiredFrames == 0) {
@@ -178,6 +183,7 @@ public:
 #endif
 
                 if (curFrameIdx < 0) {
+                    OutputDebugStringW((wstring(L"detected a garbage frame\n")).c_str());
                     if (++negIndices < 16) goto prepareNextEvent;//NOTE: hard coded 16
                     else {
                         __debugbreak();
@@ -198,7 +204,10 @@ public:
                     camera->nAcquiredStacks += 1;
                     camera->nAcquiredFrames = 0;
                     camera->circBufLock->unlock();
-                    ResetEvent(camera->mEvent[eventIdx]);
+                    //in theory we should only have to reset the event at eventIdx, but just to be safe...
+                    //ResetEvent(camera->mEvent[0]);
+                    //ResetEvent(camera->mEvent[1]);
+                    camera->safe_pco(PCO_CancelImages(camera->hCamera), "failed to stop camera");
                     isPaused = true;
                     continue;
                 }
@@ -240,11 +249,14 @@ public:
         prepareNextEvent:
 
             //reset event
-            ResetEvent(camera->mEvent[eventIdx]);
+            //ResetEvent(camera->mEvent[eventIdx]);
 
             if (shouldStop) break;
             if (shouldPause) {
                 camera->safe_pco(PCO_CancelImages(camera->hCamera), "failed to stop camera");
+                //in theory we should only have to reset the event at eventIdx, but just to be safe...
+                //ResetEvent(camera->mEvent[0]);
+                //ResetEvent(camera->mEvent[1]);
                 isPaused = true; //TODO: maybe better to use a Qt wait event to avoid the sleep statement in beginning of the while loop above?
                 continue;
             }
