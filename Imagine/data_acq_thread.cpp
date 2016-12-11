@@ -448,12 +448,15 @@ nextStack:  //code below is repeated every stack
 
 
     long nFramesGotForStack;
-    long nFramesShownForStack;
     while (!stopRequested) {
         nFramesGotForStack = camera.nAcquiredFrames.load();
-
-        if (nFramesGotForStack > nFramesShownForStack && !isUpdatingImage) {
-            nFramesShownForStack = nFramesGotForStack;
+        long temp_nstacks = camera.nAcquiredStacks.load();
+        if (idxCurStack < temp_nstacks) {
+            idxCurStack = temp_nstacks;
+            OutputDebugStringW((wstring(L"Data acq thread finished stack #") + to_wstring(idxCurStack) + wstring(L"\n")).c_str());
+            break;
+        }
+        if (!isUpdatingImage) {
             //get the latest frame:
             if (!camera.getLatestLiveImage(frame)) {
                 Sleep(10);
@@ -462,12 +465,6 @@ nextStack:  //code below is repeated every stack
             //copy data to display buffer
             QByteArray data16 = QByteArray((const char*)frame, camera.imageSizeBytes); //image display buffer
             emit imageDataReady(data16, nFramesGotForStack - 1,  camera.getImageWidth(), camera.getImageHeight()); //-1: due to 0-based indexing
-        }
-        long temp_nstacks = camera.nAcquiredStacks.load();
-        if (idxCurStack < temp_nstacks) {
-            idxCurStack = temp_nstacks;
-            OutputDebugStringW((wstring(L"Data acq thread finished stack #") + to_wstring(idxCurStack) + wstring(L"\n")).c_str());
-            break;
         }
     }//while, camera is not idle
 
@@ -487,6 +484,7 @@ nextStack:  //code below is repeated every stack
     //close laser shutter
     digOut->updateOutputBuf(4, false);
     digOut->write();
+    /*
     {
         QScriptValue jsFunc = se->globalObject().property("onShutterClose");
         if (jsFunc.isFunction()) {
@@ -494,7 +492,7 @@ nextStack:  //code below is repeated every stack
             jsFunc.call();
         }
     }
-
+    */
     //update stimulus if necessary:  idxCurStack
     if (applyStim
         && curStimIndex + 1 < stimuli.size()

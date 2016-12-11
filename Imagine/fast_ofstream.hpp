@@ -70,7 +70,7 @@ public:
 
     //@param bufsize default 64M
     //FastOfstream(const string& filename, __int64 total_size_bytes, int bufsize_in_4kb = 65536 / 4) {
-    FastOfstream(const string& filename, __int64 total_size_bytes, int bufsize_in_32kb = 65536 / 32) {
+    FastOfstream(const string& filename, __int64 total_size_bytes, int bufsize_in_8kb = 65536 / 8) {
         allBuf = nullptr;
         hFile = INVALID_HANDLE_VALUE;
         isGood = false;
@@ -79,8 +79,8 @@ public:
         timer.start();
 
         //The RAID, as configured, uses an 8K unit size...
-        //bufsize = bufsize_in_8kb * 8 * 1024;
-        bufsize = bufsize_in_32kb * 32 * 1024;
+        bufsize = bufsize_in_8kb * 8 * 1024;
+        //bufsize = bufsize_in_32kb * 32 * 1024;
         //bufsize = bufsize_in_4kb * 4 * 1024;
         datasize = 0;
         //allBuf = (char*)_aligned_malloc(bufsize * 2, 4 * 1024); //2 bufs

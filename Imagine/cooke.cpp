@@ -103,7 +103,7 @@ bool CookeCamera::init()
 bool CookeCamera::allocMemPool(long long sz) {
     if (sz < 0) {
 #ifdef _WIN64
-        memPoolSize = (long long)4218880 * 2 * 200; //200 full frames. 5529600 for PCO.Edge 5.5 TODO: make this user-configuable
+        memPoolSize = (long long)4218880 * 2 * 400; //400 full frames (~4GB). 5529600 per frame for PCO.Edge 5.5 TODO: make this user-configuable
 #else
         memPoolSize = 5529600 * 2 * 30; //30 full frames
 #endif
@@ -573,17 +573,17 @@ bool CookeCamera::setSpooling(string filename)
     Camera::setSpooling(filename);
 
     //int bufsize_in_4kb = chipWidth * chipHeight * 2 * 8 / (4 * 1024); //8 frames, about 80M in bytes
-    //__int64 bufsize_in_8kb = __int64(imageSizeBytes) * 8 / (8 * 1024); //8 frames
-    __int64 bufsize_in_32kb = __int64(imageSizeBytes) * 8 / (32 * 1024); //8 frames
+    __int64 bufsize_in_8kb = __int64(imageSizeBytes) * 64 / (8 * 1024); //64 frames
+    //__int64 bufsize_in_32kb = __int64(imageSizeBytes) * 8 / (32 * 1024); //8 frames
     __int64 total_in_bytes = __int64(imageSizeBytes) * nFramesPerStack * nStacks;
 #ifdef _WIN64
     //bufsize_in_4kb *= 1;
-    //bufsize_in_8kb *= 1;
-    bufsize_in_32kb *= 1;
+    bufsize_in_8kb *= 1;
+    //bufsize_in_32kb *= 1;
 #endif
     //ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_4kb);
-    //ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_8kb);
-    ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_32kb);
+    ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_8kb);
+    //ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_32kb);
     return *ofsSpooling;
 }
 
