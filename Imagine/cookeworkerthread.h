@@ -99,7 +99,7 @@ public:
         long droppedFrameCount = 0; // number of dropped frames this stack
         vector<long> droppedFrameIdxs, droppedFrameStackIdxs;
         double startTime;
-        double handlingTime;
+        double handlingTime = 0.0; //max handling time in seconds
         long framesSoFar=0; //frames acquired so far (if we've missed frames, this may be less than curFrameIdx
         long stacksSoFar = 0; //stacks acquired so far
         int gapWidth; //missed frame gap width
@@ -213,7 +213,8 @@ public:
                 if (framesSoFar == camera->nFramesPerStack && camera->genericAcqMode != Camera::eLive) {
                     curStackIdx += 1;
                     camera->nAcquiredStacks = curStackIdx; //assumes we will never miss a whole stack
-                    camera->nAcquiredFrames = 0;
+                    framesSoFar = 0;
+                    camera->nAcquiredFrames = framesSoFar;
                     camera->circBufLock->unlock();
                     //in theory we should only have to reset the event at eventIdx, but just to be safe...
                     //ResetEvent(camera->mEvent[0]);
@@ -249,7 +250,7 @@ public:
 
                 if (gapWidth) {
                     //tmp: __debugbreak();
-                    OutputDebugStringW((wstring(L"Fill ") + to_wstring(gapWidth) + wstring(L" frames with black images")).c_str());
+                    OutputDebugStringW((wstring(L"Fill ") + to_wstring(gapWidth) + wstring(L" frames with black images\n")).c_str());
                     //cout << "fill " << gapWidth << " frames with black images (start at frame idx=" << camera->nAcquiredFrames << ")" << endl;
                     camera->totalGap += gapWidth;
 #ifdef _DEBUG
@@ -296,8 +297,8 @@ public:
                     break; //break the while
                 }
                 //OutputDebugStringW((wstring(L"End processing frame: ") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
-                handlingTime = gt.read() - startTime;
-                OutputDebugStringW((wstring(L"Frame event handling time (microseconds): ") + to_wstring(handlingTime*1000000) + wstring(L"\n")).c_str());
+                if (framesSoFar >0)  handlingTime = max(gt.read() - startTime, handlingTime); //first is always slow due to pause
+                //OutputDebugStringW((wstring(L"Frame event handling time (microseconds): ") + to_wstring(handlingTime*1000000) + wstring(L"\n")).c_str());
             }
             else {
                 continue; // break;

@@ -170,7 +170,7 @@ bool DataAcqThread::preparePositioner(bool isForward)
 void DataAcqThread::startAcq()
 {
     stopRequested = false;
-    this->start(QThread::NormalPriority);
+    this->start(QThread::HighestPriority);
 }
 
 void DataAcqThread::stopAcq()
@@ -453,7 +453,7 @@ nextStack:  //code below is repeated every stack
         this->setPriority(QThread::TimeCriticalPriority);
         nFramesGotForStack = camera.nAcquiredFrames.load();
         long temp_nstacks = camera.nAcquiredStacks.load();
-        this->setPriority(QThread::NormalPriority);
+        this->setPriority(QThread::HighestPriority);
         if (idxCurStack < temp_nstacks) {
             idxCurStack = temp_nstacks;
             OutputDebugStringW((wstring(L"Data acq thread finished stack #") + to_wstring(idxCurStack) + wstring(L"\n")).c_str());

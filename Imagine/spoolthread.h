@@ -70,7 +70,7 @@ public:
                 //camera->nAcquiredFrames += 1;
                 //camera->nAcquiredFrames = camera->nAcquiredFrames; // max(curFrameIdx + 1, camera->nAcquiredFrames); //don't got back
                 camera->circBufLock->unlock();
-                this->setPriority(QThread::NormalPriority);
+                this->setPriority(QThread::HighestPriority);
                 if (camera->genericAcqMode != Camera::eLive)
                     this->ofsSpooling->write(camera->memPool + idx*size_t(camera->imageSizeBytes), camera->imageSizeBytes);
                 bufNotFull.wakeAll();
@@ -82,7 +82,7 @@ public:
             }
             else {
                 camera->circBufLock->unlock();
-                this->setPriority(QThread::NormalPriority);
+                this->setPriority(QThread::HighestPriority);
                 //OutputDebugStringW((wstring(L"Circ buf is empty: ") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
                 Sleep(10); //let the circular buffer fill a little
                 continue;
@@ -101,7 +101,7 @@ public:
             }
         }
         camera->circBufLock->unlock();
-        this->setPriority(QThread::NormalPriority);
+        this->setPriority(QThread::HighestPriority);
 
 #if defined(_DEBUG)
         cerr << "leave cooke spooling thread run()" << endl;
