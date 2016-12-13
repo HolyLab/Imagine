@@ -94,9 +94,18 @@ public:
         int nextSlot; //the index of the next empty slot in the circular buffer
         int slotsLeft; //the number of remaining empty slots (images) in the circular buffer
         int curFrameIdx = 0; //the index of the current frame as read from the encoding in the pixel data (see camera manual)
+        long curStackIdx = 0; //stack currently being acquired
         int nwaits = 0; //the  number of wait results that didn't match an event or time out
         long droppedFrameCount = 0; // number of dropped frames this stack
         vector<long> droppedFrameIdxs, droppedFrameStackIdxs;
+        double startTime;
+        double handlingTime;
+        long framesSoFar=0; //frames acquired so far (if we've missed frames, this may be less than curFrameIdx
+        long stacksSoFar = 0; //stacks acquired so far
+        int gapWidth; //missed frame gap width
+        long counter; //frame counter of camera (extracted from image pixels)
+        //CookeCamera::PixelValue *rawPointers[] = {(Camera::PixelValue*)camera->mRingBuf[0], (Camera::PixelValue*)camera->mRingBuf[1] };
+        //CookeCamera::PixelValue *rawData; //pointer to currently handled frame buffer
 
         while (true) {
             if (isPaused) { //Wait until resumed.
@@ -128,7 +137,7 @@ public:
             }//if, WAIT_ABANDONED, WAIT_TIMEOUT or WAIT_FAILED
            //OutputDebugStringW((wstring(L"Begin processing frame: ") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //todo: should we try to keep going? SEE: CSC2Class::SC2Thread()
-
+            startTime = gt.read();
             //TODO: the two conditionals below are repeated in prepareNextEvent.  A bit ugly, could improve.
             if (shouldStop) break;
             if (shouldPause) {
@@ -147,10 +156,10 @@ public:
             }
 
             if (camera->isRecording) {
-                CookeCamera::PixelValue* rawData = (Camera::PixelValue*)(camera->mRingBuf[eventIdx]);
+                //rawData = (Camera::PixelValue*)(camera->mRingBuf[eventIdx]);
                 //OutputDebugStringW((wstring(L"Time before extract frame counter:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //wow, this takes as much as 260 microseconds sometimes -- but usually about 90 microseconds
-                long counter = camera->extractFrameCounter(rawData);
+                counter = camera->extractFrameCounter((Camera::PixelValue*)(camera->mRingBuf[eventIdx]));
                 //OutputDebugStringW((wstring(L"Time after extract frame counter:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //the two cases below can come up since we don't stop this thread between stacks
                 if (counter == 0 || (counter > camera->nFrames && camera->genericAcqMode != Camera::eLive)) {
@@ -158,22 +167,22 @@ public:
                     //ResetEvent(camera->mEvent[eventIdx]);
                     continue;
                 }
-                if (camera->nAcquiredFrames.load() == 0) {
+                if (framesSoFar == 0) {
                     camera->firstFrameCounter = counter;
                     assert(counter >= 0);
-                    cout << "first frame's counter is " << counter << ", at time: " << gt.read() << endl;
+                    //cout << "first frame's counter is " << counter << ", at time: " << gt.read() << endl;
                     genSquareSpike(20);
                 }
                 curFrameIdx = counter - camera->firstFrameCounter;
-                int gapWidth = curFrameIdx - camera->nAcquiredFrames;
+                gapWidth = curFrameIdx - framesSoFar;
 
-                if (curFrameIdx > (camera->nAcquiredFrames.load() + 1)) {
-                    for (int i = camera->nAcquiredFrames.load(); i < curFrameIdx; i++) {
-                        long curStack = camera->nAcquiredStacks.load();
-                        OutputDebugStringW((wstring(L"Missed frame #") + to_wstring(i) + wstring(L"(0-based) ")).c_str());
-                        OutputDebugStringW((wstring(L"of stack #") + to_wstring(curStack) + wstring(L"(0-based)\n")).c_str());
+                if (curFrameIdx > (framesSoFar + 1)) {
+                    for (int i = framesSoFar; i < curFrameIdx; i++) {
+                        //curStack = camera->nAcquiredStacks.load();
+                        //OutputDebugStringW((wstring(L"Missed frame #") + to_wstring(i) + wstring(L"(0-based) ")).c_str());
+                        //OutputDebugStringW((wstring(L"of stack #") + to_wstring(curStack) + wstring(L"(0-based)\n")).c_str());
                         droppedFrameIdxs.push_back(i);
-                        droppedFrameStackIdxs.push_back(camera->nAcquiredStacks.load());
+                        droppedFrameStackIdxs.push_back(curStackIdx);
                         droppedFrameCount += 1;
                     }
                 }
@@ -192,17 +201,18 @@ public:
                 assert(curFrameIdx >= 0);
 
                 //update circular buffer and framecount to include the frame being handled
+                framesSoFar += 1;
 
                 camera->circBufLock->lock();
-                camera->nAcquiredFrames += 1;
                 slotsLeft = camera->circBuf->capacity() - camera->circBuf->size();
                 nextSlot = (camera->circBuf->put() + 2) % camera->circBuf->capacity();
-                OutputDebugStringW((wstring(L"Event handled for frame #") + to_wstring(curFrameIdx) + wstring(L"\n")).c_str());
-                OutputDebugStringW((wstring(L"Handled ") + to_wstring(camera->nAcquiredFrames) + wstring(L" frames total for this stack\n")).c_str());
+                //OutputDebugStringW((wstring(L"Event handled for frame #") + to_wstring(curFrameIdx) + wstring(L"\n")).c_str());
+                //OutputDebugStringW((wstring(L"Handled ") + to_wstring(camera->nAcquiredFrames) + wstring(L" frames total for this stack\n")).c_str());
 
                 //if we are finished with this stack, update counters, reset event, pause, and continue the loop
-                if (camera->nAcquiredFrames == camera->nFramesPerStack && camera->genericAcqMode != Camera::eLive) {
-                    camera->nAcquiredStacks += 1;
+                if (framesSoFar == camera->nFramesPerStack && camera->genericAcqMode != Camera::eLive) {
+                    curStackIdx += 1;
+                    camera->nAcquiredStacks = curStackIdx; //assumes we will never miss a whole stack
                     camera->nAcquiredFrames = 0;
                     camera->circBufLock->unlock();
                     //in theory we should only have to reset the event at eventIdx, but just to be safe...
@@ -211,6 +221,9 @@ public:
                     camera->safe_pco(PCO_CancelImages(camera->hCamera), "failed to stop camera");
                     isPaused = true;
                     continue;
+                }
+                else {
+                    camera->nAcquiredFrames = framesSoFar;
                 }
 
                 //never fill the last two slots.  drop the frame instead.
@@ -241,7 +254,7 @@ public:
                     camera->totalGap += gapWidth;
 #ifdef _DEBUG
                     nBlackFrames.push_back(gapWidth);
-                    blackFrameStartIndices.push_back(camera->nAcquiredFrames);
+                    blackFrameStartIndices.push_back(framesSoFar);
 #endif
                 }
             } // if(!shouldStop)
@@ -263,15 +276,16 @@ public:
             }
 
             ///then add back the buffer if we need it to finish the stack
-            if (camera->nAcquiredFrames.load() < (camera->nFramesPerStack- 1) || camera->genericAcqMode == Camera::eLive){
-                int temp_ = nextSlot*size_t(camera->imageSizeBytes);
+            if (framesSoFar < (camera->nFramesPerStack- 1) || camera->genericAcqMode == Camera::eLive){
+                //int temp_ = nextSlot*size_t(camera->imageSizeBytes);
                 camera->mRingBuf[eventIdx] = camera->memPool + nextSlot*size_t(camera->imageSizeBytes);
+                //rawPointers[eventIdx] = (Camera::PixelValue*)(camera->memPool + nextSlot*size_t(camera->imageSizeBytes));
                 //in fifo mode, frameIdxInCamRam are 0 for both buffers?
-                int frameIdxInCamRam = 0;
+                //int frameIdxInCamRam = 0;
                 //OutputDebugStringW((wstring(L"Next frame pointer:") + to_wstring((unsigned)static_cast<void*>(camera->mRingBuf[eventIdx]))).c_str());
                 //OutputDebugStringW((wstring(L"Time before add buffer:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //the line below seeems to take at most 74 microseconds to execute on OCPI2 (assuming this doesn't depend on image size, which it shouldn't)
-                camera->safe_pco(PCO_AddBufferExtern(camera->hCamera, camera->mEvent[eventIdx], wActSeg, frameIdxInCamRam, frameIdxInCamRam, 0, camera->mRingBuf[eventIdx], camera->imageSizeBytes, &(camera->driverStatus[eventIdx])), "failed to add external buffer");// Add buffer to the driver queue
+                camera->safe_pco(PCO_AddBufferExtern(camera->hCamera, camera->mEvent[eventIdx], wActSeg, 0, 0, 0, camera->mRingBuf[eventIdx], camera->imageSizeBytes, &(camera->driverStatus[eventIdx])), "failed to add external buffer");// Add buffer to the driver queue
 
                 //OutputDebugStringW((wstring(L"Time after add buffer:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //TODO: switch to PCO_AddBufferExtern to improve performance
@@ -282,6 +296,8 @@ public:
                     break; //break the while
                 }
                 //OutputDebugStringW((wstring(L"End processing frame: ") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
+                handlingTime = gt.read() - startTime;
+                OutputDebugStringW((wstring(L"Frame event handling time (microseconds): ") + to_wstring(handlingTime*1000000) + wstring(L"\n")).c_str());
             }
             else {
                 continue; // break;

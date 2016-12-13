@@ -59,15 +59,18 @@ public:
 
         while (true){
             //lockAgain:
+            //to avoid "priority inversion" we temporarily elevate the priority
+            this->setPriority(QThread::TimeCriticalPriority);
             camera->circBufLock->lock();
             if (shouldStop) goto finishup;
             curSize = camera->circBuf->size();
             if (curSize > 2) {
-                OutputDebugStringW((wstring(L"Current size of circ buf:") + to_wstring(curSize)+ wstring(L"\n")).c_str());
+                //OutputDebugStringW((wstring(L"Current size of circ buf:") + to_wstring(curSize)+ wstring(L"\n")).c_str());
                 idx = camera->circBuf->get();
                 //camera->nAcquiredFrames += 1;
                 //camera->nAcquiredFrames = camera->nAcquiredFrames; // max(curFrameIdx + 1, camera->nAcquiredFrames); //don't got back
                 camera->circBufLock->unlock();
+                this->setPriority(QThread::NormalPriority);
                 if (camera->genericAcqMode != Camera::eLive)
                     this->ofsSpooling->write(camera->memPool + idx*size_t(camera->imageSizeBytes), camera->imageSizeBytes);
                 bufNotFull.wakeAll();
@@ -79,6 +82,7 @@ public:
             }
             else {
                 camera->circBufLock->unlock();
+                this->setPriority(QThread::NormalPriority);
                 //OutputDebugStringW((wstring(L"Circ buf is empty: ") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
                 Sleep(10); //let the circular buffer fill a little
                 continue;
@@ -97,6 +101,7 @@ public:
             }
         }
         camera->circBufLock->unlock();
+        this->setPriority(QThread::NormalPriority);
 
 #if defined(_DEBUG)
         cerr << "leave cooke spooling thread run()" << endl;
