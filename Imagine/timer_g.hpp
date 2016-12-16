@@ -17,6 +17,7 @@
 #define TIMER_G_HPP
 
 #include <QElapsedTimer>
+#include <assert.h>
 
 class Timer_g {
    QElapsedTimer mTimer;
