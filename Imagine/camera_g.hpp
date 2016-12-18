@@ -96,9 +96,9 @@ public:
     //virtual bool isIdle()=0;
 
     virtual bool prepCameraOnce() = 0;
-    virtual bool startAcq() = 0;
+    virtual bool nextStack() = 0;
     virtual bool stopAcqFinal() = 0;
-    virtual bool stopAcq() = 0;
+    //virtual bool stopAcq() = 0;
 
     PixelValue * getImageArray(){
         return pImageArray;

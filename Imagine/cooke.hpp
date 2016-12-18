@@ -163,12 +163,13 @@ public:
     bool getLatestLiveImage(PixelValue * frame);
 
     bool prepCameraOnce();
+    bool nextStack();
 
-    bool startAcq();
+    //bool startAcq();
 
     bool stopAcqFinal();
 
-    bool stopAcq();
+    //bool stopAcq();
 
     double getCycleTime();
 

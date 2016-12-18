@@ -301,6 +301,7 @@ int main(int argc, char *argv[])
 
     // go!
     a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
+    //set GUI thread to a low priority
     QThread::currentThread()->setPriority(QThread::IdlePriority);
     return a.exec();
 }

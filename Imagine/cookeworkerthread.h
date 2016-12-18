@@ -28,13 +28,42 @@ class CookeWorkerThread : public QThread {
 private:
     CookeCamera* camera;
 
+    QThread::Priority defaultPriority = QThread::TimeCriticalPriority;
+
     //camera->isRecording is modified when camera buffers are removed (i.e. between stacks)
     //shouldStop is modified when the acquisition is complete (i.e. after a sequence of stacks)
     volatile bool shouldStop;
     std::atomic_bool shouldPause;
-    std::atomic_bool isPaused;
+    //std::atomic_bool isPrepared;
+    QWaitCondition unPaused;
+    //QWaitCondition prepared;
+    //QMutex pauseLock;
+    QMutex unPauseLock;
+
+    //Note: This should only be called when already paused.
+    void prepareNextStack() {
+        /*
+        if (!isPaused) {
+            shouldPause = true;
+            pauseLock.lock();
+            paused.wait(&pauseLock);
+            pauseLock.unlock();
+        }
+        */
+        WORD wActSeg = 0;
+        for (int i = 0; i < camera->nBufs; ++i) {
+            //in fifo mode, frameIdxInCamRam are 0 for all buffers?
+            int frameIdxInCamRam = 0;
+            //printPcoError(driverStatus[i]);
+            camera->safe_pco(PCO_AddBufferExtern(camera, camera->mEvent[i], wActSeg, frameIdxInCamRam, frameIdxInCamRam, 0, static_cast<void*>(camera->mRingBuf[i]), camera->imageSizeBytes, &((camera->driverStatus)[i])), "failed to add external buffer");// Add buffer to the driver queue
+        }
+        isPaused = true;
+    }
+
 
 public:
+    std::atomic_bool isPaused;
+
     CookeWorkerThread(CookeCamera * camera, QObject *parent = 0)
         : QThread(parent){
         this->camera = camera;
@@ -44,8 +73,8 @@ public:
         shouldStop = false;
         //it's important that the thread begin in the paused state, otherwise the camera driver throws unintelligible errors
         //this seems to be because the driver doesn't like receiving an event that we are already waiting for
-        shouldPause = true;
-        isPaused = true;
+        shouldPause = false;
+        isPaused = false;
 
         //cout<<"after _aligned_malloc: "<<gt.read()<<endl;
 #ifdef _WIN64
@@ -56,26 +85,25 @@ public:
 
 
         cout << "at the end of workerThread->ctor(): " << gt.read() << endl;
+        prepareNextStack();
     }
 
     ~CookeWorkerThread(){}
 
-    void requestStop(){shouldStop = true;}
-
-    void pause() {
-        shouldPause = true;
-        while (!isPaused) {
-            QThread::msleep(10); //milliseconds
-        }
+    void requestStop(){
+        shouldStop = true;
+        shouldPause = false;
+        isPaused = false;
+        unPaused.wakeAll();
     }
 
-    //resume acquisition.  This is called before every stack (except the first) in a multi-stack acquisitoin
-    //before calling this make sure that buffers have been added back via PCO_AddBufferExtern
-    void resume() {
-        if (isPaused) {
-            shouldPause = false;
-            isPaused = false;
-        }
+    void nextStack() {
+        assert(isPaused);
+        shouldPause = false;
+        isPaused = false;
+        unPaused.wakeAll();
+        camera->isRecording = true;
+        camera->safe_pco(PCO_SetRecordingState(camera, 1), "failed to start camera recording"); //1: run
     }
 
     void run(){
@@ -104,17 +132,14 @@ public:
         long stacksSoFar = 0; //stacks acquired so far
         int gapWidth; //missed frame gap width
         long counter; //frame counter of camera (extracted from image pixels)
-        //CookeCamera::PixelValue *rawPointers[] = {(Camera::PixelValue*)camera->mRingBuf[0], (Camera::PixelValue*)camera->mRingBuf[1] };
-        //CookeCamera::PixelValue *rawData; //pointer to currently handled frame buffer
+
+        isPaused = true;
+        //wait until we begin recording the first stack
+        unPauseLock.lock();
+        unPaused.wait(&unPauseLock);
+        unPauseLock.unlock();
 
         while (true) {
-            if (isPaused) { //Wait until resumed.
-                //TODO: wait for a Qt event instead
-                if (shouldStop) break;
-                QThread::msleep(1); //milliseconds
-                continue;
-            }
-            //if(shouldStop) break;
             ///wait for events
             if (eventIdx == 1) { // if the previous frame was from event 1, set event 0 as first priority
                 waitResult = WaitForMultipleObjects(camera->nBufs, camera->mEvent, false, 2000);
@@ -140,13 +165,14 @@ public:
             startTime = gt.read();
             //TODO: the two conditionals below are repeated in prepareNextEvent.  A bit ugly, could improve.
             if (shouldStop) break;
+            /*
             if (shouldPause) {
                 camera->safe_pco(PCO_CancelImages(camera->hCamera), "failed to stop camera");
-                //ResetEvent(camera->mEvent[0]);
-                //ResetEvent(camera->mEvent[1]);
                 isPaused = true; //TODO: maybe better to use a Qt wait event to avoid the sleep statement in beginning of the while loop above?
+                paused.wakeAll();
                 continue;
             }
+            */
 
             nEvents++;
             eventIdx = waitResult - WAIT_OBJECT_0;
@@ -156,21 +182,15 @@ public:
             }
 
             if (camera->isRecording) {
-                //rawData = (Camera::PixelValue*)(camera->mRingBuf[eventIdx]);
                 //OutputDebugStringW((wstring(L"Time before extract frame counter:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //wow, this takes as much as 260 microseconds sometimes -- but usually about 90 microseconds
                 counter = camera->extractFrameCounter((Camera::PixelValue*)(camera->mRingBuf[eventIdx]));
                 //OutputDebugStringW((wstring(L"Time after extract frame counter:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //the two cases below can come up since we don't stop this thread between stacks
-                if (counter == 0 || (counter > camera->nFrames && camera->genericAcqMode != Camera::eLive)) {
-                    //reset event
-                    //ResetEvent(camera->mEvent[eventIdx]);
-                    continue;
-                }
+                if (counter == 0 || (counter > camera->nFrames && camera->genericAcqMode != Camera::eLive)) continue;
                 if (framesSoFar == 0) {
                     camera->firstFrameCounter = counter;
                     assert(counter >= 0);
-                    //cout << "first frame's counter is " << counter << ", at time: " << gt.read() << endl;
                     genSquareSpike(20);
                 }
                 curFrameIdx = counter - camera->firstFrameCounter;
@@ -178,7 +198,6 @@ public:
 
                 if (curFrameIdx > (framesSoFar + 1)) {
                     for (int i = framesSoFar; i < curFrameIdx; i++) {
-                        //curStack = camera->nAcquiredStacks.load();
                         //OutputDebugStringW((wstring(L"Missed frame #") + to_wstring(i) + wstring(L"(0-based) ")).c_str());
                         //OutputDebugStringW((wstring(L"of stack #") + to_wstring(curStack) + wstring(L"(0-based)\n")).c_str());
                         droppedFrameIdxs.push_back(i);
@@ -216,11 +235,15 @@ public:
                     framesSoFar = 0;
                     camera->nAcquiredFrames = framesSoFar;
                     camera->circBufLock->unlock();
-                    //in theory we should only have to reset the event at eventIdx, but just to be safe...
-                    //ResetEvent(camera->mEvent[0]);
-                    //ResetEvent(camera->mEvent[1]);
+                    camera->mRingBuf[eventIdx] = camera->memPool + nextSlot*size_t(camera->imageSizeBytes);
+                    eventIdx = 1; //since this controls the logic of which buffer to prioritize, and when starting a new stack we always prioritize buffer 0
                     camera->safe_pco(PCO_CancelImages(camera->hCamera), "failed to stop camera");
+                    camera->safe_pco(PCO_SetRecordingState(camera, 0), "failed to stop camera recording");// stop recording
+                    prepareNextStack();
                     isPaused = true;
+                    unPauseLock.lock();
+                    unPaused.wait(&unPauseLock);
+                    unPauseLock.unlock();
                     continue;
                 }
                 else {
@@ -237,17 +260,13 @@ public:
                 camera->circBufLock->unlock();
 
                 //fill the gap w/ black images
-                //int gapWidth = 0;
-                //TODO: use a timer to decide when we've missed a frame.
-                /*
-                for (int frameIdx = camera->camera->nAcquiredFrames; frameIdx < min(camera->nFrames, curFrameIdx); ++frameIdx){
+                /*for (int frameIdx = camera->camera->nAcquiredFrames; frameIdx < min(camera->nFrames, curFrameIdx); ++frameIdx){
                     if (camera->genericAcqMode == Camera::eAcqAndSave){
                         append2seq(camera->pBlackImage, frameIdx, nPixelsPerFrame);
                     }
                     gapWidth++;
-                }
-                */
-
+                }*/
+               
                 if (gapWidth) {
                     //tmp: __debugbreak();
                     OutputDebugStringW((wstring(L"Fill ") + to_wstring(gapWidth) + wstring(L" frames with black images\n")).c_str());
@@ -267,31 +286,28 @@ public:
             //ResetEvent(camera->mEvent[eventIdx]);
 
             if (shouldStop) break;
+            /*
             if (shouldPause) {
                 camera->safe_pco(PCO_CancelImages(camera->hCamera), "failed to stop camera");
                 //in theory we should only have to reset the event at eventIdx, but just to be safe...
-                //ResetEvent(camera->mEvent[0]);
-                //ResetEvent(camera->mEvent[1]);
                 isPaused = true; //TODO: maybe better to use a Qt wait event to avoid the sleep statement in beginning of the while loop above?
+                paused.wakeAll();
                 continue;
             }
+            */
 
             ///then add back the buffer if we need it to finish the stack
             if (framesSoFar < (camera->nFramesPerStack- 1) || camera->genericAcqMode == Camera::eLive){
                 //int temp_ = nextSlot*size_t(camera->imageSizeBytes);
                 camera->mRingBuf[eventIdx] = camera->memPool + nextSlot*size_t(camera->imageSizeBytes);
                 //rawPointers[eventIdx] = (Camera::PixelValue*)(camera->memPool + nextSlot*size_t(camera->imageSizeBytes));
-                //in fifo mode, frameIdxInCamRam are 0 for both buffers?
-                //int frameIdxInCamRam = 0;
                 //OutputDebugStringW((wstring(L"Next frame pointer:") + to_wstring((unsigned)static_cast<void*>(camera->mRingBuf[eventIdx]))).c_str());
                 //OutputDebugStringW((wstring(L"Time before add buffer:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //the line below seeems to take at most 74 microseconds to execute on OCPI2 (assuming this doesn't depend on image size, which it shouldn't)
+                //frameIdxInCamRam corresponds to the first two zero arguments below
                 camera->safe_pco(PCO_AddBufferExtern(camera->hCamera, camera->mEvent[eventIdx], wActSeg, 0, 0, 0, camera->mRingBuf[eventIdx], camera->imageSizeBytes, &(camera->driverStatus[eventIdx])), "failed to add external buffer");// Add buffer to the driver queue
 
                 //OutputDebugStringW((wstring(L"Time after add buffer:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
-                //TODO: switch to PCO_AddBufferExtern to improve performance
-                //camera->safe_pco(PCO_AddBufferEx(camera->hCamera, frameIdxInCamRam, frameIdxInCamRam, camera->mBufIndex[eventIdx], camera->getImageWidth(), camera->getImageHeight(), bytesPerPixel), "failed to add buffer");// Add buffer to the driver queue
-                //camera->safe_pco(PCO_AddBuffer(camera->hCamera, frameIdxInCamRam, frameIdxInCamRam, camera->mBufIndex[eventIdx]), "failed to add buffer");// Add buffer to the driver queue
                 if (camera->errorCode != PCO_NOERROR) {
                     camera->errorMsg = "failed to add buffer";
                     break; //break the while

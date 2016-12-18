@@ -418,52 +418,15 @@ bool CookeCamera::prepCameraOnce()
     return true;
 }
 
-bool CookeCamera::startAcq()
+bool CookeCamera::nextStack()
 {
-    WORD wActSeg=0;
-    for (int i = 0; i < nBufs; ++i) {
-        //in fifo mode, frameIdxInCamRam are 0 for all buffers?
-        int frameIdxInCamRam = 0;
-        //TODO: switch to PCO_AddBufferExtern to improve performance
-        //safe_pco(PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i]), "failed to add buffer");// Add buffer to the driver queue
-        //safe_pco(PCO_AddBufferEx(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i], getImageWidth(), getImageHeight(), bytesPerPixel), "failed to add buffer");// Add buffer to the driver queue
-        //printPcoError(driverStatus[i]);
-        safe_pco(PCO_AddBufferExtern(hCamera, mEvent[i], wActSeg, frameIdxInCamRam, frameIdxInCamRam, 0, static_cast<void*>(mRingBuf[i]), imageSizeBytes, &(driverStatus[i])), "failed to add external buffer");// Add buffer to the driver queue
-        //OutputDebugStringW((wstring(L"Added a buffer\n")).c_str());
-        //printPcoError(driverStatus[i]);
-    }
-
-    nAcquiredFrames = 0;
-
-    //camera's internal frame counter can be reset by ARM which is too costly we maintain our own counter
-    firstFrameCounter = -1;
-
-    totalGap = 0;
-
-    Timer_g gt = parentAcqThread->parentImagine->gTimer;
-
-    //safe_pco(PCO_ArmCamera(hCamera), "failed to arm the camera"); //doesn't help
-    workerThread->resume();
-
-    safe_pco(PCO_SetRecordingState(hCamera, 1), "failed to start camera recording"); //1: run
-    isRecording = true;
-
-
-
-    /*
-    errorCode = PCO_SetRecordingState(hCamera, 1); //1: run
-    if (errorCode != PCO_NOERROR) {
-        errorMsg = "failed to start camera";
-        return false;
-    }
-    */
-    cout << "after set rec state to 1/run: " << gt.read() << endl;
-
+    workerThread->nextStack();
     return true;
 }//startAcq(),
 
 bool CookeCamera::stopAcqFinal()
 {
+    assert(workerThread->isPaused); //TODO: should use a wait instead
     //not rely on the "wait abandon"!!!
     workerThread->requestStop();
     spoolThread->requestStop();
@@ -494,10 +457,11 @@ bool CookeCamera::stopAcqFinal()
     return true;
 }
 
+/*
 bool CookeCamera::stopAcq()
 {
     OutputDebugStringW((wstring(L"stopAcq() requests a pause\n")).c_str());
-    workerThread->pause(); //removes pending buffers as well
+    workerThread->waitForPause(); //removes pending buffers as well
 
     //acquire lock so that workerThread doesn't try to read a cancelled buffer?
 
@@ -519,16 +483,15 @@ bool CookeCamera::stopAcq()
     printPcoError(driverStatus[0]);
     printPcoError(driverStatus[1]);
     //tGuard.unlock();
-    /*
-    errorCode = PCO_SetRecordingState(hCamera, 0);// stop recording
-    if (errorCode != PCO_NOERROR) {
-        errorMsg = "failed to stop camera";
-        return false;
-    }
-    */
+//    errorCode = PCO_SetRecordingState(hCamera, 0);// stop recording
+//    if (errorCode != PCO_NOERROR) {
+//        errorMsg = "failed to stop camera";
+//        return false;
+//    }
 //    safe_pco(PCO_ArmCamera(hCamera), "failed to arm the camera");
     return true;
 }//stopAcq(),
+*/
 
 long CookeCamera::extractFrameCounter(PixelValue* rawData)
 {

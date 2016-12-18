@@ -213,7 +213,8 @@ void DataAcqThread::run_live()
     camera.prepCameraOnce();
     timer.start();
 
-    camera.startAcq();
+    //camera.startAcq();
+    camera.nextStack();
     emit newStatusMsgReady(QString("Camera: started acq: %1")
         .arg(camera.getErrorMsg().c_str()));
 
@@ -255,7 +256,7 @@ void DataAcqThread::run_live()
         }
     }//while, user did not requested stop
 
-    camera.stopAcq(); //TODO: check return value
+    //camera.stopAcq(); //TODO: check return value
     camera.stopAcqFinal();
 
     QString ttMsg = "Live mode is stopped";
@@ -357,7 +358,8 @@ void DataAcqThread::run_acq_and_save()
     camera.prepCameraOnce();
 
     if (startCameraOnce)
-        camera.startAcq();
+        //camera.startAcq();
+        camera.nextStack();
 
     //start stimuli[0] if necessary
     if (applyStim && stimuli[0].second == 0) {
@@ -408,9 +410,14 @@ nextStack:  //code below is repeated every stack
     cout << "b4 start camera & piezo: " << gt.read() << endl;
 
     bool isPiezo = hasPos && pPositioner->posType == PiezoControlPositioner;
+
+    //raise priority here to ensure that the camera and piezo begin (nearly) simultaneously
+    QThread::setPriority(QThread::TimeCriticalPriority);
+
     if (acqTriggerMode == Camera::eExternal) {
         if (!startCameraOnce && !isPiezo) {
-            camera.startAcq();
+            //camera.startAcq();
+            camera.nextStack();
             double timeToWait = 0.1;
             //TODO: maybe I should use busy waiting?
             //QThread::msleep(timeToWait * 1000); // *1000: sec -> ms
@@ -423,19 +430,23 @@ nextStack:  //code below is repeated every stack
         }
 
         if (!startCameraOnce && isPiezo) {
-            camera.startAcq();
+            //camera.startAcq();
+            camera.nextStack();
         }
     }
     else {
         //Camera takes a while to start, so do this before starting positioner
         if (!startCameraOnce) {
             cout << "b4 camera.startacq: " << gt.read() << endl;
-            camera.startAcq();
+            //camera.startAcq();
+            camera.nextStack();
             cout << "after camera.startacq: " << gt.read() << endl;
         }
         if (hasPos && ownPos) pPositioner->runCmd();
     }
 
+    //lower priority back to default
+    QThread::setPriority(defaultPriority);
 
     cout << "after start camera & piezo: " << stackStartTime << endl;
 
@@ -453,7 +464,7 @@ nextStack:  //code below is repeated every stack
         this->setPriority(QThread::TimeCriticalPriority);
         nFramesGotForStack = camera.nAcquiredFrames.load();
         long temp_nstacks = camera.nAcquiredStacks.load();
-        this->setPriority(QThread::HighestPriority);
+        this->setPriority(defaultPriority);
         if (idxCurStack < temp_nstacks) {
             idxCurStack = temp_nstacks;
             OutputDebugStringW((wstring(L"Data acq thread finished stack #") + to_wstring(idxCurStack) + wstring(L"\n")).c_str());
@@ -462,7 +473,7 @@ nextStack:  //code below is repeated every stack
         if (!isUpdatingImage) {
             //get the latest frame:
             if (!camera.getLatestLiveImage(frame)) {
-                Sleep(10);
+                QThread::msleep(10);
                 continue;
             }
             //copy data to display buffer
@@ -514,12 +525,13 @@ nextStack:  //code below is repeated every stack
         }
     }
 
-
+    /*
     if (!startCameraOnce) {
         cout << "b4 stop camera: " << gt.read() << endl;
         camera.stopAcq();
         cout << "after stop camera: " << gt.read() << endl;
     }
+    */
 
     if (hasPos && ownPos) {
         cout << "b4 wait piezo: " << gt.read() << endl;
@@ -588,8 +600,8 @@ nextStack:  //code below is repeated every stack
         aiThread->save(*ofsAi);
     }   
 
-    if (startCameraOnce)
-        camera.stopAcq();
+    /*if (startCameraOnce)
+        camera.stopAcq();*/
 
     if (!isUseSpool){
         ofsCam->close();

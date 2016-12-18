@@ -30,6 +30,7 @@ private:
     FastOfstream *ofsSpooling; //NOTE: SpoolThread is not the owner
     CookeCamera* camera;
 
+    QThread::Priority defaultPriority = QThread::HighestPriority;
     //QWaitCondition bufNotEmpty;
     QWaitCondition bufNotFull;
     Timer_g timer;
@@ -44,7 +45,7 @@ public:
 
     void requestStop(){
         shouldStop = true;
-        bufNotFull.wakeAll();
+        //bufNotFull.wakeAll();
         //bufNotEmpty.wakeAll();
     }
 
@@ -58,7 +59,7 @@ public:
         int idx;
 
         while (true){
-            //lockAgain:
+            //TODO: use QWaitCondition to wait until another frame is ready
             //to avoid "priority inversion" we temporarily elevate the priority
             this->setPriority(QThread::TimeCriticalPriority);
             camera->circBufLock->lock();
@@ -70,10 +71,10 @@ public:
                 //camera->nAcquiredFrames += 1;
                 //camera->nAcquiredFrames = camera->nAcquiredFrames; // max(curFrameIdx + 1, camera->nAcquiredFrames); //don't got back
                 camera->circBufLock->unlock();
-                this->setPriority(QThread::HighestPriority);
+                this->setPriority(defaultPriority);
                 if (camera->genericAcqMode != Camera::eLive)
                     this->ofsSpooling->write(camera->memPool + idx*size_t(camera->imageSizeBytes), camera->imageSizeBytes);
-                bufNotFull.wakeAll();
+                //bufNotFull.wakeAll();
                 //fill the live image
                 //OutputDebugStringW((wstring(L"Time before copy:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //the line below takes ~600 microseconds on a 2060 x 512 image
@@ -82,9 +83,9 @@ public:
             }
             else {
                 camera->circBufLock->unlock();
-                this->setPriority(QThread::HighestPriority);
+                this->setPriority(defaultPriority);
                 //OutputDebugStringW((wstring(L"Circ buf is empty: ") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
-                Sleep(10); //let the circular buffer fill a little
+                QThread::msleep(10); //let the circular buffer fill a little
                 continue;
                 // while (circBuf->empty() && !shouldStop) {
                         //OutputDebugStringW((wstring(L"Begin wait for circbuf to fill:") + to_wstring(timer.read()) + wstring(L"\n")).c_str());
@@ -101,7 +102,7 @@ public:
             }
         }
         camera->circBufLock->unlock();
-        this->setPriority(QThread::HighestPriority);
+        this->setPriority(defaultPriority);
 
 #if defined(_DEBUG)
         cerr << "leave cooke spooling thread run()" << endl;

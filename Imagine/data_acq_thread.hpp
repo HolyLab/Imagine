@@ -67,6 +67,8 @@ public:
     //the analog input acquisition thread owned by this thread
     AiThread *aiThread = NULL;
 
+    QThread::Priority defaultPriority = QThread::HighPriority;
+
     //intended camera params:
     int nStacks,
         nFramesPerStack;
