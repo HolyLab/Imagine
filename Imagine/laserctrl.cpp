@@ -171,3 +171,62 @@ void LaserCtrlSerial::setTrans(bool isAotf, int line, int value)
     if (port != NULL) nWritten = port->write(tx);
     qDebug() << "Writed is : " << nWritten << " bytes";
 }
+
+
+//NOTE: line is 1-based numbering
+QByteArray LaserCtrlSerial::readLaserLineSetup(void)
+{
+    if (port != NULL) port->readAll(); //clear the un-readed data (such as ack from prev cmd)
+
+    tx = "08\r";
+    int nWritten = 1;
+    if (port != NULL) nWritten = port->write(tx);
+    qDebug() << "Writed is : " << nWritten << " bytes";
+    if (port != NULL) {
+        port->waitForReadyRead(50);
+        rx = port->readAll();
+    }
+    else
+        rx = "080FD2131015EA18EC0014100E0000";
+
+    /*
+    0x080FD2131015EA18EC00000000:
+    The device has four lines with wavelengths 405 (0x0FD2), 488 (0x1310), 561 (0x15EA), 638
+    (0x18EC) nm. The fifth line is zero (not used). The sixth line is zero, so stop counting. This is a
+    single output system since there are no output control lines.
+
+    0x080FD2131015EA18EC0014100E0000:
+    The device has four lines with wavelengths 405 (0x0FD2), 488 (0x1310), 561 (0x15EA), 638
+    (0x18EC) nm. The fifth line is 2 nm (0x0014), so is the second output control. The sixth line is 3
+    nm (0x001E) so it controls the third output select. The seventh line is zero so stop counting.
+
+    0x080FD2131015EA18EC1C840014001E0000
+        The device has five lines with wavelengths 405 (0x0FD2), 488 (0x1310), 561 (0x15EA), 638
+        (0x18EC), 730 (0x1C84) nm.The sixth line is 2 nm(0x0014), so is the second output control.
+        The seventh line is 3 nm(0x001E) so it controls the third output select.The eighth line is zero so
+        stop counting
+    */
+
+    qDebug() << "Readed is : " << rx.size() << " bytes";
+
+    QByteArray result = rx.mid(2, rx.size()-2);
+    return result;
+}
+
+void LaserCtrlSerial::getLaserLineSetup(void)
+{
+    bool ok;
+
+    QByteArray result = readLaserLineSetup();
+    
+    for(int i = 0; i < MAX_NUM_WAVELENGTH; i++) {
+        int wl = result.mid(i * 4, 4).toInt(&ok, 16)/10;
+        if (wl > 0) {
+            wavelength[i] = wl;
+            numLines++;
+        }
+        else if (wl == 0)
+            break;
+    }
+    emit getLaserLineSetupReady(numLines, MAX_NUM_WAVELENGTH, wavelength);
+}

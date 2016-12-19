@@ -6,6 +6,7 @@
 //#include <shutterctrl.h>
 #include <QThread>
 
+#define MAX_NUM_WAVELENGTH 8
 
 class Laser : public QObject {
     Q_OBJECT
@@ -30,12 +31,16 @@ private:
     bool isPortOpened = false;
 
 public:
+    int wavelength[MAX_NUM_WAVELENGTH] = { 0, };
+    int numLines = 0;
     LaserCtrlSerial(const QString dev);
     ~LaserCtrlSerial();
     int readShutterStatus(void);
     bool isPortOpen(void);
     void setPortName(QString portName) { this->portName = portName; };
     QString getPortName(void) { return portName; };
+    QByteArray readLaserLineSetup(void);
+    int getMAXnumLines(void) { return MAX_NUM_WAVELENGTH; };
 
 public slots:
     void openSerialPort(QString portName);
@@ -45,10 +50,12 @@ public slots:
     void setShutters(int status);
     void getTransStatus(bool isAotf, int line);
     void setTrans(bool isAotf, int line, int value);
+    void getLaserLineSetup(void);
 
 signals:
     void getShutterStatusReady(int result);
     void getTransStatusReady(bool isAotf, int line, int status);
+    void getLaserLineSetupReady(int numLines, int maxNumLines, int *wavelength);
 };
 
 #endif //LASERCTRL_H

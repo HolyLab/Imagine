@@ -379,12 +379,15 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
         connect(this, SIGNAL(setLaserShutters(int)), laserCtrlSerial, SLOT(setShutters(int)));
         connect(this, SIGNAL(getLaserTransStatus(bool, int)), laserCtrlSerial, SLOT(getTransStatus(bool, int)));
         connect(this, SIGNAL(setLaserTrans(bool, int, int)), laserCtrlSerial, SLOT(setTrans(bool, int, int)));
+        connect(this, SIGNAL(getLaserLineSetupStatus(void)), laserCtrlSerial, SLOT(getLaserLineSetup(void)));
         connect(laserCtrlSerial, SIGNAL(getShutterStatusReady(int)), this, SLOT(displayShutterStatus(int)));
         connect(laserCtrlSerial, SIGNAL(getTransStatusReady(bool, int, int)), this, SLOT(displayTransStatus(bool, int, int)));
+        connect(laserCtrlSerial, SIGNAL(getLaserLineSetupReady(int, int, int *)), this, SLOT(displayLaserGUI(int, int, int *)));
         // run event handler
         laserCtrlThread.start();
         if (laserCtrlSerial) {
             emit openLaserSerialPort(portName);
+            emit getLaserLineSetupStatus();
             emit setLaserShutters(0);
         }
     }
@@ -1689,6 +1692,23 @@ void Imagine::displayTransStatus(bool isAotf, int line, int status)
     slider->setToolTip(QString::number(status / 10.0));
 }
 
+
+void Imagine::displayLaserGUI(int numLines, int maxNumLines, int *wavelength)
+{
+    for (int i = 1; i <= numLines; i++) {
+        QCheckBox *checkBox = ui.groupBoxLaser->findChild<QCheckBox *>(QString("cbLine%1").arg(i));
+        QString wl= QString("%1 nm").arg(wavelength[i-1]);
+        checkBox->setText(wl);
+    }
+    for (int i = numLines + 1; i <= maxNumLines; i++) {
+        QCheckBox *checkBox = ui.groupBoxLaser->findChild<QCheckBox *>(QString("cbLine%1").arg(i));
+        QSlider *slider = ui.groupBoxLaser->findChild<QSlider *>(QString("aotfLine%1").arg(i));
+        QDoubleSpinBox *spinBox = ui.groupBoxLaser->findChild<QDoubleSpinBox *>(QString("doubleSpinBox_aotfLine%1").arg(i));
+        checkBox->setVisible(false);
+        slider->setVisible(false);
+        spinBox->setVisible(false);
+    }
+}
 
 void Imagine::on_btnOpenPort_clicked()
 {

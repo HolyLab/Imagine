@@ -221,6 +221,7 @@ private slots:
     void updateStatus(const QString &str);
     void appendLog(const QString& msg);
     void updateDisplay(const QByteArray &data16, long idx, int imageW, int imageH);
+    void displayLaserGUI(int numLines, int maxNumLines, int *wavelength);
     void zoom_onMousePressed(QMouseEvent*);
     void zoom_onMouseMoved(QMouseEvent*);
     void zoom_onMouseReleased(QMouseEvent*);
@@ -271,6 +272,7 @@ signals:
     void setLaserShutters(int status);
     void getLaserTransStatus(bool isAotf, int line);
     void setLaserTrans(bool isAotf, int line, int value);
+    void getLaserLineSetupStatus(void);
     // for laser control until this line
 };
 
