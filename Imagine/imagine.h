@@ -116,6 +116,9 @@ public:
     int lastImgH = 0;
     int lastImgW = 0;
     double factor = 0.0;
+    int maxROIHSize;
+    int maxROIVSize;
+    int roiStepsHor;
 
     // for laser control from this line
     LaserCtrlSerial *laserCtrlSerial = nullptr;
@@ -184,6 +187,8 @@ private slots:
     void on_btnSelectFile_clicked();
     void on_btnOpenStimFile_clicked();
     void on_btnApply_clicked();
+    void on_spinBoxHstart_editingFinished();
+    void on_spinBoxHend_editingFinished();
     void on_spinBoxVstart_valueChanged(int newValue);
     void on_spinBoxVend_valueChanged(int newValue);
     void on_btnFullChipSize_clicked();

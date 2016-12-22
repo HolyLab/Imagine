@@ -118,12 +118,12 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
     //TODO: temp hide shutter and AI tabs
     //ui.tabAI->hide();  //doesn't work
     //ui.tabWidgetCfg->setTabEnabled(4,false); //may confuse user
-	ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabAI));
-	//remove positioner tab from slave window
-	//TODO: Give stimulus tab the same treatment (It's in position #3)
-	if (masterImagine != NULL) {
-		ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabPiezo));
-	}
+    ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabAI));
+    //remove positioner tab from slave window
+    //TODO: Give stimulus tab the same treatment (It's in position #3)
+    if (masterImagine != NULL) {
+        ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabPiezo));
+    }
 
     //adjust size
     QRect tRect = geometry();
@@ -177,7 +177,7 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
     }
 
     //trigger mode combo box
-    if (pos != NULL && pos->posType == ActuatorPositioner){
+    if (pos != NULL && pos->posType == ActuatorPositioner) {
         ui.comboBoxAcqTriggerMode->setEnabled(false);
         ui.comboBoxAcqTriggerMode->setCurrentIndex(1);
     }
@@ -187,7 +187,7 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
     bool isAndor = camera.vendor == "andor";
     bool isAvt = camera.vendor == "avt";
 
-    if (isAvt){
+    if (isAvt) {
         ui.actionFlickerControl->setChecked(true);
     }
 
@@ -202,63 +202,78 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
         ui.spinBoxGain->setMaximum(gainRange.second);
     }
 
-/*    if (isAndor){
-        //fill in horizontal shift speed (i.e. read out rate):
-        vector<float> horSpeeds = ((AndorCamera*)dataAcqThread.pCamera)->getHorShiftSpeeds();
-        for (int i = 0; i < horSpeeds.size(); ++i){
-            ui.comboBoxHorReadoutRate->addItem(QString().setNum(horSpeeds[i])
-                + " MHz");
-        }
-        ui.comboBoxHorReadoutRate->setCurrentIndex(0);
+    /*    if (isAndor){
+            //fill in horizontal shift speed (i.e. read out rate):
+            vector<float> horSpeeds = ((AndorCamera*)dataAcqThread.pCamera)->getHorShiftSpeeds();
+            for (int i = 0; i < horSpeeds.size(); ++i){
+                ui.comboBoxHorReadoutRate->addItem(QString().setNum(horSpeeds[i])
+                    + " MHz");
+            }
+            ui.comboBoxHorReadoutRate->setCurrentIndex(0);
 
-        //fill in pre-amp gains:
-        vector<float> preAmpGains = ((AndorCamera*)dataAcqThread.pCamera)->getPreAmpGains();
-        for (int i = 0; i < preAmpGains.size(); ++i){
-            ui.comboBoxPreAmpGains->addItem(QString().setNum(preAmpGains[i]));
-        }
-        ui.comboBoxPreAmpGains->setCurrentIndex(preAmpGains.size() - 1);
+            //fill in pre-amp gains:
+            vector<float> preAmpGains = ((AndorCamera*)dataAcqThread.pCamera)->getPreAmpGains();
+            for (int i = 0; i < preAmpGains.size(); ++i){
+                ui.comboBoxPreAmpGains->addItem(QString().setNum(preAmpGains[i]));
+            }
+            ui.comboBoxPreAmpGains->setCurrentIndex(preAmpGains.size() - 1);
 
-        //verify all pre-amp gains available on all hor. shift speeds:
-        for (int horShiftSpeedIdx = 0; horShiftSpeedIdx < horSpeeds.size(); ++horShiftSpeedIdx){
-            for (int preAmpGainIdx = 0; preAmpGainIdx < preAmpGains.size(); ++preAmpGainIdx){
-                int isAvail;
-                //todo: put next func in class AndorCamera
-                IsPreAmpGainAvailable(0, 0, horShiftSpeedIdx, preAmpGainIdx, &isAvail);
-                if (!isAvail){
-                    appendLog("WARNING: not all pre-amp gains available for all readout rates");
-                }
-            }//for, each pre amp gain
-        }//for, each hor. shift speed
+            //verify all pre-amp gains available on all hor. shift speeds:
+            for (int horShiftSpeedIdx = 0; horShiftSpeedIdx < horSpeeds.size(); ++horShiftSpeedIdx){
+                for (int preAmpGainIdx = 0; preAmpGainIdx < preAmpGains.size(); ++preAmpGainIdx){
+                    int isAvail;
+                    //todo: put next func in class AndorCamera
+                    IsPreAmpGainAvailable(0, 0, horShiftSpeedIdx, preAmpGainIdx, &isAvail);
+                    if (!isAvail){
+                        appendLog("WARNING: not all pre-amp gains available for all readout rates");
+                    }
+                }//for, each pre amp gain
+            }//for, each hor. shift speed
 
-        //fill in vert. shift speed combo box
-        vector<float> verSpeeds = ((AndorCamera*)dataAcqThread.pCamera)->getVerShiftSpeeds();
-        for (int i = 0; i < verSpeeds.size(); ++i){
-            ui.comboBoxVertShiftSpeed->addItem(QString().setNum(verSpeeds[i])
-                + " us");
-        }
-        ui.comboBoxVertShiftSpeed->setCurrentIndex(2);
+            //fill in vert. shift speed combo box
+            vector<float> verSpeeds = ((AndorCamera*)dataAcqThread.pCamera)->getVerShiftSpeeds();
+            for (int i = 0; i < verSpeeds.size(); ++i){
+                ui.comboBoxVertShiftSpeed->addItem(QString().setNum(verSpeeds[i])
+                    + " us");
+            }
+            ui.comboBoxVertShiftSpeed->setCurrentIndex(2);
 
-        //fill in vert. clock amplitude combo box:
-        for (int i = 0; i < 5; ++i){
-            QString tstr;
-            if (i == 0) tstr = "0 - Normal";
-            else tstr = QString("+%1").arg(i);
-            ui.comboBoxVertClockVolAmp->addItem(tstr);
-        }
-        ui.comboBoxVertClockVolAmp->setCurrentIndex(0);
+            //fill in vert. clock amplitude combo box:
+            for (int i = 0; i < 5; ++i){
+                QString tstr;
+                if (i == 0) tstr = "0 - Normal";
+                else tstr = QString("+%1").arg(i);
+                ui.comboBoxVertClockVolAmp->addItem(tstr);
+            }
+            ui.comboBoxVertClockVolAmp->setCurrentIndex(0);
 
-    }//if, is andor camera
-*/
-//    else{
-        ui.comboBoxHorReadoutRate->setEnabled(false);
-        ui.comboBoxPreAmpGains->setEnabled(false);
-        ui.comboBoxVertShiftSpeed->setEnabled(false);
-        ui.comboBoxVertClockVolAmp->setEnabled(false);
-//    }
+        }//if, is andor camera
+    */
+    //    else{
+    ui.comboBoxHorReadoutRate->setEnabled(false);
+    ui.comboBoxPreAmpGains->setEnabled(false);
+    ui.comboBoxVertShiftSpeed->setEnabled(false);
+    ui.comboBoxVertClockVolAmp->setEnabled(false);
+    //    }
 
-    ui.spinBoxHend->setValue(camera.getChipWidth());
-    ui.spinBoxVend->setValue(camera.getChipHeight());
+    maxROIHSize = camera.getChipWidth();
+    maxROIVSize = camera.getChipHeight();
+    roiStepsHor = camera.getROIStepsHor();
 
+    if (maxROIHSize == 0) {// this is for GUI test at dummy HW
+        maxROIHSize = 2048;
+        maxROIVSize = 2048;
+        roiStepsHor = 160;
+    }
+    ui.spinBoxHend->setValue(maxROIHSize);
+    ui.spinBoxVend->setValue(maxROIVSize);
+    ui.spinBoxHstart->setMaximum(maxROIHSize);
+    ui.spinBoxVstart->setMaximum(maxROIVSize/2);
+    ui.spinBoxVend->setMinimum(maxROIVSize/2 + 1);
+    ui.spinBoxHend->setMaximum(maxROIHSize);
+    ui.spinBoxVend->setMaximum(maxROIVSize);
+    ui.spinBoxHend->setSingleStep(roiStepsHor);
+    ui.spinBoxHstart->setSingleStep(roiStepsHor);
     updateStatus(eIdle, eNoAction);
 
     //apply the camera setting:
@@ -1217,15 +1232,79 @@ void Imagine::onModified()
     ui.btnApply->setEnabled(modified);
 }
 
+void Imagine::on_spinBoxHstart_editingFinished()
+{
+    int hEndValue = ui.spinBoxHend->value();
+    int newValue = ui.spinBoxHstart->value();
+
+    if ((newValue - 1) % roiStepsHor) {
+        newValue = (int)(newValue / roiStepsHor + 0.5) * roiStepsHor + 1;
+        if (newValue < hEndValue) {
+            appendLog(QString("Invalid number. This value should be n*%1+1").arg(roiStepsHor));
+        }
+        else {
+            newValue = hEndValue - (hEndValue - 2) % roiStepsHor - 1;
+            appendLog(QString("Invalid number. This value should be The value should be n*%1+1 and less than hor. end").arg(roiStepsHor));
+        }
+    }
+    else {
+        if (newValue < hEndValue) {
+            goto setvalue;
+        }
+        else {
+            newValue = hEndValue - (hEndValue - 2) % roiStepsHor - 1;
+            appendLog("Invalid number. This value should be less than hor. end");
+        }
+    }
+    appendLog(QString("The value is corrected as the closest valid number %1").arg(newValue));
+setvalue:
+    ui.spinBoxHstart->setValue(newValue);
+
+}
+
+void Imagine::on_spinBoxHend_editingFinished()
+{
+    int hStartValue = ui.spinBoxHstart->value();
+    int newValue = ui.spinBoxHend->value();
+
+    newValue = maxROIHSize - newValue;
+    if (newValue % roiStepsHor) {
+        newValue = (int)(newValue / roiStepsHor + 0.5) * roiStepsHor;
+        newValue = maxROIHSize - newValue;
+        if (newValue > hStartValue) {
+            appendLog(QString("Invalid number. This value should be (%1 - n*%2)").arg(maxROIHSize).arg(roiStepsHor));
+        }
+        else {
+            newValue = hStartValue + (maxROIHSize - hStartValue) % roiStepsHor;
+            appendLog(QString("Invalid number. This value should be (%1 - n*%2) and grater than hor. start").arg(maxROIHSize).arg(roiStepsHor));
+        }
+    }
+    else {
+        newValue = maxROIHSize - newValue;
+        if (newValue > hStartValue) {
+            goto setvalue;
+        }
+        else {
+            newValue = hStartValue + (maxROIHSize - hStartValue) % roiStepsHor;
+            appendLog(QString("Invalid number. This value should be grater than hor. start").arg(maxROIHSize));
+        }
+    }
+    appendLog(QString("The value is corrected as the closest valid number %1").arg(newValue));
+setvalue:
+    ui.spinBoxHend->setValue(newValue);
+
+}
+
+
 void Imagine::on_spinBoxVstart_valueChanged(int newValue)
 {
-    ui.spinBoxVend->setValue(2049 - newValue);
+    ui.spinBoxVend->setValue(maxROIVSize + 1 - newValue);
 }
 
 
 void Imagine::on_spinBoxVend_valueChanged(int newValue)
 {
-    ui.spinBoxVstart->setValue(2049 - newValue);
+    ui.spinBoxVstart->setValue(maxROIVSize + 1 - newValue);
 }
 
 void Imagine::on_btnApply_clicked()

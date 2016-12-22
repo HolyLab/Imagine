@@ -68,8 +68,8 @@ protected:
 
     int  nFrames;
 
-    int 	chipWidth;       				// dims of
-    int	chipHeight;       				// CCD chip
+    int chipWidth = 0;       				// dims of
+    int	chipHeight = 0;       				// CCD chip
 
     // image Buffers
     PixelValue * pImageArray;	 // main image buffer read from card
@@ -157,6 +157,7 @@ public:
     bool isSpooling() { return spoolingFilename != ""; }
     //string getSpoolingFilename(){return spoolingFilename;}
     virtual bool setSpooling(string filename); //when filename is empty, disable the spooling
+    virtual int getROIStepsHor(void) = 0;
 
     virtual pair<int, int> getGainRange(){ return make_pair(0, 0); }//by default, no gain
 
