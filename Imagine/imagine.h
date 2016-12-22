@@ -147,7 +147,8 @@ private:
     QString m_OpenDialogLastDirectory;
     bool modified;
     bool paramOK;
-
+    int numLaserShutters = 0;
+    int laserShutterIndex[8] = { 0, };
     void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
     void updateStatus(ImagineStatus newStatus, ImagineAction newAction);
     double zpos2voltage(double um); //z-position to piezo voltage
@@ -226,7 +227,6 @@ private slots:
     void updateStatus(const QString &str);
     void appendLog(const QString& msg);
     void updateDisplay(const QByteArray &data16, long idx, int imageW, int imageH);
-    void displayLaserGUI(int numLines, int maxNumLines, int *wavelength);
     void zoom_onMousePressed(QMouseEvent*);
     void zoom_onMouseMoved(QMouseEvent*);
     void zoom_onMouseReleased(QMouseEvent*);
@@ -239,20 +239,37 @@ private slots:
     void on_cbLine2_clicked(bool checked);
     void on_cbLine3_clicked(bool checked);
     void on_cbLine4_clicked(bool checked);
+    void on_cbLine5_clicked(bool checked);
+    void on_cbLine6_clicked(bool checked);
+    void on_cbLine7_clicked(bool checked);
+    void on_cbLine8_clicked(bool checked);
     void on_aotfLine1_sliderMoved();
     void on_aotfLine2_sliderMoved();
     void on_aotfLine3_sliderMoved();
     void on_aotfLine4_sliderMoved();
+    void on_aotfLine5_sliderMoved();
+    void on_aotfLine6_sliderMoved();
+    void on_aotfLine7_sliderMoved();
+    void on_aotfLine8_sliderMoved();
     void on_aotfLine1_sliderReleased();
     void on_aotfLine2_sliderReleased();
     void on_aotfLine3_sliderReleased();
     void on_aotfLine4_sliderReleased();
+    void on_aotfLine5_sliderReleased();
+    void on_aotfLine6_sliderReleased();
+    void on_aotfLine7_sliderReleased();
+    void on_aotfLine8_sliderReleased();
     void displayShutterStatus(int status);
     void displayTransStatus(bool isaotf, int line, int status);
+    void displayLaserGUI(int numLines, int *laserIndex, int *wavelength);
     void on_doubleSpinBox_aotfLine1_valueChanged();
     void on_doubleSpinBox_aotfLine2_valueChanged();
     void on_doubleSpinBox_aotfLine3_valueChanged();
     void on_doubleSpinBox_aotfLine4_valueChanged();
+    void on_doubleSpinBox_aotfLine5_valueChanged();
+    void on_doubleSpinBox_aotfLine6_valueChanged();
+    void on_doubleSpinBox_aotfLine7_valueChanged();
+    void on_doubleSpinBox_aotfLine8_valueChanged();
     // for laser control until this line
     void on_actionSave_Configuration_triggered();
     void on_actionLoad_Configuration_triggered();

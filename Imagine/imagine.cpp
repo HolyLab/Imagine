@@ -258,7 +258,8 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
 
     maxROIHSize = camera.getChipWidth();
     maxROIVSize = camera.getChipHeight();
-    roiStepsHor = camera.getROIStepsHor();
+ //   roiStepsHor = camera.getROIStepsHor(); // OCPI-II return 20
+    roiStepsHor = 160; // OCPI-II return 20
 
     if (maxROIHSize == 0) {// this is for GUI test at dummy HW
         maxROIHSize = 2048;
@@ -395,9 +396,9 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
         connect(this, SIGNAL(getLaserTransStatus(bool, int)), laserCtrlSerial, SLOT(getTransStatus(bool, int)));
         connect(this, SIGNAL(setLaserTrans(bool, int, int)), laserCtrlSerial, SLOT(setTrans(bool, int, int)));
         connect(this, SIGNAL(getLaserLineSetupStatus(void)), laserCtrlSerial, SLOT(getLaserLineSetup(void)));
-        connect(laserCtrlSerial, SIGNAL(getShutterStatusReady(int)), this, SLOT(displayShutterStatus(int)));
-        connect(laserCtrlSerial, SIGNAL(getTransStatusReady(bool, int, int)), this, SLOT(displayTransStatus(bool, int, int)));
-        connect(laserCtrlSerial, SIGNAL(getLaserLineSetupReady(int, int, int *)), this, SLOT(displayLaserGUI(int, int, int *)));
+//        connect(laserCtrlSerial, SIGNAL(getShutterStatusReady(int)), this, SLOT(displayShutterStatus(int)));
+//        connect(laserCtrlSerial, SIGNAL(getTransStatusReady(bool, int, int)), this, SLOT(displayTransStatus(bool, int, int)));
+        connect(laserCtrlSerial, SIGNAL(getLaserLineSetupReady(int, int *, int *)), this, SLOT(displayLaserGUI(int, int *, int *)));
         // run event handler
         laserCtrlThread.start();
         if (laserCtrlSerial) {
@@ -1772,20 +1773,23 @@ void Imagine::displayTransStatus(bool isAotf, int line, int status)
 }
 
 
-void Imagine::displayLaserGUI(int numLines, int maxNumLines, int *wavelength)
+void Imagine::displayLaserGUI(int numLines, int *laserIndex, int *wavelength)
 {
+    numLaserShutters = numLines;
+
     for (int i = 1; i <= numLines; i++) {
+        laserShutterIndex[i - 1] = laserIndex[i - 1];
         QCheckBox *checkBox = ui.groupBoxLaser->findChild<QCheckBox *>(QString("cbLine%1").arg(i));
         QString wl= QString("%1 nm").arg(wavelength[i-1]);
         checkBox->setText(wl);
     }
-    for (int i = numLines + 1; i <= maxNumLines; i++) {
+    for (int i = numLines + 1; i <= 8; i++) {
         QCheckBox *checkBox = ui.groupBoxLaser->findChild<QCheckBox *>(QString("cbLine%1").arg(i));
         QSlider *slider = ui.groupBoxLaser->findChild<QSlider *>(QString("aotfLine%1").arg(i));
         QDoubleSpinBox *spinBox = ui.groupBoxLaser->findChild<QDoubleSpinBox *>(QString("doubleSpinBox_aotfLine%1").arg(i));
-        checkBox->setVisible(false);
-        slider->setVisible(false);
-        spinBox->setVisible(false);
+        if(checkBox) checkBox->setVisible(false);
+        if(slider) slider->setVisible(false);
+        if(spinBox) spinBox->setVisible(false);
     }
 }
 
@@ -1809,8 +1813,14 @@ void Imagine::on_btnOpenPort_clicked()
 
     ui.btnOpenPort->setEnabled(false);
     ui.btnClosePort->setEnabled(true);
-    ui.actionOpenShutter->setEnabled(true);
-    ui.actionCloseShutter->setEnabled(true);
+    if (ui.groupBoxLaser->isChecked()) {
+        ui.actionOpenShutter->setEnabled(false);
+        ui.actionCloseShutter->setEnabled(false);
+    }
+    else {
+        ui.actionOpenShutter->setEnabled(true);
+        ui.actionCloseShutter->setEnabled(false);
+    }
     ui.groupBoxLaser->setEnabled(true);
 
     qDebug() << "Open laser control port " ;
@@ -1841,11 +1851,11 @@ void Imagine::on_btnClosePort_clicked()
 void Imagine::changeLaserShutters(void)
 {
     if (laserCtrlSerial) {
-        bitset<4> bs(0);
-        bs.set(0, ui.cbLine1->isChecked());
-        bs.set(1, ui.cbLine2->isChecked());
-        bs.set(2, ui.cbLine3->isChecked());
-        bs.set(3, ui.cbLine4->isChecked());
+        bitset<8> bs(0);
+        for (int i = 1; i <= numLaserShutters; i++) {
+            QCheckBox *checkBox = ui.groupBoxLaser->findChild<QCheckBox *>(QString("cbLine%1").arg(i));
+            bs.set(laserShutterIndex[i - 1], checkBox->isChecked());
+        }
         int status = bs.to_ulong();
         emit setLaserShutters(status);
     }
@@ -1940,6 +1950,54 @@ void Imagine::on_cbLine4_clicked(bool checked)
     appendLog(str);
 }
 
+
+void Imagine::on_cbLine5_clicked(bool checked)
+{
+    QString str;
+    changeLaserShutters();
+    if (checked)
+        str = QString("Open laser shutter 5");
+    else
+        str = QString("Close laser shutter 5");
+    appendLog(str);
+}
+
+
+void Imagine::on_cbLine6_clicked(bool checked)
+{
+    QString str;
+    changeLaserShutters();
+    if (checked)
+        str = QString("Open laser shutter 6");
+    else
+        str = QString("Close laser shutter 6");
+    appendLog(str);
+}
+
+
+void Imagine::on_cbLine7_clicked(bool checked)
+{
+    QString str;
+    changeLaserShutters();
+    if (checked)
+        str = QString("Open laser shutter 7");
+    else
+        str = QString("Close laser shutter 7");
+    appendLog(str);
+}
+
+
+void Imagine::on_cbLine8_clicked(bool checked)
+{
+    QString str;
+    changeLaserShutters();
+    if (checked)
+        str = QString("Open laser shutter 8");
+    else
+        str = QString("Close laser shutter 8");
+    appendLog(str);
+}
+
 void Imagine::on_aotfLine1_sliderMoved()
 {
     ui.doubleSpinBox_aotfLine1->setValue((double)(ui.aotfLine1->value()) / 10.);
@@ -1958,6 +2016,26 @@ void Imagine::on_aotfLine3_sliderMoved()
 void Imagine::on_aotfLine4_sliderMoved()
 {
     ui.doubleSpinBox_aotfLine4->setValue((double)(ui.aotfLine4->value()) / 10.);
+}
+
+void Imagine::on_aotfLine5_sliderMoved()
+{
+    ui.doubleSpinBox_aotfLine5->setValue((double)(ui.aotfLine5->value()) / 10.);
+}
+
+void Imagine::on_aotfLine6_sliderMoved()
+{
+    ui.doubleSpinBox_aotfLine6->setValue((double)(ui.aotfLine6->value()) / 10.);
+}
+
+void Imagine::on_aotfLine7_sliderMoved()
+{
+    ui.doubleSpinBox_aotfLine7->setValue((double)(ui.aotfLine7->value()) / 10.);
+}
+
+void Imagine::on_aotfLine8_sliderMoved()
+{
+    ui.doubleSpinBox_aotfLine8->setValue((double)(ui.aotfLine8->value()) / 10.);
 }
 
 void Imagine::on_aotfLine1_sliderReleased()
@@ -1984,6 +2062,30 @@ void Imagine::on_aotfLine4_sliderReleased()
     changeLaserTrans(true, 4);
 }
 
+void Imagine::on_aotfLine5_sliderReleased()
+{
+    ui.doubleSpinBox_aotfLine5->setValue((double)(ui.aotfLine5->value()) / 10.);
+    changeLaserTrans(true, 5);
+}
+
+void Imagine::on_aotfLine6_sliderReleased()
+{
+    ui.doubleSpinBox_aotfLine6->setValue((double)(ui.aotfLine6->value()) / 10.);
+    changeLaserTrans(true, 6);
+}
+
+void Imagine::on_aotfLine7_sliderReleased()
+{
+    ui.doubleSpinBox_aotfLine7->setValue((double)(ui.aotfLine7->value()) / 10.);
+    changeLaserTrans(true, 7);
+}
+
+void Imagine::on_aotfLine8_sliderReleased()
+{
+    ui.doubleSpinBox_aotfLine8->setValue((double)(ui.aotfLine8->value()) / 10.);
+    changeLaserTrans(true, 8);
+}
+
 void Imagine::on_doubleSpinBox_aotfLine1_valueChanged()
 {
     ui.aotfLine1->setValue((int)(ui.doubleSpinBox_aotfLine1->value()*10.0));
@@ -2006,6 +2108,30 @@ void Imagine::on_doubleSpinBox_aotfLine4_valueChanged()
 {
     ui.aotfLine4->setValue((int)(ui.doubleSpinBox_aotfLine4->value()*10.0));
     changeLaserTrans(true, 4);
+}
+
+void Imagine::on_doubleSpinBox_aotfLine5_valueChanged()
+{
+    ui.aotfLine5->setValue((int)(ui.doubleSpinBox_aotfLine5->value()*10.0));
+    changeLaserTrans(true, 5);
+}
+
+void Imagine::on_doubleSpinBox_aotfLine6_valueChanged()
+{
+    ui.aotfLine6->setValue((int)(ui.doubleSpinBox_aotfLine6->value()*10.0));
+    changeLaserTrans(true, 6);
+}
+
+void Imagine::on_doubleSpinBox_aotfLine7_valueChanged()
+{
+    ui.aotfLine7->setValue((int)(ui.doubleSpinBox_aotfLine7->value()*10.0));
+    changeLaserTrans(true, 7);
+}
+
+void Imagine::on_doubleSpinBox_aotfLine8_valueChanged()
+{
+    ui.aotfLine8->setValue((int)(ui.doubleSpinBox_aotfLine8->value()*10.0));
+    changeLaserTrans(true, 8);
 }
 
 // -----------------------------------------------------------------------------
@@ -2078,6 +2204,14 @@ void Imagine::writeSettings(QString file)
         WRITE_SETTING(prefs, doubleSpinBox_aotfLine3);
         WRITE_CHECKBOX_SETTING(prefs, cbLine4);
         WRITE_SETTING(prefs, doubleSpinBox_aotfLine4);
+        WRITE_CHECKBOX_SETTING(prefs, cbLine5);
+        WRITE_SETTING(prefs, doubleSpinBox_aotfLine5);
+        WRITE_CHECKBOX_SETTING(prefs, cbLine6);
+        WRITE_SETTING(prefs, doubleSpinBox_aotfLine6);
+        WRITE_CHECKBOX_SETTING(prefs, cbLine7);
+        WRITE_SETTING(prefs, doubleSpinBox_aotfLine7);
+        WRITE_CHECKBOX_SETTING(prefs, cbLine8);
+        WRITE_SETTING(prefs, doubleSpinBox_aotfLine8);
         prefs.endGroup();
     }
 }
@@ -2154,7 +2288,17 @@ void Imagine::readSettings(QString file)
         READ_SETTING(prefs, doubleSpinBox_aotfLine3, ok, d, 50.0, Double);
         READ_BOOL_SETTING(prefs, cbLine4, false); // READ_CHECKBOX_SETTING
         READ_SETTING(prefs, doubleSpinBox_aotfLine4, ok, d, 50.0, Double);
+        READ_BOOL_SETTING(prefs, cbLine5, false); // READ_CHECKBOX_SETTING
+        READ_SETTING(prefs, doubleSpinBox_aotfLine5, ok, d, 50.0, Double);
+        READ_BOOL_SETTING(prefs, cbLine6, false); // READ_CHECKBOX_SETTING
+        READ_SETTING(prefs, doubleSpinBox_aotfLine6, ok, d, 50.0, Double);
+        READ_BOOL_SETTING(prefs, cbLine7, false); // READ_CHECKBOX_SETTING
+        READ_SETTING(prefs, doubleSpinBox_aotfLine7, ok, d, 50.0, Double);
+        READ_BOOL_SETTING(prefs, cbLine8, false); // READ_CHECKBOX_SETTING
+        READ_SETTING(prefs, doubleSpinBox_aotfLine8, ok, d, 50.0, Double);
         prefs.endGroup();
+        ui.groupBoxLaser->setChecked(false);
+        on_actionCloseShutter_triggered();
     }
 }
 

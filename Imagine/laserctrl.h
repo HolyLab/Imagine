@@ -32,6 +32,7 @@ private:
 
 public:
     int wavelength[MAX_NUM_WAVELENGTH] = { 0, };
+    int laserIndex[MAX_NUM_WAVELENGTH] = { 0, };
     int numLines = 0;
     LaserCtrlSerial(const QString dev);
     ~LaserCtrlSerial();
@@ -41,6 +42,8 @@ public:
     QString getPortName(void) { return portName; };
     QByteArray readLaserLineSetup(void);
     int getMAXnumLines(void) { return MAX_NUM_WAVELENGTH; };
+    int getLaserIndex(int i);
+    int getNumLines(void);
 
 public slots:
     void openSerialPort(QString portName);
@@ -55,7 +58,7 @@ public slots:
 signals:
     void getShutterStatusReady(int result);
     void getTransStatusReady(bool isAotf, int line, int status);
-    void getLaserLineSetupReady(int numLines, int maxNumLines, int *wavelength);
+    void getLaserLineSetupReady(int numLines, int *laserIndex, int *wavelength);
 };
 
 #endif //LASERCTRL_H

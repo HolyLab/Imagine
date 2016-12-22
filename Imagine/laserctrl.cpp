@@ -69,9 +69,6 @@ void LaserCtrlSerial::openSerialPort(QString portName)
 
 readLaserStatus:
     isPortOpened = true;
-    getShutterStatus();
-    for (int i = 1; i <= 4;i++)
-        getTransStatus(true, i);
     qDebug() << "open device success";
     return;
 
@@ -95,10 +92,14 @@ int LaserCtrlSerial::readShutterStatus()
 
     tx = "02\r";
     int nWritten = 1;
+    bool isData;
     if (port != NULL) nWritten = port->write(tx);
-    qDebug() << "Writed is : " << nWritten << " bytes";
+    if (port->waitForBytesWritten(50))
+        qDebug() << "Writed is : " << nWritten << " bytes";
     if (port != NULL) {
-        port->waitForReadyRead(50);
+        do {
+            isData = port->waitForReadyRead(500);
+        } while (isData);
         rx = port->readAll();
     }
     else
@@ -124,14 +125,18 @@ void LaserCtrlSerial::getTransStatus(bool isAotf, int line)
    int op=isAotf?5:7;
    tx=QString("0%1%2\r").arg(op).arg(line-1, 2, 16, QChar('0')).toLatin1();
    int nWritten = 2;
+   bool isData;
    if (port != NULL) nWritten = port->write(tx);
-   qDebug() << "Writed is : " << nWritten << " bytes";
+   if (port->waitForBytesWritten(50))
+       qDebug() << "Writed is : " << nWritten << " bytes";
    if (port != NULL) {
-        port->waitForReadyRead(50);
-        rx = port->readAll();
+       do {
+           isData = port->waitForReadyRead(500);
+       } while (isData);
+       rx = port->readAll();
    }
    else
-        rx = "0501F4";
+       rx = "0501F4";
    qDebug() << "Readed is : " << rx.size() << " bytes";
 
    bool ok;
@@ -180,16 +185,20 @@ QByteArray LaserCtrlSerial::readLaserLineSetup(void)
 
     tx = "08\r";
     int nWritten = 1;
+    bool isData;
     if (port != NULL) nWritten = port->write(tx);
-    qDebug() << "Writed is : " << nWritten << " bytes";
+    if(port->waitForBytesWritten(50))
+        qDebug() << "Writed is : " << nWritten << " bytes";
     if (port != NULL) {
-        port->waitForReadyRead(50);
-        rx = port->readAll();
+        do{ 
+            isData = port->waitForReadyRead(500);
+        } while (isData);
+         rx = port->readAll();
     }
     else
         rx = "080FD2131015EA18EC0014100E0000";
 
-    /*
+    /* 08 1310 15EA 0FD2 1162 1414 0014 00000000 (is for OCPI-II)
     0x080FD2131015EA18EC00000000:
     The device has four lines with wavelengths 405 (0x0FD2), 488 (0x1310), 561 (0x15EA), 638
     (0x18EC) nm. The fifth line is zero (not used). The sixth line is zero, so stop counting. This is a
@@ -221,12 +230,23 @@ void LaserCtrlSerial::getLaserLineSetup(void)
     
     for(int i = 0; i < MAX_NUM_WAVELENGTH; i++) {
         int wl = result.mid(i * 4, 4).toInt(&ok, 16)/10;
-        if (wl > 0) {
+        if (wl > 100) {
             wavelength[i] = wl;
+            laserIndex[numLines] = i;
             numLines++;
         }
         else if (wl == 0)
             break;
     }
-    emit getLaserLineSetupReady(numLines, MAX_NUM_WAVELENGTH, wavelength);
+    emit getLaserLineSetupReady(numLines, laserIndex, wavelength);
+}
+
+int LaserCtrlSerial::getLaserIndex(int i)
+{
+    return laserIndex[i];
+}
+
+int LaserCtrlSerial::getNumLines(void)
+{
+    return numLines;
 }
