@@ -411,6 +411,9 @@ nextStack:  //code below is repeated every stack
 
     bool isPiezo = hasPos && pPositioner->posType == PiezoControlPositioner;
 
+    double curTime = gt.read();
+    OutputDebugStringW((wstring(L"Duration before starting cam and piezo:") + to_wstring(int((curTime - stackStartTime)*1000)) + wstring(L"\n")).c_str());
+
     //raise priority here to ensure that the camera and piezo begin (nearly) simultaneously
     QThread::setPriority(QThread::TimeCriticalPriority);
 
@@ -457,6 +460,8 @@ nextStack:  //code below is repeated every stack
     emit newStatusMsgReady(QString("Camera: started acq: %1")
         .arg(camera.getErrorMsg().c_str()));
 
+    double curTime2 = gt.read();
+    OutputDebugStringW((wstring(L"Duration of starting cam and piezo:") + to_wstring(int((curTime2 - curTime) * 1000)) + wstring(L"\n")).c_str());
 
     long nFramesGotForStack;
     while (!stopRequested) {
@@ -482,6 +487,9 @@ nextStack:  //code below is repeated every stack
         }
     }//while, camera is not idle
 
+    double curTime3 = gt.read();
+    OutputDebugStringW((wstring(L"Duration before stack end detected:") + to_wstring(int((curTime3 - curTime2) * 1000)) + wstring(L"\n")).c_str());
+
 
     //get the last frame if nec
     /*
@@ -498,6 +506,10 @@ nextStack:  //code below is repeated every stack
     //close laser shutter
     digOut->updateOutputBuf(4, false);
     digOut->write();
+
+    double curTime32 = gt.read();
+    OutputDebugStringW((wstring(L"Duration of digout for laser:") + to_wstring(int((curTime32 - curTime3) * 1000)) + wstring(L"\n")).c_str());
+
     /*
     {
         QScriptValue jsFunc = se->globalObject().property("onShutterClose");
@@ -515,6 +527,7 @@ nextStack:  //code below is repeated every stack
         fireStimulus(stimuli[curStimIndex].first);
     }//if, should update stimulus
 
+/*
     if (!isUseSpool) {
         //get camera's data:
         bool result = camera.transferData();
@@ -524,7 +537,7 @@ nextStack:  //code below is repeated every stack
             return;
         }
     }
-
+*/
     /*
     if (!startCameraOnce) {
         cout << "b4 stop camera: " << gt.read() << endl;
@@ -532,18 +545,23 @@ nextStack:  //code below is repeated every stack
         cout << "after stop camera: " << gt.read() << endl;
     }
     */
-
+/*
     if (hasPos && ownPos) {
         cout << "b4 wait piezo: " << gt.read() << endl;
         //genSquareSpike(50);
         pPositioner->waitCmd();
         cout << "after wait piezo: " << gt.read() << endl;
     }
+*/
     //genSquareSpike(70);
 
     //TMP: trigger off camera
     //digOut->updateOutputBuf(5,false);
     //digOut->write();
+
+    double curTime4 = gt.read();
+    OutputDebugStringW((wstring(L"Duration from stack end detected to begin wait:") + to_wstring(int((curTime4 - curTime3) * 1000)) + wstring(L"\n")).c_str());
+
 
 
     if (idxCurStack < this->nStacks && !stopRequested) {
@@ -552,9 +570,9 @@ nextStack:  //code below is repeated every stack
             preparePositioner(idxCurStack % 2 == 0);
             cout << "after preparePositioner: " << gt.read() << endl;
         }
-        double currentTime = gt.read();
+        //double currentTime = gt.read();
         double stackEndingTime = gt.read();
-        double timeToWait = (timePerStack+idleTimeBwtnStacks)*idxCurStack - currentTime;
+        double timeToWait = (timePerStack + idleTimeBwtnStacks)*idxCurStack - stackEndingTime;
         OutputDebugStringW((wstring(L"Waiting for ") + to_wstring(int(timeToWait*1000)) + wstring(L" milliseconds to start next stack\n")).c_str());
 
         if ((timeToWait < 0) && ownPos) {

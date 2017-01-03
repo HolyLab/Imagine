@@ -426,7 +426,7 @@ bool CookeCamera::nextStack()
 
 bool CookeCamera::stopAcqFinal()
 {
-    assert(workerThread->isPaused); //TODO: should use a wait instead
+    //assert(workerThread->isPaused); //TODO: should use a wait instead // unneeded?
     //not rely on the "wait abandon"!!!
     workerThread->requestStop();
     spoolThread->requestStop();
