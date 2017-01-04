@@ -91,11 +91,19 @@ public:
     ~CookeWorkerThread(){}
 
     void requestStop(){
-        shouldPause = true;
-        while (!isPaused) msleep(100); //this shouldn't affect performance because it's only called when stopping the entire recording
+        //shouldPause = true;
+        //while (!isPaused) msleep(100); //this shouldn't affect performance because it's only called when stopping the entire recording
         shouldStop = true;
         isPaused = false;
+        msleep(200);
         unPaused.wakeAll();
+    }
+
+    void pauseUntilWake() {
+        isPaused = true;
+        unPauseLock.lock();
+        unPaused.wait(&unPauseLock);
+        unPauseLock.unlock();
     }
 
     void nextStack() {
@@ -103,9 +111,10 @@ public:
         shouldPause = false;
         isPaused = false;
         unPaused.wakeAll();
-        camera->isRecording = true;
+        //camera->isRecording = true;
         camera->safe_pco(PCO_SetRecordingState(camera->hCamera, 1), "failed to start camera recording"); //1: run
     }
+
 
     void run(){
         long nEvents = 0;
@@ -165,7 +174,7 @@ public:
                 //todo: should we try to keep going? SEE: CSC2Class::SC2Thread()
             startTime = gt.read();
             //TODO: the two conditionals below are repeated in prepareNextEvent.  A bit ugly, could improve.
-            if (shouldStop) break;
+            if (shouldStop) break; 
             /*
             if (shouldPause) {
                 camera->safe_pco(PCO_CancelImages(camera->hCamera), "failed to stop camera");
@@ -239,10 +248,7 @@ public:
                 camera->safe_pco(PCO_CancelImages(camera->hCamera), "failed to stop camera");
                 camera->safe_pco(PCO_SetRecordingState(camera->hCamera, 0), "failed to stop camera recording");// stop recording
                 prepareNextStack();
-                isPaused = true;
-                unPauseLock.lock();
-                unPaused.wait(&unPauseLock);
-                unPauseLock.unlock();
+                pauseUntilWake();
                 continue;
             }
             else {
@@ -283,7 +289,6 @@ public:
             //reset event
             //ResetEvent(camera->mEvent[eventIdx]);
 
-            if (shouldStop) break;
             /*
             if (shouldPause) {
                 camera->safe_pco(PCO_CancelImages(camera->hCamera), "failed to stop camera");

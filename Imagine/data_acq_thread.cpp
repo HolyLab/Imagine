@@ -380,13 +380,14 @@ nextStack:  //code below is repeated every stack
     digOut->write();
     //cout<<"b4 open laser(js call): "<<gTimer.read()<<endl;
     {
-        QScriptValue jsFunc = se->globalObject().property("onShutterOpen");
-        if (jsFunc.isFunction()) {
-            //   below code was disabled because it (rarely) caused the following error:
-            //  Unhandled exception at 0x000007FEE019F326 (Qt5Scriptd.dll) in Imagine.exe: 0xC0000005: Access violation writing location 0x00000000BBADBEEF.
+        //   below code was disabled because it (rarely) caused the following error:
+        //  Unhandled exception at 0x000007FEE019F326 (Qt5Scriptd.dll) in Imagine.exe: 0xC0000005: Access violation writing location 0x00000000BBADBEEF.
+        //QScriptValue jsFunc = se->globalObject().property("onShutterOpen");
+        //if (jsFunc.isFunction()) {
+            
             //   se->globalObject().setProperty("currentStackIndex", idxCurStack);
             //   jsFunc.call();
-        }
+       // }
     }
 
     cout << "after open laser: " << gt.read() << endl;
