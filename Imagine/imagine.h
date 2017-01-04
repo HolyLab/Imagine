@@ -18,6 +18,8 @@
 
 #include <QtWidgets/QMainWindow>
 #include <QTimer>
+#include <QThread>
+#include <QSettings>
 
 
 class QScrollArea;
@@ -35,6 +37,53 @@ class QwtPlotHistogramItem;
 #include "timer_g.hpp"
 #include "Pixmapper.h"
 #include <qwt_plot_histogram.h>
+#include "laserctrl.h"
+
+#define READ_STRING_SETTING(prefs, var, emptyValue)\
+  ui.##var->setText( prefs.value(#var).toString() );\
+  if (ui.##var->text().isEmpty() == true) { ui.##var->setText(emptyValue); }
+
+#define READ_SETTING(prefs, var, ok, temp, default, type)\
+  ok = false;\
+  temp = prefs.value(#var).to##type(&ok);\
+  if (false == ok) {temp = default;}\
+  ui.##var->setValue(temp);
+
+#define READ_VALUE(prefs, var, ok, temp, default, type)\
+  ok = false;\
+  temp = prefs.value(#var).to##type(&ok);\
+  if (false == ok) {temp = default;}\
+  ui.##var = temp;
+
+#define WRITE_STRING_SETTING(prefs, var)\
+  prefs.setValue(#var , ui.##var->text());
+
+#define WRITE_SETTING(prefs, var)\
+  prefs.setValue(#var, ui.##var->value());
+
+#define WRITE_COMBO_SETTING(prefs, var)\
+  prefs.setValue(#var, ui.##var->currentIndex());
+
+#define READ_COMBO_SETTING(prefs, var, emptyValue)\
+  { QString s = prefs.value(#var).toString();\
+  if (s.isEmpty() == false) {\
+    bool ok = false; int bb = prefs.value(#var).toInt(&ok);\
+  ui.##var->setCurrentIndex(bb); } else { ui.##var->setCurrentIndex(emptyValue); } }
+
+#define READ_BOOL_SETTING(prefs, var, emptyValue)\
+  { QString s = prefs.value(#var).toString();\
+  if (s.isEmpty() == false) {\
+    bool bb = prefs.value(#var).toBool();\
+  ui.##var->setChecked(bb); } else { ui.##var->setChecked(emptyValue); } }
+
+#define WRITE_BOOL_SETTING(prefs, var, b)\
+    prefs.setValue(#var, (b) );
+
+#define WRITE_CHECKBOX_SETTING(prefs, var)\
+    prefs.setValue(#var, ui.##var->isChecked() );
+
+#define WRITE_VALUE(prefs, var)\
+    prefs.setValue(#var, ui.##var);
 
 enum ImagineStatus { eIdle = 0, eRunning, eStopping };
 enum ImagineAction { eNoAction = 0, eAcqAndSave, eLive };
@@ -50,8 +99,9 @@ class Imagine : public QMainWindow
 {
     Q_OBJECT
     QThread pixmapperThread;
+    QThread laserCtrlThread;
 public:
-    Imagine(Camera *cam, Positioner *pos = NULL, Imagine *mImagine = NULL,
+    Imagine(Camera *cam, Positioner *pos = NULL, Laser *laser = NULL, Imagine *mImagine = NULL,
         QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~Imagine();
     DataAcqThread dataAcqThread;
@@ -66,6 +116,13 @@ public:
     int lastImgH = 0;
     int lastImgW = 0;
     double factor = 0.0;
+    int maxROIHSize;
+    int maxROIVSize;
+    int roiStepsHor;
+
+    // for laser control from this line
+    LaserCtrlSerial *laserCtrlSerial = nullptr;
+    // for laser control until this line
 
     // display coords in the unit of original image
     int L = -1;
@@ -87,9 +144,11 @@ private:
     QwtPlotCurve *intenCurve;
     //    CurveData *intenCurveData;
     vector<PiezoUiParam> piezoUiParams;
+    QString m_OpenDialogLastDirectory;
     bool modified;
     bool paramOK;
-
+    int numLaserShutters = 0;
+    int laserShutterIndex[8] = { 0, };
     void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
     void updateStatus(ImagineStatus newStatus, ImagineAction newAction);
     double zpos2voltage(double um); //z-position to piezo voltage
@@ -103,6 +162,15 @@ private:
     bool loadPreset();
     void preparePlots();
     QPoint calcPos(const QPoint& pos);
+
+    // for laser control from this line
+    void changeLaserShutters(void);
+    void changeLaserTrans(bool isAotf, int line);
+    // for laser control until this line
+    void writeSettings(QString file);
+    void readSettings(QString file);
+    void writeComments(QString file);
+    void readComments(QString file);
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();
@@ -120,6 +188,10 @@ private slots:
     void on_btnSelectFile_clicked();
     void on_btnOpenStimFile_clicked();
     void on_btnApply_clicked();
+    void on_spinBoxHstart_editingFinished();
+    void on_spinBoxHend_editingFinished();
+    void on_spinBoxVstart_valueChanged(int newValue);
+    void on_spinBoxVend_valueChanged(int newValue);
     void on_btnFullChipSize_clicked();
     void on_btnUseZoomWindow_clicked();
     void on_actionStartAcqAndSave_triggered();
@@ -158,6 +230,50 @@ private slots:
     void zoom_onMousePressed(QMouseEvent*);
     void zoom_onMouseMoved(QMouseEvent*);
     void zoom_onMouseReleased(QMouseEvent*);
+
+    // for laser control from this line
+    void on_groupBoxLaser_clicked(bool checked);
+    void on_btnOpenPort_clicked();
+    void on_btnClosePort_clicked();
+    void on_cbLine1_clicked(bool checked);
+    void on_cbLine2_clicked(bool checked);
+    void on_cbLine3_clicked(bool checked);
+    void on_cbLine4_clicked(bool checked);
+    void on_cbLine5_clicked(bool checked);
+    void on_cbLine6_clicked(bool checked);
+    void on_cbLine7_clicked(bool checked);
+    void on_cbLine8_clicked(bool checked);
+    void on_aotfLine1_sliderMoved();
+    void on_aotfLine2_sliderMoved();
+    void on_aotfLine3_sliderMoved();
+    void on_aotfLine4_sliderMoved();
+    void on_aotfLine5_sliderMoved();
+    void on_aotfLine6_sliderMoved();
+    void on_aotfLine7_sliderMoved();
+    void on_aotfLine8_sliderMoved();
+    void on_aotfLine1_sliderReleased();
+    void on_aotfLine2_sliderReleased();
+    void on_aotfLine3_sliderReleased();
+    void on_aotfLine4_sliderReleased();
+    void on_aotfLine5_sliderReleased();
+    void on_aotfLine6_sliderReleased();
+    void on_aotfLine7_sliderReleased();
+    void on_aotfLine8_sliderReleased();
+    void displayShutterStatus(int status);
+    void displayTransStatus(bool isaotf, int line, int status);
+    void displayLaserGUI(int numLines, int *laserIndex, int *wavelength);
+    void on_doubleSpinBox_aotfLine1_valueChanged();
+    void on_doubleSpinBox_aotfLine2_valueChanged();
+    void on_doubleSpinBox_aotfLine3_valueChanged();
+    void on_doubleSpinBox_aotfLine4_valueChanged();
+    void on_doubleSpinBox_aotfLine5_valueChanged();
+    void on_doubleSpinBox_aotfLine6_valueChanged();
+    void on_doubleSpinBox_aotfLine7_valueChanged();
+    void on_doubleSpinBox_aotfLine8_valueChanged();
+    // for laser control until this line
+    void on_actionSave_Configuration_triggered();
+    void on_actionLoad_Configuration_triggered();
+
 public:
     Ui::ImagineClass ui;
 public slots:
@@ -169,6 +285,17 @@ signals:
         const int dLeft, const int dTop, const int dWidth, const int dHeight,
         const int xDown, const int xCur, const int yDown, const int yCur,
         const int minPixVal, const int maxPixVal, bool colorizeSat);
+
+    // for laser control from this line
+    void openLaserSerialPort(QString portName);
+    void closeLaserSerialPort(void);
+    void getLaserShutterStatus(void);
+    void setLaserShutter(int line, bool isOpen);
+    void setLaserShutters(int status);
+    void getLaserTransStatus(bool isAotf, int line);
+    void setLaserTrans(bool isAotf, int line, int value);
+    void getLaserLineSetupStatus(void);
+    // for laser control until this line
 };
 
 #endif // IMAGINE_H

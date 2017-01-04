@@ -45,7 +45,7 @@ using namespace std;
 
 #include "sc2_common.h"
 #include "sc2_camexport.h"
-
+#include "laserctrl.h"
 
 extern QScriptEngine* se;
 extern DaqDo* digOut;
@@ -267,6 +267,9 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
+	else {	// daewoo : for testing two window GUI for dummy cameras
+		nCams = 1;  // set as the number of window <= 2
+	}
 
     Camera *cam2 = nullptr;
     if (nCams > 1) {
@@ -283,19 +286,26 @@ int main(int argc, char *argv[])
             QMessageBox::critical(0, "Imagine", "Unsupported camera.", QMessageBox::Ok, QMessageBox::NoButton);
             return 1;
         }
-        if (!cam2->init()){
-            splash->showMessage("Failed to initialize camera 1.", align, col);
-            QMessageBox::critical(splash, "Imagine", "Failed to initialize camera 1.",
-                QMessageBox::Ok, QMessageBox::NoButton);
-            return 1;
+        if (cameraVendor != "dummy") { // daewoo : for testing two window GUI for dummy cameras
+            if (!cam2->init()) {
+                splash->showMessage("Failed to initialize camera 2.", align, col);
+                QMessageBox::critical(splash, "Imagine", "Failed to initialize camera 2.",
+                    QMessageBox::Ok, QMessageBox::NoButton);
+                return 1;
+            }
         }
     }
+
+    // Laser
+    Laser *laser = nullptr;
+    if (rig == "ocpi-2") laser = new Laser("spectral");
+    else laser = new Laser("dummy");
 
     // get rid of the status message
     delete splash;
 
     // init and show the ui
-    a.initUI(cam1, pos, cam2);
+    a.initUI(cam1, pos, laser, cam2);
     a.showUi();
 
     // go!

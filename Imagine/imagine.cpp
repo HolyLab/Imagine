@@ -57,6 +57,8 @@ using namespace std;
 #include "positioner.hpp"
 #include "timer_g.hpp"
 #include "spoolthread.h"
+#include <bitset>
+using std::bitset;
 
 //TemperatureDialog * temperatureDialog = NULL;
 //FanCtrlDialog* fanCtrlDialog = NULL;
@@ -74,9 +76,10 @@ int nUpdateImage;
 
 #pragma region LIFECYCLE
 
-Imagine::Imagine(Camera *cam, Positioner *pos, Imagine *mImagine, QWidget *parent, Qt::WindowFlags flags)
+Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
 {
+    m_OpenDialogLastDirectory = QDir::homePath();
     masterImagine = mImagine;
     // pass the camera and positioner to the dataAcqThread
     dataAcqThread.setCamera(cam);
@@ -115,13 +118,12 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Imagine *mImagine, QWidget *paren
     //TODO: temp hide shutter and AI tabs
     //ui.tabAI->hide();  //doesn't work
     //ui.tabWidgetCfg->setTabEnabled(4,false); //may confuse user
-    ui.tabWidgetCfg->removeTab(5); //shutter
-    ui.tabWidgetCfg->removeTab(5); //now ai becomes 5,  so tab ai is removed as well.
-	//remove positioner tab from slave window
-	//TODO: Give stimulus tab the same treatment (It's in position #3)
-	if (masterImagine != NULL) {
-		ui.tabWidgetCfg->removeTab(4);
-	}
+    ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabAI));
+    //remove positioner tab from slave window
+    //TODO: Give stimulus tab the same treatment (It's in position #3)
+    if (masterImagine != NULL) {
+        ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabPiezo));
+    }
 
     //adjust size
     QRect tRect = geometry();
@@ -175,7 +177,7 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Imagine *mImagine, QWidget *paren
     }
 
     //trigger mode combo box
-    if (pos != NULL && pos->posType == ActuatorPositioner){
+    if (pos != NULL && pos->posType == ActuatorPositioner) {
         ui.comboBoxAcqTriggerMode->setEnabled(false);
         ui.comboBoxAcqTriggerMode->setCurrentIndex(1);
     }
@@ -185,7 +187,7 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Imagine *mImagine, QWidget *paren
     bool isAndor = camera.vendor == "andor";
     bool isAvt = camera.vendor == "avt";
 
-    if (isAvt){
+    if (isAvt) {
         ui.actionFlickerControl->setChecked(true);
     }
 
@@ -200,63 +202,79 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Imagine *mImagine, QWidget *paren
         ui.spinBoxGain->setMaximum(gainRange.second);
     }
 
-/*    if (isAndor){
-        //fill in horizontal shift speed (i.e. read out rate):
-        vector<float> horSpeeds = ((AndorCamera*)dataAcqThread.pCamera)->getHorShiftSpeeds();
-        for (int i = 0; i < horSpeeds.size(); ++i){
-            ui.comboBoxHorReadoutRate->addItem(QString().setNum(horSpeeds[i])
-                + " MHz");
-        }
-        ui.comboBoxHorReadoutRate->setCurrentIndex(0);
+    /*    if (isAndor){
+            //fill in horizontal shift speed (i.e. read out rate):
+            vector<float> horSpeeds = ((AndorCamera*)dataAcqThread.pCamera)->getHorShiftSpeeds();
+            for (int i = 0; i < horSpeeds.size(); ++i){
+                ui.comboBoxHorReadoutRate->addItem(QString().setNum(horSpeeds[i])
+                    + " MHz");
+            }
+            ui.comboBoxHorReadoutRate->setCurrentIndex(0);
 
-        //fill in pre-amp gains:
-        vector<float> preAmpGains = ((AndorCamera*)dataAcqThread.pCamera)->getPreAmpGains();
-        for (int i = 0; i < preAmpGains.size(); ++i){
-            ui.comboBoxPreAmpGains->addItem(QString().setNum(preAmpGains[i]));
-        }
-        ui.comboBoxPreAmpGains->setCurrentIndex(preAmpGains.size() - 1);
+            //fill in pre-amp gains:
+            vector<float> preAmpGains = ((AndorCamera*)dataAcqThread.pCamera)->getPreAmpGains();
+            for (int i = 0; i < preAmpGains.size(); ++i){
+                ui.comboBoxPreAmpGains->addItem(QString().setNum(preAmpGains[i]));
+            }
+            ui.comboBoxPreAmpGains->setCurrentIndex(preAmpGains.size() - 1);
 
-        //verify all pre-amp gains available on all hor. shift speeds:
-        for (int horShiftSpeedIdx = 0; horShiftSpeedIdx < horSpeeds.size(); ++horShiftSpeedIdx){
-            for (int preAmpGainIdx = 0; preAmpGainIdx < preAmpGains.size(); ++preAmpGainIdx){
-                int isAvail;
-                //todo: put next func in class AndorCamera
-                IsPreAmpGainAvailable(0, 0, horShiftSpeedIdx, preAmpGainIdx, &isAvail);
-                if (!isAvail){
-                    appendLog("WARNING: not all pre-amp gains available for all readout rates");
-                }
-            }//for, each pre amp gain
-        }//for, each hor. shift speed
+            //verify all pre-amp gains available on all hor. shift speeds:
+            for (int horShiftSpeedIdx = 0; horShiftSpeedIdx < horSpeeds.size(); ++horShiftSpeedIdx){
+                for (int preAmpGainIdx = 0; preAmpGainIdx < preAmpGains.size(); ++preAmpGainIdx){
+                    int isAvail;
+                    //todo: put next func in class AndorCamera
+                    IsPreAmpGainAvailable(0, 0, horShiftSpeedIdx, preAmpGainIdx, &isAvail);
+                    if (!isAvail){
+                        appendLog("WARNING: not all pre-amp gains available for all readout rates");
+                    }
+                }//for, each pre amp gain
+            }//for, each hor. shift speed
 
-        //fill in vert. shift speed combo box
-        vector<float> verSpeeds = ((AndorCamera*)dataAcqThread.pCamera)->getVerShiftSpeeds();
-        for (int i = 0; i < verSpeeds.size(); ++i){
-            ui.comboBoxVertShiftSpeed->addItem(QString().setNum(verSpeeds[i])
-                + " us");
-        }
-        ui.comboBoxVertShiftSpeed->setCurrentIndex(2);
+            //fill in vert. shift speed combo box
+            vector<float> verSpeeds = ((AndorCamera*)dataAcqThread.pCamera)->getVerShiftSpeeds();
+            for (int i = 0; i < verSpeeds.size(); ++i){
+                ui.comboBoxVertShiftSpeed->addItem(QString().setNum(verSpeeds[i])
+                    + " us");
+            }
+            ui.comboBoxVertShiftSpeed->setCurrentIndex(2);
 
-        //fill in vert. clock amplitude combo box:
-        for (int i = 0; i < 5; ++i){
-            QString tstr;
-            if (i == 0) tstr = "0 - Normal";
-            else tstr = QString("+%1").arg(i);
-            ui.comboBoxVertClockVolAmp->addItem(tstr);
-        }
-        ui.comboBoxVertClockVolAmp->setCurrentIndex(0);
+            //fill in vert. clock amplitude combo box:
+            for (int i = 0; i < 5; ++i){
+                QString tstr;
+                if (i == 0) tstr = "0 - Normal";
+                else tstr = QString("+%1").arg(i);
+                ui.comboBoxVertClockVolAmp->addItem(tstr);
+            }
+            ui.comboBoxVertClockVolAmp->setCurrentIndex(0);
 
-    }//if, is andor camera
-*/
-//    else{
-        ui.comboBoxHorReadoutRate->setEnabled(false);
-        ui.comboBoxPreAmpGains->setEnabled(false);
-        ui.comboBoxVertShiftSpeed->setEnabled(false);
-        ui.comboBoxVertClockVolAmp->setEnabled(false);
-//    }
+        }//if, is andor camera
+    */
+    //    else{
+    ui.comboBoxHorReadoutRate->setEnabled(false);
+    ui.comboBoxPreAmpGains->setEnabled(false);
+    ui.comboBoxVertShiftSpeed->setEnabled(false);
+    ui.comboBoxVertClockVolAmp->setEnabled(false);
+    //    }
 
-    ui.spinBoxHend->setValue(camera.getChipWidth());
-    ui.spinBoxVend->setValue(camera.getChipHeight());
+    maxROIHSize = camera.getChipWidth();
+    maxROIVSize = camera.getChipHeight();
+ //   roiStepsHor = camera.getROIStepsHor(); // OCPI-II return 20
+    roiStepsHor = 160; // OCPI-II return 20
 
+    if (maxROIHSize == 0) {// this is for GUI test at dummy HW
+        maxROIHSize = 2048;
+        maxROIVSize = 2048;
+        roiStepsHor = 160;
+    }
+    ui.spinBoxHend->setValue(maxROIHSize);
+    ui.spinBoxVend->setValue(maxROIVSize);
+    ui.spinBoxHstart->setMaximum(maxROIHSize);
+    ui.spinBoxVstart->setMaximum(maxROIVSize/2);
+    ui.spinBoxVend->setMinimum(maxROIVSize/2 + 1);
+    ui.spinBoxHend->setMaximum(maxROIHSize);
+    ui.spinBoxVend->setMaximum(maxROIVSize);
+    ui.spinBoxHend->setSingleStep(roiStepsHor);
+    ui.spinBoxHstart->setSingleStep(roiStepsHor);
     updateStatus(eIdle, eNoAction);
 
     //apply the camera setting:
@@ -359,6 +377,40 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Imagine *mImagine, QWidget *paren
     int y = (rect.height() - this->height()) / 2;
     this->move(x, y);
 
+    /* for laser control from this line */
+    // pass laser object to a new thread
+    if (masterImagine == NULL) {
+        QString portName;
+        if (laser->getDeviceName() == "spectral")
+            portName = QString("COM%1").arg(ui.spinBoxPortNum->value());
+        else
+            portName = "DummyPort";
+        laserCtrlSerial = new LaserCtrlSerial(portName);
+        laserCtrlSerial->moveToThread(&laserCtrlThread);
+        // connect signals
+        connect(&laserCtrlThread, SIGNAL(finished()), laserCtrlSerial, SLOT(deleteLater()));
+        connect(this, SIGNAL(openLaserSerialPort(QString)), laserCtrlSerial, SLOT(openSerialPort(QString)));
+        connect(this, SIGNAL(closeLaserSerialPort(void)), laserCtrlSerial, SLOT(closeSerialPort(void)));
+        connect(this, SIGNAL(getLaserShutterStatus(void)), laserCtrlSerial, SLOT(getShutterStatus(void)));
+        connect(this, SIGNAL(setLaserShutters(int)), laserCtrlSerial, SLOT(setShutters(int)));
+        connect(this, SIGNAL(getLaserTransStatus(bool, int)), laserCtrlSerial, SLOT(getTransStatus(bool, int)));
+        connect(this, SIGNAL(setLaserTrans(bool, int, int)), laserCtrlSerial, SLOT(setTrans(bool, int, int)));
+        connect(this, SIGNAL(getLaserLineSetupStatus(void)), laserCtrlSerial, SLOT(getLaserLineSetup(void)));
+//        connect(laserCtrlSerial, SIGNAL(getShutterStatusReady(int)), this, SLOT(displayShutterStatus(int)));
+//        connect(laserCtrlSerial, SIGNAL(getTransStatusReady(bool, int, int)), this, SLOT(displayTransStatus(bool, int, int)));
+        connect(laserCtrlSerial, SIGNAL(getLaserLineSetupReady(int, int *, int *)), this, SLOT(displayLaserGUI(int, int *, int *)));
+        // run event handler
+        laserCtrlThread.start();
+        if (laserCtrlSerial) {
+            emit openLaserSerialPort(portName);
+            emit getLaserLineSetupStatus();
+            emit setLaserShutters(0);
+        }
+    }
+    else {
+        ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabLaser));
+    }
+    /* for laser control until this line */
 }
 
 Imagine::~Imagine()
@@ -372,6 +424,11 @@ Imagine::~Imagine()
     pixmapperThread.quit();
     pixmapperThread.wait();
     //delete(pixmapper);
+
+    // for laser control from this line
+    laserCtrlThread.quit();
+    laserCtrlThread.wait();
+    // for laser control until this line
 }
 
 #pragma endregion
@@ -1015,27 +1072,20 @@ void Imagine::on_actionOpenShutter_triggered()
     ui.actionOpenShutter->setEnabled(false);
     ui.actionCloseShutter->setEnabled(false);
 
-    //open laser shutter
-    digOut->updateOutputBuf(4, true);
-    digOut->write();
-
-    {
-        QScriptValue jsFunc = se->globalObject().property("onShutterInit");
-        if (jsFunc.isFunction()) jsFunc.call();
+    QString portName;
+    if (!(laserCtrlSerial->isPortOpen())) {
+       emit openLaserSerialPort(portName);
     }
 
-   {
-       QScriptValue jsFunc = se->globalObject().property("onShutterOpen");
-       if (jsFunc.isFunction()) jsFunc.call();
-   }
+    changeLaserShutters();
+    for (int i = 1; i <= 4; i++)
+        changeLaserTrans(true, i);
 
-   {
-       QScriptValue jsFunc = se->globalObject().property("onShutterFini");
-       if (jsFunc.isFunction()) jsFunc.call();
-   }
+    QString str = QString("Open laser shutter");
+    appendLog(str);
 
-   ui.actionOpenShutter->setEnabled(true);
-   ui.actionCloseShutter->setEnabled(true);
+    ui.actionOpenShutter->setEnabled(false);
+    ui.actionCloseShutter->setEnabled(true);
 }
 
 void Imagine::on_actionCloseShutter_triggered()
@@ -1043,26 +1093,12 @@ void Imagine::on_actionCloseShutter_triggered()
     ui.actionOpenShutter->setEnabled(false);
     ui.actionCloseShutter->setEnabled(false);
 
-    //close laser shutter
-    digOut->updateOutputBuf(4, false);
-    digOut->write();
-    {
-        QScriptValue jsFunc = se->globalObject().property("onShutterInit");
-        if (jsFunc.isFunction()) jsFunc.call();
-    }
+    emit setLaserShutters(0);
 
-   {
-       QScriptValue jsFunc = se->globalObject().property("onShutterClose");
-       if (jsFunc.isFunction()) jsFunc.call();
-   }
-
-   {
-       QScriptValue jsFunc = se->globalObject().property("onShutterFini");
-       if (jsFunc.isFunction()) jsFunc.call();
-   }
-
-   ui.actionOpenShutter->setEnabled(true);
-   ui.actionCloseShutter->setEnabled(true);
+    QString str = QString("Close laser shutter");
+    appendLog(str);
+    ui.actionOpenShutter->setEnabled(true);
+    ui.actionCloseShutter->setEnabled(false);
 }
 
 /* void Imagine::on_actionTemperature_triggered()  //only for Andor camera
@@ -1195,6 +1231,81 @@ void Imagine::onModified()
 {
     modified = true;
     ui.btnApply->setEnabled(modified);
+}
+
+void Imagine::on_spinBoxHstart_editingFinished()
+{
+    int hEndValue = ui.spinBoxHend->value();
+    int newValue = ui.spinBoxHstart->value();
+
+    if ((newValue - 1) % roiStepsHor) {
+        newValue = (int)(newValue / roiStepsHor + 0.5) * roiStepsHor + 1;
+        if (newValue < hEndValue) {
+            appendLog(QString("Invalid number. This value should be n*%1+1").arg(roiStepsHor));
+        }
+        else {
+            newValue = hEndValue - (hEndValue - 2) % roiStepsHor - 1;
+            appendLog(QString("Invalid number. This value should be The value should be n*%1+1 and less than hor. end").arg(roiStepsHor));
+        }
+    }
+    else {
+        if (newValue < hEndValue) {
+            goto setvalue;
+        }
+        else {
+            newValue = hEndValue - (hEndValue - 2) % roiStepsHor - 1;
+            appendLog("Invalid number. This value should be less than hor. end");
+        }
+    }
+    appendLog(QString("The value is corrected as the closest valid number %1").arg(newValue));
+setvalue:
+    ui.spinBoxHstart->setValue(newValue);
+
+}
+
+void Imagine::on_spinBoxHend_editingFinished()
+{
+    int hStartValue = ui.spinBoxHstart->value();
+    int newValue = ui.spinBoxHend->value();
+
+    newValue = maxROIHSize - newValue;
+    if (newValue % roiStepsHor) {
+        newValue = (int)(newValue / roiStepsHor + 0.5) * roiStepsHor;
+        newValue = maxROIHSize - newValue;
+        if (newValue > hStartValue) {
+            appendLog(QString("Invalid number. This value should be (%1 - n*%2)").arg(maxROIHSize).arg(roiStepsHor));
+        }
+        else {
+            newValue = hStartValue + (maxROIHSize - hStartValue) % roiStepsHor;
+            appendLog(QString("Invalid number. This value should be (%1 - n*%2) and grater than hor. start").arg(maxROIHSize).arg(roiStepsHor));
+        }
+    }
+    else {
+        newValue = maxROIHSize - newValue;
+        if (newValue > hStartValue) {
+            goto setvalue;
+        }
+        else {
+            newValue = hStartValue + (maxROIHSize - hStartValue) % roiStepsHor;
+            appendLog(QString("Invalid number. This value should be grater than hor. start").arg(maxROIHSize));
+        }
+    }
+    appendLog(QString("The value is corrected as the closest valid number %1").arg(newValue));
+setvalue:
+    ui.spinBoxHend->setValue(newValue);
+
+}
+
+
+void Imagine::on_spinBoxVstart_valueChanged(int newValue)
+{
+    ui.spinBoxVend->setValue(maxROIVSize + 1 - newValue);
+}
+
+
+void Imagine::on_spinBoxVend_valueChanged(int newValue)
+{
+    ui.spinBoxVstart->setValue(maxROIVSize + 1 - newValue);
 }
 
 void Imagine::on_btnApply_clicked()
@@ -1640,5 +1751,629 @@ void Imagine::on_actionHeatsinkFan_triggered()
     fanCtrlDialog->exec();
 }
 */
+
+// -----------------------------------------------------------------------------
+// Laser control
+// -----------------------------------------------------------------------------
+void Imagine::displayShutterStatus(int status)
+{
+    for (int i = 1; i <= 4; i++) {
+        QCheckBox *cb = ui.groupBoxLaser->findChild<QCheckBox *>(QString("cbLine%1").arg(i));
+        cb->setChecked(status % 2);
+        status /= 2;
+    }
+}
+
+void Imagine::displayTransStatus(bool isAotf, int line, int status)
+{
+    QString prefix = isAotf ? "aotf" : "wheel";
+    QSlider *slider = ui.groupBoxLaser->findChild<QSlider *>(QString("%1Line%2").arg(prefix).arg(line));
+    slider->setValue(status);
+    slider->setToolTip(QString::number(status / 10.0));
+}
+
+
+void Imagine::displayLaserGUI(int numLines, int *laserIndex, int *wavelength)
+{
+    numLaserShutters = numLines;
+
+    for (int i = 1; i <= numLines; i++) {
+        laserShutterIndex[i - 1] = laserIndex[i - 1];
+        QCheckBox *checkBox = ui.groupBoxLaser->findChild<QCheckBox *>(QString("cbLine%1").arg(i));
+        QString wl= QString("%1 nm").arg(wavelength[i-1]);
+        checkBox->setText(wl);
+    }
+    for (int i = numLines + 1; i <= 8; i++) {
+        QCheckBox *checkBox = ui.groupBoxLaser->findChild<QCheckBox *>(QString("cbLine%1").arg(i));
+        QSlider *slider = ui.groupBoxLaser->findChild<QSlider *>(QString("aotfLine%1").arg(i));
+        QDoubleSpinBox *spinBox = ui.groupBoxLaser->findChild<QDoubleSpinBox *>(QString("doubleSpinBox_aotfLine%1").arg(i));
+        if(checkBox) checkBox->setVisible(false);
+        if(slider) slider->setVisible(false);
+        if(spinBox) spinBox->setVisible(false);
+    }
+}
+
+void Imagine::on_btnOpenPort_clicked()
+{
+    QString portName;
+    if (laserCtrlSerial) {
+        portName = laserCtrlSerial->getPortName();
+        emit openLaserSerialPort(portName);
+        emit getLaserShutterStatus();
+        for (int i = 1; i <= 4; i++) {
+	        emit getLaserTransStatus(true, i);
+        }
+        QString str = QString("%1 port is opened").arg(portName);
+        appendLog(str);
+    }
+    else {
+        QString str = QString("laserCtrlSerial object is not defined");
+        appendLog(str);
+    }
+
+    ui.btnOpenPort->setEnabled(false);
+    ui.btnClosePort->setEnabled(true);
+    if (ui.groupBoxLaser->isChecked()) {
+        ui.actionOpenShutter->setEnabled(false);
+        ui.actionCloseShutter->setEnabled(false);
+    }
+    else {
+        ui.actionOpenShutter->setEnabled(true);
+        ui.actionCloseShutter->setEnabled(false);
+    }
+    ui.groupBoxLaser->setEnabled(true);
+
+    qDebug() << "Open laser control port " ;
+}
+
+void Imagine::on_btnClosePort_clicked()
+{
+    QString portName;
+    if (laserCtrlSerial) {
+        portName = laserCtrlSerial->getPortName();
+        emit closeLaserSerialPort();
+        QString str = QString("%1 port is closed").arg(portName);
+        appendLog(str);
+    }
+    else {
+        QString str = QString("laserCtrlSerial object is not defined");
+        appendLog(str);
+    }
+
+    ui.btnOpenPort->setEnabled(true);
+    ui.btnClosePort->setEnabled(false);
+    ui.actionOpenShutter->setEnabled(false);
+    ui.actionCloseShutter->setEnabled(false);
+    ui.groupBoxLaser->setEnabled(false);
+}
+
+
+void Imagine::changeLaserShutters(void)
+{
+    if (laserCtrlSerial) {
+        bitset<8> bs(0);
+        for (int i = 1; i <= numLaserShutters; i++) {
+            QCheckBox *checkBox = ui.groupBoxLaser->findChild<QCheckBox *>(QString("cbLine%1").arg(i));
+            bs.set(laserShutterIndex[i - 1], checkBox->isChecked());
+        }
+        int status = bs.to_ulong();
+        emit setLaserShutters(status);
+    }
+    else {
+        QString str = QString("laserCtrlSerial object is not defined");
+        appendLog(str);
+    }
+}
+
+void Imagine::changeLaserTrans(bool isAotf, int line)
+{
+    QString prefix = isAotf ? "aotf" : "wheel";
+    QSlider *slider = ui.groupBoxLaser->findChild<QSlider *>(QString("%1Line%2").arg(prefix).arg(line));
+    slider->setToolTip(QString::number(slider->value() / 10.0));
+
+    if (laserCtrlSerial) {
+        QString str;
+        if (isAotf) {
+            emit setLaserTrans(true, line, slider->value());
+            str = QString("Set laser AOTF value as %1").arg(slider->value());
+        }
+        else{
+            emit setLaserTrans(false, line, slider->value());
+            str = QString("Set laser ND wheel value as %1").arg(slider->value());
+        }
+        appendLog(str);
+    }
+    else {
+        QString str = QString("laserCtrlSerial object is not defined");
+        appendLog(str);
+    }
+}
+
+void Imagine::on_groupBoxLaser_clicked(bool checked)
+{
+    if (checked) {
+        on_actionOpenShutter_triggered();
+        ui.actionOpenShutter->setEnabled(false);
+        ui.actionCloseShutter->setEnabled(false);
+        QString str = QString("Laser setup mode");
+        appendLog(str);
+    }
+    else {
+        ui.actionOpenShutter->setEnabled(false);
+        ui.actionCloseShutter->setEnabled(true);
+        QString str = QString("Exit laser setup mode");
+        appendLog(str);
+    }
+}
+
+void Imagine::on_cbLine1_clicked(bool checked)
+{
+    QString str;
+    changeLaserShutters();
+    if (checked)
+        str = QString("Open laser shutter 1");
+    else
+        str = QString("Close laser shutter 1");
+    appendLog(str);
+}
+
+void Imagine::on_cbLine2_clicked(bool checked)
+{
+    QString str;
+    changeLaserShutters();
+    if (checked)
+        str = QString("Open laser shutter 2");
+    else
+        str = QString("Close laser shutter 2");
+    appendLog(str);
+}
+
+void Imagine::on_cbLine3_clicked(bool checked)
+{
+    QString str;
+    changeLaserShutters();
+    if (checked)
+        str = QString("Open laser shutter 3");
+    else
+        str = QString("Close laser shutter 3");
+    appendLog(str);
+}
+
+void Imagine::on_cbLine4_clicked(bool checked)
+{
+    QString str;
+    changeLaserShutters();
+    if (checked)
+        str = QString("Open laser shutter 4");
+    else
+        str = QString("Close laser shutter 4");
+    appendLog(str);
+}
+
+
+void Imagine::on_cbLine5_clicked(bool checked)
+{
+    QString str;
+    changeLaserShutters();
+    if (checked)
+        str = QString("Open laser shutter 5");
+    else
+        str = QString("Close laser shutter 5");
+    appendLog(str);
+}
+
+
+void Imagine::on_cbLine6_clicked(bool checked)
+{
+    QString str;
+    changeLaserShutters();
+    if (checked)
+        str = QString("Open laser shutter 6");
+    else
+        str = QString("Close laser shutter 6");
+    appendLog(str);
+}
+
+
+void Imagine::on_cbLine7_clicked(bool checked)
+{
+    QString str;
+    changeLaserShutters();
+    if (checked)
+        str = QString("Open laser shutter 7");
+    else
+        str = QString("Close laser shutter 7");
+    appendLog(str);
+}
+
+
+void Imagine::on_cbLine8_clicked(bool checked)
+{
+    QString str;
+    changeLaserShutters();
+    if (checked)
+        str = QString("Open laser shutter 8");
+    else
+        str = QString("Close laser shutter 8");
+    appendLog(str);
+}
+
+void Imagine::on_aotfLine1_sliderMoved()
+{
+    ui.doubleSpinBox_aotfLine1->setValue((double)(ui.aotfLine1->value()) / 10.);
+}
+
+void Imagine::on_aotfLine2_sliderMoved()
+{
+    ui.doubleSpinBox_aotfLine2->setValue((double)(ui.aotfLine2->value()) / 10.);
+}
+
+void Imagine::on_aotfLine3_sliderMoved()
+{
+    ui.doubleSpinBox_aotfLine3->setValue((double)(ui.aotfLine3->value()) / 10.);
+}
+
+void Imagine::on_aotfLine4_sliderMoved()
+{
+    ui.doubleSpinBox_aotfLine4->setValue((double)(ui.aotfLine4->value()) / 10.);
+}
+
+void Imagine::on_aotfLine5_sliderMoved()
+{
+    ui.doubleSpinBox_aotfLine5->setValue((double)(ui.aotfLine5->value()) / 10.);
+}
+
+void Imagine::on_aotfLine6_sliderMoved()
+{
+    ui.doubleSpinBox_aotfLine6->setValue((double)(ui.aotfLine6->value()) / 10.);
+}
+
+void Imagine::on_aotfLine7_sliderMoved()
+{
+    ui.doubleSpinBox_aotfLine7->setValue((double)(ui.aotfLine7->value()) / 10.);
+}
+
+void Imagine::on_aotfLine8_sliderMoved()
+{
+    ui.doubleSpinBox_aotfLine8->setValue((double)(ui.aotfLine8->value()) / 10.);
+}
+
+void Imagine::on_aotfLine1_sliderReleased()
+{
+    ui.doubleSpinBox_aotfLine1->setValue((double)(ui.aotfLine1->value())/10.);
+    changeLaserTrans(true, 1);
+}
+
+void Imagine::on_aotfLine2_sliderReleased()
+{
+    ui.doubleSpinBox_aotfLine2->setValue((double)(ui.aotfLine2->value()) /10.);
+    changeLaserTrans(true, 2);
+}
+
+void Imagine::on_aotfLine3_sliderReleased()
+{
+    ui.doubleSpinBox_aotfLine3->setValue((double)(ui.aotfLine3->value()) /10.);
+    changeLaserTrans(true, 3);
+}
+
+void Imagine::on_aotfLine4_sliderReleased()
+{
+    ui.doubleSpinBox_aotfLine4->setValue((double)(ui.aotfLine4->value()) /10.);
+    changeLaserTrans(true, 4);
+}
+
+void Imagine::on_aotfLine5_sliderReleased()
+{
+    ui.doubleSpinBox_aotfLine5->setValue((double)(ui.aotfLine5->value()) / 10.);
+    changeLaserTrans(true, 5);
+}
+
+void Imagine::on_aotfLine6_sliderReleased()
+{
+    ui.doubleSpinBox_aotfLine6->setValue((double)(ui.aotfLine6->value()) / 10.);
+    changeLaserTrans(true, 6);
+}
+
+void Imagine::on_aotfLine7_sliderReleased()
+{
+    ui.doubleSpinBox_aotfLine7->setValue((double)(ui.aotfLine7->value()) / 10.);
+    changeLaserTrans(true, 7);
+}
+
+void Imagine::on_aotfLine8_sliderReleased()
+{
+    ui.doubleSpinBox_aotfLine8->setValue((double)(ui.aotfLine8->value()) / 10.);
+    changeLaserTrans(true, 8);
+}
+
+void Imagine::on_doubleSpinBox_aotfLine1_valueChanged()
+{
+    ui.aotfLine1->setValue((int)(ui.doubleSpinBox_aotfLine1->value()*10.0));
+    changeLaserTrans(true, 1);
+}
+
+void Imagine::on_doubleSpinBox_aotfLine2_valueChanged()
+{
+    ui.aotfLine2->setValue((int)(ui.doubleSpinBox_aotfLine2->value()*10.0));
+    changeLaserTrans(true, 2);
+}
+
+void Imagine::on_doubleSpinBox_aotfLine3_valueChanged()
+{
+    ui.aotfLine3->setValue((int)(ui.doubleSpinBox_aotfLine3->value()*10.0));
+    changeLaserTrans(true, 3);
+}
+
+void Imagine::on_doubleSpinBox_aotfLine4_valueChanged()
+{
+    ui.aotfLine4->setValue((int)(ui.doubleSpinBox_aotfLine4->value()*10.0));
+    changeLaserTrans(true, 4);
+}
+
+void Imagine::on_doubleSpinBox_aotfLine5_valueChanged()
+{
+    ui.aotfLine5->setValue((int)(ui.doubleSpinBox_aotfLine5->value()*10.0));
+    changeLaserTrans(true, 5);
+}
+
+void Imagine::on_doubleSpinBox_aotfLine6_valueChanged()
+{
+    ui.aotfLine6->setValue((int)(ui.doubleSpinBox_aotfLine6->value()*10.0));
+    changeLaserTrans(true, 6);
+}
+
+void Imagine::on_doubleSpinBox_aotfLine7_valueChanged()
+{
+    ui.aotfLine7->setValue((int)(ui.doubleSpinBox_aotfLine7->value()*10.0));
+    changeLaserTrans(true, 7);
+}
+
+void Imagine::on_doubleSpinBox_aotfLine8_valueChanged()
+{
+    ui.aotfLine8->setValue((int)(ui.doubleSpinBox_aotfLine8->value()*10.0));
+    changeLaserTrans(true, 8);
+}
+
+// -----------------------------------------------------------------------------
+// Load and save configuration
+// -----------------------------------------------------------------------------
+void Imagine::writeSettings(QString file)
+{
+    QSettings prefs(file, QSettings::IniFormat, this);
+
+    prefs.beginGroup("General");
+    WRITE_STRING_SETTING(prefs, lineEditFilename);
+    prefs.endGroup();
+
+    prefs.beginGroup("Camera");
+    WRITE_SETTING(prefs, spinBoxNumOfStacks);
+    WRITE_SETTING(prefs, spinBoxFramesPerStack);
+    WRITE_SETTING(prefs, doubleSpinBoxExpTime);
+    WRITE_SETTING(prefs, doubleSpinBoxBoxIdleTimeBtwnStacks);
+    WRITE_COMBO_SETTING(prefs, comboBoxAcqTriggerMode);
+    WRITE_COMBO_SETTING(prefs, comboBoxExpTriggerMode);
+    WRITE_SETTING(prefs, spinBoxAngle);
+    WRITE_SETTING(prefs, doubleSpinBoxUmPerPxlXy);
+    WRITE_COMBO_SETTING(prefs, comboBoxHorReadoutRate);
+    WRITE_COMBO_SETTING(prefs, comboBoxPreAmpGains);
+    WRITE_SETTING(prefs, spinBoxGain);
+    WRITE_COMBO_SETTING(prefs, comboBoxVertShiftSpeed);
+    WRITE_COMBO_SETTING(prefs, comboBoxVertClockVolAmp);
+    prefs.endGroup();
+
+    prefs.beginGroup("Binning");
+    WRITE_SETTING(prefs, spinBoxHstart);
+    WRITE_SETTING(prefs, spinBoxHend);
+    WRITE_SETTING(prefs, spinBoxVstart);
+    WRITE_SETTING(prefs, spinBoxVend);
+    prefs.endGroup();
+
+    prefs.beginGroup("Stimuli");
+    WRITE_CHECKBOX_SETTING(prefs, cbStim);
+    WRITE_STRING_SETTING(prefs, lineEditStimFile);
+    prefs.endGroup();
+
+    if (masterImagine == NULL) {
+        prefs.beginGroup("Positioner");
+        WRITE_COMBO_SETTING(prefs, comboBoxAxis);
+        WRITE_SETTING(prefs, doubleSpinBoxMinDistance);
+        WRITE_SETTING(prefs, doubleSpinBoxMaxDistance);
+        WRITE_SETTING(prefs, doubleSpinBoxStartPos);
+        WRITE_SETTING(prefs, doubleSpinBoxCurPos);
+        WRITE_SETTING(prefs, doubleSpinBoxStopPos);
+        WRITE_SETTING(prefs, spinBoxSpinboxSteps);
+        WRITE_SETTING(prefs, spinBoxNumOfDecimalDigits);
+        WRITE_SETTING(prefs, doubleSpinBoxPiezoTravelBackTime);
+        WRITE_CHECKBOX_SETTING(prefs, cbAutoSetPiezoTravelBackTime);
+        WRITE_CHECKBOX_SETTING(prefs, cbBidirectionalImaging);
+        WRITE_COMBO_SETTING(prefs, comboBoxPositionerOwner);
+        prefs.endGroup();
+    }
+
+    prefs.beginGroup("Display");
+    WRITE_SETTING(prefs, spinBoxDisplayAreaSize);
+    prefs.endGroup();
+
+    if (masterImagine == NULL) {
+        prefs.beginGroup("Laser");
+        WRITE_CHECKBOX_SETTING(prefs, cbLine1);
+        WRITE_SETTING(prefs, doubleSpinBox_aotfLine1);
+        WRITE_CHECKBOX_SETTING(prefs, cbLine2);
+        WRITE_SETTING(prefs, doubleSpinBox_aotfLine2);
+        WRITE_CHECKBOX_SETTING(prefs, cbLine3);
+        WRITE_SETTING(prefs, doubleSpinBox_aotfLine3);
+        WRITE_CHECKBOX_SETTING(prefs, cbLine4);
+        WRITE_SETTING(prefs, doubleSpinBox_aotfLine4);
+        WRITE_CHECKBOX_SETTING(prefs, cbLine5);
+        WRITE_SETTING(prefs, doubleSpinBox_aotfLine5);
+        WRITE_CHECKBOX_SETTING(prefs, cbLine6);
+        WRITE_SETTING(prefs, doubleSpinBox_aotfLine6);
+        WRITE_CHECKBOX_SETTING(prefs, cbLine7);
+        WRITE_SETTING(prefs, doubleSpinBox_aotfLine7);
+        WRITE_CHECKBOX_SETTING(prefs, cbLine8);
+        WRITE_SETTING(prefs, doubleSpinBox_aotfLine8);
+        prefs.endGroup();
+    }
+}
+
+void Imagine::readSettings(QString file)
+{
+    QString val;
+    bool ok;
+    qint32 i;
+    double d;
+
+    QSettings prefs(file, QSettings::IniFormat, this);
+
+    prefs.beginGroup("General");
+    READ_STRING_SETTING(prefs, lineEditFilename, "");
+    prefs.endGroup();
+
+    prefs.beginGroup("Camera");
+    READ_SETTING(prefs, spinBoxNumOfStacks, ok, i, 3, Int);
+    READ_SETTING(prefs, spinBoxFramesPerStack, ok, i, 100, Int);
+    READ_SETTING(prefs, doubleSpinBoxExpTime, ok, d, 0.0107, Double);
+    READ_SETTING(prefs, doubleSpinBoxBoxIdleTimeBtwnStacks, ok, d, 0.700, Double);
+    READ_COMBO_SETTING(prefs, comboBoxAcqTriggerMode, 1);
+    READ_COMBO_SETTING(prefs, comboBoxExpTriggerMode, 0);
+    READ_SETTING(prefs, spinBoxAngle, ok, i, 0, Int);
+    READ_SETTING(prefs, doubleSpinBoxUmPerPxlXy, ok, d, -1.0000, Double);
+    READ_COMBO_SETTING(prefs, comboBoxHorReadoutRate, 0);
+    READ_COMBO_SETTING(prefs, comboBoxPreAmpGains, 0);
+    READ_SETTING(prefs, spinBoxGain, ok, i, 0, Int);
+    READ_COMBO_SETTING(prefs, comboBoxVertShiftSpeed, 0);
+    READ_COMBO_SETTING(prefs, comboBoxVertClockVolAmp, 0);
+    prefs.endGroup();
+
+    prefs.beginGroup("Binning");
+    READ_SETTING(prefs, spinBoxHstart, ok, i, 1, Int);
+    READ_SETTING(prefs, spinBoxHend, ok, i, 2048, Int);
+    READ_SETTING(prefs, spinBoxVstart, ok, i, 1, Int);
+    READ_SETTING(prefs, spinBoxVend, ok, i, 2048, Int);
+    prefs.endGroup();
+
+    prefs.beginGroup("Stimuli");
+    READ_BOOL_SETTING(prefs, cbStim, false); // READ_CHECKBOX_SETTING
+    READ_STRING_SETTING(prefs, lineEditStimFile,"");
+    prefs.endGroup();
+
+    if (masterImagine == NULL) {
+        prefs.beginGroup("Positioner");
+        READ_COMBO_SETTING(prefs, comboBoxAxis, 0);
+        READ_SETTING(prefs, doubleSpinBoxMinDistance, ok, d, 0., Double);
+        READ_SETTING(prefs, doubleSpinBoxMaxDistance, ok, d, 400.0, Double);
+        READ_SETTING(prefs, doubleSpinBoxStartPos, ok, d, 1.0, Double);
+        READ_SETTING(prefs, doubleSpinBoxCurPos, ok, d, 200.0, Double);
+        READ_SETTING(prefs, doubleSpinBoxStopPos, ok, d, 400.0, Double);
+        READ_SETTING(prefs, spinBoxSpinboxSteps, ok, i, 10, Int);
+        READ_SETTING(prefs, spinBoxNumOfDecimalDigits, ok, i, 0, Int);
+        READ_SETTING(prefs, doubleSpinBoxPiezoTravelBackTime, ok, d, 0., Double);
+        READ_BOOL_SETTING(prefs, cbAutoSetPiezoTravelBackTime, false); // READ_CHECKBOX_SETTING
+        READ_BOOL_SETTING(prefs, cbBidirectionalImaging, false); // READ_CHECKBOX_SETTING
+        READ_COMBO_SETTING(prefs, comboBoxPositionerOwner, 0);
+        prefs.endGroup();
+    }
+
+    prefs.beginGroup("Display");
+    READ_SETTING(prefs, spinBoxDisplayAreaSize, ok, i, 0, Int);
+    prefs.endGroup();
+
+    if (masterImagine == NULL) {
+        prefs.beginGroup("Laser");
+        READ_BOOL_SETTING(prefs, cbLine1, true); // READ_CHECKBOX_SETTING
+        READ_SETTING(prefs, doubleSpinBox_aotfLine1, ok, d, 50.0, Double);
+        READ_BOOL_SETTING(prefs, cbLine2, true); // READ_CHECKBOX_SETTING
+        READ_SETTING(prefs, doubleSpinBox_aotfLine2, ok, d, 50.0, Double);
+        READ_BOOL_SETTING(prefs, cbLine3, false); // READ_CHECKBOX_SETTING
+        READ_SETTING(prefs, doubleSpinBox_aotfLine3, ok, d, 50.0, Double);
+        READ_BOOL_SETTING(prefs, cbLine4, false); // READ_CHECKBOX_SETTING
+        READ_SETTING(prefs, doubleSpinBox_aotfLine4, ok, d, 50.0, Double);
+        READ_BOOL_SETTING(prefs, cbLine5, false); // READ_CHECKBOX_SETTING
+        READ_SETTING(prefs, doubleSpinBox_aotfLine5, ok, d, 50.0, Double);
+        READ_BOOL_SETTING(prefs, cbLine6, false); // READ_CHECKBOX_SETTING
+        READ_SETTING(prefs, doubleSpinBox_aotfLine6, ok, d, 50.0, Double);
+        READ_BOOL_SETTING(prefs, cbLine7, false); // READ_CHECKBOX_SETTING
+        READ_SETTING(prefs, doubleSpinBox_aotfLine7, ok, d, 50.0, Double);
+        READ_BOOL_SETTING(prefs, cbLine8, false); // READ_CHECKBOX_SETTING
+        READ_SETTING(prefs, doubleSpinBox_aotfLine8, ok, d, 50.0, Double);
+        prefs.endGroup();
+        ui.groupBoxLaser->setChecked(false);
+        on_actionCloseShutter_triggered();
+    }
+}
+
+void Imagine::writeComments(QString file)
+{
+    QFile fp(file);
+    if (!fp.open(QIODevice::ReadWrite)) {
+        qDebug("File open error\n");
+    }
+    else {
+        QTextStream stream(&fp);
+        stream.readAll();
+        stream << "\n[Comment]\n" << ui.textEditComment->toPlainText();
+        stream.flush();
+        fp.close();
+    }
+}
+
+void Imagine::readComments(QString file)
+{
+    QFile fp(file);
+    if (!fp.open(QIODevice::ReadOnly)) {
+        qDebug("File open error\n");
+        return;
+    }
+    else {
+        QTextStream in(&fp);
+        QString line;
+        bool enableDisplay = false;
+        do {
+            line = in.readLine();
+            if (line.contains("[Comment]", Qt::CaseSensitive)) {
+                enableDisplay = true;
+                break;
+            }
+        } while (!line.isNull());
+        ui.textEditComment->setText(in.readAll());
+
+        fp.close();
+    }
+}
+
+void Imagine::on_actionSave_Configuration_triggered()
+{
+    QString proposedFile;
+    QString file;
+    if(masterImagine == NULL){
+        proposedFile = m_OpenDialogLastDirectory + QDir::separator() + "OCPI_II_cfg1.txt";
+        file = QFileDialog::getSaveFileName(this, tr("Save OCPI II Imagine(1) Configuration"),proposedFile,tr("*.txt"));
+    }
+    else {
+        proposedFile = m_OpenDialogLastDirectory + QDir::separator() + "OCPI_II_cfg2.txt";
+        file = QFileDialog::getSaveFileName(this, tr("Save OCPI II Imagine(2) Configuration"), proposedFile, tr("*.txt"));
+    }
+    if (true == file.isEmpty()) { return; }
+    QFileInfo fi(file);
+    m_OpenDialogLastDirectory = fi.absolutePath();
+
+    writeSettings(file);
+    writeComments(file);
+}
+
+void Imagine::on_actionLoad_Configuration_triggered()
+{
+    QString file = QFileDialog::getOpenFileName(this, tr("Select Configuration File"),
+        m_OpenDialogLastDirectory,
+        tr("Configuration File (*.txt)"));
+    if (true == file.isEmpty()) { return; }
+    QFileInfo fi(file);
+    m_OpenDialogLastDirectory = fi.absolutePath();
+
+    readSettings(file);
+    readComments(file);
+
+    on_btnApply_clicked();
+}
 
 #pragma endregion

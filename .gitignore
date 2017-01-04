@@ -14,3 +14,6 @@
 moc_*.cpp
 qrc_imagine.cpp
 ui_imagine.h
+imagine.VC.db
+Imagine/Imagine.vcxproj.user
+/x64/Debug

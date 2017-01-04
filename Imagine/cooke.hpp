@@ -138,6 +138,9 @@ public:
 		ExpTriggerMode expTriggerMode
         );
 
+    int getROIStepsHor(void) {
+        return strDescription.wRoiHorStepsDESC;
+    };
 
     long getAcquiredFrameCount();
 
