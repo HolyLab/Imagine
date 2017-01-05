@@ -58,6 +58,9 @@ public:
         int curSize;
         int idx;
 
+        //NOTE: may improve performace by moving live mode image update code to here
+        //      This is becuase updateLiveImage() currently acquires a lock.
+        //      Could optimize even further by creating the QByteArray from the raw circular buf data.
         while (true){
             //TODO: use QWaitCondition to wait until another frame is ready
             //to avoid "priority inversion" we temporarily elevate the priority
@@ -95,9 +98,9 @@ public:
             }
         }//while,
     finishup:
-        if (camera->genericAcqMode != Camera::eLive) {
-            while (!camera->circBuf->empty()) {
-                int idx = camera->circBuf->get();
+        while (!camera->circBuf->empty()) {
+            int idx = camera->circBuf->get();
+            if (camera->genericAcqMode != Camera::eLive) {
                 this->ofsSpooling->write(camera->memPool + idx*size_t(camera->imageSizeBytes), camera->imageSizeBytes);
             }
         }

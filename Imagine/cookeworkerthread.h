@@ -33,31 +33,18 @@ private:
     //camera->isRecording is modified when camera buffers are removed (i.e. between stacks)
     //shouldStop is modified when the acquisition is complete (i.e. after a sequence of stacks)
     volatile bool shouldStop;
-    std::atomic_bool shouldPause;
-    //std::atomic_bool isPrepared;
     QWaitCondition unPaused;
-    //QWaitCondition paused;
-    //QMutex pauseLock;
     QMutex unPauseLock;
 
-    //Note: This should only be called when already paused.
-    void prepareNextStack() {
-        /*
-        if (!isPaused) {
-            shouldPause = true;
-            pauseLock.lock();
-            paused.wait(&pauseLock);
-            pauseLock.unlock();
-        }
-        */
-        WORD wActSeg = 0;
+    //Note: This should only be called when already paused, pending images are cancelled, and recording is stopped.
+    void prepareNextStack(int lastBufferIdx) {
         for (int i = 0; i < camera->nBufs; ++i) {
-            //in fifo mode, frameIdxInCamRam are 0 for all buffers?
-            int frameIdxInCamRam = 0;
+            int nextBufferIdx = (lastBufferIdx + i + 1) % camera->circBuf->capacity();
+            camera->mRingBuf[i] = camera->memPool + nextBufferIdx*size_t(camera->imageSizeBytes);
+            //in fifo mode, frameIdxInCamRam is 0 for all buffers
             //printPcoError(driverStatus[i]);
-            camera->safe_pco(PCO_AddBufferExtern(camera->hCamera, camera->mEvent[i], wActSeg, frameIdxInCamRam, frameIdxInCamRam, 0, static_cast<void*>(camera->mRingBuf[i]), camera->imageSizeBytes, &((camera->driverStatus)[i])), "failed to add external buffer");// Add buffer to the driver queue
+            camera->safe_pco(PCO_AddBufferExtern(camera->hCamera, camera->mEvent[i], 0, 0, 0, 0, static_cast<void*>(camera->mRingBuf[i]), camera->imageSizeBytes, &((camera->driverStatus)[i])), "failed to add external buffer");// Add buffer to the driver queue
         }
-        //isPaused = true;
     }
 
 
@@ -71,9 +58,6 @@ public:
         Timer_g gt = this->camera->parentAcqThread->parentImagine->gTimer;
 
         shouldStop = false;
-        //it's important that the thread begin in the paused state, otherwise the camera driver throws unintelligible errors
-        //this seems to be because the driver doesn't like receiving an event that we are already waiting for
-        shouldPause = false;
         isPaused = false;
 
         //cout<<"after _aligned_malloc: "<<gt.read()<<endl;
@@ -84,15 +68,13 @@ public:
 #endif
 
 
-        cout << "at the end of workerThread->ctor(): " << gt.read() << endl;
-        prepareNextStack();
+        //cout << "at the end of workerThread->ctor(): " << gt.read() << endl;
+        prepareNextStack(-1);
     }
 
     ~CookeWorkerThread(){}
 
     void requestStop(){
-        //shouldPause = true;
-        //while (!isPaused) msleep(100); //this shouldn't affect performance because it's only called when stopping the entire recording
         shouldStop = true;
         isPaused = false;
         msleep(200);
@@ -108,7 +90,7 @@ public:
 
     void nextStack() {
         while (!isPaused && !shouldStop) msleep(5); //could hinder performance
-        shouldPause = false;
+
         isPaused = false;
         unPaused.wakeAll();
         //camera->isRecording = true;
@@ -130,6 +112,7 @@ public:
         HANDLE mEventSwapped[2] = {camera->mEvent[1], camera-> mEvent[0]};
         int waitResult;
         int nextSlot; //the index of the next empty slot in the circular buffer
+        int curSlot; //the index of the next empty slot in the circular buffer
         int slotsLeft; //the number of remaining empty slots (images) in the circular buffer
         int curFrameIdx = 0; //the index of the current frame as read from the encoding in the pixel data (see camera manual)
         long curStackIdx = 0; //stack currently being acquired
@@ -137,7 +120,7 @@ public:
         long droppedFrameCount = 0; // number of dropped frames this stack
         vector<long> droppedFrameIdxs, droppedFrameStackIdxs;
         double startTime;
-        double handlingTime = 0.0; //max handling time in seconds
+        //double handlingTime = 0.0; //max handling time in seconds
         long framesSoFar=0; //frames acquired so far (if we've missed frames, this may be less than curFrameIdx
         long stacksSoFar = 0; //stacks acquired so far
         int gapWidth; //missed frame gap width
@@ -159,7 +142,7 @@ public:
                 if (waitResult == 0 || waitResult == 1) waitResult = (int)!(bool(waitResult)); //keep indices relative to mEvent
             }
             //TODO: the logic block below is what causes external acquisitions to time out. maybe fixed?
-            while ((waitResult < WAIT_OBJECT_0 || waitResult >= WAIT_OBJECT_0 + camera->nBufs) && !shouldStop && !shouldPause) {
+            while ((waitResult < WAIT_OBJECT_0 || waitResult >= WAIT_OBJECT_0 + camera->nBufs) && !shouldStop) {
                 if (!(waitResult == 258)) nwaits += 1;
                 //wait again
                 if (eventIdx == 1) {
@@ -172,21 +155,18 @@ public:
             }//if, WAIT_ABANDONED, WAIT_TIMEOUT or WAIT_FAILED
            //OutputDebugStringW((wstring(L"Begin processing frame: ") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //todo: should we try to keep going? SEE: CSC2Class::SC2Thread()
-            startTime = gt.read();
-            //TODO: the two conditionals below are repeated in prepareNextEvent.  A bit ugly, could improve.
-            if (shouldStop) break; 
-            /*
-            if (shouldPause) {
-                camera->safe_pco(PCO_CancelImages(camera->hCamera), "failed to stop camera");
-                isPaused = true;
-                continue;
+            //startTime = gt.read();
+            if (shouldStop) {
+                camera->nAcquiredFrames = 0;
+                camera->nAcquiredStacks = 0;
+                break;
             }
-            */
+
 
             nEvents++;
             eventIdx = waitResult - WAIT_OBJECT_0;
             ///work around sdk bug
-            if (nEvents == 1 && camera->acqTriggerMode == Camera::eExternal && !shouldPause) {
+            if (nEvents == 1 && camera->acqTriggerMode == Camera::eExternal) {
                 goto prepareNextEvent;
             }
 
@@ -195,7 +175,7 @@ public:
             counter = camera->extractFrameCounter((Camera::PixelValue*)(camera->mRingBuf[eventIdx]));
             //OutputDebugStringW((wstring(L"Time after extract frame counter:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
             //the two cases below can come up since we don't stop this thread between stacks
-            if (counter == 0 || (counter > camera->nFrames && camera->genericAcqMode != Camera::eLive) && !shouldPause) continue;
+            if (counter == 0 || (counter > camera->nFrames && camera->genericAcqMode != Camera::eLive)) continue;
             if (framesSoFar == 0) {
                 camera->firstFrameCounter = counter;
                 assert(counter >= 0);
@@ -218,7 +198,7 @@ public:
             curFrameIndices.push_back(curFrameIdx);
 #endif
 
-            if (curFrameIdx < 0 && !shouldPause) {
+            if (curFrameIdx < 0) {
                 OutputDebugStringW((wstring(L"detected a garbage frame\n")).c_str());
                 if (++negIndices < 16) goto prepareNextEvent;//NOTE: hard coded 16
                 else {
@@ -232,22 +212,22 @@ public:
 
             camera->circBufLock->lock();
             slotsLeft = camera->circBuf->capacity() - camera->circBuf->size();
-            nextSlot = (camera->circBuf->put() + 2) % camera->circBuf->capacity();
+            curSlot = camera->circBuf->put();
+            nextSlot = (curSlot + 2) % camera->circBuf->capacity();
             //OutputDebugStringW((wstring(L"Event handled for frame #") + to_wstring(curFrameIdx) + wstring(L"\n")).c_str());
             //OutputDebugStringW((wstring(L"Handled ") + to_wstring(camera->nAcquiredFrames) + wstring(L" frames total for this stack\n")).c_str());
 
-            //if we are finished with this stack OR we should pause for early stopping, update counters, pause, and continue the loop
-            if ((framesSoFar == camera->nFramesPerStack && camera->genericAcqMode != Camera::eLive) || shouldPause) {
+            //if we are finished with this stack, update counters, pause, and continue the loop
+            if (framesSoFar == camera->nFramesPerStack && camera->genericAcqMode != Camera::eLive) {
                 curStackIdx += 1;
                 camera->nAcquiredStacks = curStackIdx; //assumes we will never miss a whole stack
                 framesSoFar = 0;
                 camera->nAcquiredFrames = framesSoFar;
                 camera->circBufLock->unlock();
-                camera->mRingBuf[eventIdx] = camera->memPool + nextSlot*size_t(camera->imageSizeBytes);
-                eventIdx = 1; //since this controls the logic of which buffer to prioritize, and when starting a new stack we always prioritize buffer 0
                 camera->safe_pco(PCO_CancelImages(camera->hCamera), "failed to stop camera");
                 camera->safe_pco(PCO_SetRecordingState(camera->hCamera, 0), "failed to stop camera recording");// stop recording
-                prepareNextStack();
+                prepareNextStack(curSlot);
+                eventIdx = 1; //reset to starting value
                 pauseUntilWake();
                 continue;
             }
@@ -286,28 +266,12 @@ public:
         //if we've made it this far, we know that we have more frames left to handle for the current stack
         prepareNextEvent:
 
-            //reset event
-            //ResetEvent(camera->mEvent[eventIdx]);
-
-            /*
-            if (shouldPause) {
-                camera->safe_pco(PCO_CancelImages(camera->hCamera), "failed to stop camera");
-                //in theory we should only have to reset the event at eventIdx, but just to be safe...
-                isPaused = true; //TODO: maybe better to use a Qt wait event to avoid the sleep statement in beginning of the while loop above?
-                paused.wakeAll();
-                continue;
-            }
-            */
-
             ///then add back the buffer if we need it to finish the stack
             if (framesSoFar < (camera->nFramesPerStack- 1) || camera->genericAcqMode == Camera::eLive){
-                //int temp_ = nextSlot*size_t(camera->imageSizeBytes);
                 camera->mRingBuf[eventIdx] = camera->memPool + nextSlot*size_t(camera->imageSizeBytes);
-                //rawPointers[eventIdx] = (Camera::PixelValue*)(camera->memPool + nextSlot*size_t(camera->imageSizeBytes));
                 //OutputDebugStringW((wstring(L"Next frame pointer:") + to_wstring((unsigned)static_cast<void*>(camera->mRingBuf[eventIdx]))).c_str());
                 //OutputDebugStringW((wstring(L"Time before add buffer:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
                 //the line below seeems to take at most 74 microseconds to execute on OCPI2 (assuming this doesn't depend on image size, which it shouldn't)
-                //frameIdxInCamRam corresponds to the first two zero arguments below
                 camera->safe_pco(PCO_AddBufferExtern(camera->hCamera, camera->mEvent[eventIdx], wActSeg, 0, 0, 0, camera->mRingBuf[eventIdx], camera->imageSizeBytes, &(camera->driverStatus[eventIdx])), "failed to add external buffer");// Add buffer to the driver queue
 
                 //OutputDebugStringW((wstring(L"Time after add buffer:") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
@@ -316,7 +280,7 @@ public:
                     break; //break the while
                 }
                 //OutputDebugStringW((wstring(L"End processing frame: ") + to_wstring(gt.read()) + wstring(L"\n")).c_str());
-                if (framesSoFar >0)  handlingTime = max(gt.read() - startTime, handlingTime); //first is always slow due to pause
+                //if (framesSoFar >0)  handlingTime = max(gt.read() - startTime, handlingTime); //first is always slow due to pause
                 //OutputDebugStringW((wstring(L"Frame event handling time (microseconds): ") + to_wstring(handlingTime*1000000) + wstring(L"\n")).c_str());
             }
             else {
@@ -329,7 +293,7 @@ public:
         camera->safe_pco(PCO_SetRecordingState(camera->hCamera, 0), "failed to stop camera recording");// stop recording
 
 #if defined(_DEBUG)
-        cerr << "leave cooke worker thread run() @ time " << gt.read() << endl;
+        //cerr << "leave cooke worker thread run() @ time " << gt.read() << endl;
         genSquareSpike(30);
         cerr << "black frame info:" << endl;
         for (unsigned i = 0; i < nBlackFrames.size(); ++i){

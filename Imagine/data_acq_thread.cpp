@@ -205,8 +205,10 @@ void DataAcqThread::run_live()
 
     isUpdatingImage = false;
 
-    Camera::PixelValue * frame = new Camera::PixelValue[camera.imageSizePixels];
-    unique_ptr<Camera::PixelValue[]> uniPtrFrame(frame);
+    //Camera::PixelValue * frame; // = new Camera::PixelValue[camera.imageSizePixels];
+    //QByteArray * frame;
+
+    //unique_ptr<Camera::PixelValue[]> uniPtrFrame(frame);
 
     Timer_g timer;
 
@@ -221,26 +223,24 @@ void DataAcqThread::run_live()
 
     long nDisplayUpdating = 0;
     long nFramesGot = 0;
-    long nFramesGotCur;
+    long nFramesGotCur = 0;
     while (!stopRequested){
         nFramesGotCur = camera.nAcquiredFrames.load();
-        if (nFramesGotCur == -1){
-            Sleep(20);
+        if (nFramesGotCur == nFramesGot){
+            QThread::msleep(20);
             continue;
         }
 
-        if (nFramesGot != nFramesGotCur && !isUpdatingImage){
+        if (!isUpdatingImage){
             nFramesGot = nFramesGotCur;
 
             //get the last frame:
-            if (!camera.getLatestLiveImage(frame)){
-                Sleep(20);
+            if (!camera.updateLiveImage()){
+                QThread::msleep(20);
                 continue;
             }
 
-            //copy data
-            QByteArray data16 = QByteArray::fromRawData((const char*)frame, camera.imageSizeBytes); //image display buffer
-            emit imageDataReady(data16, nFramesGot - 1, camera.getImageWidth(), camera.getImageHeight()); //-1: due to 0-based indexing
+            emit imageDataReady(camera.getLiveImage(), nFramesGot - 1, camera.getImageWidth(), camera.getImageHeight()); //-1: due to 0-based indexing
 
             nDisplayUpdating++;
             if (nDisplayUpdating % 10 == 0){
@@ -343,7 +343,7 @@ void DataAcqThread::run_acq_and_save()
 
     //Camera::PixelValue * frame=new Camera::PixelValue[nPixels];
     Camera::PixelValue * frame = (Camera::PixelValue*)_aligned_malloc(sizeof(Camera::PixelValue*)*(camera.imageSizePixels), 4 * 1024);
-    unique_ptr<Camera::PixelValue, decltype(_aligned_free)*> uniPtrFrame(frame, _aligned_free);
+    //unique_ptr<Camera::PixelValue, decltype(_aligned_free)*> uniPtrFrame(frame, _aligned_free);
 
     idxCurStack = 0; //stack we are currently working on.  We will keep this in sync with camera->nAcquiredStacks
 
@@ -373,7 +373,7 @@ void DataAcqThread::run_acq_and_save()
 
 nextStack:  //code below is repeated every stack
     double stackStartTime = gt.read();
-    cout << "b4 open laser: " << gt.read() << endl;
+    //cout << "b4 open laser: " << gt.read() << endl;
 
     //open laser shutter
     digOut->updateOutputBuf(4, true);
@@ -390,12 +390,12 @@ nextStack:  //code below is repeated every stack
        // }
     }
 
-    cout << "after open laser: " << gt.read() << endl;
+    //cout << "after open laser: " << gt.read() << endl;
     //TODO: may need delay for shutter open time
 
     emit newLogMsgReady(QString("Acquiring stack (0-based)=%1 @time=%2 s")
         .arg(idxCurStack)
-        .arg(gt.read(), 10, 'f', 4) //width=10, fixed point, 4 decimal digits 
+        .arg(stackStartTime, 10, 'f', 4) //width=10, fixed point, 4 decimal digits 
         );
 
     /*
@@ -408,12 +408,12 @@ nextStack:  //code below is repeated every stack
 
     if (hasPos && ownPos) pPositioner->optimizeCmd(); //This function currently does nothing for voltage positioner.  Is this okay?
 
-    cout << "b4 start camera & piezo: " << gt.read() << endl;
+    //cout << "b4 start camera & piezo: " << gt.read() << endl;
 
     bool isPiezo = hasPos && pPositioner->posType == PiezoControlPositioner;
 
-    double curTime = gt.read();
-    OutputDebugStringW((wstring(L"Duration before starting cam and piezo:") + to_wstring(int((curTime - stackStartTime)*1000)) + wstring(L"\n")).c_str());
+    //double curTime = gt.read();
+    //OutputDebugStringW((wstring(L"Duration before starting cam and piezo:") + to_wstring(int((curTime - stackStartTime)*1000)) + wstring(L"\n")).c_str());
 
     //raise priority here to ensure that the camera and piezo begin (nearly) simultaneously
     QThread::setPriority(QThread::TimeCriticalPriority);
@@ -428,9 +428,9 @@ nextStack:  //code below is repeated every stack
         }
         //genSquareSpike(10);
         if (hasPos && ownPos) {
-            cout << "b4 pPositioner->runCmd: " << gt.read() << endl;
+            //cout << "b4 pPositioner->runCmd: " << gt.read() << endl;
             pPositioner->runCmd();
-            cout << "after pPositioner->runCmd: " << gt.read() << endl;
+            //cout << "after pPositioner->runCmd: " << gt.read() << endl;
         }
 
         if (!startCameraOnce && isPiezo) {
@@ -441,10 +441,10 @@ nextStack:  //code below is repeated every stack
     else {
         //Camera takes a while to start, so do this before starting positioner
         if (!startCameraOnce) {
-            cout << "b4 camera.startacq: " << gt.read() << endl;
+            //cout << "b4 camera.startacq: " << gt.read() << endl;
             //camera.startAcq();
             camera.nextStack();
-            cout << "after camera.startacq: " << gt.read() << endl;
+            //cout << "after camera.startacq: " << gt.read() << endl;
         }
         if (hasPos && ownPos) pPositioner->runCmd();
     }
@@ -452,7 +452,7 @@ nextStack:  //code below is repeated every stack
     //lower priority back to default
     QThread::setPriority(defaultPriority);
 
-    cout << "after start camera & piezo: " << stackStartTime << endl;
+    //cout << "after start camera & piezo: " << stackStartTime << endl;
 
     //TMP: trigger camera
     //digOut->updateOutputBuf(5,true);
@@ -461,35 +461,39 @@ nextStack:  //code below is repeated every stack
     emit newStatusMsgReady(QString("Camera: started acq: %1")
         .arg(camera.getErrorMsg().c_str()));
 
-    double curTime2 = gt.read();
-    OutputDebugStringW((wstring(L"Duration of starting cam and piezo:") + to_wstring(int((curTime2 - curTime) * 1000)) + wstring(L"\n")).c_str());
+    //double curTime2 = gt.read();
+    //OutputDebugStringW((wstring(L"Duration of starting cam and piezo:") + to_wstring(int((curTime2 - curTime) * 1000)) + wstring(L"\n")).c_str());
 
-    long nFramesGotForStack;
+    long nFramesGotForStack=0;
+    long tempNumStacks=0;
+    long tempNumFrames=0;
+   
     while (!stopRequested) {
         //to avoid "priority inversion" we temporarily elevate the priority
         this->setPriority(QThread::TimeCriticalPriority);
         nFramesGotForStack = camera.nAcquiredFrames.load();
-        long temp_nstacks = camera.nAcquiredStacks.load();
+        tempNumStacks = camera.nAcquiredStacks.load();
         this->setPriority(defaultPriority);
-        if (idxCurStack < temp_nstacks) {
-            idxCurStack = temp_nstacks;
+        if (idxCurStack < tempNumStacks) {
+            idxCurStack = tempNumStacks;
             OutputDebugStringW((wstring(L"Data acq thread finished stack #") + to_wstring(idxCurStack) + wstring(L"\n")).c_str());
             break;
         }
-        if (!isUpdatingImage) {
+        if (!isUpdatingImage && tempNumFrames != nFramesGotForStack) {
+            tempNumFrames = nFramesGotForStack;
             //get the latest frame:
-            if (!camera.getLatestLiveImage(frame)) {
+            if (!camera.updateLiveImage()) {
                 QThread::msleep(10);
                 continue;
             }
             //copy data to display buffer
-            QByteArray data16 = QByteArray((const char*)frame, camera.imageSizeBytes); //image display buffer
-            emit imageDataReady(data16, nFramesGotForStack - 1,  camera.getImageWidth(), camera.getImageHeight()); //-1: due to 0-based indexing
+            //QByteArray data16 = QByteArray((const char*)frame, camera.imageSizeBytes); //image display buffer
+            emit imageDataReady(camera.getLiveImage(), nFramesGotForStack - 1,  camera.getImageWidth(), camera.getImageHeight()); //-1: due to 0-based indexing
         }
     }//while, camera is not idle
 
-    double curTime3 = gt.read();
-    OutputDebugStringW((wstring(L"Duration before stack end detected:") + to_wstring(int((curTime3 - curTime2) * 1000)) + wstring(L"\n")).c_str());
+    //double curTime3 = gt.read();
+    //OutputDebugStringW((wstring(L"Duration before stack end detected:") + to_wstring(int((curTime3 - curTime2) * 1000)) + wstring(L"\n")).c_str());
 
 
     //get the last frame if nec
@@ -502,14 +506,14 @@ nextStack:  //code below is repeated every stack
     */
     //nFramesDoneStack += startCameraOnce ? nFramesPerStack : 0;
 
-    cout << "b4 close laser: " << gt.read() << endl;
+    //cout << "b4 close laser: " << gt.read() << endl;
 
     //close laser shutter
     digOut->updateOutputBuf(4, false);
     digOut->write();
 
-    double curTime32 = gt.read();
-    OutputDebugStringW((wstring(L"Duration of digout for laser:") + to_wstring(int((curTime32 - curTime3) * 1000)) + wstring(L"\n")).c_str());
+    //double curTime32 = gt.read();
+    //OutputDebugStringW((wstring(L"Duration of digout for laser:") + to_wstring(int((curTime32 - curTime3) * 1000)) + wstring(L"\n")).c_str());
 
     /*
     {
@@ -560,16 +564,16 @@ nextStack:  //code below is repeated every stack
     //digOut->updateOutputBuf(5,false);
     //digOut->write();
 
-    double curTime4 = gt.read();
-    OutputDebugStringW((wstring(L"Duration from stack end detected to begin wait:") + to_wstring(int((curTime4 - curTime3) * 1000)) + wstring(L"\n")).c_str());
+    //double curTime4 = gt.read();
+    //OutputDebugStringW((wstring(L"Duration from stack end detected to begin wait:") + to_wstring(int((curTime4 - curTime3) * 1000)) + wstring(L"\n")).c_str());
 
 
 
     if (idxCurStack < this->nStacks && !stopRequested) {
         if (isBiDirectionalImaging && ownPos) {
-            cout << "b4 preparePositioner: " << gt.read() << endl;
+            //cout << "b4 preparePositioner: " << gt.read() << endl;
             preparePositioner(idxCurStack % 2 == 0);
-            cout << "after preparePositioner: " << gt.read() << endl;
+            //cout << "after preparePositioner: " << gt.read() << endl;
         }
         //double currentTime = gt.read();
         double stackEndingTime = gt.read();
@@ -601,7 +605,7 @@ nextStack:  //code below is repeated every stack
 
     camera.stopAcqFinal();
 
-    cout << "b4 flush ai data: " << gt.read() << endl;
+    //cout << "b4 flush ai data: " << gt.read() << endl;
     ///save ai data:
     if (ownPos) {
         aiThread->save(*ofsAi);

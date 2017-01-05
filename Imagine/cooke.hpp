@@ -43,7 +43,7 @@ private:
 
     //the buf for the live image
     //todo: we might also want it to be aligned
-    PixelValue* pLiveImage;
+    QByteArray liveImage;
 
     //for speed reason: a black frame used for copying
     //todo: alignment
@@ -75,7 +75,7 @@ private:
 
 public:
     CookeCamera(){
-        pLiveImage = nullptr;
+        //pLiveImage = nullptr;
 
         pBlackImage = nullptr;
 
@@ -113,7 +113,8 @@ public:
     ~CookeCamera(){
         //delete[] pLiveImage;
         //delete[] pBlackImage;
-        _aligned_free(pLiveImage);
+        //delete liveImage;
+        //_aligned_free(pLiveImage);
         _aligned_free(pBlackImage);
         freeMemPool();
 
@@ -160,7 +161,8 @@ public:
 
     //long getAcquiredFrameCount();
 
-    bool getLatestLiveImage(PixelValue * frame);
+    bool updateLiveImage();
+    QByteArray &getLiveImage();
 
     bool prepCameraOnce();
     bool nextStack();

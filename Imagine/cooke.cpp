@@ -85,7 +85,7 @@ bool CookeCamera::init()
     this->model = strCamType.strHardwareVersion.Board[0].szName;
 
     //pLiveImage=new PixelValue[nPixels];
-    this->pLiveImage = (PixelValue*)_aligned_malloc(imageSizeBytes, 4 * 1024);
+    //this->pLiveImage = (PixelValue*)_aligned_malloc(imageSizeBytes, 4 * 1024);
 
     //pBlackImage=new PixelValue[nPixels];
     this->pBlackImage = (PixelValue*)_aligned_malloc(imageSizeBytes, 4 * 1024);
@@ -408,13 +408,13 @@ bool CookeCamera::prepCameraOnce()
     }
 
     Timer_g gt = parentAcqThread->parentImagine->gTimer;
-    cout << "b4 new WorkerThread(): " << gt.read() << endl;
+    //cout << "b4 new WorkerThread(): " << gt.read() << endl;
     spoolThread = new SpoolThread(ofsSpooling, this);
     spoolThread->start(QThread::NormalPriority);
     workerThread = new CookeWorkerThread(this);
-    cout << "after new WorkerThread(): " << gt.read() << endl;
+    //cout << "after new WorkerThread(): " << gt.read() << endl;
     workerThread->start(QThread::TimeCriticalPriority);
-    cout << "after workerThread->start(): " << gt.read() << endl;
+    //cout << "after workerThread->start(): " << gt.read() << endl;
     return true;
 }
 
@@ -504,24 +504,36 @@ long CookeCamera::extractFrameCounter(PixelValue* rawData)
     return result;
 }
 
-bool CookeCamera::getLatestLiveImage(PixelValue * frame)
+//Note:  this function will fail (possibly in an ugly way) if the circular buffer overflows
+bool CookeCamera::updateLiveImage()
 {
-    /*
-    if (!mpLock->tryLock()) return false;
+    if (!circBufLock->tryLock()) return false;
 
-    if (nAcquiredFrames <= 0 || !isRecording)  {
-        mpLock->unlock();
+    long nFrames = nAcquiredFrames.load();
+
+    if (nFrames <= 0 || workerThread->isPaused)  {
+        circBufLock->unlock();
         return false;
+    }  
+    
+    //memcpy_g(frame, pLiveImage, imageSizeBytes);
+    long idx = circBuf->peekPut() - 1;
+    if (idx == -1) {
+        idx = circBuf->capacity() - 1; //if the latest image resides at the end of the circular buffer
     }
-    //maybe instead store the most recent circbuf index as (peekput()-1), then unlock, then copy from circbuf.  
-    //the above strategy should be safe as long as the circular buffer does not overflow
-    //Also why not just assign and return pLiveImage instead of copying?  Should be fine, may want to implement a max frame rate somewhere (not here)
-    memcpy_g(frame, pLiveImage, imageSizeBytes);
+    circBufLock->unlock();
 
-    mpLock->unlock();
-    */
-    //return true;
-    return false;
+    const char * temp = memPool + idx*size_t(imageSizeBytes);
+    //copies data
+    liveImage = QByteArray(temp, imageSizeBytes); //image display buffer
+    //QByteArray data16 = QByteArray::fromRawData((const char*)frame, camera.imageSizeBytes); //image display buffer
+
+    return true;
+}
+
+QByteArray &CookeCamera::getLiveImage()
+{
+    return liveImage;
 }
 
 //return false if, say, can't open the spooling file to save

@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <QtCore>
 
 using std::string;
 using std::vector;
@@ -91,7 +92,8 @@ public:
 
     //virtual long getAcquiredFrameCount() = 0; // #frames acquired for the current stack so far
 
-    virtual bool getLatestLiveImage(PixelValue * frame) = 0;
+    virtual bool updateLiveImage() = 0;
+    virtual QByteArray &getLiveImage() = 0;
 
     //virtual bool isIdle()=0;
 
@@ -99,11 +101,11 @@ public:
     virtual bool nextStack() = 0;
     virtual bool stopAcqFinal() = 0;
     //virtual bool stopAcq() = 0;
-
+    /*
     PixelValue * getImageArray(){
         return pImageArray;
     }
-
+    */
     int getChipWidth(){
         return chipWidth;
     }
