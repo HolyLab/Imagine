@@ -96,17 +96,15 @@ int LaserCtrlSerial::readShutterStatus()
     if (port != NULL) {
         nWritten = port->write(tx);
         port->waitForBytesWritten(50);
-    }
-    qDebug() << "Write : " << nWritten << " bytes";
-    if (port != NULL) {
+        qDebug() << "Write : " << nWritten << " bytes";
         do {
             isData = port->waitForReadyRead(500);
         } while (isData);
         rx = port->readAll();
+        qDebug() << "Read : " << rx.size() << " bytes";
     }
     else
         rx = "0203";
-    qDebug() << "Read : " << rx.size() << " bytes";
 
     bool ok;
     int result = rx.mid(2, 2).toInt(&ok, 16);
@@ -128,20 +126,17 @@ void LaserCtrlSerial::getTransStatus(bool isAotf, int line)
    tx=QString("0%1%2\r").arg(op).arg(line-1, 2, 16, QChar('0')).toLatin1();
    int nWritten = 2;
    bool isData;
-   if (port != NULL) nWritten = port->write(tx);
-   if (port->waitForBytesWritten(50))
-       qDebug() << "Write : " << nWritten << " bytes";
-       qDebug() << "Writed is : " << nWritten << " bytes";
    if (port != NULL) {
+       nWritten = port->write(tx);
+       qDebug() << "Write : " << nWritten << " bytes";
        do {
            isData = port->waitForReadyRead(500);
        } while (isData);
        rx = port->readAll();
+       qDebug() << "Read : " << rx.size() << " bytes";
    }
    else
        rx = "0501F4";
-   qDebug() << "Read : " << rx.size() << " bytes";
-   qDebug() << "Readed is : " << rx.size() << " bytes";
 
    bool ok;
    int result=rx.mid(2,4).toInt(&ok, 16);
@@ -158,18 +153,20 @@ void LaserCtrlSerial::setShutter(int line, bool isOpen)
     int newStatus=bs.to_ulong();
     tx=QString("01%1\r").arg(newStatus, 2, 16, QChar('0')).toLatin1();
     int nWritten = 2;
-    if (port != NULL) nWritten = port->write(tx);
-    qDebug() << "Write : " << nWritten << " bytes";
-    qDebug() << "Writed is : " << nWritten << " bytes";
+    if (port != NULL) {
+        nWritten = port->write(tx);
+        qDebug() << "Write : " << nWritten << " bytes";
+    }
 }
 
 void LaserCtrlSerial::setShutters(int status)
 {
     tx = QString("01%1\r").arg(status, 2, 16, QChar('0')).toLatin1();
     int nWritten = 2;
-    if (port != NULL) nWritten = port->write(tx);
-    qDebug() << "Write : " << nWritten << " bytes";
-    qDebug() << "Writed is : " << nWritten << " bytes";
+    if (port != NULL) {
+        nWritten = port->write(tx);
+        qDebug() << "Write : " << nWritten << " bytes";
+    }
 }
 
 void LaserCtrlSerial::setTrans(bool isAotf, int line, int value)
@@ -179,9 +176,10 @@ void LaserCtrlSerial::setTrans(bool isAotf, int line, int value)
     tx=QString("0%1%2%3\r").arg(op).arg(line-1, 2, 16, QChar('0'))
                 .arg(value, 4, 16, QChar('0')).toLatin1();
     int nWritten = 3;
-    if (port != NULL) nWritten = port->write(tx);
-    qDebug() << "Write : " << nWritten << " bytes";
-    qDebug() << "Writed is : " << nWritten << " bytes";
+    if (port != NULL) {
+        nWritten = port->write(tx);
+        qDebug() << "Write : " << nWritten << " bytes";
+    }
 }
 
 
@@ -196,13 +194,12 @@ QByteArray LaserCtrlSerial::readLaserLineSetup(void)
     if (port != NULL) {
         nWritten = port->write(tx);
         port->waitForBytesWritten(50);
-    }
-    qDebug() << "Write : " << nWritten << " bytes";
-    if (port != NULL) {
+        qDebug() << "Write : " << nWritten << " bytes";
         do{ 
             isData = port->waitForReadyRead(500);
         } while (isData);
         rx = port->readAll();
+        qDebug() << "Read : " << rx.size() << " bytes";
     }
     else
         rx = "08131015EA0FD211621414001400000000"; // OCPI-II return this value
@@ -224,9 +221,6 @@ QByteArray LaserCtrlSerial::readLaserLineSetup(void)
         The seventh line is 3 nm(0x001E) so it controls the third output select.The eighth line is zero so
         stop counting
     */
-
-    qDebug() << "Read : " << rx.size() << " bytes";
-    qDebug() << "Readed is : " << rx.size() << " bytes";
 
     QByteArray result = rx.mid(2, rx.size()-2);
     return result;

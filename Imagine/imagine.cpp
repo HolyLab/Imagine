@@ -1998,89 +1998,49 @@ void Imagine::on_cbLine8_clicked(bool checked)
     appendLog(str);
 }
 
-void Imagine::on_aotfLine1_sliderMoved()
+void Imagine::on_aotfLine1_valueChanged()
 {
     ui.doubleSpinBox_aotfLine1->setValue((double)(ui.aotfLine1->value()) / 10.);
-}
-
-void Imagine::on_aotfLine2_sliderMoved()
-{
-    ui.doubleSpinBox_aotfLine2->setValue((double)(ui.aotfLine2->value()) / 10.);
-}
-
-void Imagine::on_aotfLine3_sliderMoved()
-{
-    ui.doubleSpinBox_aotfLine3->setValue((double)(ui.aotfLine3->value()) / 10.);
-}
-
-void Imagine::on_aotfLine4_sliderMoved()
-{
-    ui.doubleSpinBox_aotfLine4->setValue((double)(ui.aotfLine4->value()) / 10.);
-}
-
-void Imagine::on_aotfLine5_sliderMoved()
-{
-    ui.doubleSpinBox_aotfLine5->setValue((double)(ui.aotfLine5->value()) / 10.);
-}
-
-void Imagine::on_aotfLine6_sliderMoved()
-{
-    ui.doubleSpinBox_aotfLine6->setValue((double)(ui.aotfLine6->value()) / 10.);
-}
-
-void Imagine::on_aotfLine7_sliderMoved()
-{
-    ui.doubleSpinBox_aotfLine7->setValue((double)(ui.aotfLine7->value()) / 10.);
-}
-
-void Imagine::on_aotfLine8_sliderMoved()
-{
-    ui.doubleSpinBox_aotfLine8->setValue((double)(ui.aotfLine8->value()) / 10.);
-}
-
-void Imagine::on_aotfLine1_sliderReleased()
-{
-    ui.doubleSpinBox_aotfLine1->setValue((double)(ui.aotfLine1->value())/10.);
     changeLaserTrans(true, 1);
 }
 
-void Imagine::on_aotfLine2_sliderReleased()
+void Imagine::on_aotfLine2_valueChanged()
 {
-    ui.doubleSpinBox_aotfLine2->setValue((double)(ui.aotfLine2->value()) /10.);
+    ui.doubleSpinBox_aotfLine2->setValue((double)(ui.aotfLine2->value()) / 10.);
     changeLaserTrans(true, 2);
 }
 
-void Imagine::on_aotfLine3_sliderReleased()
+void Imagine::on_aotfLine3_valueChanged()
 {
-    ui.doubleSpinBox_aotfLine3->setValue((double)(ui.aotfLine3->value()) /10.);
+    ui.doubleSpinBox_aotfLine3->setValue((double)(ui.aotfLine3->value()) / 10.);
     changeLaserTrans(true, 3);
 }
 
-void Imagine::on_aotfLine4_sliderReleased()
+void Imagine::on_aotfLine4_valueChanged()
 {
-    ui.doubleSpinBox_aotfLine4->setValue((double)(ui.aotfLine4->value()) /10.);
+    ui.doubleSpinBox_aotfLine4->setValue((double)(ui.aotfLine4->value()) / 10.);
     changeLaserTrans(true, 4);
 }
 
-void Imagine::on_aotfLine5_sliderReleased()
+void Imagine::on_aotfLine5_valueChanged()
 {
     ui.doubleSpinBox_aotfLine5->setValue((double)(ui.aotfLine5->value()) / 10.);
     changeLaserTrans(true, 5);
 }
 
-void Imagine::on_aotfLine6_sliderReleased()
+void Imagine::on_aotfLine6_valueChanged()
 {
     ui.doubleSpinBox_aotfLine6->setValue((double)(ui.aotfLine6->value()) / 10.);
     changeLaserTrans(true, 6);
 }
 
-void Imagine::on_aotfLine7_sliderReleased()
+void Imagine::on_aotfLine7_valueChanged()
 {
     ui.doubleSpinBox_aotfLine7->setValue((double)(ui.aotfLine7->value()) / 10.);
     changeLaserTrans(true, 7);
 }
 
-void Imagine::on_aotfLine8_sliderReleased()
+void Imagine::on_aotfLine8_valueChanged()
 {
     ui.doubleSpinBox_aotfLine8->setValue((double)(ui.aotfLine8->value()) / 10.);
     changeLaserTrans(true, 8);
