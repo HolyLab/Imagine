@@ -34,6 +34,8 @@ template<typename T> string toString(T aValue) { //don't define as toString(T& r
 
 
 QString replaceExtName(QString filename, QString newExtname);
+bool CheckFileExtention(QString filename);
+bool CheckAndMakeFilePath(QString filename);
 
 
 #endif //MISC_HPP

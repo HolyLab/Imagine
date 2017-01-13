@@ -8,19 +8,21 @@
 class VolPiezo : public Positioner {
 
 public:
-    VolPiezo(QString aistring, QString aostring){
+    VolPiezo(QString aistring, QString aostring, int maxposition, int maxspeed){
         ainame = aistring;
         aoname = aostring;
         aoOnce = nullptr;
         ao = nullptr;
+        maxpos = maxposition;
+        maxspd = maxspeed;
         posType = VolPiezoPositioner;
     }
     ~VolPiezo(){ delete aoOnce; delete ao; }
 
 	//TODO: make these configurable elsewhere.  may be better to subclass VolPiezo for individual positioner models
     double minPos(){ return 0; }
-    double maxPos(){ return 800; }
-	double maxSpeed(){ return 2000; } //microns per second
+    double maxPos(){ return maxpos; }
+    double maxSpeed(){ return maxspd; } //microns per second
     bool curPos(double* pos);
     bool moveTo(double to);
 
@@ -36,6 +38,8 @@ private:
     QString aoname;
     NiDaqAoWriteOne * aoOnce;
     NiDaqAo* ao;
+    int maxpos = 0;
+    int maxspd = 0;
 
     double zpos2voltage(double um);
     void cleanup();

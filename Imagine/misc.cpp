@@ -16,6 +16,7 @@
 
 #include <QString>
 #include <QFileInfo>
+#include <QDir>
 
 
 #include "misc.hpp"
@@ -33,3 +34,21 @@ QString replaceExtName(QString filename, QString newExtname)
     }
 }//replaceExtName()
 
+bool CheckFileExtention(QString filename)
+{
+    QFileInfo fi(filename);
+    QString ext = fi.suffix();
+    if (ext!="imagine")
+        return false;
+    return true;
+}//CheckFileName()
+
+bool CheckAndMakeFilePath(QString filename)
+{
+    QFileInfo fi(filename);
+    QDir dir(fi.path());
+    bool retVal = true;
+    if (!dir.exists())
+        retVal = dir.mkpath(fi.path());
+    return retVal;
+}//CheckFileName()

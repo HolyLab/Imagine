@@ -58,6 +58,7 @@ using namespace std;
 #include "timer_g.hpp"
 #include "spoolthread.h"
 #include <bitset>
+#include "misc.hpp"
 using std::bitset;
 
 //TemperatureDialog * temperatureDialog = NULL;
@@ -259,7 +260,7 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
     maxROIHSize = camera.getChipWidth();
     maxROIVSize = camera.getChipHeight();
  //   roiStepsHor = camera.getROIStepsHor(); // OCPI-II return 20
-    roiStepsHor = 160; // OCPI-II return 20
+    roiStepsHor = 160;
 
     if (maxROIHSize == 0) {// this is for GUI test at dummy HW
         maxROIHSize = 2048;
@@ -273,6 +274,8 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
     ui.spinBoxVend->setMinimum(maxROIVSize/2 + 1);
     ui.spinBoxHend->setMaximum(maxROIHSize);
     ui.spinBoxVend->setMaximum(maxROIVSize);
+    ui.spinBoxHend->setValue(maxROIHSize);
+    ui.spinBoxVend->setValue(maxROIVSize);
     ui.spinBoxHend->setSingleStep(roiStepsHor);
     ui.spinBoxHstart->setSingleStep(roiStepsHor);
     updateStatus(eIdle, eNoAction);
@@ -379,9 +382,9 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
 
     /* for laser control from this line */
     // pass laser object to a new thread
-    if (masterImagine == NULL) {
+    if ((masterImagine == NULL)&&(laser->getDeviceName() != "nidaq")) {
         QString portName;
-        if (laser->getDeviceName() == "spectral")
+        if (laser->getDeviceName() == "COM")
             portName = QString("COM%1").arg(ui.spinBoxPortNum->value());
         else
             portName = "DummyPort";
@@ -997,6 +1000,11 @@ void Imagine::on_actionStartAcqAndSave_triggered()
         return;
     }//if, 
 
+    if (!CheckAndMakeFilePath(dataAcqThread.headerFilename)) {
+        QMessageBox::information(this, "File creation error.",
+            "Unable to create the directory");
+    }
+
     nUpdateImage = 0;
     minPixelValue = maxPixelValue = -1;
 
@@ -1072,6 +1080,10 @@ void Imagine::on_actionOpenShutter_triggered()
     ui.actionOpenShutter->setEnabled(false);
     ui.actionCloseShutter->setEnabled(false);
 
+    //open laser shutter
+    digOut->updateOutputBuf(4, true);
+    digOut->write();
+/*
     QString portName;
     if (!(laserCtrlSerial->isPortOpen())) {
        emit openLaserSerialPort(portName);
@@ -1080,7 +1092,7 @@ void Imagine::on_actionOpenShutter_triggered()
     changeLaserShutters();
     for (int i = 1; i <= 4; i++)
         changeLaserTrans(true, i);
-
+*/
     QString str = QString("Open laser shutter");
     appendLog(str);
 
@@ -1093,8 +1105,12 @@ void Imagine::on_actionCloseShutter_triggered()
     ui.actionOpenShutter->setEnabled(false);
     ui.actionCloseShutter->setEnabled(false);
 
+    //open laser shutter
+    digOut->updateOutputBuf(4, false);
+    digOut->write();
+/*
     emit setLaserShutters(0);
-
+*/
     QString str = QString("Close laser shutter");
     appendLog(str);
     ui.actionOpenShutter->setEnabled(true);
@@ -1171,9 +1187,9 @@ void Imagine::closeEvent(QCloseEvent *event)
 void Imagine::on_btnFullChipSize_clicked()
 {
     ui.spinBoxHstart->setValue(1);
-    ui.spinBoxHend->setValue(1004); //TODO: hard coded
+    ui.spinBoxHend->setValue(maxROIHSize);
     ui.spinBoxVstart->setValue(1);
-    ui.spinBoxVend->setValue(1002); //TODO: hard coded
+    ui.spinBoxVend->setValue(maxROIVSize);
 
 }
 
@@ -1452,6 +1468,16 @@ skip:
         dataAcqThread.aiFilename = replaceExtName(headerFilename, "ai");
         dataAcqThread.camFilename = replaceExtName(headerFilename, "cam");
         dataAcqThread.sifFileBasename = replaceExtName(headerFilename, "");
+        if (!CheckFileExtention(headerFilename)) { // check file extention
+            if (!QMessageBox::question(this, "File name error.",
+                "File extention is not 'imagine'. Do you want to change it?",
+                "&Yes", "&No",
+                QString(), 0, 1)){
+                dataAcqThread.headerFilename = replaceExtName(headerFilename, "imagine");
+                ui.lineEditFilename->clear();
+                ui.lineEditFilename->insert(dataAcqThread.headerFilename);
+            }
+        }
     }//else, save data
 
     dataAcqThread.stimFileContent = ui.textEditStimFileContent->toPlainText();
@@ -2304,14 +2330,19 @@ void Imagine::readComments(QString file)
 void Imagine::on_actionSave_Configuration_triggered()
 {
     QString proposedFile;
-    QString file;
-    if(masterImagine == NULL){
-        proposedFile = m_OpenDialogLastDirectory + QDir::separator() + "OCPI_II_cfg1.txt";
-        file = QFileDialog::getSaveFileName(this, tr("Save OCPI II Imagine(1) Configuration"),proposedFile,tr("*.txt"));
+    if (masterImagine == NULL) {
+        if (file == "")
+            proposedFile = m_OpenDialogLastDirectory + QDir::separator() + "OCPI_cfg1.txt";
+        else
+            proposedFile = file;
+        file = QFileDialog::getSaveFileName(this, tr("Save OCPI Imagine(1) Configuration"), proposedFile, tr("*.txt"));
     }
     else {
-        proposedFile = m_OpenDialogLastDirectory + QDir::separator() + "OCPI_II_cfg2.txt";
-        file = QFileDialog::getSaveFileName(this, tr("Save OCPI II Imagine(2) Configuration"), proposedFile, tr("*.txt"));
+        if (file == "")
+            proposedFile = m_OpenDialogLastDirectory + QDir::separator() + "OCPI_cfg2.txt";
+        else
+            proposedFile = file;
+        file = QFileDialog::getSaveFileName(this, tr("Save OCPI Imagine(2) Configuration"), proposedFile, tr("*.txt"));
     }
     if (true == file.isEmpty()) { return; }
     QFileInfo fi(file);
@@ -2323,7 +2354,7 @@ void Imagine::on_actionSave_Configuration_triggered()
 
 void Imagine::on_actionLoad_Configuration_triggered()
 {
-    QString file = QFileDialog::getOpenFileName(this, tr("Select Configuration File"),
+    file = QFileDialog::getOpenFileName(this, tr("Select Configuration File"),
         m_OpenDialogLastDirectory,
         tr("Configuration File (*.txt)"));
     if (true == file.isEmpty()) { return; }

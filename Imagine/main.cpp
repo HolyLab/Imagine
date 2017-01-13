@@ -211,7 +211,13 @@ int main(int argc, char *argv[])
     Qt::GlobalColor col = Qt::red;
     splash->showMessage(QString("Initialize the %1 actuator ...").arg(positionerType), align, col);
     Positioner *pos = nullptr;
-    if (positionerType == "volpiezo") pos = new VolPiezo(ainame, aoname);
+    int maxposition;
+    int maxspeed;
+    if (positionerType == "volpiezo") {
+        maxposition = se->globalObject().property("maxposition").toNumber();
+        maxspeed = se->globalObject().property("maxspeed").toNumber();
+        pos = new VolPiezo(ainame, aoname, maxposition, maxspeed);
+    }
 //    else if (positionerType == "pi") pos = new Piezo_Controller;
 //#ifndef _WIN64
 //    else if (positionerType == "thor") pos = new Actuator_Controller;
@@ -298,7 +304,8 @@ int main(int argc, char *argv[])
 
     // Laser
     Laser *laser = nullptr;
-    if (rig == "ocpi-2") laser = new Laser("spectral");
+    if (rig == "ocpi-2") laser = new Laser("COM");
+    else if (rig == "ocpi-1") laser = new Laser("nidaq");
     else laser = new Laser("dummy");
 
     // get rid of the status message

@@ -37,7 +37,9 @@ if(rig=="bakewell"){
 if(rig=="ocpi-1"){
 	var camera="cooke";
 	var positioner = "volpiezo"; //NOTE: requires daq=="ni"
-	var daq="ni";
+	var maxposition = "400"; // this value is for ocpi-1 positioner
+	var maxspeed = "2000"; // this value is for ocpi-2 positioner
+	var daq = "ni";
 	var doname = "Dev2/port0/line0:7";
 	var aoname = "Dev2/ao";
 	var ainame = "Dev2/ai";
@@ -46,7 +48,9 @@ if(rig=="ocpi-1"){
 if(rig=="ocpi-2"){
 	var camera="cooke";
 	var positioner = "volpiezo"; //NOTE: requires daq=="ni"
-	var daq="ni";
+	var maxposition = "800"; // this value is for ocpi-2 positioner
+	var maxspeed = "2000"; // this value is for ocpi-2 positioner
+	var daq = "ni";
 	var doname = "Dev1/port0/line0:7";
 	var aoname = "Dev1/ao";
 	var ainame = "Dev1/ai";
@@ -56,4 +60,15 @@ if (rig=="ocpi-1bidi") {
     var camera = "cooke";
     var positioner = "dummy";
     var daq = "dummy";
+}
+
+if (rig == "ocpi-lsk") {
+    var camera = "cooke";
+    var positioner = "volpiezo"; //NOTE: requires daq=="ni"
+    var maxposition = "800"; // this value is for ocpi-2 positioner
+    var maxspeed = "2000"; // this value is for ocpi-2 positioner
+    var daq = "ni";
+    var doname = "Dev2/port0/line0:7";
+    var aoname = "Dev2/ao";
+    var ainame = "Dev2/ai";
 }
