@@ -333,6 +333,9 @@ void DataAcqThread::run_acq_and_save()
     else if (!posOwner.compare("Either")) {
         ownPos = true;
     }
+    else if (!wTitle.compare("Imagine")) {
+        ownPos = true;
+    }
 
     if (hasPos && ownPos) pPositioner->setPCount();
     if (ownPos) preparePositioner(); //nec for volpiezo
