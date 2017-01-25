@@ -1562,6 +1562,68 @@
            </property>
           </item>
          </widget>
+         <widget class="QLabel" name="labelSerialCommand">
+          <property name="geometry">
+           <rect>
+            <x>240</x>
+            <y>50</y>
+            <width>81</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Serial Command</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="lineEditSerialCmd">
+          <property name="geometry">
+           <rect>
+            <x>240</x>
+            <y>70</y>
+            <width>51</width>
+            <height>20</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="btnSendSerialCmd">
+          <property name="geometry">
+           <rect>
+            <x>294</x>
+            <y>68</y>
+            <width>41</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Send</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="btnPzOpenPort">
+          <property name="geometry">
+           <rect>
+            <x>240</x>
+            <y>3</y>
+            <width>75</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Open port</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="btnPzClosePort">
+          <property name="geometry">
+           <rect>
+            <x>240</x>
+            <y>28</y>
+            <width>75</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Close port</string>
+          </property>
+         </widget>
         </widget>
         <widget class="QWidget" name="tabAI">
          <attribute name="title">

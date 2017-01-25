@@ -6,12 +6,16 @@
 class DummyPiezo: public Positioner {
 
 public:
-    DummyPiezo(){ posType = DummyPositioner; }
+    DummyPiezo(QString ctrlrsetup){
+        posType = DummyPositioner;
+        setuptype = ctrlrsetup;
+    }
    ~DummyPiezo(){}
 
    double minPos(){return 0;}
    double maxPos(){return 1000; }
    double maxSpeed() { return 4000; }
+   QString getCtrlrSetupType() { return setuptype; }
    bool curPos(double* pos){*pos=500; return true;}
    bool moveTo(double to){ return true;}
 
@@ -23,6 +27,7 @@ public:
    bool abortCmd(){ return true;}
 
 private:
+    QString setuptype;
 
 };//class, DummyPiezo
 

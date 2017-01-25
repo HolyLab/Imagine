@@ -414,6 +414,41 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabLaser));
     }
     /* for laser control until this line */
+    /* for piezo setup from this line */
+    // pass piezo setup object to a new thread
+    if ((masterImagine == NULL) && (pos->getCtrlrSetupType() != "none")) {
+        QString portName;
+        if (pos->getCtrlrSetupType().left(3) == "COM")
+            portName = pos->getCtrlrSetupType();
+        else
+            portName = "DummyPort";
+        piezoCtrlSerial = new PiezoCtrlSerial(portName);
+        piezoCtrlSerial->moveToThread(&piezoCtrlThread);
+        // connect signals
+        connect(&piezoCtrlThread, SIGNAL(finished()), piezoCtrlSerial, SLOT(deleteLater()));
+        connect(this, SIGNAL(openPiezoCtrlSerialPort(QString)), piezoCtrlSerial, SLOT(openSerialPort(QString)));
+        connect(this, SIGNAL(closePiezoCtrlSerialPort(void)), piezoCtrlSerial, SLOT(closeSerialPort(void)));
+        connect(this, SIGNAL(sendPiezoCtrlCmd(QString)), piezoCtrlSerial, SLOT(sendCommand(QString)));
+        connect(piezoCtrlSerial, SIGNAL(sendStatusToGUI(QByteArray)), this, SLOT(displayPiezoCtrlStatus(QByteArray)));
+        connect(piezoCtrlSerial, SIGNAL(sendValueToGUI(QByteArray)), this, SLOT(displayPiezoCtrlValue(QByteArray)));
+        // run event handler
+        piezoCtrlThread.start();
+        if (piezoCtrlSerial) {
+            emit openPiezoCtrlSerialPort(portName);
+            emit sendPiezoCtrlCmd("cl,1"); // closed loop on
+            emit sendPiezoCtrlCmd("stat"); // read status
+            ui.btnPzOpenPort->setEnabled(false);
+            ui.btnPzClosePort->setEnabled(true);
+        }
+    }
+    else {
+        ui.btnPzOpenPort->setVisible(false);
+        ui.btnPzClosePort->setVisible(false);
+        ui.labelSerialCommand->setVisible(false);
+        ui.lineEditSerialCmd->setVisible(false);
+        ui.btnSendSerialCmd->setVisible(false);
+    }
+    /* for piezo setup until this line */
 }
 
 Imagine::~Imagine()
@@ -2365,6 +2400,189 @@ void Imagine::on_actionLoad_Configuration_triggered()
     readComments(file);
 
     on_btnApply_clicked();
+}
+
+void Imagine::displayPiezoCtrlStatus(QByteArray rx)
+{
+    bool ok;
+    bitset<16> bs(rx.mid(5, rx.size()-7).toInt(&ok, 10)); // ex) rx = "stat,8389"
+    int actuatorPlug  = bs[0];                      // 0: acturator not plugged, 1: acturator plugged
+    int measureSystem = bs[1] + bs[2] * 2;          // 0: no measuring system,
+                                                    // 1: strain gauge measuring system,
+                                                    // 2: capacitive measuring system
+    int loopSystem    = bs[4];                      // 0: closed loop system, 1: open loop system
+    int piezoVolEn    = bs[6];                      // 0: piezo voltage not enabled, 1: piezo voltage enabled
+    int closedLoop    = bs[7];                      // 0: open loop, 1: closed loop
+    int generator     = bs[9]+ bs[10]*2+ bs[11]*4;  // 0: generator off,
+                                                    // 1: sine on
+                                                    // 2: triangle on
+                                                    // 3: rectangle on
+                                                    // 4: noise on
+                                                    // 5: sweep on
+    int notchFilter   = bs[12];                     // 0: notch filter off, 1: notch filter on
+    int lowPassFilter = bs[13];                     // 0: low pass filter off, 1: low pass filter on
+    int fan           = bs[15];                     // 0: fan off, 1: fan on
+
+    if (actuatorPlug)
+        appendLog("Actuator plugged");
+    else
+        appendLog("Actuator not plugged");
+
+    if (measureSystem==0)
+        appendLog("No measuring system");
+    else if (measureSystem == 1)
+        appendLog("Strain gauge Measuring system");
+    else if (measureSystem == 2)
+        appendLog("capacitive measuring system");
+    else
+        appendLog("Unknown measuring system");
+
+    if (loopSystem)
+        appendLog("Open loop system");
+    else
+        appendLog("Closed loop system");
+
+    if (piezoVolEn)
+        appendLog("piezo voltage enabled");
+    else
+        appendLog("piezo voltage not enabled");
+
+    if (closedLoop)
+        appendLog("Closed loop");
+    else
+        appendLog("Open loop");
+
+    if (generator == 0)
+        appendLog("Generator off");
+    else if (generator == 1)
+        appendLog("Generator sine on");
+    else if (generator == 2)
+        appendLog("Generator triangle on");
+    else if (generator == 3)
+        appendLog("Generator rectangle on");
+    else if (generator == 4)
+        appendLog("Generator noise on");
+    else if (generator == 5)
+        appendLog("Generator sweep on");
+    else
+        appendLog("Unknown generator");
+
+    if (notchFilter)
+        appendLog("Notch filter on");
+    else
+        appendLog("Notch filter off");
+
+    if (lowPassFilter)
+        appendLog("Low pass filter on");
+    else
+        appendLog("Low pass filter off");
+
+    if (fan)
+        appendLog("Fan on");
+    else
+        appendLog("Fan off");
+
+}
+
+void Imagine::displayPiezoCtrlValue(QByteArray rx)
+{
+    appendLog(rx);
+}
+
+void Imagine::on_btnSendSerialCmd_clicked()
+{
+    std::vector<QString> helptbl= {
+        "dprpon : switch on the cyclic output of the current actuator position value",
+        "dprpof : switch off the cyclic output of the current actuator position value",
+        "dprson : switch on the automatic output of the status register",
+        "dprsof : switch off the automatic output of the status register",
+        "s : shows all available commands request",
+        "stat : request content of status register"
+        "mess : position value request [um or mrad]",
+        "ktemp : amplifier temperature value [degree Celsius]",
+        "rohm : operation time of actuator since shipping [minutes]",
+        "rgver : version number of loop-controller request",
+        "fan : <cmd>,<value> switches the fan on/off: 0=off,1=on",
+        "sr : <cmd>,<value> slew rate: 0.0000002 to 500.0[V/ms]",
+        "modon : <cmd>,<value> modulation input(MOD plug): 0=off,1=on",
+        "monsrc : <cmd>,<value> monitor output: 0=pos.CL,1=cmd value,2=ctrl out,3=CL devi.,4=ACL devi.,5=actuator vol.,6=pos.OL",
+        "cl : <cmd>,<value> loop: 0=open,1=closed",
+        "kp : <cmd>,<value> proportional term: 0 to 999.0",
+        "ki : <cmd>,<value> integral term: 0 to 999.0",
+        "kd : <cmd>,<value> differential term: 0 to 999.0",
+        "sstd : set default values",
+        "notchon : <cmd>,<value> notch filter: 0=off,1=on",
+        "notchf : <cmd>,<value> notch filter frequency: 0 to 20000 [Hz]",
+        "notchb : <cmd>,<value> notch filter bandwidth (-3dB): 0 to 20000 (max. 2 * notch_fr) [Hz]",
+        "lpon : <cmd>,<value> low pass filter: 0=off,1=on",
+        "lpf : <cmd>,<value> low pass cut frequency: 1 to 20000[Hz]",
+        "gfkt : <cmd>,<value> internal function generator: 0=off,1=sine,2=triangle,3=rectangle,4=noise,5=sweep",
+        "sct : <cmd>,<value> scan type: 0=off,1=sine,2=triangle",
+        "ss : <cmd>,<value> start scan: 0=complete,1=start,2=running",
+        "trgedge : <cmd>,<value> trigger generation edge: 0=off,1=rising,2=falling,3=both",
+        "help : help <command>, ex) help dprpon"
+    };
+
+    if (ui.lineEditSerialCmd->text().left(4) == "help"){
+        bool found = 0;
+        QString cmd = ui.lineEditSerialCmd->text().mid(5).append(" ");
+        for (int i = 0; i < helptbl.size(); i++) {
+            if (cmd == helptbl[i].left(cmd.size())) {
+                appendLog(helptbl[i]);
+                found = 1;
+                break;
+            }
+        }
+        if (!found)
+            appendLog(helptbl.back());
+    }
+    else
+        emit sendPiezoCtrlCmd(ui.lineEditSerialCmd->text());
+}
+
+
+void Imagine::on_btnPzOpenPort_clicked()
+{
+    QString portName;
+    if (piezoCtrlSerial) {
+        portName = piezoCtrlSerial->getPortName();
+        emit openPiezoCtrlSerialPort(portName);
+        QString str = QString("%1 port for piezo controller is opened").arg(portName);
+        appendLog(str);
+    }
+    else {
+        QString str = QString("piezoCtrlSerial object is not defined");
+        appendLog(str);
+    }
+
+    ui.btnPzOpenPort->setEnabled(false);
+    ui.btnPzClosePort->setEnabled(true);
+    ui.labelSerialCommand->setEnabled(true);
+    ui.lineEditSerialCmd->setEnabled(true);
+    ui.btnSendSerialCmd->setEnabled(true);
+
+    qDebug() << "Open piezo controller port ";
+}
+
+void Imagine::on_btnPzClosePort_clicked()
+{
+    QString portName;
+    if (piezoCtrlSerial) {
+        portName = piezoCtrlSerial->getPortName();
+        emit closePiezoCtrlSerialPort();
+        QString str = QString("%1 port for piezo controller is closed").arg(portName);
+        appendLog(str);
+    }
+    else {
+        QString str = QString("piezoCtrlSerial object is not defined");
+        appendLog(str);
+    }
+
+    ui.btnPzOpenPort->setEnabled(true);
+    ui.btnPzClosePort->setEnabled(false);
+    ui.labelSerialCommand->setEnabled(false);
+    ui.lineEditSerialCmd->setEnabled(false);
+    ui.btnSendSerialCmd->setEnabled(false);
 }
 
 #pragma endregion

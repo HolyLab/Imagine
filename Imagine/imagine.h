@@ -38,6 +38,7 @@ class QwtPlotHistogramItem;
 #include "Pixmapper.h"
 #include <qwt_plot_histogram.h>
 #include "laserctrl.h"
+#include "piezoctrl.h"
 
 #define READ_STRING_SETTING(prefs, var, emptyValue)\
   ui.##var->setText( prefs.value(#var).toString() );\
@@ -100,6 +101,7 @@ class Imagine : public QMainWindow
     Q_OBJECT
     QThread pixmapperThread;
     QThread laserCtrlThread;
+    QThread piezoCtrlThread;
 public:
     Imagine(Camera *cam, Positioner *pos = NULL, Laser *laser = NULL, Imagine *mImagine = NULL,
         QWidget *parent = 0, Qt::WindowFlags flags = 0);
@@ -120,9 +122,10 @@ public:
     int maxROIVSize;
     int roiStepsHor;
 
-    // for laser control from this line
+    // for laser control
     LaserCtrlSerial *laserCtrlSerial = nullptr;
-    // for laser control until this line
+    // for piezo controller setup
+    PiezoCtrlSerial *piezoCtrlSerial = nullptr;
 
     // display coords in the unit of original image
     int L = -1;
@@ -266,6 +269,14 @@ private slots:
     // for laser control until this line
     void on_actionSave_Configuration_triggered();
     void on_actionLoad_Configuration_triggered();
+    // for piezo controller setup from this line
+    void displayPiezoCtrlStatus(QByteArray rx);
+    void displayPiezoCtrlValue(QByteArray rx);
+    void on_btnSendSerialCmd_clicked();
+    void on_btnPzOpenPort_clicked();
+    void on_btnPzClosePort_clicked();
+    // for piezo controller setup until this line
+
 
 public:
     Ui::ImagineClass ui;
@@ -289,6 +300,11 @@ signals:
     void setLaserTrans(bool isAotf, int line, int value);
     void getLaserLineSetupStatus(void);
     // for laser control until this line
+    // for piezo controller setup from this line
+    void openPiezoCtrlSerialPort(QString portName);
+    void closePiezoCtrlSerialPort(void);
+    void sendPiezoCtrlCmd(QString cmd);
+    // for piezo controller setup until this line
 };
 
 #endif // IMAGINE_H

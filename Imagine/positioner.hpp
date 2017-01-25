@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <QString>
 
 using std::vector;
 using std::string;
@@ -49,6 +50,7 @@ public:
     virtual double minPos() = 0; // the min value of the position
     virtual double maxPos() = 0; // the max value of the position. NOTE: the unit is macro
 	virtual double maxSpeed() = 0; // maximum speed to allow the piezo to travel, in um per second
+    virtual QString getCtrlrSetupType() { return 0; }
     virtual bool curPos(double* pos) = 0; // current position in um
     virtual bool moveTo(double to) = 0; //move at maximum safe speed
 

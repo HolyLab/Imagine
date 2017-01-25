@@ -8,7 +8,7 @@
 class VolPiezo : public Positioner {
 
 public:
-    VolPiezo(QString aistring, QString aostring, int maxposition, int maxspeed){
+    VolPiezo(QString aistring, QString aostring, int maxposition, int maxspeed, QString ctrlrsetup){
         ainame = aistring;
         aoname = aostring;
         aoOnce = nullptr;
@@ -16,6 +16,7 @@ public:
         maxpos = maxposition;
         maxspd = maxspeed;
         posType = VolPiezoPositioner;
+        setuptype = ctrlrsetup; // piezo controller setup method (none, COM port, ...)
     }
     ~VolPiezo(){ delete aoOnce; delete ao; }
 
@@ -23,6 +24,7 @@ public:
     double minPos(){ return 0; }
     double maxPos(){ return maxpos; }
     double maxSpeed(){ return maxspd; } //microns per second
+    QString getCtrlrSetupType() { return setuptype; }
     bool curPos(double* pos);
     bool moveTo(double to);
 
@@ -40,6 +42,7 @@ private:
     NiDaqAo* ao;
     int maxpos = 0;
     int maxspd = 0;
+    QString setuptype;
 
     double zpos2voltage(double um);
     void cleanup();

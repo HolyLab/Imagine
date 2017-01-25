@@ -1,7 +1,8 @@
 if(rig=="dummy"){
 	var camera="dummy";
 	var positioner = "dummy";
-	var daq="dummy";
+	var ctrlrsetup = "none" // no piezo controller setting
+	var daq = "dummy";
 }
 
 
@@ -39,6 +40,7 @@ if(rig=="ocpi-1"){
 	var positioner = "volpiezo"; //NOTE: requires daq=="ni"
 	var maxposition = "400"; // this value is for ocpi-1 positioner
 	var maxspeed = "2000"; // this value is for ocpi-2 positioner
+	var ctrlrsetup = "none" // piezo controller set by offline setup
 	var daq = "ni";
 	var doname = "Dev2/port0/line0:7";
 	var aoname = "Dev2/ao";
@@ -50,6 +52,8 @@ if(rig=="ocpi-2"){
 	var positioner = "volpiezo"; //NOTE: requires daq=="ni"
 	var maxposition = "800"; // this value is for ocpi-2 positioner
 	var maxspeed = "2000"; // this value is for ocpi-2 positioner
+	var ctrlrsetup = "none" // no piezo controller setting
+//	var ctrlrsetup = "COM3" // piezo controller set by serial comm. through COM3
 	var daq = "ni";
 	var doname = "Dev1/port0/line0:7";
 	var aoname = "Dev1/ao";
