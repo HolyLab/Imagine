@@ -19,21 +19,26 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <QtCore>
+#include <atomic>
+#include "circbuf.hpp"
+#include "spoolthread.h"
+#include "fast_ofstream.hpp"
+#include "workerthread.h"
+#include "timer_g.hpp"
 
 using std::string;
 using std::vector;
 using std::pair;
 using std::make_pair;
 
-class DataAcqThread;
-
-class Camera {
+class  Camera {
 public:
-    typedef unsigned short PixelValue;
+    typedef unsigned short PixelValue; //16-bit pixels for PCO camera. TODO: make generic
     enum ExtraErrorCodeType {
         eOutOfMem,
     };
-    enum AcqTriggerMode { //see p. 117 of PCO sdk manual
+    enum AcqTriggerMode { //see p. 117 of PCO sdk manual. (also, maybe we should move this to CookeCamera)
         eInternalTrigger = 0,
         eExternal = 6,
     };
@@ -49,15 +54,16 @@ public:
     };
 
     GenericAcqMode  genericAcqMode;
-    AcqTriggerMode     acqTriggerMode;
+    AcqTriggerMode  acqTriggerMode;
 	ExpTriggerMode  expTriggerMode;
     string vendor;
 
-    // dataAcqThread that owns this camera
-    DataAcqThread *parentAcqThread = nullptr;
-
     int  hbin, vbin, hstart, hend, vstart, vend; //image binning params. 1-based.
-    //for hend and vend: <0 means chip width (or height)
+                                                 //for hend and vend: <0 means chip width (or height)
+
+    int nStacks, nFramesPerStack, bytesPerPixel;
+    long imageSizePixels, imageSizeBytes;
+
 
 protected:
     string model;
@@ -71,66 +77,95 @@ protected:
     int chipWidth = 0;       				// dims of
     int	chipHeight = 0;       				// CCD chip
 
-    // image Buffers
-    PixelValue * pImageArray;	 // main image buffer read from card
-    int imageArraySize; //in pixel
-
     string spoolingFilename;
+    //the buf for the live image
+    //todo: we might also want it to be aligned
+    QByteArray liveImage;
+    //for streaming images to disk
+    long long memPoolSize;
+    //for speed reason: a black frame used for copying
+    //todo: alignment
+    PixelValue* pBlackImage;
+    SpoolThread *spoolThread;
+    FastOfstream *ofsSpooling;
+    Timer_g * timer;
+    WorkerThread *workerThread;
+
+    std::atomic_int32_t nAcquiredFrames;
+    std::atomic_int32_t nAcquiredStacks;
 
 public:
+    char * memPool;
+    CircularBuf *circBuf;
+    QMutex *circBufLock;
+
     Camera();
     virtual ~Camera();
+    virtual WorkerThread* getWorkerThread();
+    virtual SpoolThread* getSpoolThread();
+    virtual int getNAcquiredFrames();
+    virtual int getNAcquiredStacks();
 
-    virtual string getErrorMsg() = 0;
+    virtual void setWorkerThread(WorkerThread * w);
+    virtual void setSpoolThread(SpoolThread * s);
+    virtual void setNAcquiredFrames(int n);
+    virtual void setNAcquiredStacks(int n);
+    virtual void incrementNAcquiredFrames();
+    virtual void incrementNAcquiredStacks();
 
-    int getErrorCode(){
+    virtual bool allocMemPool(long long sz);
+    virtual void freeMemPool();
+    //allocate the black image array for missed frames
+    virtual bool allocBlackImage();
+    virtual bool updateLiveImage();
+    virtual QByteArray &getLiveImage();
+    //string getSpoolingFilename(){return spoolingFilename;}
+    virtual bool setSpooling(string filename);
+    //virtual void setTimer(Timer_g * timer);
+    virtual void updateImageParams(int nstacks, int nframesperstack);
+    virtual bool stopAcqFinal();
+
+
+    virtual string getErrorMsg()=0;
+
+    virtual int getErrorCode(){
         return errorCode;
     }
 
-    virtual long getAcquiredFrameCount() = 0; // #frames acquired so far
-
-    virtual bool getLatestLiveImage(PixelValue * frame) = 0;
+    virtual long getAcquiredFrameCount(); // #frames acquired for the current stack so far
 
     //virtual bool isIdle()=0;
 
-    virtual bool startAcq() = 0;
-    virtual bool stopAcq() = 0;
+    virtual bool prepCameraOnce() { return false; }
+    virtual bool nextStack() { return false; }
+    virtual bool init() { return false; }
+    virtual bool fini() { return false; }
 
-    PixelValue * getImageArray(){
-        return pImageArray;
-    }
-
-    int getChipWidth(){
+    virtual int getChipWidth(){
         return chipWidth;
     }
 
-    int getChipHeight(){
+    virtual int getChipHeight(){
         return chipHeight;
     }
 
     //todo: to verify
-    int getImageWidth(){
+    virtual int getImageWidth(){
         return (hend - hstart + 1) / hbin;
     }
 
     //todo: to verify
-    int getImageHeight(){
+    virtual int getImageHeight(){
         return (vend - vstart + 1) / vbin;
     }
 
-    string getModel()
+    virtual string getModel()
     {
         return model;
     }//getModel()
 
-    virtual bool init() = 0;
+    virtual int getExtraErrorCode(ExtraErrorCodeType type)=0;
 
-    virtual bool fini() = 0;
-
-    virtual int getExtraErrorCode(ExtraErrorCodeType type) = 0;
-
-    //allocate the image array space
-    bool allocImageArray(int nFrames, bool shouldReallocAnyway);
 
     //params common to both live- and save-modes
     ///NOTE: roi/binning are also set here
@@ -150,19 +185,14 @@ public:
         ) = 0;
 
 
-    virtual double getCycleTime() = 0;
+    virtual double getCycleTime()=0;
 
-    virtual bool transferData() = 0;
+    virtual bool isSpooling() { return spoolingFilename != ""; }
 
-    bool isSpooling() { return spoolingFilename != ""; }
-    //string getSpoolingFilename(){return spoolingFilename;}
-    virtual bool setSpooling(string filename); //when filename is empty, disable the spooling
     virtual int getROIStepsHor(void) = 0;
 
-    virtual pair<int, int> getGainRange(){ return make_pair(0, 0); }//by default, no gain
+    virtual pair<int, int> getGainRange() { return make_pair(0, 0); }//by default, no gain
 
-private:
-    void   freeImageArray();
 };//class, Camera
 
 
