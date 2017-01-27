@@ -48,13 +48,13 @@ bool VolPiezo::moveTo(double to)
         return false;
     }
 	*/
-	prepareCmd();
+	prepareCmd(false);
 	runCmd();
 	Sleep(200); //otherwise it seems to be cleared before nidaq can use it.
 	clearCmd();
 	cleanup();
 	movements = orig_movements;
-	prepareCmd(); //prepare again, leaving the movement command list as we found it.
+	prepareCmd(false); //prepare again, leaving the movement command list as we found it.
 	
     return true;
 }//moveTo(),
@@ -73,7 +73,7 @@ bool VolPiezo::addMovement(double from, double to, double duration, int trigger)
 }//addMovement(),
 
 
-bool VolPiezo::prepareCmd()
+bool VolPiezo::prepareCmd(bool useTrigger)
 {
     //prepare for AO:
     if (aoOnce){
@@ -96,9 +96,16 @@ bool VolPiezo::prepareCmd()
     int scanRateAo = 10000; //TODO: hard coded
 
     ao->cfgTiming(scanRateAo, int(scanRateAo*totalTime));
+
     if (ao->isError()) {
         cleanup();
         lastErrorMsg = "prepareCmd: failed to configure timing";
+        return false;
+    }
+    if (useTrigger) ao->cfgTrigger();
+    if (useTrigger && ao->isError()) {
+        cleanup();
+        lastErrorMsg = "prepareCmd: failed to configure trigger";
         return false;
     }
 

@@ -1435,7 +1435,8 @@ void Imagine::on_btnApply_clicked()
 
     // if applicable, make sure positioner preparation went well...
     Positioner *pos = dataAcqThread.pPositioner;
-    if (pos != NULL && !dataAcqThread.preparePositioner()){
+    bool useTrig = true;
+    if (pos != NULL && !dataAcqThread.preparePositioner(true, useTrig)){
         paramOK = false;
         QString msg = QString("Positioner: applied params failed: ") + pos->getLastErrorMsg().c_str();
         updateStatus(msg);

@@ -17,7 +17,7 @@ public:
 
    bool addMovement(double from, double to, double duration, int trigger){return true;}
 
-   bool prepareCmd(){ return true;}
+   bool prepareCmd(bool useTrig){ return true;}
    bool runCmd(){ return true;}
    bool waitCmd(){ return true;}
    bool abortCmd(){ return true;}

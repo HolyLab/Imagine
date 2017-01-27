@@ -122,7 +122,7 @@ void DataAcqThread::setPositioner(Positioner *pos) {
     if (pos != NULL) pos->parentAcqThread = this;
 }
 
-bool DataAcqThread::preparePositioner(bool isForward)
+bool DataAcqThread::preparePositioner(bool isForward, bool useTrigger)
 {
     // if this thread has no positioner, it's always prepared
     if (pPositioner == NULL) {
@@ -154,7 +154,7 @@ bool DataAcqThread::preparePositioner(bool isForward)
 
     if (pPositioner->posType == ActuatorPositioner) pPositioner->setDim(oldAxis);
 
-    if (pPositioner->testCmd())  pPositioner->prepareCmd();
+    if (pPositioner->testCmd())  pPositioner->prepareCmd(useTrigger);
     else return false;
 
     return true;
@@ -335,11 +335,18 @@ void DataAcqThread::run_acq_and_save()
     }
 
     if (hasPos && ownPos) pPositioner->setPCount();
-    if (ownPos) preparePositioner(); //nec for volpiezo
+    bool useTrig = true;
+    if (ownPos) preparePositioner(true, useTrig); //nec for volpiezo
 
     //prepare for AI:
     QString ainame = se->globalObject().property("ainame").toString();
-    aiThread = new AiThread(0, ainame, 10000, 50000, 10000);
+    //TODO: make channel recording list depend on who owns the piezo
+    vector<int> aiChanList;
+    //chanList.push_back(0);
+    for (int i = 0; i < 3; ++i) {
+        aiChanList.push_back(i);
+    }
+    aiThread = new AiThread(ainame, 10000, 50000, 10000, aiChanList);
     unique_ptr<AiThread> uniPtrAiThread(aiThread);
 
     //after all devices are prepared, now we can save the file header:
@@ -432,6 +439,7 @@ nextStack:
     cout << "b4 start camera & piezo: " << gt.read() << endl;
 
     bool isPiezo = hasPos && pPositioner->posType == PiezoControlPositioner;
+    if (hasPos && ownPos) pPositioner->runCmd(); //will wait on trigger pulse from camera
     if (acqTriggerMode == Camera::eExternal){
         if (!startCameraOnce && !isPiezo){
             camera.startAcq();
@@ -457,7 +465,6 @@ nextStack:
             camera.startAcq();
             cout << "after camera.startacq: " << gt.read() << endl;
         }
-        if (hasPos && ownPos) pPositioner->runCmd();
     }
 
     cout << "after start camera & piezo: " << gt.read() << endl;
@@ -584,7 +591,7 @@ nextStack:
     if (idxCurStack < this->nStacks && !stopRequested){
         if (isBiDirectionalImaging && ownPos){
             cout << "b4 preparePositioner: " << gt.read() << endl;
-            preparePositioner(idxCurStack % 2 == 0);
+            preparePositioner(idxCurStack % 2 == 0, useTrig);
             cout << "after preparePositioner: " << gt.read() << endl;
         }
         double timePerStack = nFramesPerStack*cycleTime + idleTimeBwtnStacks;
@@ -723,8 +730,8 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
     //ai related:
     header << "[ai]" << endl
         << "nscans=" << -1 << endl //TODO: output nscans at the end
-        << "channel list=0 1 2 3" << endl
-        << "label list=piezo$stimuli$camera frame TTL$heartbeat" << endl
+        << "channel list=0 1 2" << endl //TODO: this and label list shouldn't be hardcoded
+        << "label list=piezo$stimuli$camera frame TTL" << endl
         << "scan rate=" << ai->scanRate << endl
         << "min sample=" << ai->minDigitalValue << endl
         << "max sample=" << ai->maxDigitalValue << endl
