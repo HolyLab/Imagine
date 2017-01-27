@@ -24,6 +24,9 @@ public:
    bool empty(){return size()==0; }
    bool full(){return size()==cap;}
 
+   int peekGet() { return head%cap; }
+   int peekPut() { return tail%cap; }
+
    //remove from head. Return -1 when empty, otherwise return the just-dequed item's index in [0 cap) (that is, the old head).
    int get(){
       if(empty()) return -1;

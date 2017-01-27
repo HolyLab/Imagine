@@ -1,6 +1,5 @@
 #include "cooke.hpp"
 #include "cookeworkerthread.h"
-
 #include <assert.h>
 
 #include "SC2_SDKAddendum.h"
@@ -10,14 +9,64 @@
 #include <QtDebug>
 #include "data_acq_thread.hpp"
 #include "imagine.h"
+#include "spoolthread.h"
+#include "fast_ofstream.hpp"
 
 #define PCO_ERRT_H_CREATE_OBJECT
 
 int const COOKE_EXCEPTION = 47;
 const int CookeCamera::nBufs = 2;
 
+CookeCamera::CookeCamera() : Camera()
+{
+
+    firstFrameCounter = -1;
+    totalGap = 0;
+
+    bytesPerPixel = 2; //TODO: hardcoded
+    vendor = "cooke";
+
+    strGeneral.wSize = sizeof(strGeneral);// initialize all structure size members
+    strGeneral.strCamType.wSize = sizeof(strGeneral.strCamType);
+    strCamType.wSize = sizeof(strCamType);
+    strSensor.wSize = sizeof(strSensor);
+    strSensor.strDescription.wSize = sizeof(strSensor.strDescription);
+    strDescription.wSize = sizeof(strDescription);
+    strTiming.wSize = sizeof(strTiming);
+    strStorage.wSize = sizeof(strStorage);
+    strRecording.wSize = sizeof(strRecording);
+    strImage.wSize = sizeof(strImage);
+    strImage.strSegment[0].wSize = sizeof(strImage.strSegment[0]);
+    strImage.strSegment[1].wSize = sizeof(strImage.strSegment[0]);
+    strImage.strSegment[2].wSize = sizeof(strImage.strSegment[0]);
+    strImage.strSegment[3].wSize = sizeof(strImage.strSegment[0]);
+
+}
+
+CookeCamera::~CookeCamera() {}
+
+string CookeCamera::getErrorMsg() {
+    if (errorCode == PCO_NOERROR) {
+        return "no error";
+    }
+    else return errorMsg;
+}
+
+int CookeCamera::getExtraErrorCode(ExtraErrorCodeType type) {
+    switch (type) {
+    case eOutOfMem: return PCO_ERROR_NOMEMORY; //NOTE: this might be an issue
+                                               //default: 
+    }
+    return -1;
+}
+
+int CookeCamera::getROIStepsHor(void) {
+    return strDescription.wRoiHorStepsDESC;
+};
+
 bool CookeCamera::init()
 {
+
     errorMsg = "Camera Initialization failed when: ";
 
     errorCode = PCO_OpenCamera(&hCamera, 0);
@@ -76,18 +125,19 @@ bool CookeCamera::init()
     this->chipHeight = strSensor.strDescription.wMaxVertResStdDESC;
     this->chipWidth = strSensor.strDescription.wMaxHorzResStdDESC;
 
+    this->bytesPerPixel = 2;
+    this->imageSizePixels = chipHeight * chipWidth;
+    this->imageSizeBytes = imageSizePixels*bytesPerPixel;
+
     //model
     this->model = strCamType.strHardwareVersion.Board[0].szName;
 
-    int nPixels = chipWidth*chipHeight;
+    allocBlackImage();
+    allocMemPool(-1);
 
-    //pLiveImage=new PixelValue[nPixels];
-    pLiveImage = (PixelValue*)_aligned_malloc(sizeof(PixelValue)*nPixels, 4 * 1024);
-
-    //pBlackImage=new PixelValue[nPixels];
-    pBlackImage = (PixelValue*)_aligned_malloc(sizeof(PixelValue)*nPixels, 4 * 1024);
-    memset(pBlackImage, 0, nPixels*sizeof(PixelValue)); //all zeros
-
+    //these get initialized and deleted by prepCameraOnce() and stopCameraFinal()
+    this->circBuf = nullptr;
+    this->circBufLock = nullptr;
 
     return true;
 }//init(),
@@ -168,6 +218,8 @@ bool CookeCamera::setAcqParams(int emGain,
         // set the image buffer parameters
         safe_pco(PCO_CamLinkSetImageParameters(hCamera, wXResAct, wYResAct),
             "failed to call PCO_CamLinkSetImageParameters()");
+
+        qDebug() << QString("Finished setting camera acq parameters");
     }
     catch (int e) {
         if (e != COOKE_EXCEPTION) throw;
@@ -242,7 +294,7 @@ bool CookeCamera::setAcqParams(int emGain,
 double CookeCamera::getCycleTime()
 {
     DWORD sec, nsec;
-    //TODO: this is probably inaccurate when using external exposure triggering (returns only exposure time)
+    //TODO: this is probably inaccurate when using external exposure triggering (returns only exposure time?)
     errorCode = PCO_GetCOCRuntime(hCamera, &sec, &nsec);
     if (errorCode != PCO_NOERROR) {
         errorMsg = "failed to call PCO_GetCOCRuntime()";
@@ -327,117 +379,40 @@ bool CookeCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 
     cout << "frame rate is: " << 1 / getCycleTime() << endl;
 
-    ///take care of image array saving (in mem only)
-    if (genericAcqMode == eAcqAndSave){
-        if (!isSpooling() && !allocImageArray(nFrames, false)){
-            return false;
-        }//if, fail to alloc enough mem
-    }
-
-
     return true;
 }
 
-long CookeCamera::getAcquiredFrameCount()
+bool CookeCamera::prepCameraOnce()
 {
-    if (!mpLock->tryLock()) return -1;
-    long result = nAcquiredFrames;
-    mpLock->unlock();
-    return result;
+    int circBufCap = memPoolSize / imageSizeBytes;  //memPoolSize is set in spoolthread.h
+    circBuf = new CircularBuf(circBufCap);
+    circBufLock = new QMutex;
+    nAcquiredStacks = 0;
+
+    ///set pointers to slots in the ring buffer for data transfer from card to pc
+    for (int i = 0; i < nBufs; ++i) {
+        mBufIndex[i] = -1;
+        mEvent[i] = CreateEvent(0, FALSE, FALSE, NULL);
+        mRingBuf[i] = memPool + (circBuf->peekPut() + i) * size_t(imageSizeBytes);
+    }
+    SpoolThread * s = new SpoolThread(QThread::HighestPriority, ofsSpooling, this);
+    setSpoolThread(s);
+    s->start(QThread::HighestPriority);
+    CookeWorkerThread * w = new CookeWorkerThread(QThread::TimeCriticalPriority, this);
+    setWorkerThread(w);
+    w->start(QThread::TimeCriticalPriority);
+    return true;
 }
 
-bool CookeCamera::startAcq()
+bool CookeCamera::nextStack()
 {
-    CLockGuard tGuard(mpLock);
-    nAcquiredFrames = 0;
+    while (!(workerThread->getIsPaused()) && !(workerThread->getShouldStop())) QThread::msleep(5); //could hinder performance
 
-    //camera's internal frame counter can be reset by ARM which is too costly we maintain our own counter
-    firstFrameCounter = -1;
-
-    totalGap = 0;
-
-    ///alloc the ring buffer for data transfer from card to pc
-    for (int i = 0; i < nBufs; ++i){
-        mBufIndex[i] = -1;
-        mEvent[i] = NULL;
-        mRingBuf[i] = NULL;
-
-        errorCode = PCO_AllocateBuffer(hCamera, (SHORT*)&mBufIndex[i],
-            chipWidth * chipHeight * sizeof(DWORD), &mRingBuf[i], &mEvent[i]);
-        if (errorCode != PCO_NOERROR) {
-            errorMsg = "failed to allocate buffer";
-            return false;
-        }
-
-        //in fifo mode, frameIdxInCamRam are 0 for all buffers?
-        int frameIdxInCamRam = 0;
-		//TODO: Switch this to the newer PCO_AddBufferEx
-        errorCode = PCO_AddBuffer(hCamera, frameIdxInCamRam, frameIdxInCamRam, mBufIndex[i]);// Add buffer to the driver queue
-        if (errorCode != PCO_NOERROR) {
-            errorMsg = "failed to add buffer";
-            return false;
-        }
-    }
-    Timer_g gt = parentAcqThread->parentImagine->gTimer;
-    cout << "b4 new WorkerThread(): " << gt.read() << endl;
-
-    workerThread = new CookeWorkerThread(this);
-    cout << "after new WorkerThread(): " << gt.read() << endl;
-    workerThread->start();
-
-    cout << "after workerThread->start(): " << gt.read() << endl;
-
-    errorCode = PCO_SetRecordingState(hCamera, 1); //1: run
-    if (errorCode != PCO_NOERROR) {
-        errorMsg = "failed to start camera";
-        return false;
-    }
-
-    cout << "after set rec state to 1/run: " << gt.read() << endl;
-
+    workerThread->setIsPaused(false);
+    (workerThread->getUnPaused())->wakeAll();
+    safe_pco(PCO_SetRecordingState(hCamera, 1), "failed to start camera recording"); //1: run
     return true;
 }//startAcq(),
-
-bool CookeCamera::stopAcq()
-{
-    //not rely on the "wait abandon"!!!
-    workerThread->requestStop();
-    workerThread->wait();
-
-    errorCode = PCO_SetRecordingState(hCamera, 0);// stop recording
-    if (errorCode != PCO_NOERROR) {
-        errorMsg = "failed to stop camera";
-        return false;
-    }
-
-    Timer_g gt = parentAcqThread->parentImagine->gTimer;
-    cout << "b4 PCO_RemoveBuffer: " << gt.read() << endl;
-
-    //reverse of PCO_AddBuffer()
-    errorCode = PCO_RemoveBuffer(hCamera);   // If there's still a buffer in the driver queue, remove it
-    if (errorCode != PCO_NOERROR) {
-        errorMsg = "failed to stop camera";
-        return false;
-    }
-
-    cout << "after PCO_RemoveBuffer: " << gt.read() << endl;
-
-    for (int i = 0; i < nBufs; ++i){
-        //reverse of PCO_AllocateBuffer()
-        //ResetEvent(mEvent[0]);
-        //ResetEvent(mEvent[1]);
-
-        //TODO: what about the events associated w/ the buffers
-        PCO_FreeBuffer(hCamera, mBufIndex[i]);    // Frees the memory that was allocated for the buffer
-    }
-
-    delete workerThread;
-    workerThread = nullptr;
-
-    cout << "total # of black frames: " << totalGap << endl;
-
-    return true;
-}//stopAcq(),
 
 long CookeCamera::extractFrameCounter(PixelValue* rawData)
 {
@@ -450,57 +425,23 @@ long CookeCamera::extractFrameCounter(PixelValue* rawData)
     return result;
 }
 
-bool CookeCamera::getLatestLiveImage(PixelValue * frame)
-{
-    if (!mpLock->tryLock()) return false;
-
-    if (nAcquiredFrames <= 0)  {
-        mpLock->unlock();
-        return false;
-    }
-
-    int nPixels = getImageHeight()*getImageWidth();
-    memcpy_g(frame, pLiveImage, nPixels*sizeof(PixelValue));
-
-    mpLock->unlock();
-    return true;
-}
-
-//return false if, say, can't open the spooling file to save
-//NOTE: have to call this b4 setAcqModeAndTime() to avoid out-of-mem
-bool CookeCamera::setSpooling(string filename)
-{
-    if (ofsSpooling){
-        delete ofsSpooling; //the file is closed too
-        ofsSpooling = nullptr;
-    }
-
-    Camera::setSpooling(filename);
-
-    if (isSpooling()){
-        int bufsize_in_4kb = 5529600 * 2 * 8 / (4 * 1024); //8 frames, about 80M in bytes
-#ifdef _WIN64
-        bufsize_in_4kb *= 1;
-#endif
-        ofsSpooling = new FastOfstream(filename.c_str(), bufsize_in_4kb);
-        return *ofsSpooling;
-    }
-    else return true;
-
-}
-
 void CookeCamera::safe_pco(int errCode, string errMsg)
 {
     // set errorMsg and throw an exception if you get a not-ok error code
     if (errCode != PCO_NOERROR && (errCode & PCO_ERROR_CODE_MASK) != 0) {
-        //if (errCode != PCO_NOERROR) {
-
-        // it might be nice to use this to give slightly more informative debug messages
-        char msg[16384];
-        PCO_GetErrorText(errCode, msg, 16384);
-        cout << msg << endl;
+        printPcoError(errCode);
         errorCode = errCode;
         errorMsg = errMsg;
         throw COOKE_EXCEPTION; // could throw an exception class w/informative message... but meh.
     }
+}
+
+void CookeCamera::printPcoError(int errCode) {
+    char msg[16384];
+    PCO_GetErrorText(errCode, msg, 16384);
+    std::string msgs = string(msg);
+    std::wstring msgw;
+    msgw.assign(msgs.begin(), msgs.end());
+    cout << msg << endl;
+    OutputDebugStringW((wstring(L"\nPCO error text: ") + msgw).c_str());
 }

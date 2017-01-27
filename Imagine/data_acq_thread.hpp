@@ -23,20 +23,24 @@
 //#include "andor_g.hpp"
 #include "daq.hpp"
 #include "camera_g.hpp"
+//#include "cooke.hpp"
 #include "positioner.hpp"
 #include "ai_thread.hpp"
+#include "workerthread.h"
 
 class QImage;
 class NiDaqAi;
 class Imagine;
 
-class DataAcqThread : public QThread
+class DataAcqThread : public WorkerThread
 {
     Q_OBJECT
 
 public:
-    DataAcqThread(Camera *cam = nullptr, Positioner *pos = nullptr, QObject *parent = 0);
+    DataAcqThread(QThread::Priority defaultPriority, Camera *cam = nullptr, Positioner *pos = nullptr, Imagine *parentImag = nullptr, QObject *parent = 0);
     ~DataAcqThread();
+
+    static void genSquareSpike(int duration); //utility function
 
     void startAcq();
     void stopAcq(); //note: this func call is non-blocking
@@ -56,7 +60,6 @@ public:
     // this thread's camera
     Camera* pCamera = nullptr;
 
-    // this thread's positioner, if not null
     // COMPUTER, ENHANCE: should probably move ownership up a couple levels at some point
     Positioner* pPositioner = nullptr;
 
@@ -98,13 +101,12 @@ public:
 
     //file saving params:
     QString headerFilename, aiFilename, camFilename, sifFileBasename;
-    bool isUseSpool;
 
     //comment:
     QString comment;
 
     bool isLive;
-    int idxCurStack;
+    int idxCurStack;  //the stack we are working on. Since it's 0-based it's also the number of stacks finished so far
 
 signals:
     void imageDisplayReady(const QImage &image, long idx);
@@ -121,9 +123,6 @@ protected:
 private:
     bool saveHeader(QString filename, DaqAi* ai);
     void fireStimulus(int valve);
-
-    QMutex mutex;
-    QWaitCondition condition;
     bool restart;
     bool abort;
     volatile bool stopRequested;
