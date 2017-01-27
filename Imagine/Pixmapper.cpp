@@ -71,7 +71,7 @@ void Pixmapper::handleImg(const QByteArray &ba, const int imageW, const int imag
     
     // crop and zoom the image from the original
     QImage cropedImage = image.copy(dLeft, dTop, dWidth, dHeight);
-    double zoomFactor = std::min(maxWidth / dWidth, maxHeight / dHeight);
+    double zoomFactor = (std::min)(maxWidth / dWidth, maxHeight / dHeight);
     QImage scaledImage = cropedImage.scaledToHeight(cropedImage.height()*zoomFactor);
 
     QPixmap pixmap = QPixmap::fromImage(scaledImage);
@@ -79,8 +79,8 @@ void Pixmapper::handleImg(const QByteArray &ba, const int imageW, const int imag
         QPainter painter(&pixmap);
         painter.setPen(pen);
         if (xDown!=xCur || yDown!=yCur){
-            QPoint lt(std::min(xDown, xCur), std::min(yDown, yCur));
-            QPoint rb(std::max(xDown, xCur), std::max(yDown, yCur));
+            QPoint lt((std::min)(xDown, xCur), (std::min)(yDown, yCur));
+            QPoint rb((std::max)(xDown, xCur), (std::max)(yDown, yCur));
             painter.drawRect(QRect(lt, rb));
         }
     }//scope for QPainter obj
