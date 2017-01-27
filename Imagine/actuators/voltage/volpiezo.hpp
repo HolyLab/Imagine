@@ -30,7 +30,7 @@ public:
 
     bool addMovement(double from, double to, double duration, int trigger);
 
-    bool prepareCmd();
+    bool prepareCmd(bool useTrigger);
     bool runCmd();
     bool waitCmd();
     bool abortCmd();

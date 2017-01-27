@@ -41,7 +41,7 @@ public:
     void startAcq();
     void stopAcq(); //note: this func call is non-blocking
 
-    bool preparePositioner(bool isForward = true);
+    bool preparePositioner(bool isForward = true, bool useTrigger = false);
 
     // setter for the camera and positioner... use this instead of setting the var directly
     // yeah, I could make the var private... so can you!

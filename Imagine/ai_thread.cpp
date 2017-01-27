@@ -29,18 +29,12 @@ using namespace std;
 
 extern QString daq;
 
-AiThread::AiThread(QObject *parent, QString ainame, int readBufSize, int driverBufSize, int scanrate)
+AiThread::AiThread(QString ainame, int readBufSize, int driverBufSize, int scanrate, vector<int> chanList, QObject *parent)
     : QThread(parent)
 {
     this->readBufSize = readBufSize;
     this->driverBufSize = driverBufSize;
 
-    //TODO: error checking for ai
-    vector<int> chanList;
-    //chanList.push_back(0);
-    for (int i = 0; i < 4; ++i){
-        chanList.push_back(i);
-    }
     this->chanList = chanList;
 
     ofs = nullptr;
@@ -53,9 +47,11 @@ AiThread::AiThread(QObject *parent, QString ainame, int readBufSize, int driverB
         throw Daq::EInitDevice("exception: the AI device is unsupported");
     }
 
-
-    ai->cfgTiming(scanrate, driverBufSize);
-
+    //NOTE: the success return value may be unreliable
+    int success = ai->cfgTiming(scanrate, driverBufSize);
+    if(!success) {
+        throw Daq::EInitDevice("exception: failed to configure AI device timing");
+    }
     //reserve space:
     //int tnSamplesToReserve=scanrate*chanList.size()*100; //100sec data
     //data.reserve(tnSamplesToReserve);
