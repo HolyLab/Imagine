@@ -174,6 +174,11 @@ public:
       return !isError();
    }//cfgTiming(),
 
+   bool cfgTrigger() {
+       errorCode=DAQmxCfgDigEdgeStartTrig(taskHandle, "PFI0", DAQmx_Val_Rising);
+       return !isError();
+   }//cfgTrigger
+
    //get output buffer address
    //NOTE: data is grouped by channel, i.e. all samples for a channel are close to each other
    uInt16 * getOutputBuf(){
@@ -275,8 +280,8 @@ public:
          DAQmx_Val_ContSamps,
          bufSize //the unit is scan
          ); 
-
-      return !isError();
+      //TODO: this doesn't seem to show a warning or an error when asking for an impossibly high scan rate.  should find a way to check that.
+      return isSuc();
    }//cfgTiming(),
 
    //read input from driver
