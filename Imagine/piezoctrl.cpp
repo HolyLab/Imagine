@@ -70,6 +70,9 @@ readLaserStatus:
     return;
 
 label:
+    port->close();
+    delete port;
+    port = NULL;
     qDebug() << "failed to open device";
     return;
 }

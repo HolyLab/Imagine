@@ -73,6 +73,9 @@ readLaserStatus:
     return;
 
 label:
+    port->close();
+    delete port;
+    port = NULL;
     qDebug() << "failed to open device";
     return;
 }
@@ -103,7 +106,7 @@ int LaserCtrlSerial::readShutterStatus()
         rx = port->readAll();
         qDebug() << "Read : " << rx.size() << " bytes";
     }
-    else
+    else if(portName=="DummyPort")
         rx = "0203";
 
     bool ok;
@@ -135,7 +138,7 @@ void LaserCtrlSerial::getTransStatus(bool isAotf, int line)
        rx = port->readAll();
        qDebug() << "Read : " << rx.size() << " bytes";
    }
-   else
+   else if (portName == "DummyPort")
        rx = "0501F4";
 
    bool ok;
@@ -201,7 +204,7 @@ QByteArray LaserCtrlSerial::readLaserLineSetup(void)
         rx = port->readAll();
         qDebug() << "Read : " << rx.size() << " bytes";
     }
-    else
+    else if (portName == "DummyPort")
         rx = "08131015EA0FD211621414001400000000"; // OCPI-II return this value
 
     /* example

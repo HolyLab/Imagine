@@ -21,12 +21,12 @@
 #include <qwt_plot_marker.h>
 //#include <qwt_interval_data.h>
 #include <qwt_scale_engine.h>
-//#include <qwt_data.h>
+#include <qwt_series_data.h>
 #include <qwt_symbol.h>
 #include <qwt_plot_curve.h>
 
 
-class CurveData: public QwtData
+class CurveData: public QwtSeriesData<QPointF>
 {
    QList<QPointF> data;
    double width; //the length of x axis
@@ -35,7 +35,9 @@ public:
       this->width=width;
    }
 
-   virtual QwtData *copy() const  {
+   ~CurveData() {}
+
+   virtual QwtSeriesData<QPointF> *copy() const  {
       CurveData* result= new CurveData(width);
       result->data=data;
 
@@ -70,6 +72,13 @@ public:
       data.push_back(QPointF(x,y));
       while(x-this->x(0)>width) data.pop_front();
    }
+
+   QPointF sample(size_t i) const { return data[i]; };
+
+   QRectF boundingRect() const {
+       return d_boundingRect;
+   };
+
 };//class, CurveData
 
 #endif

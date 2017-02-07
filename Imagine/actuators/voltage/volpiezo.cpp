@@ -118,7 +118,7 @@ bool VolPiezo::prepareCmd(bool useTrigger)
 	float64 * buf = bufAo - 1;
     for (unsigned idx = 0; idx < movements.size(); ++idx){
         const Movement& m = *movements[idx];
-        if (_isnan(m.from)) piezoStartPos = preStop;
+        if (_isnan(m.from)) piezoStartPos = preStop;  // ??? preStop value is not initialized yet
         else piezoStartPos = zpos2voltage(m.from);
         if (_isnan(m.to)) piezoStopPos = piezoStartPos;
         else piezoStopPos = zpos2voltage(m.to);

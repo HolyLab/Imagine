@@ -42,6 +42,7 @@ using namespace std;
 #include "positioner.hpp"
 //#include "Piezo_Controller.hpp"
 #include "imagine.h"
+#include "curvedata.h"
 
 QScriptEngine* se;
 DaqDo * digOut = nullptr;
@@ -122,7 +123,22 @@ bool DataAcqThread::preparePositioner(bool isForward, bool useTrigger)
     if (pPositioner->posType == ActuatorPositioner) pPositioner->setDim(1);
 
     // the piezo code only supports the following three lines calling pattern
-    if (isBiDirectionalImaging){
+    if (isUsingWav) {
+        double duration = 1./static_cast<double>(sampleRate)*1e6; // usec
+        double durationSum;
+        double stPos, endPos;
+        for (int i = 0; i < conPiezoWavData->size()-1; i++) {
+            durationSum = (conPiezoWavData->x(i+1)- conPiezoWavData->x(i))*duration;
+            stPos = conPiezoWavData->y(i);
+            endPos = conPiezoWavData->y(i+1);
+            pPositioner->addMovement(stPos, endPos, durationSum, (conShutterWavData->y(i)!=0));
+        }
+        stPos = endPos;
+        endPos = conPiezoWavData->y(0);
+        int trigger = (conShutterWavData->y(conPiezoWavData->y(0) - 1) != 0);
+        pPositioner->addMovement(stPos, endPos, duration, trigger);
+    }
+    else if (isBiDirectionalImaging){
         pPositioner->setScanType(isBiDirectionalImaging);
         if (isForward){
             pPositioner->addMovement(piezoStartPosUm, piezoStopPosUm, nFramesPerStack*cycleTime*1e6, 1);

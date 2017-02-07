@@ -41,7 +41,7 @@
 #include <QDesktopWidget>
 
 //#include "histogram_item.h"
-//#include "curvedata.h"
+#include "curvedata.h"
 
 #include <vector>
 #include <utility>
@@ -419,6 +419,11 @@ Imagine::~Imagine()
     laserCtrlThread.quit();
     laserCtrlThread.wait();
     // for laser control until this line
+
+    // for piezo control from this line
+    piezoCtrlThread.quit();
+    piezoCtrlThread.wait();
+    // for piezo control until this line
 }
 
 #pragma endregion
@@ -516,7 +521,6 @@ void Imagine::updateIntenCurve(const Camera::PixelValue * frame,
     const int imageW, const int imageH, const int frameIdx)
 {
     //TODO: if not visible, just return
-    /*
     double sum=0;
     int nPixels=imageW*imageH;
     for(unsigned int i=0; i<nPixels; ++i){
@@ -526,11 +530,43 @@ void Imagine::updateIntenCurve(const Camera::PixelValue * frame,
     double value=sum/nPixels;
 
     intenCurveData->append(frameIdx, value);
-    intenCurve->setData(*intenCurveData);
+    intenCurve->setData(intenCurveData);
     intenPlot->setAxisScale(QwtPlot::xBottom, intenCurveData->left(), intenCurveData->right());
     intenPlot->replot();
-    */
 }//updateIntenCurve(),
+
+/*
+void Imagine::updateConWave(const int frameIdx, const int value)
+{
+    //TODO: if not visible, just return
+    conPiezoCurveData->append(frameIdx, value);
+    conPiezoCurve->setData(conPiezoCurveData);
+    conWavPlot->setAxisScale(QwtPlot::xBottom, conPiezoCurveData->left(), conPiezoCurveData->right());
+    conWavPlot->replot();
+}//updateConWave()
+*/
+
+void prepareCurve(QwtPlotCurve *curve, QwtPlot *plot,
+    QwtText &xTitle, QwtText &yTitle, QColor color)
+{
+    xTitle.setFont(QFont("Helvetica", 10));
+    yTitle.setFont(QFont("Helvetica", 10));
+    plot->setAxisTitle(QwtPlot::xBottom, xTitle); //TODO: stack number too
+    plot->setAxisTitle(QwtPlot::yLeft, yTitle);
+    plot->setAxisScale(QwtPlot::xBottom, 0, 1000, 100);
+    plot->setAxisScale(QwtPlot::yLeft, 0, 400, 100);
+    plot->setAxisScaleEngine(QwtPlot::xBottom, new QwtLinearScaleEngine());
+    plot->setAxisScaleEngine(QwtPlot::yLeft, new QwtLinearScaleEngine());
+
+    QwtSymbol *sym = new QwtSymbol;
+    sym->setStyle(QwtSymbol::NoSymbol);
+    sym->setPen((Qt::red));
+    sym->setSize(5);
+    curve->setSymbol(sym);
+    curve->setRenderHint(QwtPlotItem::RenderAntialiased);
+    curve->setPen(QPen(color));
+    curve->attach(plot);
+}
 
 void Imagine::preparePlots()
 {
@@ -547,14 +583,14 @@ void Imagine::preparePlots()
     grid->setMinorPen(QPen(Qt::gray, 0, Qt::DotLine));
     grid->attach(histPlot);
 
-	histogram = new QwtPlotHistogram(); // HistogramItem();
+    histogram = new QwtPlotHistogram(); // HistogramItem();
     histogram->setPen(Qt::darkCyan);
-	histogram->setBrush(QBrush(Qt::darkCyan));
-	histogram->setBaseline(1.0); //baseline will be subtracted from pixel intensities
-	histogram->setItemAttribute(QwtPlotItem::AutoScale, true);
-	histogram->setItemAttribute(QwtPlotItem::Legend, true);
-	histogram->setZ(20.0);
-	histogram->setStyle(QwtPlotHistogram::Columns);
+    histogram->setBrush(QBrush(Qt::darkCyan));
+    histogram->setBaseline(1.0); //baseline will be subtracted from pixel intensities
+    histogram->setItemAttribute(QwtPlotItem::AutoScale, true);
+    histogram->setItemAttribute(QwtPlotItem::Legend, true);
+    histogram->setZ(20.0);
+    histogram->setStyle(QwtPlotHistogram::Columns);
     histogram->attach(histPlot);
 
     ///todo: make it more robust by query Camera class
@@ -571,29 +607,49 @@ void Imagine::preparePlots()
         histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1 << 14);
     }
 
-    //intensity curve
-    //TODO: make it ui aware
-    /*
-    int curveWidth=500;
-    intenPlot=new QwtPlot();
+    //the intensity plot
+    int curveWidth = 500;
+    intenPlot = new QwtPlot();
     ui.dwIntenCurve->setWidget(intenPlot);
     intenPlot->setAxisTitle(QwtPlot::xBottom, "frame number"); //TODO: stack number too
     intenPlot->setAxisTitle(QwtPlot::yLeft, "avg intensity");
     intenCurve = new QwtPlotCurve("avg intensity");
 
-    QwtSymbol sym;
-    sym.setStyle(QwtSymbol::Cross);
-    sym.setPen(QColor(Qt::black));
-    sym.setSize(5);
-    intenCurve->setSymbol(&sym);
+    QwtSymbol *sym = new QwtSymbol;
+    sym->setStyle(QwtSymbol::Cross);
+    sym->setPen(QColor(Qt::black));
+    sym->setSize(5);
+    intenCurve->setSymbol(sym);
 
     intenCurve->setRenderHint(QwtPlotItem::RenderAntialiased);
     intenCurve->setPen(QPen(Qt::red));
     intenCurve->attach(intenPlot);
 
-    //intenCurveData=new CurveData(curveWidth);
-    intenCurve->setData(*intenCurveData);
-    */
+    intenCurveData = new CurveData(curveWidth);
+    intenCurve->setData(intenCurveData);
+
+    //the control waveform
+    QwtText xTitle("Sample index");
+    QwtText yTitle("Position");
+    conWavPlot = new QwtPlot;// (ui.frameConWav);
+    conPiezoCurve = new QwtPlotCurve("Positioner waveform");
+    conShutterCurve = new QwtPlotCurve("Positioner waveform");
+    prepareCurve(conPiezoCurve, conWavPlot, xTitle, yTitle, Qt::red);
+    prepareCurve(conShutterCurve, conWavPlot, xTitle, yTitle, Qt::blue);
+    ui.conWavLayout->addWidget(conWavPlot);
+
+    //the read out waveform
+    conReadWavPlot = new QwtPlot;// (ui.frameConWav);
+    conReadPiezoCurve = new QwtPlotCurve("Piezo waveform");
+    conReadStimuliCurve = new QwtPlotCurve("Stimuli waveform");
+    conReadCameraCurve = new QwtPlotCurve("Camera waveform");
+    conReadHeartbeatCurve = new QwtPlotCurve("Hearbeat waveform");
+    prepareCurve(conReadPiezoCurve, conReadWavPlot, xTitle, yTitle, Qt::red);
+    prepareCurve(conReadStimuliCurve, conReadWavPlot, xTitle, yTitle, Qt::green);
+    prepareCurve(conReadCameraCurve, conReadWavPlot, xTitle, yTitle, Qt::blue);
+    prepareCurve(conReadHeartbeatCurve, conReadWavPlot, xTitle, yTitle, Qt::black);
+    ui.conWavLayout->addWidget(conWavPlot);
+    ui.readWavLayout->addWidget(conReadWavPlot);
 }
 
 //convert position in the unit of pixmap to position in the unit of orig img
@@ -828,10 +884,10 @@ void Imagine::updateStatus(ImagineStatus newStatus, ImagineAction newAction)
 
         //change intensity plot xlabel
         if (curAction == eLive){
-            //intenPlot->setAxisTitle(QwtPlot::xBottom, "frame number");
+            intenPlot->setAxisTitle(QwtPlot::xBottom, "frame number");
         }
         else {
-            //intenPlot->setAxisTitle(QwtPlot::xBottom, "stack number");
+            intenPlot->setAxisTitle(QwtPlot::xBottom, "stack number");
         }
 
     }//else if, running
@@ -993,7 +1049,7 @@ void Imagine::on_actionStartAcqAndSave_triggered()
         dataAcqThread->curStimIndex = 0;
     }
 
-    //   intenCurveData->clear();
+    intenCurveData->clear();
 
     dataAcqThread->isLive = false;
     dataAcqThread->startAcq();
@@ -1022,7 +1078,7 @@ void Imagine::on_actionStartLive_triggered()
     nUpdateImage = 0;
     minPixelValue = maxPixelValue = -1;
 
-    //   intenCurveData->clear();
+    intenCurveData->clear();
 
     dataAcqThread->isLive = true;
     dataAcqThread->startAcq();
@@ -1312,6 +1368,48 @@ void Imagine::on_btnApply_clicked()
     dataAcqThread->piezoTravelBackTime = (*temp_ui).doubleSpinBoxPiezoTravelBackTime->value();
 
     dataAcqThread->isBiDirectionalImaging = ui.cbBidirectionalImaging->isChecked();
+    if (ui.cbPositionerWav->isChecked()) {
+        if (conPiezoCurveData&&conShutterCurveData) {
+            dataAcqThread.isUsingWav = ui.cbPositionerWav->isChecked();
+            dataAcqThread.conPiezoWavData = conPiezoCurveData;
+            dataAcqThread.conShutterWavData = conShutterCurveData;
+            dataAcqThread.sampleRate = ui.spinBoxPiezoSampleRate->value();
+            dataAcqThread.acqTriggerMode = Camera::eExternal;
+            if (dataAcqThread.isUsingWav) { // check conPiezoCurveData
+                Positioner *pos = dataAcqThread.pPositioner;
+                double distance, time, speed; // piezostep/usec
+                for (int i = 0; i < conPiezoCurveData->size() - 1; i++) {
+                    double a = conPiezoCurveData->y(i + 1);
+                    double b = conPiezoCurveData->y(i);
+                    distance = (conPiezoCurveData->y(i + 1) - conPiezoCurveData->y(i));
+                    time = (conPiezoCurveData->x(i + 1) - conPiezoCurveData->x(i)) / dataAcqThread.sampleRate; // sec
+                    speed = distance / time; // piezostep/usec
+                    if (speed > pos->maxSpeed()) {
+                        QMessageBox::critical(this, "Imagine", "Positioner control is too fast"
+                            , QMessageBox::Ok, QMessageBox::NoButton);
+                        return;
+                    }
+                }
+                distance = (conPiezoCurveData->y(0) - conPiezoCurveData->y(conPiezoCurveData->size() - 1));
+                time = 1 / dataAcqThread.sampleRate; // the next first point will follows the previous last point after one duration. 
+                speed = distance / time; // piezostep/usec
+                if (speed > pos->maxSpeed()) {
+                    QMessageBox::critical(this, "Imagine", "Positioner control is too fast"
+                        , QMessageBox::Ok, QMessageBox::NoButton);
+                    return;
+                }
+                else {
+                    acqTriggerMode = Camera::eExternal;
+                    expTriggerMode = Camera::eExternalControl;
+                }
+            }
+        }
+        else {
+            QMessageBox::critical(this, "Imagine", "Positioner and shutter waveforms are not correctly loaded"
+                , QMessageBox::Ok, QMessageBox::NoButton);
+            return;
+        }
+    }
 
     dataAcqThread->nStacks = ui.spinBoxNumOfStacks->value();
     dataAcqThread->nFramesPerStack = ui.spinBoxFramesPerStack->value();
@@ -2328,83 +2426,65 @@ void Imagine::on_actionLoad_Configuration_triggered()
 void Imagine::displayPiezoCtrlStatus(QByteArray rx)
 {
     bool ok;
-    bitset<16> bs(rx.mid(5, rx.size()-7).toInt(&ok, 10)); // ex) rx = "stat,8389"
-    int actuatorPlug  = bs[0];                      // 0: acturator not plugged, 1: acturator plugged
-    int measureSystem = bs[1] + bs[2] * 2;          // 0: no measuring system,
-                                                    // 1: strain gauge measuring system,
-                                                    // 2: capacitive measuring system
-    int loopSystem    = bs[4];                      // 0: closed loop system, 1: open loop system
-    int piezoVolEn    = bs[6];                      // 0: piezo voltage not enabled, 1: piezo voltage enabled
-    int closedLoop    = bs[7];                      // 0: open loop, 1: closed loop
-    int generator     = bs[9]+ bs[10]*2+ bs[11]*4;  // 0: generator off,
-                                                    // 1: sine on
-                                                    // 2: triangle on
-                                                    // 3: rectangle on
-                                                    // 4: noise on
-                                                    // 5: sweep on
-    int notchFilter   = bs[12];                     // 0: notch filter off, 1: notch filter on
-    int lowPassFilter = bs[13];                     // 0: low pass filter off, 1: low pass filter on
-    int fan           = bs[15];                     // 0: fan off, 1: fan on
+    bitset<16> bs(rx.mid(5, rx.size() - 7).toInt(&ok, 10)); // ex) rx = "stat,8389\r\n"
+    vector <int> status(9);
+    status[0] = bs[0];                          // 0: acturator not plugged, 1: acturator plugged
+    status[1] = bs[1] + bs[2] * 2;              // 0: no measuring system,
+                                                // 1: strain gauge measuring system,
+                                                // 2: capacitive measuring system
+    status[2] = bs[4];                          // 0: closed loop system, 1: open loop system
+    status[3] = bs[6];                          // 0: piezo voltage not enabled, 1: piezo voltage enabled
+    status[4] = bs[7];                          // 0: open loop, 1: closed loop
+    status[5] = bs[9] + bs[10] * 2 + bs[11] * 4;// 0: generator off,
+                                                // 1: sine on
+                                                // 2: triangle on
+                                                // 3: rectangle on
+                                                // 4: noise on
+                                                // 5: sweep on
+    status[6] = bs[12];                         // 0: notch filter off, 1: notch filter on
+    status[7] = bs[13];                         // 0: low pass filter off, 1: low pass filter on
+    status[8] = bs[15];                         // 0: fan off, 1: fan on
 
-    if (actuatorPlug)
-        appendLog("Actuator plugged");
-    else
-        appendLog("Actuator not plugged");
-
-    if (measureSystem==0)
-        appendLog("No measuring system");
-    else if (measureSystem == 1)
-        appendLog("Strain gauge Measuring system");
-    else if (measureSystem == 2)
-        appendLog("capacitive measuring system");
-    else
-        appendLog("Unknown measuring system");
-
-    if (loopSystem)
-        appendLog("Open loop system");
-    else
-        appendLog("Closed loop system");
-
-    if (piezoVolEn)
-        appendLog("piezo voltage enabled");
-    else
-        appendLog("piezo voltage not enabled");
-
-    if (closedLoop)
-        appendLog("Closed loop");
-    else
-        appendLog("Open loop");
-
-    if (generator == 0)
-        appendLog("Generator off");
-    else if (generator == 1)
-        appendLog("Generator sine on");
-    else if (generator == 2)
-        appendLog("Generator triangle on");
-    else if (generator == 3)
-        appendLog("Generator rectangle on");
-    else if (generator == 4)
-        appendLog("Generator noise on");
-    else if (generator == 5)
-        appendLog("Generator sweep on");
-    else
-        appendLog("Unknown generator");
-
-    if (notchFilter)
-        appendLog("Notch filter on");
-    else
-        appendLog("Notch filter off");
-
-    if (lowPassFilter)
-        appendLog("Low pass filter on");
-    else
-        appendLog("Low pass filter off");
-
-    if (fan)
-        appendLog("Fan on");
-    else
-        appendLog("Fan off");
-
+    vector <vector<QString>> statMsg = {
+        {   "Actuator not plugged",
+            "Actuator plugged"
+        },
+        {   "No measuring system",
+            "Strain gauge Measuring system",
+            "capacitive measuring system",
+            "undefined"
+        },
+        {   "Closed loop system",
+            "Open loop system"
+        },
+        {   "piezo voltage not enabled",
+            "piezo voltage enabled"
+        },
+        {   "Open loop",
+            "Closed loop"
+        },
+        {   "Generator off",
+            "Generator sine on",
+            "Generator triangle on",
+            "Generator rectangle on",
+            "Generator noise on",
+            "Generator sweep on",
+            "undefined",
+            "undefined"
+        },
+        {   "Notch filter off",
+            "Notch filter on"
+        },
+        {   "Low pass filter off",
+            "Low pass filter on"
+        },
+        {   "Fan off",
+            "Fan on"
+        }
+    };
+    for (int i = 0; i < statMsg.size(); i++) {
+        appendLog(statMsg[i][status[i]]);
+    }
 }
 
 void Imagine::displayPiezoCtrlValue(QByteArray rx)
@@ -2508,4 +2588,318 @@ void Imagine::on_btnPzClosePort_clicked()
     ui.btnSendSerialCmd->setEnabled(false);
 }
 
+void Imagine::ControlFileLoad(QByteArray &data1, QByteArray &data2)
+{
+    BOOL data1_valid = (data1.size() != 0) ? true : false;
+    BOOL data2_valid = (data2.size() != 0) ? true : false;
+    QDataStream *dStream1, *dStream2;
+    unsigned short us;
+    vector <int> xpoint1;
+    vector <int> xpoint2;
+    vector <double> ypoint1;
+    vector <double> ypoint2;
+    double y1=0, y2=0, oldy1=0, oldy2=0, maxy=0;
+    int width;
+    int datasize;
+
+    if(data1_valid){
+        width = data1.size() / 2;
+        conPiezoCurveData = new CurveData(width); // parameter should not be xpoint.size()
+        dStream1 = new QDataStream(data1);
+        dStream1->setByteOrder(QDataStream::LittleEndian);//BigEndian, LittleEndian
+    }
+    if (data2_valid) {
+        width = data2.size() / 2;
+        conShutterCurveData = new CurveData(width); // parameter should not be xpoint.size()
+        dStream2 = new QDataStream(data2);
+        dStream2->setByteOrder(QDataStream::LittleEndian);//BigEndian, LittleEndian
+    }
+    // first point
+    if(data1_valid){
+        (*dStream1) >> us; // piezo
+        y1 = static_cast<double>(us);
+        oldy1 = y1;
+        if(y1 > maxy) maxy = y1;
+        xpoint1.push_back(0);
+        ypoint1.push_back(y1);
+    }
+    if(data2_valid){
+        (*dStream2) >> us; // shutter
+        y2 = static_cast<double>(us);
+        oldy2 = y2;
+        if (y2 > maxy) maxy = y2;
+        xpoint2.push_back(0);
+        ypoint2.push_back(y2);
+    }
+    // next points except the last one
+    for (int i = 1; i < width-1; i++)
+    {
+        if (data1_valid) {
+            (*dStream1) >> us; // piezo (.ai file)
+            y1 = static_cast<double>(us);
+            if (y1 > maxy) maxy = y1;
+        }
+        if (data2_valid) {
+            (*dStream2) >> us; // piezo (.ai file)
+            y2 = static_cast<double>(us);
+            if (y2 > maxy) maxy = y2;
+        }
+        if ((oldy1 != y1) || (oldy2 != y2)) { // only save different one from previous point
+            if (data1_valid) {
+                if (xpoint1.back() != i - 1) {
+                    xpoint1.push_back(i - 1);
+                    ypoint1.push_back(y1);
+                }
+                xpoint1.push_back(i);
+                ypoint1.push_back(y1);
+            }
+            if (data2_valid) {
+                if (xpoint2.back() != i - 1) {
+                    xpoint2.push_back(i - 1);
+                    ypoint2.push_back(oldy2);
+                }
+                xpoint2.push_back(i);
+                ypoint2.push_back(y2);
+            }
+            oldy1 = y1;
+            oldy2 = y2;
+        }
+    }
+    // last point is always saved
+    if (data1_valid) {
+        (*dStream1) >> us;
+        y1 = static_cast<double>(us);
+        if (y1 > maxy) maxy = y1;
+        xpoint1.push_back(width-1);
+        ypoint1.push_back(y1);
+        datasize = xpoint1.size();
+    }
+    if (data2_valid) {
+        (*dStream2) >> us;
+        y2 = static_cast<double>(us);
+        if (y2 > maxy) maxy = y2;
+        xpoint2.push_back(width-1);
+        ypoint2.push_back(y2);
+        datasize = xpoint2.size();
+    }
+
+    for (int i = 0; i < datasize; i++)
+    {
+        if ((conPiezoCurveData) && (data1_valid))
+            conPiezoCurveData->append(static_cast<double>(xpoint1[i]), ypoint1[i]);
+        if ((conShutterCurveData) && (data2_valid))
+            conShutterCurveData->append(static_cast<double>(xpoint2[i]), ypoint2[i]);
+    }
+
+    if ((conPiezoCurveData) && (data1_valid)) {
+        conPiezoCurve->setData(conPiezoCurveData);
+        conWavPlot->setAxisScale(QwtPlot::xBottom, conPiezoCurveData->left(), conPiezoCurveData->right());
+    }
+    if ((conShutterCurveData) && (data2_valid)) {
+        conShutterCurve->setData(conShutterCurveData);
+        conWavPlot->setAxisScale(QwtPlot::xBottom, conShutterCurveData->left(), conShutterCurveData->right());
+    }
+    conWavPlot->setAxisScale(QwtPlot::yLeft, 0, maxy);
+    conWavPlot->replot();
+}
+
+void Imagine::on_btnShutterWavOpen_clicked()
+{
+    // Read shutter file
+    QString wavFilename = QFileDialog::getOpenFileName(
+        this,
+        "Choose a shutter control waveform file to open",
+        "../", // Working Directory is set in Preference as $(ProjectDir)/scripts
+        "Waveform files (*.wvf);;All files(*.*)");
+    if (wavFilename.isEmpty()) return;
+
+    ui.lineEditShutterWaveFile->setText(wavFilename);
+
+    QFile file2(wavFilename);
+    if (!file2.open(QFile::ReadOnly)) {
+        QMessageBox::warning(this, tr("Imagine"),
+            tr("Cannot read file %1:\n%2.")
+            .arg(wavFilename)
+            .arg(file2.errorString()));
+        return;
+    }
+    QByteArray data1, data2;
+    data2 = file2.readAll();
+    file2.close();
+    
+    // Read piezo file
+    QFile file1(ui.lineEditPiezoWaveFile->text());
+    if (file1.open(QFile::ReadOnly)) {
+        data1 = file1.readAll();
+        if (data1.size() != data2.size()) {
+            QMessageBox::critical(this, "Imagine", "Piezo waveform and shtter waveform are different in their sample size"
+                , QMessageBox::Ok, QMessageBox::NoButton);
+            return;
+        }
+    }
+
+    ControlFileLoad(data1, data2);
+}
+
+void Imagine::on_btnPiezoWavOpen_clicked()
+{
+    // Read piezo file
+    QString wavFilename = QFileDialog::getOpenFileName(
+        this,
+        "Choose a piezo control waveform file to open",
+        "../", // Working Directory is set in Preference as $(ProjectDir)/scripts
+        "Waveform files (*.wvf);;All files(*.*)");
+    if (wavFilename.isEmpty()) return;
+
+    ui.lineEditPiezoWaveFile->setText(wavFilename);
+
+    QFile file1(wavFilename);
+    if (!file1.open(QFile::ReadOnly)) {
+        QMessageBox::warning(this, tr("Imagine"),
+            tr("Cannot read file %1:\n%2.")
+            .arg(wavFilename)
+            .arg(file1.errorString()));
+        return;
+    }
+    QByteArray data1, data2;
+    data1 = file1.readAll();
+    file1.close();
+
+    // Read shutter file
+    QFile file2(ui.lineEditShutterWaveFile->text());
+    if (file2.open(QFile::ReadOnly)) {
+        data2 = file2.readAll();
+        if (data1.size() != data2.size()) {
+            QMessageBox::critical(this, "Imagine", "Piezo waveform and shtter waveform are different in their sample size"
+                , QMessageBox::Ok, QMessageBox::NoButton);
+            return;
+        }
+    }
+
+    ControlFileLoad(data1, data2);
+}
+
+void Imagine::on_btnReadWavOpen_clicked()
+{
+    QString wavFilename = QFileDialog::getOpenFileName(
+        this,
+        "Choose a read out waveform file to open",
+        "../", // Working Directory is set in Preference as $(ProjectDir)/scripts
+        "Waveform files (*.ai);;All files(*.*)");
+    if (wavFilename.isEmpty()) return;
+
+    ui.lineEditReadWaveformFile->setText(wavFilename);
+
+    QFile file(wavFilename);
+    if (!file.open(QFile::ReadOnly)) {
+        QMessageBox::warning(this, tr("Imagine"),
+            tr("Cannot read file %1:\n%2.")
+            .arg(wavFilename)
+            .arg(file.errorString()));
+        return;
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+    QDataStream dStream(data);
+    dStream.setByteOrder(QDataStream::LittleEndian);//BigEndian, LittleEndian
+    conReadPiezoCurveData = new CurveData(data.size() / 8);
+    conReadStimuliCurveData = new CurveData(data.size() / 8);
+    conReadCameraCurveData = new CurveData(data.size() / 8);
+    conReadHeartbeatCurveData = new CurveData(data.size() / 8);
+    double maxy = 0, miny = INFINITY;
+    for (int i = 0; i < data.size() / 8; i++)
+    {
+        unsigned short us;
+        dStream >> us; // piezo (.ai file)
+        double y = static_cast<double>(us)/100;
+        if (y > maxy) maxy = y;
+        if (y < miny) miny = y;
+        conReadPiezoCurveData->append(static_cast<double>(i), y);
+        dStream >> us; // stimuli (.ai file)
+        y = static_cast<double>(us)/400;
+        if (y > maxy) maxy = y;
+        if (y < miny) miny = y;
+        conReadStimuliCurveData->append(static_cast<double>(i), y);
+        dStream >> us; // camera frame TTL (.ai file)
+        y = static_cast<double>(us)/400;
+        if (y > maxy) maxy = y;
+        if (y < miny) miny = y;
+        conReadCameraCurveData->append(static_cast<double>(i), y);
+        dStream >> us; // heartbeat (.ai file)
+        y = static_cast<double>(us)/400;
+        if (y > maxy) maxy = y;
+        if (y < miny) miny = y;
+        conReadHeartbeatCurveData->append(static_cast<double>(i), y);
+    }
+    //QRectF bound = conPiezoCurveData->boundingRect();
+    conReadPiezoCurve->setData(conReadPiezoCurveData);
+    conReadStimuliCurve->setData(conReadStimuliCurveData);
+    conReadCameraCurve->setData(conReadCameraCurveData);
+    conReadHeartbeatCurve->setData(conReadHeartbeatCurveData);
+    conReadWavPlot->setAxisScale(QwtPlot::yLeft, miny, maxy);
+    conReadWavPlot->setAxisScale(QwtPlot::xBottom, conReadPiezoCurveData->left(), conReadPiezoCurveData->right());
+    conReadWavPlot->replot();
+
+    //To make test control data 
+    QFile file2("d:/piezo.wvf");
+    QFile file3("d:/shutter.wvf");
+    qint16 piezo, shutter;
+    double piezom1,piezo0,piezop1,piezoavg=0.;
+
+    if (file2.open(QFile::WriteOnly | QFile::Truncate)&& file3.open(QFile::WriteOnly | QFile::Truncate))
+    {
+        if (0) {
+            piezop1 = (conReadPiezoCurveData->y(0) / 40 * 100);;
+            piezo0 = piezop1;
+            for (int i = 0; i < 70000; i++)//conReadPiezoCurveData->size()
+            {
+                int ii = i % 14000;
+                piezom1 = piezo0;
+                piezo0 = piezop1;
+                piezop1 = (conReadPiezoCurveData->y(ii + 1) / 40 * 100);
+                piezoavg = (piezom1 + piezo0 + piezop1) / 3.;
+                piezo = static_cast<qint16>(piezoavg + 0.5);
+                if ((ii >= 5000) && (ii <= 10000)) {
+                    int j = ii % 50;
+                    if ((j >= 0) && (j <= 30))
+                        shutter = 150;
+                    else
+                        shutter = 0;
+                }
+                else
+                    shutter = 0;
+                file2.write((char *)(&piezo), sizeof(qint16));
+                file3.write((char *)(&shutter), sizeof(qint16));
+            }
+        }
+        else {
+            for (int i = 0; i < 70000; i++)
+            {
+                int ii = i % 14000;
+                if ((ii >= 4000) && (ii < 10000)) {
+                    piezoavg += 400./6000.;
+                }
+                if ((ii >= 10000) && (ii < 11000)) {
+                    piezoavg -= 400. / 1000.;
+                }
+                piezo = static_cast<qint16>(piezoavg + 0.5);
+                if ((ii >= 5000) && (ii <= 10000)) {
+                    int j = ii % 50;
+                    if ((j >= 0) && (j <= 30))
+                        shutter = 150;
+                    else
+                        shutter = 0;
+                }
+                else
+                    shutter = 0;
+                file2.write((char *)(&piezo), sizeof(qint16));
+                file3.write((char *)(&shutter), sizeof(qint16));
+            }
+        }
+        file2.close();
+        file3.close();
+
+    }
+}
 #pragma endregion

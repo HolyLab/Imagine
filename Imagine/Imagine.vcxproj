@@ -331,6 +331,7 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="actuators\dummy\dummypiezo.hpp" />
     <ClInclude Include="actuators\voltage\volpiezo.hpp" />
     <CustomBuild Include="workerthread.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

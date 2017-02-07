@@ -31,6 +31,7 @@
 class QImage;
 class NiDaqAi;
 class Imagine;
+class CurveData;
 
 class DataAcqThread : public WorkerThread
 {
@@ -94,6 +95,10 @@ public:
     //piezo params:
     double piezoStartPosUm, piezoStopPosUm; //NOTE: in um
     bool isBiDirectionalImaging;
+    CurveData *conPiezoWavData;
+    CurveData *conShutterWavData;
+    bool isUsingWav = false;
+    int sampleRate;
 
     //stimulus:
     QString stimFileContent;

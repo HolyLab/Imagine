@@ -27,7 +27,7 @@ class QString;
 class QwtPlot;
 class QwtPlotCurve;
 class QwtPlotHistogramItem;
-//class CurveData;
+class CurveData;
 
 #include "ui_imagine.h"
 
@@ -143,7 +143,21 @@ private:
     QwtPlotHistogram *histogram;
     QwtPlot *intenPlot;
     QwtPlotCurve *intenCurve;
-    //    CurveData *intenCurveData;
+    CurveData *intenCurveData;
+    QwtPlot *conWavPlot;
+    QwtPlotCurve *conPiezoCurve;
+    CurveData *conPiezoCurveData = NULL;
+    QwtPlotCurve *conShutterCurve;
+    CurveData *conShutterCurveData = NULL;
+    QwtPlot *conReadWavPlot;
+    QwtPlotCurve *conReadPiezoCurve;
+    QwtPlotCurve *conReadStimuliCurve;
+    QwtPlotCurve *conReadCameraCurve;
+    QwtPlotCurve *conReadHeartbeatCurve;
+    CurveData *conReadPiezoCurveData = NULL;
+    CurveData *conReadStimuliCurveData = NULL;
+    CurveData *conReadCameraCurveData = NULL;
+    CurveData *conReadHeartbeatCurveData = NULL;
     vector<PiezoUiParam> piezoUiParams;
     QString m_OpenDialogLastDirectory;
     bool modified;
@@ -173,6 +187,8 @@ private:
     void readSettings(QString file);
     void writeComments(QString file);
     void readComments(QString file);
+    void updateConWave(const int frameIdx, const int value);
+    void ControlFileLoad(QByteArray &data1, QByteArray &data2);
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();
@@ -274,7 +290,9 @@ private slots:
     void on_btnPzOpenPort_clicked();
     void on_btnPzClosePort_clicked();
     // for piezo controller setup until this line
-
+    void on_btnPiezoWavOpen_clicked();
+    void on_btnShutterWavOpen_clicked();
+    void on_btnReadWavOpen_clicked();
 
 public:
     Ui::ImagineClass ui;
