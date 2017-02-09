@@ -1399,10 +1399,11 @@ void Imagine::on_btnApply_clicked()
                     return;
                 }
                 else {
-                    acqTriggerMode = Camera::eInternalTrigger;
-                    expTriggerMode = Camera::eExternalStart;
+                    dataAcqThread.acqTriggerMode = Camera::eInternalTrigger;
+                    dataAcqThread.expTriggerMode = Camera::eExternalStart;
                     dataAcqThread.nStacks = ui.spinBoxNumOfStacksWav->value();
                     dataAcqThread.nFramesPerStack = ui.spinBoxFramesPerStackWav->value();
+                    dataAcqThread.pPositioner->setScanRateAo(ui.spinBoxPiezoSampleRate->value());
                 }
             }
         }
@@ -1414,6 +1415,7 @@ void Imagine::on_btnApply_clicked()
     }
     else {
         dataAcqThread.isUsingWav = false;
+        dataAcqThread.pPositioner->setScanRateAo(10000); // Hard coded
     }
 
     dataAcqThread->nStacks = ui.spinBoxNumOfStacks->value();
@@ -2937,7 +2939,7 @@ void Imagine::on_btnReadWavOpen_clicked()
             }
         }
         else {
-            int sampleRate = 10000;
+            int sampleRate = 2000;
             int totalSamples = 70000;
             int nStacks = 5;
             int perStackSamples = totalSamples / nStacks;

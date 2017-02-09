@@ -475,6 +475,7 @@ nextStack:  //code below is repeated every stack
 
 
     if (idxCurStack < this->nStacks && !stopRequested){
+        if (isUsingWav) goto nextStack;
         if (isBiDirectionalImaging && ownPos){
             preparePositioner(idxCurStack % 2 == 0, useTrig);
         }

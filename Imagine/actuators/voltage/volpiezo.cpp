@@ -94,9 +94,12 @@ bool VolPiezo::prepareCmd(bool useTrigger)
     double totalTime = 0;
     for (unsigned idx = 0; idx < movements.size(); ++idx) totalTime += movements[idx]->duration / 1e6; //microsec to sec
 
+<<<<<<< HEAD
     int scanRateAo = 10000; //TODO: hard coded
     //int nScansExtra = 500;
 
+=======
+>>>>>>> piezo shutter wav control tmp3
     ao->cfgTiming(scanRateAo, int(scanRateAo*totalTime));
 
     if (ao->isError()) {

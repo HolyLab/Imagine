@@ -34,7 +34,7 @@ protected:
     };
     vector<Movement* > movements;
     string lastErrorMsg;
-    int dim; //dim that minPos, maxPos, curPos, moveTo, addMovement work on. 0 is x-axis, 1 is y-axis.
+    int dim, scanRateAo; //dim that minPos, maxPos, curPos, moveTo, addMovement work on. 0 is x-axis, 1 is y-axis.
 
 public:
     Positioner(){ setDim(0); }
@@ -54,6 +54,8 @@ public:
     virtual QString getCtrlrSetupType() { return 0; }
     virtual bool curPos(double* pos) = 0; // current position in um
     virtual bool moveTo(double to) = 0; //move at maximum safe speed
+    virtual void setScanRateAo(int rate) { scanRateAo = rate; }
+
 
     //// cmd related:
     virtual bool addMovement(double from, double to, double duration, int trigger);
