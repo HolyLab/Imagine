@@ -9,12 +9,9 @@
 
 #include "sc2_SDKStructures.h"
 #include "SC2_CamExport.h"
-//#include "sc2_defs.h"
 #include "PCO_err.h"
 #include "timer_g.hpp"
-//#define PCO_ERRT_H_CREATE_OBJECT
-//#include "PCO_errt.h"
-//#include "cookeworkerthread.h"
+
 
 // TODO: this is upside down, but cookeworkerthread.h is a mess...
 // in the future it would be nice to make use of cookworkerthread.cpp,

@@ -50,9 +50,9 @@ void SpoolThread::run() {
             OutputDebugStringW((wstring(L"Current size of circ buf:") + to_wstring(curSize)+ wstring(L"\n")).c_str());
             idx = camera->circBuf->get();
             camera->circBufLock->unlock();
-            this->setPriority(getDefaultPriority());
             if (camera->genericAcqMode != Camera::eLive)
                 this->ofsSpooling->write(camera->memPool + idx*size_t(camera->imageSizeBytes), camera->imageSizeBytes);
+            this->setPriority(getDefaultPriority());
         }
         else {
             camera->circBufLock->unlock();

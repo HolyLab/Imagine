@@ -34,7 +34,6 @@ class QwtPlotHistogramItem;
 #include "data_acq_thread.hpp"
 //#include "andor_g.hpp"
 #include "positioner.hpp"
-#include "timer_g.hpp"
 #include "Pixmapper.h"
 #include <qwt_plot_histogram.h>
 #include "laserctrl.h"
@@ -106,8 +105,7 @@ public:
     Imagine(Camera *cam, Positioner *pos = NULL, Laser *laser = NULL, Imagine *mImagine = NULL,
         QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~Imagine();
-    DataAcqThread dataAcqThread;
-    Timer_g gTimer;
+    DataAcqThread *dataAcqThread;
     
 	Imagine *masterImagine; //Positioner and stimulus control / interface is restricted to only the master instance
     Pixmapper *pixmapper = nullptr;

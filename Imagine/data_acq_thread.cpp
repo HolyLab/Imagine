@@ -378,28 +378,15 @@ nextStack:  //code below is repeated every stack
     if (hasPos && ownPos) pPositioner->optimizeCmd(); //This function currently does nothing for voltage positioner.  Is this okay?
 
     bool isPiezo = hasPos && pPositioner->posType == PiezoControlPositioner;
+    //open laser shutter
+    if (ownPos) {
+        digOut->updateOutputBuf(4, true);
+        digOut->write();
+    }
+    //raise priority here to ensure that the camera and piezo begin (nearly) simultaneously
+    QThread::setPriority(QThread::TimeCriticalPriority);
     if (hasPos && ownPos) pPositioner->runCmd(); //will wait on trigger pulse from camera
-    if (acqTriggerMode == Camera::eExternal){
-        if (!startCameraOnce && !isPiezo){
-            camera.startAcq();
-            double timeToWait = 0.1;
-            //TODO: maybe I should use busy waiting?
-        }
-        if (hasPos && ownPos) {
-            pPositioner->runCmd();
-        }
-
-        if (!startCameraOnce && isPiezo) {
-            camera->nextStack();
-        }
-    }
-    else {
-        //Camera takes a while to start, so do this before starting positioner
-        if (!startCameraOnce) {
-            camera->nextStack();
-        }
-    }
-
+    camera->nextStack();
     //lower priority back to default
     QThread::setPriority(getDefaultPriority());
 
@@ -469,7 +456,6 @@ nextStack:  //code below is repeated every stack
     }
 
 
-    idxCurStack++;  //post: it is #stacks we got so far
     if (idxCurStack < this->nStacks && !stopRequested){
         if (isBiDirectionalImaging && ownPos){
             preparePositioner(idxCurStack % 2 == 0, useTrig);

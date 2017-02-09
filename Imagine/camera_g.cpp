@@ -142,7 +142,7 @@ bool Camera::setSpooling(string filename)
     bufsize_in_8kb *= 1;
 #endif
     ofsSpooling = new FastOfstream(filename.c_str(), total_in_bytes, bufsize_in_8kb);
-    return *ofsSpooling;
+    return ofsSpooling->getIsGood();//*ofsSpooling;
 }
 
 //void Camera::setTimer(Timer_g * timer) { this->timer = timer; }

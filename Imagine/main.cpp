@@ -30,14 +30,10 @@ using namespace std;
 #include "imagine.h"
 #include "ImgApplication.h"
 
-//#include "andor_g.hpp"
-//#include "avt_g.hpp"
 #include "cooke.hpp"
 #include "pco_errt.h"
 
 #include "actuators/voltage/volpiezo.hpp"
-//#include "Piezo_Controller.hpp"
-//#include "Actuator_Controller.hpp"
 #include "actuators/dummy/dummypiezo.hpp"
 #include "ni_daq_g.hpp"
 #include "dummy_daq.hpp"
@@ -90,10 +86,6 @@ QScriptValue runWrapper(QScriptContext *context, QScriptEngine *se)
 {
     QString x = context->argument(0).toString();
     return QScriptValue(se, run(x));
-    //QScriptValue result=se->newObject();
-    //result.setProperty("status", QScriptValue(se, ...));
-    //result.setProperty("msg", QScriptValue(se, ...));
-    //return result;
 }
 
 void getCamCount(int *camCount) {
@@ -170,12 +162,6 @@ int main(int argc, char *argv[])
         ainame = se->globalObject().property("ainame").toString();
     }
 
-	//QTextStream out(cout); // cout.rdbuf());
-    cout << "using " << cameraVendor.toStdString() << " camera, "
-        << positionerType.toStdString() << " positioner, "
-        << daq.toStdString() << "\n";
-	//out.flush(); //still not working for some reason.  was stdout redirected?
-
     if (cameraVendor != "avt" && cameraVendor != "andor" && cameraVendor != "cooke" && cameraVendor != "dummy") {
         QMessageBox::critical(0, "Imagine", "Unsupported camera."
             , QMessageBox::Ok, QMessageBox::NoButton);
@@ -205,8 +191,6 @@ int main(int argc, char *argv[])
     QSplashScreen *splash = new QSplashScreen(pixmap);
     splash->show();
 
-    /*QMessageBox::information(0, "Imagine",
-          "Please raise microscope.");*/
     int align = Qt::AlignBottom | Qt::AlignLeft;
     Qt::GlobalColor col = Qt::red;
     splash->showMessage(QString("Initialize the %1 actuator ...").arg(positionerType), align, col);
@@ -220,10 +204,6 @@ int main(int argc, char *argv[])
         ctrlrsetup = se->globalObject().property("ctrlrsetup").toString();
         pos = new VolPiezo(ainame, aoname, maxposition, maxspeed, ctrlrsetup);
     }
-//    else if (positionerType == "pi") pos = new Piezo_Controller;
-//#ifndef _WIN64
-//    else if (positionerType == "thor") pos = new Actuator_Controller;
-//#endif
     else if (positionerType == "dummy") {
         ctrlrsetup = se->globalObject().property("ctrlrsetup").toString();
         pos = new DummyPiezo(ctrlrsetup);
@@ -261,9 +241,7 @@ int main(int argc, char *argv[])
     // pointer will be deleted in clean-up of its owning data_acq_thread.
     splash->showMessage(QString("Initializing (%1) camera 1 ...").arg(cameraVendor), align, col);
     Camera *cam1;
-//    if (cameraVendor == "avt") cam1 = new AvtCamera;
-//    else if (cameraVendor == "andor") cam1 = new AndorCamera;
-//    else if (cameraVendor == "cooke") cam1 = new CookeCamera;
+
 	if (cameraVendor == "cooke") cam1 = new CookeCamera;
 	else if (cameraVendor == "dummy") cam1 = new CookeCamera;
     else {
@@ -288,9 +266,6 @@ int main(int argc, char *argv[])
         // sorry for the copy pasta. perhaps put this in a function later
         splash->showMessage(QString("Initializing (%1) camera 2 ...").arg(cameraVendor), align, col);
         
-//        if (cameraVendor == "avt") cam2 = new AvtCamera;
-//        else if (cameraVendor == "andor") cam2 = new AndorCamera;
-//        else if (cameraVendor == "cooke") cam2 = new CookeCamera;
 		if (cameraVendor == "cooke") cam2 = new CookeCamera;
 		else if (cameraVendor == "dummy") cam2 = new CookeCamera; // DummyCamera;
         else {
@@ -314,7 +289,7 @@ int main(int argc, char *argv[])
     else laser = new Laser("dummy");
 
     // get rid of the status message
-    delete splash;
+    splash->deleteLater();
 
     // init and show the ui
     a.initUI(cam1, pos, laser, cam2);
@@ -322,5 +297,7 @@ int main(int argc, char *argv[])
 
     // go!
     a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
+    //set GUI thread to a low priority
+    QThread::currentThread()->setPriority(QThread::IdlePriority);
     return a.exec();
 }

@@ -50,19 +50,14 @@
 
 using namespace std;
 
-//#include "andor_g.hpp"
 #include "ni_daq_g.hpp"
-//#include "temperaturedialog.h"
-//#include "fanctrldialog.h" //only for Andor camera
 #include "positioner.hpp"
-#include "timer_g.hpp"
+
 #include "spoolthread.h"
 #include <bitset>
 #include "misc.hpp"
 using std::bitset;
 
-//TemperatureDialog * temperatureDialog = NULL;
-//FanCtrlDialog* fanCtrlDialog = NULL;
 ImagineStatus curStatus;
 ImagineAction curAction;
 
@@ -82,10 +77,9 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
 {
     m_OpenDialogLastDirectory = QDir::homePath();
     masterImagine = mImagine;
-    // pass the camera and positioner to the dataAcqThread
-    dataAcqThread.setCamera(cam);
-    dataAcqThread.setPositioner(pos);
-    dataAcqThread.parentImagine = this;
+    dataAcqThread = new DataAcqThread(QThread::NormalPriority, cam, pos, this, parent);
+
+    qDebug() << QString("created data acq thread");
 
     // set up the pixmap making thread (see dtor for cleanup)
     pixmapper = new Pixmapper();
@@ -93,32 +87,27 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
     connect(&pixmapperThread, &QThread::finished, pixmapper, &QObject::deleteLater);
     connect(this, &Imagine::makePixmap, pixmapper, &Pixmapper::handleImg);
     connect(pixmapper, &Pixmapper::pixmapReady, this, &Imagine::handlePixmap);
-    pixmapperThread.start();
-    pixmapperThread.setPriority(QThread::LowPriority);
+    pixmapperThread.start(QThread::IdlePriority);
+
 
     minPixelValueByUser = 0;
     maxPixelValueByUser = 1 << 16;
 
     ui.setupUi(this);
-
     //load user's preference/preset from js
     loadPreset();
-
     //to overcome qt designer's incapability
     addDockWidget(Qt::TopDockWidgetArea, ui.dwStim);
     addDockWidget(Qt::LeftDockWidgetArea, ui.dwCfg);
     addDockWidget(Qt::LeftDockWidgetArea, ui.dwLog);
     addDockWidget(Qt::LeftDockWidgetArea, ui.dwHist);
     addDockWidget(Qt::LeftDockWidgetArea, ui.dwIntenCurve);
-
     ui.dwCfg->setWindowTitle("Config and control");
     tabifyDockWidget(ui.dwCfg, ui.dwHist);
     tabifyDockWidget(ui.dwHist, ui.dwIntenCurve);
     setDockOptions(dockOptions() | QMainWindow::VerticalTabs);
 
-    //TODO: temp hide shutter and AI tabs
-    //ui.tabAI->hide();  //doesn't work
-    //ui.tabWidgetCfg->setTabEnabled(4,false); //may confuse user
+
     ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabAI));
     //remove positioner tab from slave window
     //TODO: Give stimulus tab the same treatment (It's in position #3)
@@ -183,79 +172,12 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
         ui.comboBoxAcqTriggerMode->setCurrentIndex(1);
     }
 
-    Camera& camera = *dataAcqThread.pCamera;
+    Camera& camera = *dataAcqThread->pCamera;
 
-    bool isAndor = camera.vendor == "andor";
-    bool isAvt = camera.vendor == "avt";
-
-    if (isAvt) {
-        ui.actionFlickerControl->setChecked(true);
-    }
-
-    ui.actionHeatsinkFan->setEnabled(isAndor);
-    ui.actionTemperature->setEnabled(isAndor);
-
-    //camera's gain:
-    auto gainRange = camera.getGainRange();
-    if (gainRange.second == gainRange.first) ui.spinBoxGain->setEnabled(false);
-    else {
-        ui.spinBoxGain->setMinimum(gainRange.first);
-        ui.spinBoxGain->setMaximum(gainRange.second);
-    }
-
-    /*    if (isAndor){
-            //fill in horizontal shift speed (i.e. read out rate):
-            vector<float> horSpeeds = ((AndorCamera*)dataAcqThread.pCamera)->getHorShiftSpeeds();
-            for (int i = 0; i < horSpeeds.size(); ++i){
-                ui.comboBoxHorReadoutRate->addItem(QString().setNum(horSpeeds[i])
-                    + " MHz");
-            }
-            ui.comboBoxHorReadoutRate->setCurrentIndex(0);
-
-            //fill in pre-amp gains:
-            vector<float> preAmpGains = ((AndorCamera*)dataAcqThread.pCamera)->getPreAmpGains();
-            for (int i = 0; i < preAmpGains.size(); ++i){
-                ui.comboBoxPreAmpGains->addItem(QString().setNum(preAmpGains[i]));
-            }
-            ui.comboBoxPreAmpGains->setCurrentIndex(preAmpGains.size() - 1);
-
-            //verify all pre-amp gains available on all hor. shift speeds:
-            for (int horShiftSpeedIdx = 0; horShiftSpeedIdx < horSpeeds.size(); ++horShiftSpeedIdx){
-                for (int preAmpGainIdx = 0; preAmpGainIdx < preAmpGains.size(); ++preAmpGainIdx){
-                    int isAvail;
-                    //todo: put next func in class AndorCamera
-                    IsPreAmpGainAvailable(0, 0, horShiftSpeedIdx, preAmpGainIdx, &isAvail);
-                    if (!isAvail){
-                        appendLog("WARNING: not all pre-amp gains available for all readout rates");
-                    }
-                }//for, each pre amp gain
-            }//for, each hor. shift speed
-
-            //fill in vert. shift speed combo box
-            vector<float> verSpeeds = ((AndorCamera*)dataAcqThread.pCamera)->getVerShiftSpeeds();
-            for (int i = 0; i < verSpeeds.size(); ++i){
-                ui.comboBoxVertShiftSpeed->addItem(QString().setNum(verSpeeds[i])
-                    + " us");
-            }
-            ui.comboBoxVertShiftSpeed->setCurrentIndex(2);
-
-            //fill in vert. clock amplitude combo box:
-            for (int i = 0; i < 5; ++i){
-                QString tstr;
-                if (i == 0) tstr = "0 - Normal";
-                else tstr = QString("+%1").arg(i);
-                ui.comboBoxVertClockVolAmp->addItem(tstr);
-            }
-            ui.comboBoxVertClockVolAmp->setCurrentIndex(0);
-
-        }//if, is andor camera
-    */
-    //    else{
     ui.comboBoxHorReadoutRate->setEnabled(false);
     ui.comboBoxPreAmpGains->setEnabled(false);
     ui.comboBoxVertShiftSpeed->setEnabled(false);
     ui.comboBoxVertClockVolAmp->setEnabled(false);
-    //    }
 
     maxROIHSize = camera.getChipWidth();
     maxROIVSize = camera.getChipHeight();
@@ -288,19 +210,15 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
         bool isActPos = pos->posType == ActuatorPositioner;
         ui.doubleSpinBoxMinDistance->setValue(pos->minPos());
         ui.doubleSpinBoxMaxDistance->setValue(pos->maxPos());
-
         ui.comboBoxAxis->setEnabled(isActPos);
         if (isActPos){
             pos->setDim(1);
             ui.comboBoxAxis->setCurrentIndex(1);
         }
-
         //move piezo position to preset position
         on_btnMovePiezo_clicked();
-
         piezoUiParams.resize(3);//3 axes at most. TODO: support querying #dims
     }
-
     QString buildDateStr = __DATE__;
     QDate date = QDate::fromString(buildDateStr, "MMM d yyyy");
     if (!date.isValid()) {
@@ -319,16 +237,13 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
     //to enable pass QImage in signal/slot
     qRegisterMetaType<QImage>("QImage");
 
-    connect(&dataAcqThread, SIGNAL(newStatusMsgReady(const QString &)),
+    connect(dataAcqThread, SIGNAL(newStatusMsgReady(const QString &)),
         this, SLOT(updateStatus(const QString &)));
-
-    connect(&dataAcqThread, SIGNAL(newLogMsgReady(const QString &)),
+    connect(dataAcqThread, SIGNAL(newLogMsgReady(const QString &)),
         this, SLOT(appendLog(const QString &)));
-
-    connect(&dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
+    connect(dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
         this, SLOT(updateDisplay(const QByteArray &, long, int, int)));
-
-    connect(&dataAcqThread, SIGNAL(resetActuatorPosReady()),
+    connect(dataAcqThread, SIGNAL(resetActuatorPosReady()),
         this, SLOT(on_btnMoveToStartPos_clicked()));
 
     //mouse events on image
@@ -374,12 +289,6 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
 
     on_spinBoxSpinboxSteps_valueChanged(ui.spinBoxSpinboxSteps->value());
 
-    //center window:
-    QRect rect = QApplication::desktop()->screenGeometry();
-    int x = (rect.width() - this->width()) / 2;
-    int y = (rect.height() - this->height()) / 2;
-    this->move(x, y);
-
     /* for laser control from this line */
     // pass laser object to a new thread
     if ((masterImagine == NULL)&&(laser->getDeviceName() != "nidaq")) {
@@ -399,11 +308,11 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
         connect(this, SIGNAL(getLaserTransStatus(bool, int)), laserCtrlSerial, SLOT(getTransStatus(bool, int)));
         connect(this, SIGNAL(setLaserTrans(bool, int, int)), laserCtrlSerial, SLOT(setTrans(bool, int, int)));
         connect(this, SIGNAL(getLaserLineSetupStatus(void)), laserCtrlSerial, SLOT(getLaserLineSetup(void)));
-//        connect(laserCtrlSerial, SIGNAL(getShutterStatusReady(int)), this, SLOT(displayShutterStatus(int)));
-//        connect(laserCtrlSerial, SIGNAL(getTransStatusReady(bool, int, int)), this, SLOT(displayTransStatus(bool, int, int)));
+        //        connect(laserCtrlSerial, SIGNAL(getShutterStatusReady(int)), this, SLOT(displayShutterStatus(int)));
+        //        connect(laserCtrlSerial, SIGNAL(getTransStatusReady(bool, int, int)), this, SLOT(displayTransStatus(bool, int, int)));
         connect(laserCtrlSerial, SIGNAL(getLaserLineSetupReady(int, int *, int *)), this, SLOT(displayLaserGUI(int, int *, int *)));
         // run event handler
-        laserCtrlThread.start();
+        laserCtrlThread.start(QThread::IdlePriority);
         if (laserCtrlSerial) {
             emit openLaserSerialPort(portName);
             emit getLaserLineSetupStatus();
@@ -412,8 +321,51 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
     }
     else {
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabLaser));
+        ui.actionOpenShutter->setEnabled(false);
+        ui.actionCloseShutter->setEnabled(false);
     }
     /* for laser control until this line */
+    /* for piezo setup from this line */
+    // pass piezo setup object to a new thread
+    if ((masterImagine == NULL) && (pos->getCtrlrSetupType() != "none")) {
+        QString portName;
+        if (pos->getCtrlrSetupType().left(3) == "COM")
+            portName = pos->getCtrlrSetupType();
+        else
+            portName = "DummyPort";
+        piezoCtrlSerial = new PiezoCtrlSerial(portName);
+        piezoCtrlSerial->moveToThread(&piezoCtrlThread);
+        // connect signals
+        connect(&piezoCtrlThread, SIGNAL(finished()), piezoCtrlSerial, SLOT(deleteLater()));
+        connect(this, SIGNAL(openPiezoCtrlSerialPort(QString)), piezoCtrlSerial, SLOT(openSerialPort(QString)));
+        connect(this, SIGNAL(closePiezoCtrlSerialPort(void)), piezoCtrlSerial, SLOT(closeSerialPort(void)));
+        connect(this, SIGNAL(sendPiezoCtrlCmd(QString)), piezoCtrlSerial, SLOT(sendCommand(QString)));
+        connect(piezoCtrlSerial, SIGNAL(sendStatusToGUI(QByteArray)), this, SLOT(displayPiezoCtrlStatus(QByteArray)));
+        connect(piezoCtrlSerial, SIGNAL(sendValueToGUI(QByteArray)), this, SLOT(displayPiezoCtrlValue(QByteArray)));
+        // run event handler
+        piezoCtrlThread.start();
+        if (piezoCtrlSerial) {
+            emit openPiezoCtrlSerialPort(portName);
+            emit sendPiezoCtrlCmd("cl,1"); // closed loop on
+            emit sendPiezoCtrlCmd("stat"); // read status
+            ui.btnPzOpenPort->setEnabled(false);
+            ui.btnPzClosePort->setEnabled(true);
+        }
+    }
+    else {
+        ui.btnPzOpenPort->setVisible(false);
+        ui.btnPzClosePort->setVisible(false);
+        ui.labelSerialCommand->setVisible(false);
+        ui.lineEditSerialCmd->setVisible(false);
+        ui.btnSendSerialCmd->setVisible(false);
+    }
+    /* for piezo setup until this line */
+
+    //center window:
+    QRect rect = QApplication::desktop()->screenGeometry();
+    int x = (rect.width() - this->width()) / 2;
+    int y = (rect.height() - this->height()) / 2;
+    this->move(x, y);
     /* for piezo setup from this line */
     // pass piezo setup object to a new thread
     if ((masterImagine == NULL) && (pos->getCtrlrSetupType() != "none")) {
@@ -606,11 +558,11 @@ void Imagine::preparePlots()
     histogram->attach(histPlot);
 
     ///todo: make it more robust by query Camera class
-    if (dataAcqThread.pCamera->vendor == "andor"){
+    if (dataAcqThread->pCamera->vendor == "andor"){
         histPlot->setAxisScale(QwtPlot::yLeft, 1, 1000000.0);
         histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1 << 14);
     }
-    else if (dataAcqThread.pCamera->vendor == "cooke"){
+    else if (dataAcqThread->pCamera->vendor == "cooke"){
         histPlot->setAxisScale(QwtPlot::yLeft, 1, 5000000.0);
         histPlot->setAxisScale(QwtPlot::xBottom, 0.0, 1 << 16);
     }
@@ -657,7 +609,7 @@ QPoint Imagine::calcPos(const QPoint& pos)
 //note: idx is 0-based
 void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int imageH)
 {
-    dataAcqThread.isUpdatingImage = true;
+    dataAcqThread->isUpdatingImage = true;
 
     // If something breaks... probably these units are wrong.
     lastRawImg = data16;
@@ -694,8 +646,8 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
     }
     //  --- acq mode:
     if (curStatus == eRunning && curAction == eAcqAndSave
-        && idx == dataAcqThread.nFramesPerStack - 1){
-        updateIntenCurve(frame, imageW, imageH, dataAcqThread.idxCurStack);
+        && idx == dataAcqThread->nFramesPerStack - 1){
+        updateIntenCurve(frame, imageW, imageH, dataAcqThread->idxCurStack);
     }
 
     //copy and scale data
@@ -729,7 +681,7 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
         + "-th updated frame(0-based)=" + QString().setNum(idx));
 
 done:
-    dataAcqThread.isUpdatingImage = false;
+    dataAcqThread->isUpdatingImage = false;
 }//updateDisplay(),
 
 void Imagine::updateStatus(const QString &str)
@@ -743,7 +695,7 @@ void Imagine::updateStatus(const QString &str)
     appendLog(str);
 
     if (str.startsWith("valve", Qt::CaseInsensitive)){
-        ui.tableWidgetStimDisplay->setCurrentCell(0, dataAcqThread.curStimIndex);
+        ui.tableWidgetStimDisplay->setCurrentCell(0, dataAcqThread->curStimIndex);
     }//if, update stimulus display
 }
 
@@ -817,7 +769,6 @@ void setDockwigetByAction(QAction* act, QDockWidget* widget)
 bool Imagine::loadPreset()
 {
     QScriptValue preset = se->globalObject().property("preset");
-
     //piezo
     QScriptValue sv = preset.property("startPosition");
     if (sv.isValid()) ui.doubleSpinBoxStartPos->setValue(sv.toNumber());
@@ -827,7 +778,6 @@ bool Imagine::loadPreset()
     if (sv.isValid()) ui.doubleSpinBoxCurPos->setValue(sv.toNumber());
     sv = preset.property("travelBackTime");
     if (sv.isValid()) ui.doubleSpinBoxPiezoTravelBackTime->setValue(sv.toNumber());
-
     ///camera
     sv = preset.property("numOfStacks");
     if (sv.isValid()) ui.spinBoxNumOfStacks->setValue(sv.toNumber());
@@ -875,11 +825,6 @@ void Imagine::updateStatus(ImagineStatus newStatus, ImagineAction newAction)
 
         disabledActions.push_back(ui.actionStartAcqAndSave);
         disabledActions.push_back(ui.actionStartLive);
-        //disabledActions.push_back(ui.actionOpenShutter);
-        //disabledActions.push_back(ui.actionCloseShutter);
-        //disabledActions.push_back(ui.actionTemperature);
-
-        //disabledWidgets.push_back(ui.btnApply);
 
         //change intensity plot xlabel
         if (curAction == eLive){
@@ -916,7 +861,7 @@ void Imagine::updateStatus(ImagineStatus newStatus, ImagineAction newAction)
 void Imagine::readPiezoCurPos()
 {
     double um;
-    Positioner *pos = dataAcqThread.pPositioner;
+    Positioner *pos = dataAcqThread->pPositioner;
     if (pos != NULL && pos->curPos(&um)) {
         ui.labelCurPos->setText(QString::number(um, 'f', 2));
     }
@@ -1000,7 +945,7 @@ void Imagine::on_actionStartAcqAndSave_triggered()
         return;
     }
 
-    if (dataAcqThread.headerFilename == ""){
+    if (dataAcqThread->headerFilename == ""){
         if (ui.lineEditFilename->text() != ""){
             QMessageBox::information(this, "Forget to apply configuration --- Imagine",
                 "Please apply the configuration by clicking Apply button");
@@ -1013,12 +958,12 @@ void Imagine::on_actionStartAcqAndSave_triggered()
     }
 
     //warn user if overwrite file:
-    if (QFile::exists(dataAcqThread.headerFilename) &&
+    if (QFile::exists(dataAcqThread->headerFilename) &&
         QMessageBox::question(
         this,
         tr("Overwrite File? -- Imagine"),
         tr("The file called \n   %1\n already exists. "
-        "Do you want to overwrite it?").arg(dataAcqThread.headerFilename),
+        "Do you want to overwrite it?").arg(dataAcqThread->headerFilename),
         tr("&Yes"), tr("&No"),
         QString(), 0, 1)){
         return;
@@ -1035,7 +980,7 @@ void Imagine::on_actionStartAcqAndSave_triggered()
         return;
     }//if, 
 
-    if (!CheckAndMakeFilePath(dataAcqThread.headerFilename)) {
+    if (!CheckAndMakeFilePath(dataAcqThread->headerFilename)) {
         QMessageBox::information(this, "File creation error.",
             "Unable to create the directory");
     }
@@ -1043,16 +988,15 @@ void Imagine::on_actionStartAcqAndSave_triggered()
     nUpdateImage = 0;
     minPixelValue = maxPixelValue = -1;
 
-    dataAcqThread.applyStim = ui.cbStim->isChecked();
-    if (dataAcqThread.applyStim){
-        dataAcqThread.curStimIndex = 0;
+    dataAcqThread->applyStim = ui.cbStim->isChecked();
+    if (dataAcqThread->applyStim){
+        dataAcqThread->curStimIndex = 0;
     }
 
     //   intenCurveData->clear();
 
-    dataAcqThread.isLive = false;
-    dataAcqThread.startAcq();
-	//TODO:  Here is where we should synchronize recording from two cameras (if user wants)
+    dataAcqThread->isLive = false;
+    dataAcqThread->startAcq();
     updateStatus(eRunning, eAcqAndSave);
 }
 
@@ -1080,8 +1024,8 @@ void Imagine::on_actionStartLive_triggered()
 
     //   intenCurveData->clear();
 
-    dataAcqThread.isLive = true;
-    dataAcqThread.startAcq();
+    dataAcqThread->isLive = true;
+    dataAcqThread->startAcq();
     updateStatus(eRunning, eLive);
 }
 
@@ -1106,7 +1050,7 @@ void Imagine::on_actionContrastMax_triggered()
 
 void Imagine::on_actionStop_triggered()
 {
-    dataAcqThread.stopAcq();
+    dataAcqThread->stopAcq();
     updateStatus(eStopping, curAction);
 }
 
@@ -1152,22 +1096,6 @@ void Imagine::on_actionCloseShutter_triggered()
     ui.actionCloseShutter->setEnabled(false);
 }
 
-/* void Imagine::on_actionTemperature_triggered()  //only for Andor camera
-{
-    //
-    if (!temperatureDialog){
-        temperatureDialog = new TemperatureDialog(this);
-        //initialize some value in the dialog:
-        int minTemp, maxTemp;
-        GetTemperatureRange(&minTemp, &maxTemp); //TODO: wrap this func
-        temperatureDialog->ui.verticalSliderTempToSet->setRange(minTemp, maxTemp);
-        temperatureDialog->ui.verticalSliderTempToSet->setValue(maxTemp);
-        temperatureDialog->updateTemperature();
-    }
-    temperatureDialog->exec();
-}
-*/
-
 void Imagine::closeEvent(QCloseEvent *event)
 {
     //see: QCloseEvent Class Reference
@@ -1180,26 +1108,7 @@ void Imagine::closeEvent(QCloseEvent *event)
     }
     */
 
-    Camera& camera = *dataAcqThread.pCamera;
-
-    bool isAndor = camera.vendor == "andor";
-
-/*    if (isAndor){
-        //TODO: ask user wait for temperature rising.
-        //   like andor mcd, if temperature is too low,  event->ignore();
-        int temperature = 20; //assume room temperature
-        if (temperatureDialog){
-            temperature = temperatureDialog->updateTemperature();
-        }//if, user might adjust temperature
-        if (temperature <= 0){
-            QMessageBox::information(0, "Imagine",
-                "Camera's temperature is below 0.\nPlease raise it to above 0");
-            event->ignore();
-            return;
-        }
-        ((AndorCamera*)dataAcqThread.pCamera)->switchCooler(false); //switch off cooler
-    }
-*/
+    Camera& camera = *dataAcqThread->pCamera;
 
     //shutdown camera
     //see: QMessageBox Class Reference
@@ -1225,7 +1134,6 @@ void Imagine::on_btnFullChipSize_clicked()
     ui.spinBoxHend->setValue(maxROIHSize);
     ui.spinBoxVstart->setValue(1);
     ui.spinBoxVend->setValue(maxROIVSize);
-
 }
 
 void Imagine::on_btnUseZoomWindow_clicked()
@@ -1258,7 +1166,7 @@ void Imagine::on_btnUseZoomWindow_clicked()
 
 bool Imagine::checkRoi()
 {
-    Camera& camera = *dataAcqThread.pCamera;
+    Camera& camera = *dataAcqThread->pCamera;
 
     //set the roi def
     se->globalObject().setProperty("hstart", ui.spinBoxHstart->value());
@@ -1368,7 +1276,7 @@ void Imagine::on_btnApply_clicked()
         return;
     }
 
-    Camera& camera = *dataAcqThread.pCamera;
+    Camera* camera = dataAcqThread->pCamera;
 
     QString acqTriggerModeStr = ui.comboBoxAcqTriggerMode->currentText();
  	QString expTriggerModeStr = ui.comboBoxExpTriggerMode->currentText();
@@ -1385,8 +1293,8 @@ void Imagine::on_btnApply_clicked()
 	else {
 		assert(0); //if code goes here, it is a bug
 	}
-    dataAcqThread.acqTriggerMode = acqTriggerMode;
-	dataAcqThread.expTriggerMode = expTriggerMode;
+    dataAcqThread->acqTriggerMode = acqTriggerMode;
+	dataAcqThread->expTriggerMode = expTriggerMode;
 
     //TODO: fix this hack
 
@@ -1399,40 +1307,40 @@ void Imagine::on_btnApply_clicked()
         temp_ui = &masterImagine->ui;
     }
 
-    dataAcqThread.piezoStartPosUm = (*temp_ui).doubleSpinBoxStartPos->value();
-    dataAcqThread.piezoStopPosUm = (*temp_ui).doubleSpinBoxStopPos->value();
-    dataAcqThread.piezoTravelBackTime = (*temp_ui).doubleSpinBoxPiezoTravelBackTime->value();
+    dataAcqThread->piezoStartPosUm = (*temp_ui).doubleSpinBoxStartPos->value();
+    dataAcqThread->piezoStopPosUm = (*temp_ui).doubleSpinBoxStopPos->value();
+    dataAcqThread->piezoTravelBackTime = (*temp_ui).doubleSpinBoxPiezoTravelBackTime->value();
 
-    dataAcqThread.isBiDirectionalImaging = ui.cbBidirectionalImaging->isChecked();
+    dataAcqThread->isBiDirectionalImaging = ui.cbBidirectionalImaging->isChecked();
 
-    dataAcqThread.nStacks = ui.spinBoxNumOfStacks->value();
-    dataAcqThread.nFramesPerStack = ui.spinBoxFramesPerStack->value();
-    dataAcqThread.exposureTime = ui.doubleSpinBoxExpTime->value();
-    dataAcqThread.idleTimeBwtnStacks = ui.doubleSpinBoxBoxIdleTimeBtwnStacks->value();
+    dataAcqThread->nStacks = ui.spinBoxNumOfStacks->value();
+    dataAcqThread->nFramesPerStack = ui.spinBoxFramesPerStack->value();
+    dataAcqThread->exposureTime = ui.doubleSpinBoxExpTime->value();
+    dataAcqThread->idleTimeBwtnStacks = ui.doubleSpinBoxBoxIdleTimeBtwnStacks->value();
 
-    dataAcqThread.horShiftSpeedIdx = ui.comboBoxHorReadoutRate->currentIndex();
-    dataAcqThread.preAmpGainIdx = ui.comboBoxPreAmpGains->currentIndex();
-    dataAcqThread.gain = ui.spinBoxGain->value();
-    dataAcqThread.verShiftSpeedIdx = ui.comboBoxVertShiftSpeed->currentIndex();
-    dataAcqThread.verClockVolAmp = ui.comboBoxVertClockVolAmp->currentIndex();
+    dataAcqThread->horShiftSpeedIdx = ui.comboBoxHorReadoutRate->currentIndex();
+    dataAcqThread->preAmpGainIdx = ui.comboBoxPreAmpGains->currentIndex();
+    dataAcqThread->gain = ui.spinBoxGain->value();
+    dataAcqThread->verShiftSpeedIdx = ui.comboBoxVertShiftSpeed->currentIndex();
+    dataAcqThread->verClockVolAmp = ui.comboBoxVertClockVolAmp->currentIndex();
 
-    dataAcqThread.preAmpGain = ui.comboBoxPreAmpGains->currentText();
-    dataAcqThread.horShiftSpeed = ui.comboBoxHorReadoutRate->currentText();
-    dataAcqThread.verShiftSpeed = ui.comboBoxVertShiftSpeed->currentText();
+    dataAcqThread->preAmpGain = ui.comboBoxPreAmpGains->currentText();
+    dataAcqThread->horShiftSpeed = ui.comboBoxHorReadoutRate->currentText();
+    dataAcqThread->verShiftSpeed = ui.comboBoxVertShiftSpeed->currentText();
 
     //params for binning
-    dataAcqThread.hstart = camera.hstart = ui.spinBoxHstart->value();
-    dataAcqThread.hend = camera.hend = ui.spinBoxHend->value();
-    dataAcqThread.vstart = camera.vstart = ui.spinBoxVstart->value();
-    dataAcqThread.vend = camera.vend = ui.spinBoxVend->value();
+    dataAcqThread->hstart = camera->hstart = ui.spinBoxHstart->value();
+    dataAcqThread->hend = camera->hend = ui.spinBoxHend->value();
+    dataAcqThread->vstart = camera->vstart = ui.spinBoxVstart->value();
+    dataAcqThread->vend = camera->vend = ui.spinBoxVend->value();
+    dataAcqThread->angle = ui.spinBoxAngle->value();
 
-    dataAcqThread.angle = ui.spinBoxAngle->value();
+    dataAcqThread->umPerPxlXy = ui.doubleSpinBoxUmPerPxlXy->value();
 
-    dataAcqThread.umPerPxlXy = ui.doubleSpinBoxUmPerPxlXy->value();
+    camera->updateImageParams(dataAcqThread->nStacks, dataAcqThread->nFramesPerStack); //transfer image params to camera object
 
-    //enforce #nBytesPerFrame is x times of 16
-    int nBytesPerFrame = camera.getImageWidth()*camera.getImageHeight() * 2; //todo: hardcoded 2
-    if (nBytesPerFrame % 16) {
+    //enforce #imageSizeBytes is x times of 16
+    if (camera->imageSizeBytes % 16) {
         QMessageBox::critical(this, "Imagine", "ROI spec is wrong (#pixels per frame is not x times of 8)."
             , QMessageBox::Ok, QMessageBox::NoButton);
 
@@ -1446,8 +1354,8 @@ void Imagine::on_btnApply_clicked()
         return;
     }
 
-    if (camera.vendor == "avt"){
-        if (dataAcqThread.exposureTime < 1 / 57.0){
+    if (camera->vendor == "avt"){
+        if (dataAcqThread->exposureTime < 1 / 57.0){
             QMessageBox::critical(this, "Imagine", "exposure time is too small."
                 , QMessageBox::Ok, QMessageBox::NoButton);
 
@@ -1458,36 +1366,36 @@ void Imagine::on_btnApply_clicked()
     L = -1;
 
     for (int i = 0; i < 2; ++i){
-        paramOK = camera.setAcqParams(dataAcqThread.gain,
-            dataAcqThread.preAmpGainIdx,
-            dataAcqThread.horShiftSpeedIdx,
-            dataAcqThread.verShiftSpeedIdx,
-            dataAcqThread.verClockVolAmp
+        paramOK = camera->setAcqParams(dataAcqThread->gain,
+            dataAcqThread->preAmpGainIdx,
+            dataAcqThread->horShiftSpeedIdx,
+            dataAcqThread->verShiftSpeedIdx,
+            dataAcqThread->verClockVolAmp
             );
         if (!paramOK) {
-            updateStatus(QString("Camera: applied params: ") + camera.getErrorMsg().c_str());
+            updateStatus(QString("Camera: applied params: ") + camera->getErrorMsg().c_str());
             goto skip;
         }
 
-        paramOK = camera.setAcqModeAndTime(Camera::eLive,
-            dataAcqThread.exposureTime,
-            dataAcqThread.nFramesPerStack,
-            dataAcqThread.acqTriggerMode, //Camera::eInternalTrigger  //use internal trigger
-			dataAcqThread.expTriggerMode
+        paramOK = camera->setAcqModeAndTime(Camera::eLive,
+            dataAcqThread->exposureTime,
+            dataAcqThread->nFramesPerStack,
+            dataAcqThread->acqTriggerMode, //CookeCamera::eInternalTrigger  //use internal trigger
+			dataAcqThread->expTriggerMode
             );
-        dataAcqThread.cycleTime = camera.getCycleTime();
-        updateStatus(QString("Camera: applied params: ") + camera.getErrorMsg().c_str());
+        dataAcqThread->cycleTime = camera->getCycleTime();
+        updateStatus(QString("Camera: applied params: ") + camera->getErrorMsg().c_str());
         if (!paramOK) goto skip;
     }
 
     //get the real params used by the camera:
-    dataAcqThread.cycleTime = camera.getCycleTime();
-    cout << "cycle time is: " << dataAcqThread.cycleTime << endl;
+    dataAcqThread->cycleTime = camera->getCycleTime();
+    cout << "cycle time is: " << dataAcqThread->cycleTime << endl;
 
     // if applicable, make sure positioner preparation went well...
-    Positioner *pos = dataAcqThread.pPositioner;
+    Positioner *pos = dataAcqThread->pPositioner;
     bool useTrig = true;
-    if (pos != NULL && !dataAcqThread.preparePositioner(true, useTrig)){
+    if (pos != NULL && !dataAcqThread->preparePositioner(true, useTrig)){
         paramOK = false;
         QString msg = QString("Positioner: applied params failed: ") + pos->getLastErrorMsg().c_str();
         updateStatus(msg);
@@ -1499,25 +1407,25 @@ skip:
 
     //set filenames:
     QString headerFilename = ui.lineEditFilename->text();
-    dataAcqThread.headerFilename = headerFilename;
+    dataAcqThread->headerFilename = headerFilename;
     if (!headerFilename.isEmpty()){
-        dataAcqThread.aiFilename = replaceExtName(headerFilename, "ai");
-        dataAcqThread.camFilename = replaceExtName(headerFilename, "cam");
-        dataAcqThread.sifFileBasename = replaceExtName(headerFilename, "");
+        dataAcqThread->aiFilename = replaceExtName(headerFilename, "ai");
+        dataAcqThread->camFilename = replaceExtName(headerFilename, "cam");
+        dataAcqThread->sifFileBasename = replaceExtName(headerFilename, "");
         if (!CheckFileExtention(headerFilename)) { // check file extention
             if (!QMessageBox::question(this, "File name error.",
                 "File extention is not 'imagine'. Do you want to change it?",
                 "&Yes", "&No",
                 QString(), 0, 1)){
-                dataAcqThread.headerFilename = replaceExtName(headerFilename, "imagine");
+                dataAcqThread->headerFilename = replaceExtName(headerFilename, "imagine");
                 ui.lineEditFilename->clear();
-                ui.lineEditFilename->insert(dataAcqThread.headerFilename);
+                ui.lineEditFilename->insert(dataAcqThread->headerFilename);
             }
         }
     }//else, save data
 
-    dataAcqThread.stimFileContent = ui.textEditStimFileContent->toPlainText();
-    dataAcqThread.comment = ui.textEditComment->toPlainText();
+    dataAcqThread->stimFileContent = ui.textEditStimFileContent->toPlainText();
+    dataAcqThread->comment = ui.textEditComment->toPlainText();
 
     modified = false;
     ui.btnApply->setEnabled(modified);
@@ -1559,7 +1467,7 @@ void Imagine::on_btnOpenStimFile_clicked()
     tt >> headerSize;
 
     int dataStartIdx = headerSize;
-    dataAcqThread.stimuli.clear();
+    dataAcqThread->stimuli.clear();
 
     for (int i = dataStartIdx; i < lines.size(); ++i){
         int valve, stack;
@@ -1567,16 +1475,16 @@ void Imagine::on_btnOpenStimFile_clicked()
         if (line.trimmed().isEmpty()) continue;
         QTextStream tt(&line);
         tt >> valve >> stack;
-        dataAcqThread.stimuli.push_back(pair<int, int>(valve, stack));
+        dataAcqThread->stimuli.push_back(pair<int, int>(valve, stack));
     }
 
     //fill in entries in table:
-    ui.tableWidgetStimDisplay->setColumnCount(dataAcqThread.stimuli.size());
+    ui.tableWidgetStimDisplay->setColumnCount(dataAcqThread->stimuli.size());
     QStringList tableHeader;
-    for (int i = 0; i < dataAcqThread.stimuli.size(); ++i){
-        QTableWidgetItem *newItem = new QTableWidgetItem(tr("%1").arg(dataAcqThread.stimuli[i].first));
+    for (int i = 0; i < dataAcqThread->stimuli.size(); ++i){
+        QTableWidgetItem *newItem = new QTableWidgetItem(tr("%1").arg(dataAcqThread->stimuli[i].first));
         ui.tableWidgetStimDisplay->setItem(0, i, newItem);
-        tableHeader << QString().setNum(dataAcqThread.stimuli[i].second);
+        tableHeader << QString().setNum(dataAcqThread->stimuli[i].second);
     }//for,
     ui.tableWidgetStimDisplay->setHorizontalHeaderLabels(tableHeader);
     tableHeader.clear();
@@ -1659,13 +1567,27 @@ void Imagine::on_spinBoxNumOfDecimalDigits_valueChanged(int newValue)
 void Imagine::set_safe_piezo_params()
 {
 	//check whether settings are within the speed limits of the piezo
-	Positioner *pos = dataAcqThread.pPositioner;
+    //TODO: also check whether the speed during an imaging scan is within this speed limit
+	Positioner *pos = dataAcqThread->pPositioner;
+    double cur_travel_back, start, stop;
 	double max_speed = pos->maxSpeed();
-	double start = (double)ui.doubleSpinBoxStartPos->value();
-	double stop = (double)ui.doubleSpinBoxStopPos->value();
+    if (masterImagine == NULL) {
+        start = (double)ui.doubleSpinBoxStartPos->value();
+        stop = (double)ui.doubleSpinBoxStopPos->value();
+    }
+    else {
+        start = (double)masterImagine->ui.doubleSpinBoxStartPos->value();
+        stop = (double)masterImagine->ui.doubleSpinBoxStopPos->value();
+    }
+
 	double min_s_needed = (stop - start) / max_speed;
 	double cur_idle_time = (double)ui.doubleSpinBoxBoxIdleTimeBtwnStacks->value();
-	double cur_travel_back = (double)ui.doubleSpinBoxPiezoTravelBackTime->value();
+    if (masterImagine == NULL) {
+        cur_travel_back = (double)ui.doubleSpinBoxPiezoTravelBackTime->value();
+    }
+    else {
+        cur_travel_back = (double)masterImagine->ui.doubleSpinBoxPiezoTravelBackTime->value();
+    }
 	//reset to respect maximum speed limit if necessary
 	double safe_idle_time = max(min_s_needed, cur_idle_time);
 	double safe_travel_back = max(min_s_needed, cur_travel_back);
@@ -1718,7 +1640,7 @@ void Imagine::on_btnSetCurPosAsStop_clicked()
 
 void Imagine::on_btnMovePiezo_clicked()
 {
-    Positioner *pos = dataAcqThread.pPositioner;
+    Positioner *pos = dataAcqThread->pPositioner;
     if (pos == NULL) return;
     double um = ui.doubleSpinBoxCurPos->value();
     pos->setDim(ui.comboBoxAxis->currentIndex());
@@ -1746,7 +1668,7 @@ void Imagine::on_btnMoveToStopPos_clicked()
 
 void Imagine::on_comboBoxAxis_currentIndexChanged(int index)
 {
-    Positioner *pos = dataAcqThread.pPositioner;
+    Positioner *pos = dataAcqThread->pPositioner;
     if (pos == NULL) return;
     int oldDim = pos->getDim();
     pos->setDim(index);
