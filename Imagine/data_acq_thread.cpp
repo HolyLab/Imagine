@@ -135,7 +135,7 @@ bool DataAcqThread::preparePositioner(bool isForward, bool useTrigger)
         }
         stPos = endPos;
         endPos = conPiezoWavData->y(0);
-        int trigger = (conShutterWavData->y(conPiezoWavData->y(0) - 1) != 0);
+        int trigger = (conShutterWavData->y(conPiezoWavData->y(0)) != 0);
         pPositioner->addMovement(stPos, endPos, duration, trigger);
     }
     else if (isBiDirectionalImaging){
@@ -271,6 +271,8 @@ void DataAcqThread::run_acq_and_save()
     bool startCameraOnce = (acqTriggerMode == Camera::eExternal);
 
     //int framefactor = startCameraOnce ? this->nStacks : 1;
+    if (isUsingWav)
+        startCameraOnce = true;
 
     camera->setSpooling(camFilename.toStdString());
 
@@ -391,7 +393,7 @@ nextStack:  //code below is repeated every stack
         .arg(stackStartTime, 10, 'f', 4) //width=10, fixed point, 4 decimal digits 
         );
     */
-    if (hasPos && ownPos) pPositioner->optimizeCmd(); //This function currently does nothing for voltage positioner.  Is this okay?
+    if (hasPos && ownPos && !isUsingWav) pPositioner->optimizeCmd(); //This function currently does nothing for voltage positioner.  Is this okay?
 
     bool isPiezo = hasPos && pPositioner->posType == PiezoControlPositioner;
     //open laser shutter

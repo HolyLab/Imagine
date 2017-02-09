@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <QString>
+#include "curvedata.h"
 
 using std::vector;
 using std::string;

@@ -170,13 +170,13 @@
      <rect>
       <x>20</x>
       <y>130</y>
-      <width>393</width>
+      <width>410</width>
       <height>612</height>
      </rect>
     </property>
     <property name="minimumSize">
      <size>
-      <width>362</width>
+      <width>410</width>
       <height>532</height>
      </size>
     </property>
@@ -678,7 +678,7 @@
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <layout class="QGridLayout" name="gridLayout">
+           <layout class="QGridLayout" name="gridlayoutBin">
             <item row="1" column="6">
              <widget class="QSpinBox" name="spinBoxVend">
               <property name="enabled">
@@ -1889,6 +1889,9 @@
               <property name="enabled">
                <bool>false</bool>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
               <property name="value">
                <number>8</number>
               </property>
@@ -1954,6 +1957,9 @@
                </item>
                <item row="0" column="2">
                 <widget class="QDoubleSpinBox" name="doubleSpinBox_aotfLine1">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
                  <property name="decimals">
                   <number>1</number>
                  </property>
@@ -2007,6 +2013,9 @@
                </item>
                <item row="3" column="2">
                 <widget class="QDoubleSpinBox" name="doubleSpinBox_aotfLine4">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
                  <property name="decimals">
                   <number>1</number>
                  </property>
@@ -2027,6 +2036,9 @@
                </item>
                <item row="2" column="2">
                 <widget class="QDoubleSpinBox" name="doubleSpinBox_aotfLine3">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
                  <property name="decimals">
                   <number>1</number>
                  </property>
@@ -2040,6 +2052,9 @@
                </item>
                <item row="1" column="2">
                 <widget class="QDoubleSpinBox" name="doubleSpinBox_aotfLine2">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
                  <property name="decimals">
                   <number>1</number>
                  </property>
@@ -2188,6 +2203,9 @@
                </item>
                <item row="4" column="2">
                 <widget class="QDoubleSpinBox" name="doubleSpinBox_aotfLine5">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
                  <property name="decimals">
                   <number>1</number>
                  </property>
@@ -2201,6 +2219,9 @@
                </item>
                <item row="5" column="2">
                 <widget class="QDoubleSpinBox" name="doubleSpinBox_aotfLine6">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
                  <property name="decimals">
                   <number>1</number>
                  </property>
@@ -2214,6 +2235,9 @@
                </item>
                <item row="6" column="2">
                 <widget class="QDoubleSpinBox" name="doubleSpinBox_aotfLine7">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
                  <property name="decimals">
                   <number>1</number>
                  </property>
@@ -2227,6 +2251,9 @@
                </item>
                <item row="7" column="2">
                 <widget class="QDoubleSpinBox" name="doubleSpinBox_aotfLine8">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
                  <property name="decimals">
                   <number>1</number>
                  </property>
@@ -2333,6 +2360,9 @@
             </item>
             <item>
              <widget class="QSpinBox" name="spinBoxPiezoSampleRate">
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
               <property name="maximum">
                <number>100000</number>
               </property>
@@ -2344,11 +2374,70 @@
            </layout>
           </item>
           <item>
-           <widget class="QLabel" name="label_37">
-            <property name="text">
-             <string>Control waveform</string>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
+            <item>
+             <widget class="QLabel" name="label_37">
+              <property name="text">
+               <string>Control waveform</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_44">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="text">
+               <string>#stacks</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="spinBoxNumOfStacksWav">
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>10000</number>
+              </property>
+              <property name="value">
+               <number>5</number>
+              </property>
+              <property name="displayIntegerBase">
+               <number>10</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_45">
+              <property name="text">
+               <string>#frames/stack</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="spinBoxFramesPerStackWav">
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>1000</number>
+              </property>
+              <property name="value">
+               <number>20</number>
+              </property>
+              <property name="displayIntegerBase">
+               <number>10</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -2393,13 +2482,6 @@
            </layout>
           </item>
           <item>
-           <widget class="QLabel" name="label_35">
-            <property name="text">
-             <string>Read out waveform</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QWidget" name="widgetConWav" native="true">
             <layout class="QHBoxLayout" name="conWavLayout">
              <property name="leftMargin">
@@ -2415,6 +2497,13 @@
               <number>0</number>
              </property>
             </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_35">
+            <property name="text">
+             <string>Read out waveform</string>
+            </property>
            </widget>
           </item>
           <item>
@@ -2454,9 +2543,29 @@
              </spacer>
             </item>
             <item>
+             <widget class="QCheckBox" name="checkBox">
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QLabel" name="label_42">
               <property name="text">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#ff0000;&quot;&gt;- &lt;/span&gt;&lt;span style=&quot; color:#000000;&quot;&gt;Piezo&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_2">
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -2468,9 +2577,29 @@
              </widget>
             </item>
             <item>
+             <widget class="QCheckBox" name="checkBox_3">
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QLabel" name="label_40">
               <property name="text">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#0000ff;&quot;&gt;- &lt;/span&gt;&lt;span style=&quot; color:#000000;&quot;&gt;Camera&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_4">
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -2513,8 +2642,6 @@
        </widget>
       </item>
      </layout>
-     <zorder>btnApply</zorder>
-     <zorder>tabWidgetCfg</zorder>
     </widget>
    </widget>
    <widget class="ImageLabel" name="labelImage">
@@ -2551,7 +2678,7 @@
     <property name="windowTitle">
      <string>Histogram</string>
     </property>
-    <widget class="QWidget" name="dockWidgetContents_2">
+    <widget class="QWidget" name="dockWidgetHist">
      <layout class="QVBoxLayout"/>
     </widget>
    </widget>
@@ -2567,7 +2694,7 @@
     <property name="windowTitle">
      <string>Intensity</string>
     </property>
-    <widget class="QWidget" name="dockWidgetContents_3">
+    <widget class="QWidget" name="dockWidgetIntenCurve">
      <layout class="QVBoxLayout">
       <item>
        <widget class="QFrame" name="frameIntenCurve">

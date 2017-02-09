@@ -189,6 +189,7 @@ private:
     void readComments(QString file);
     void updateConWave(const int frameIdx, const int value);
     void ControlFileLoad(QByteArray &data1, QByteArray &data2);
+    bool Imagine::updateContorlWavefrom(QString fn1, QString fn2);
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();

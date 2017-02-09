@@ -4,6 +4,7 @@
 #include "positioner.hpp"
 
 #include "ni_daq_g.hpp"
+#include "curvedata.h"
 
 class VolPiezo : public Positioner {
 

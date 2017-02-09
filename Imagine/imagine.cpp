@@ -1370,7 +1370,7 @@ void Imagine::on_btnApply_clicked()
     dataAcqThread->isBiDirectionalImaging = ui.cbBidirectionalImaging->isChecked();
     if (ui.cbPositionerWav->isChecked()) {
         if (conPiezoCurveData&&conShutterCurveData) {
-            dataAcqThread.isUsingWav = ui.cbPositionerWav->isChecked();
+            dataAcqThread.isUsingWav = true;
             dataAcqThread.conPiezoWavData = conPiezoCurveData;
             dataAcqThread.conShutterWavData = conShutterCurveData;
             dataAcqThread.sampleRate = ui.spinBoxPiezoSampleRate->value();
@@ -1384,7 +1384,7 @@ void Imagine::on_btnApply_clicked()
                     distance = (conPiezoCurveData->y(i + 1) - conPiezoCurveData->y(i));
                     time = (conPiezoCurveData->x(i + 1) - conPiezoCurveData->x(i)) / dataAcqThread.sampleRate; // sec
                     speed = distance / time; // piezostep/usec
-                    if (speed > pos->maxSpeed()) {
+                    if ((distance != 1)&&(speed > pos->maxSpeed())) {
                         QMessageBox::critical(this, "Imagine", "Positioner control is too fast"
                             , QMessageBox::Ok, QMessageBox::NoButton);
                         return;
@@ -1393,14 +1393,16 @@ void Imagine::on_btnApply_clicked()
                 distance = (conPiezoCurveData->y(0) - conPiezoCurveData->y(conPiezoCurveData->size() - 1));
                 time = 1 / dataAcqThread.sampleRate; // the next first point will follows the previous last point after one duration. 
                 speed = distance / time; // piezostep/usec
-                if (speed > pos->maxSpeed()) {
+                if ((distance != 1) && (speed > pos->maxSpeed())) {
                     QMessageBox::critical(this, "Imagine", "Positioner control is too fast"
                         , QMessageBox::Ok, QMessageBox::NoButton);
                     return;
                 }
                 else {
-                    acqTriggerMode = Camera::eExternal;
-                    expTriggerMode = Camera::eExternalControl;
+                    acqTriggerMode = Camera::eInternalTrigger;
+                    expTriggerMode = Camera::eExternalStart;
+                    dataAcqThread.nStacks = ui.spinBoxNumOfStacksWav->value();
+                    dataAcqThread.nFramesPerStack = ui.spinBoxFramesPerStackWav->value();
                 }
             }
         }
@@ -1409,6 +1411,9 @@ void Imagine::on_btnApply_clicked()
                 , QMessageBox::Ok, QMessageBox::NoButton);
             return;
         }
+    }
+    else {
+        dataAcqThread.isUsingWav = false;
     }
 
     dataAcqThread->nStacks = ui.spinBoxNumOfStacks->value();
@@ -1626,6 +1631,8 @@ void Imagine::on_btnSelectFile_clicked()
 
     imagineFilename = addExtNameIfAbsent(imagineFilename, "imagine");
     ui.lineEditFilename->setText(imagineFilename);
+    QFileInfo fi(imagineFilename);
+    m_OpenDialogLastDirectory = fi.absolutePath();
 }
 
 void Imagine::on_tabWidgetCfg_currentChanged(int index)
@@ -2184,6 +2191,7 @@ void Imagine::writeSettings(QString file)
     QSettings prefs(file, QSettings::IniFormat, this);
 
     prefs.beginGroup("General");
+    prefs.setValue("m_OpenDialogLastDirectory", m_OpenDialogLastDirectory);
     WRITE_STRING_SETTING(prefs, lineEditFilename);
     prefs.endGroup();
 
@@ -2236,6 +2244,15 @@ void Imagine::writeSettings(QString file)
     WRITE_SETTING(prefs, spinBoxDisplayAreaSize);
     prefs.endGroup();
 
+    prefs.beginGroup("Advanced");
+    WRITE_CHECKBOX_SETTING(prefs, cbPositionerWav);
+    WRITE_SETTING(prefs, spinBoxPiezoSampleRate);
+    WRITE_SETTING(prefs, spinBoxNumOfStacks);
+    WRITE_SETTING(prefs, spinBoxFramesPerStack);
+    WRITE_STRING_SETTING(prefs, lineEditPiezoWaveFile);
+    WRITE_STRING_SETTING(prefs, lineEditShutterWaveFile);
+    prefs.endGroup();
+
     if (masterImagine == NULL) {
         prefs.beginGroup("Laser");
         WRITE_CHECKBOX_SETTING(prefs, cbLine1);
@@ -2268,6 +2285,12 @@ void Imagine::readSettings(QString file)
     QSettings prefs(file, QSettings::IniFormat, this);
 
     prefs.beginGroup("General");
+    prefs.setValue("m_OpenDialogLastDirectory", m_OpenDialogLastDirectory);
+    val = prefs.value("m_OpenDialogLastDirectory").toString();
+    if (val == "")
+        m_OpenDialogLastDirectory = QDir::homePath();
+    else
+        m_OpenDialogLastDirectory = val;
     READ_STRING_SETTING(prefs, lineEditFilename, "");
     prefs.endGroup();
 
@@ -2318,6 +2341,15 @@ void Imagine::readSettings(QString file)
 
     prefs.beginGroup("Display");
     READ_SETTING(prefs, spinBoxDisplayAreaSize, ok, i, 0, Int);
+    prefs.endGroup();
+
+    prefs.beginGroup("Advanced");
+    READ_BOOL_SETTING(prefs, cbPositionerWav, false);
+    READ_SETTING(prefs, spinBoxPiezoSampleRate, ok, i, 10000, Int);
+    WRITE_SETTING(prefs, spinBoxNumOfStacks, ok, i, 5, Int);
+    WRITE_SETTING(prefs, spinBoxFramesPerStack, ok, i, 20, Int);
+    READ_STRING_SETTING(prefs, lineEditPiezoWaveFile, "");
+    READ_STRING_SETTING(prefs, lineEditShutterWaveFile, "");
     prefs.endGroup();
 
     if (masterImagine == NULL) {
@@ -2419,6 +2451,10 @@ void Imagine::on_actionLoad_Configuration_triggered()
 
     readSettings(file);
     readComments(file);
+
+    QString piezoFileName = ui.lineEditPiezoWaveFile->text();
+    QString shutterFileName = ui.lineEditShutterWaveFile->text();
+    updateContorlWavefrom(piezoFileName, shutterFileName);
 
     on_btnApply_clicked();
 }
@@ -2709,11 +2745,13 @@ void Imagine::on_btnShutterWavOpen_clicked()
     QString wavFilename = QFileDialog::getOpenFileName(
         this,
         "Choose a shutter control waveform file to open",
-        "../", // Working Directory is set in Preference as $(ProjectDir)/scripts
+        m_OpenDialogLastDirectory,
         "Waveform files (*.wvf);;All files(*.*)");
     if (wavFilename.isEmpty()) return;
 
     ui.lineEditShutterWaveFile->setText(wavFilename);
+    QFileInfo fi(wavFilename);
+    m_OpenDialogLastDirectory = fi.absolutePath();
 
     QFile file2(wavFilename);
     if (!file2.open(QFile::ReadOnly)) {
@@ -2741,17 +2779,40 @@ void Imagine::on_btnShutterWavOpen_clicked()
     ControlFileLoad(data1, data2);
 }
 
+bool Imagine::updateContorlWavefrom(QString fn1, QString fn2)
+{
+    QByteArray data1, data2;
+    QFile file1(fn1);
+    if (file1.open(QFile::ReadOnly)) {
+        data1 = file1.readAll();
+        file1.close();
+        QFile file2(fn2);
+        if (file2.open(QFile::ReadOnly)) {
+            data2 = file2.readAll();
+            file2.close();
+            if (data1.size() == data2.size()) {
+                ControlFileLoad(data1, data2);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
 void Imagine::on_btnPiezoWavOpen_clicked()
 {
     // Read piezo file
     QString wavFilename = QFileDialog::getOpenFileName(
         this,
         "Choose a piezo control waveform file to open",
-        "../", // Working Directory is set in Preference as $(ProjectDir)/scripts
+        m_OpenDialogLastDirectory,
         "Waveform files (*.wvf);;All files(*.*)");
     if (wavFilename.isEmpty()) return;
 
     ui.lineEditPiezoWaveFile->setText(wavFilename);
+    QFileInfo fi(wavFilename);
+    m_OpenDialogLastDirectory = fi.absolutePath();
 
     QFile file1(wavFilename);
     if (!file1.open(QFile::ReadOnly)) {
@@ -2784,11 +2845,13 @@ void Imagine::on_btnReadWavOpen_clicked()
     QString wavFilename = QFileDialog::getOpenFileName(
         this,
         "Choose a read out waveform file to open",
-        "../", // Working Directory is set in Preference as $(ProjectDir)/scripts
+        m_OpenDialogLastDirectory, 
         "Waveform files (*.ai);;All files(*.*)");
     if (wavFilename.isEmpty()) return;
 
     ui.lineEditReadWaveformFile->setText(wavFilename);
+    QFileInfo fi(wavFilename);
+    m_OpenDialogLastDirectory = fi.absolutePath();
 
     QFile file(wavFilename);
     if (!file.open(QFile::ReadOnly)) {
@@ -2874,19 +2937,39 @@ void Imagine::on_btnReadWavOpen_clicked()
             }
         }
         else {
-            for (int i = 0; i < 70000; i++)
+            int sampleRate = 10000;
+            int totalSamples = 70000;
+            int nStacks = 5;
+            int perStackSamples = totalSamples / nStacks;
+            int piezoDelaySamples = 4000;
+            int piezoRigingSamples = 6000.;
+            int piezoFallingSamples = 1000.;
+            double piezoStartPos = 100.;
+            double piezoStopPos = 400.;
+            int nFrames = 20;
+            int shutterControlMarginSamples = 500; // shutter control begin and end from piezo start and stop
+            int stakShutterCtrlSamples = piezoRigingSamples - 2 * shutterControlMarginSamples;
+            int frameShutterCtrlSamples = stakShutterCtrlSamples / nFrames;
+            double exposureTime = 0.01; // sec : 0.008 ~ 0.012 is optimal
+            int exposureSamples = static_cast<int>(exposureTime*static_cast<double>(sampleRate));
+            if(exposureSamples>frameShutterCtrlSamples-50)
+                appendLog("exposureSamples > frameShutterCtrlSamples-50");
+            piezoavg = piezoStartPos;
+            for (int i = 0; i < totalSamples; i++)
             {
-                int ii = i % 14000;
-                if ((ii >= 4000) && (ii < 10000)) {
-                    piezoavg += 400./6000.;
+                int ii = i % perStackSamples;
+                if ((ii >= piezoDelaySamples) && (ii < piezoDelaySamples+ piezoRigingSamples)) {
+                    piezoavg += (piezoStopPos- piezoStartPos)/ static_cast<double>(piezoRigingSamples);
                 }
-                if ((ii >= 10000) && (ii < 11000)) {
-                    piezoavg -= 400. / 1000.;
+                if ((ii >= piezoDelaySamples + piezoRigingSamples) &&
+                    (ii < piezoDelaySamples + piezoRigingSamples + piezoFallingSamples)) {
+                    piezoavg -= (piezoStopPos - piezoStartPos) / static_cast<double>(piezoFallingSamples);
                 }
                 piezo = static_cast<qint16>(piezoavg + 0.5);
-                if ((ii >= 5000) && (ii <= 10000)) {
-                    int j = ii % 50;
-                    if ((j >= 0) && (j <= 30))
+                if ((ii >= piezoDelaySamples + shutterControlMarginSamples) &&
+                    (ii <= piezoDelaySamples + piezoRigingSamples - shutterControlMarginSamples)) {
+                    int j = (ii- piezoDelaySamples + shutterControlMarginSamples) % frameShutterCtrlSamples;
+                    if ((j >= 0) && (j <= exposureSamples)) // (0.008~0.012sec)*(sampling rate) is optimal
                         shutter = 150;
                     else
                         shutter = 0;
@@ -2899,7 +2982,6 @@ void Imagine::on_btnReadWavOpen_clicked()
         }
         file2.close();
         file3.close();
-
     }
 }
 #pragma endregion

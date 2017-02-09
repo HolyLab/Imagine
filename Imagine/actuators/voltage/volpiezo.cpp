@@ -2,7 +2,7 @@
 
 #include <Windows.h>
 
-#include "volpiezo.hpp"
+#include "curvedata.h"
 
 double VolPiezo::zpos2voltage(double um)
 {
@@ -167,8 +167,9 @@ bool VolPiezo::prepareCmd(bool useTrigger)
         // that requires TTL high throughout the whole acquisition period.
         // For generality, implement the latter behavior.
         if (m.trigger == 1){
-            for (int k = 0; k < nScansNow - 1; k++)  // set low on very last sample
-                buf[k] = aoTTLHigh;
+            //for (int k = 0; k < nScansNow - 1; k++)  // set low on very last sample
+            for (int k = 0; k < nScansNow; k++)
+                    buf[k] = aoTTLHigh;
         }
         buf += nScansNow;
     }
