@@ -633,9 +633,11 @@ void Imagine::preparePlots()
     QwtText yTitle("Position");
     conWavPlot = new QwtPlot;// (ui.frameConWav);
     conPiezoCurve = new QwtPlotCurve("Positioner waveform");
-    conShutterCurve = new QwtPlotCurve("Positioner waveform");
+    conShutterCurve = new QwtPlotCurve("Shutter waveform");
+    piezoSpeedCurve = new QwtPlotCurve("Positioner max speed");
     prepareCurve(conPiezoCurve, conWavPlot, xTitle, yTitle, Qt::red);
     prepareCurve(conShutterCurve, conWavPlot, xTitle, yTitle, Qt::blue);
+    prepareCurve(piezoSpeedCurve, conWavPlot, xTitle, yTitle, Qt::green);
     ui.conWavLayout->addWidget(conWavPlot);
 
     //the read out waveform
@@ -1368,46 +1370,6 @@ void Imagine::on_btnApply_clicked()
     dataAcqThread->piezoTravelBackTime = (*temp_ui).doubleSpinBoxPiezoTravelBackTime->value();
 
     dataAcqThread->isBiDirectionalImaging = ui.cbBidirectionalImaging->isChecked();
-    if (ui.cbPositionerWav->isChecked()) {
-        if (conPiezoCurveData&&conShutterCurveData) {
-            dataAcqThread.isUsingWav = true;
-            dataAcqThread.conPiezoWavData = conPiezoCurveData;
-            dataAcqThread.conShutterWavData = conShutterCurveData;
-            dataAcqThread.sampleRate = ui.spinBoxPiezoSampleRate->value();
-            dataAcqThread.acqTriggerMode = Camera::eExternal;
-            if (dataAcqThread.isUsingWav) { // check conPiezoCurveData
-                Positioner *pos = dataAcqThread.pPositioner;
-                double distance, time, speed; // piezostep/usec
-                int dataSize = conPiezoCurveData->size();
-                for (int i = 0; i < dataSize - 5; i++) {
-                    int ii = i%dataSize;
-                    distance = (conPiezoCurveData->y(ii + 5) - conPiezoCurveData->y(ii));
-                    time = (conPiezoCurveData->x(ii + 5) - conPiezoCurveData->x(ii)) / dataAcqThread.sampleRate; // sec
-                    speed = distance / time; // piezostep/usec
-                    if ((distance != 1)&&(speed > pos->maxSpeed())) {
-                        QMessageBox::critical(this, "Imagine", "Positioner control is too fast"
-                            , QMessageBox::Ok, QMessageBox::NoButton);
-                        return;
-                    }
-                }
-                dataAcqThread.acqTriggerMode = Camera::eInternalTrigger;
-                dataAcqThread.expTriggerMode = Camera::eExternalStart;
-                dataAcqThread.nStacks = ui.spinBoxNumOfStacksWav->value();
-                dataAcqThread.nFramesPerStack = ui.spinBoxFramesPerStackWav->value();
-                dataAcqThread.pPositioner->setScanRateAo(ui.spinBoxPiezoSampleRate->value());
-                dataAcqThread.exposureTime = ui.doubleSpinBoxExpTimeWav->value();
-            }
-        }
-        else {
-            QMessageBox::critical(this, "Imagine", "Positioner and shutter waveforms are not correctly loaded"
-                , QMessageBox::Ok, QMessageBox::NoButton);
-            return;
-        }
-    }
-    else {
-        dataAcqThread.isUsingWav = false;
-        dataAcqThread.pPositioner->setScanRateAo(10000); // Hard coded
-    }
 
     dataAcqThread->nStacks = ui.spinBoxNumOfStacks->value();
     dataAcqThread->nFramesPerStack = ui.spinBoxFramesPerStack->value();
@@ -1423,6 +1385,47 @@ void Imagine::on_btnApply_clicked()
     dataAcqThread->preAmpGain = ui.comboBoxPreAmpGains->currentText();
     dataAcqThread->horShiftSpeed = ui.comboBoxHorReadoutRate->currentText();
     dataAcqThread->verShiftSpeed = ui.comboBoxVertShiftSpeed->currentText();
+
+    if (ui.cbPositionerWav->isChecked()) {
+        if (conPiezoCurveData&&conShutterCurveData) {
+            dataAcqThread->isUsingWav = true;
+            dataAcqThread->conPiezoWavData = conPiezoCurveData;
+            dataAcqThread->conShutterWavData = conShutterCurveData;
+            dataAcqThread->sampleRate = ui.spinBoxPiezoSampleRate->value();
+            dataAcqThread->acqTriggerMode = Camera::eExternal;
+            if (dataAcqThread->isUsingWav) { // check conPiezoCurveData
+                Positioner *pos = dataAcqThread->pPositioner;
+                double distance, time, speed;
+                int dataSize = conPiezoCurveData->size();
+                for (int i = 0; i < dataSize - 5; i++) {
+                    int ii = i%dataSize;
+                    distance = (conPiezoCurveData->y(ii + 5) - conPiezoCurveData->y(ii));
+                    time = (conPiezoCurveData->x(ii + 5) - conPiezoCurveData->x(ii)) / dataAcqThread->sampleRate; // sec
+                    speed = distance / time; // piezostep/sec
+                    if ((distance != 1) && (abs(speed) > pos->maxSpeed())) {
+                        QMessageBox::critical(this, "Imagine", "Positioner control is too fast"
+                            , QMessageBox::Ok, QMessageBox::NoButton);
+                        return;
+                    }
+                }
+                dataAcqThread->acqTriggerMode = Camera::eInternalTrigger;
+                dataAcqThread->expTriggerMode = Camera::eExternalStart;
+                dataAcqThread->nStacks = ui.spinBoxNumOfStacksWav->value();
+                dataAcqThread->nFramesPerStack = ui.spinBoxFramesPerStackWav->value();
+                dataAcqThread->pPositioner->setScanRateAo(ui.spinBoxPiezoSampleRate->value());
+                dataAcqThread->exposureTime = ui.doubleSpinBoxExpTimeWav->value();
+            }
+        }
+        else {
+            QMessageBox::critical(this, "Imagine", "Positioner and shutter waveforms are not correctly loaded"
+                , QMessageBox::Ok, QMessageBox::NoButton);
+            return;
+        }
+    }
+    else {
+        dataAcqThread->isUsingWav = false;
+        dataAcqThread->pPositioner->setScanRateAo(10000); // Hard coded
+    }
 
     //params for binning
     dataAcqThread->hstart = camera->hstart = ui.spinBoxHstart->value();
@@ -2447,7 +2450,7 @@ void Imagine::on_actionLoad_Configuration_triggered()
 
     QString piezoFileName = ui.lineEditPiezoWaveFile->text();
     QString shutterFileName = ui.lineEditShutterWaveFile->text();
-    updateContorlWavefrom(piezoFileName, shutterFileName);
+    updateControlWavefrom(piezoFileName, shutterFileName);
 
     on_btnApply_clicked();
 }
@@ -2643,6 +2646,7 @@ void Imagine::ControlFileLoad(QByteArray &data1, QByteArray &data2)
         dStream2 = new QDataStream(data2);
         dStream2->setByteOrder(QDataStream::LittleEndian);//BigEndian, LittleEndian
     }
+    piezoSpeedCurveData = new CurveData(width);
     // first point
     if(data1_valid){
         (*dStream1) >> us; // piezo
@@ -2728,8 +2732,43 @@ void Imagine::ControlFileLoad(QByteArray &data1, QByteArray &data2)
         conShutterCurve->setData(conShutterCurveData);
         conWavPlot->setAxisScale(QwtPlot::xBottom, conShutterCurveData->left(), conShutterCurveData->right());
     }
+    updataSpeedData(ui.spinBoxPiezoSampleRate->value());
+    piezoSpeedCurve->setData(piezoSpeedCurveData);
     conWavPlot->setAxisScale(QwtPlot::yLeft, 0, maxy);
     conWavPlot->replot();
+}
+
+void Imagine::updataSpeedData(int newValue)
+{
+    double xMax = conPiezoCurveData->right();
+    Positioner *pos = dataAcqThread.pPositioner;
+    double maxSpeed = pos->maxSpeed();
+    double sampleRate = static_cast<double>(newValue);
+    double piezoSpeedCurveMax = maxSpeed / sampleRate * xMax;
+    piezoSpeedCurveData->clear();
+    piezoSpeedCurveData->append(0., 0.);
+    piezoSpeedCurveData->append(xMax, piezoSpeedCurveMax);
+    conWavPlot->replot();
+}
+
+bool Imagine::updateControlWavefrom(QString fn1, QString fn2)
+{
+    QByteArray data1, data2;
+    QFile file1(fn1);
+    if (file1.open(QFile::ReadOnly)) {
+        data1 = file1.readAll();
+        file1.close();
+        QFile file2(fn2);
+        if (file2.open(QFile::ReadOnly)) {
+            data2 = file2.readAll();
+            file2.close();
+            if (data1.size() == data2.size()) {
+                ControlFileLoad(data1, data2);
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 void Imagine::on_btnShutterWavOpen_clicked()
@@ -2771,27 +2810,6 @@ void Imagine::on_btnShutterWavOpen_clicked()
 
     ControlFileLoad(data1, data2);
 }
-
-bool Imagine::updateContorlWavefrom(QString fn1, QString fn2)
-{
-    QByteArray data1, data2;
-    QFile file1(fn1);
-    if (file1.open(QFile::ReadOnly)) {
-        data1 = file1.readAll();
-        file1.close();
-        QFile file2(fn2);
-        if (file2.open(QFile::ReadOnly)) {
-            data2 = file2.readAll();
-            file2.close();
-            if (data1.size() == data2.size()) {
-                ControlFileLoad(data1, data2);
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 
 void Imagine::on_btnPiezoWavOpen_clicked()
 {
@@ -2938,11 +2956,11 @@ void Imagine::on_btnReadWavOpen_clicked()
             }
         }
         else {
-            int sampleRate = 2000;
+            int sampleRate = 6000; // 2000
             int totalSamples = 70000;
-            int nStacks = 5;
+            int nStacks = 9; // 5
             int perStackSamples = totalSamples / nStacks;
-            int piezoDelaySamples = 4000;
+            int piezoDelaySamples = 100; // 4000
             int piezoRigingSamples = 6000.;
             int piezoFallingSamples = 1000.;
             double piezoStartPos = 100.;
@@ -2970,7 +2988,7 @@ void Imagine::on_btnReadWavOpen_clicked()
                 if ((ii >= piezoDelaySamples + shutterControlMarginSamples) &&
                     (ii <= piezoDelaySamples + piezoRigingSamples - shutterControlMarginSamples)) {
                     int j = (ii- piezoDelaySamples + shutterControlMarginSamples) % frameShutterCtrlSamples;
-                    if ((j >= 0) && (j <= exposureSamples)) // (0.008~0.012sec)*(sampling rate) is optimal
+                    if ((j > 0) && (j <= exposureSamples)) // (0.008~0.012sec)*(sampling rate) is optimal
                         shutter = 150;
                     else
                         shutter = 0;
@@ -3030,4 +3048,8 @@ void Imagine::on_cbHeartReadWav_clicked(bool checked)
     }
 }
 
+void Imagine::on_spinBoxPiezoSampleRate_valueChanged(int newValue)
+{
+    if (piezoSpeedCurveData&&conPiezoCurveData) updataSpeedData(newValue);
+}
 #pragma endregion
