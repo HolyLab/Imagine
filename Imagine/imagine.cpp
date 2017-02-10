@@ -1378,11 +1378,11 @@ void Imagine::on_btnApply_clicked()
             if (dataAcqThread.isUsingWav) { // check conPiezoCurveData
                 Positioner *pos = dataAcqThread.pPositioner;
                 double distance, time, speed; // piezostep/usec
-                for (int i = 0; i < conPiezoCurveData->size() - 1; i++) {
-                    double a = conPiezoCurveData->y(i + 1);
-                    double b = conPiezoCurveData->y(i);
-                    distance = (conPiezoCurveData->y(i + 1) - conPiezoCurveData->y(i));
-                    time = (conPiezoCurveData->x(i + 1) - conPiezoCurveData->x(i)) / dataAcqThread.sampleRate; // sec
+                int dataSize = conPiezoCurveData->size();
+                for (int i = 0; i < dataSize - 5; i++) {
+                    int ii = i%dataSize;
+                    distance = (conPiezoCurveData->y(ii + 5) - conPiezoCurveData->y(ii));
+                    time = (conPiezoCurveData->x(ii + 5) - conPiezoCurveData->x(ii)) / dataAcqThread.sampleRate; // sec
                     speed = distance / time; // piezostep/usec
                     if ((distance != 1)&&(speed > pos->maxSpeed())) {
                         QMessageBox::critical(this, "Imagine", "Positioner control is too fast"
@@ -1390,21 +1390,12 @@ void Imagine::on_btnApply_clicked()
                         return;
                     }
                 }
-                distance = (conPiezoCurveData->y(0) - conPiezoCurveData->y(conPiezoCurveData->size() - 1));
-                time = 1 / dataAcqThread.sampleRate; // the next first point will follows the previous last point after one duration. 
-                speed = distance / time; // piezostep/usec
-                if ((distance != 1) && (speed > pos->maxSpeed())) {
-                    QMessageBox::critical(this, "Imagine", "Positioner control is too fast"
-                        , QMessageBox::Ok, QMessageBox::NoButton);
-                    return;
-                }
-                else {
-                    dataAcqThread.acqTriggerMode = Camera::eInternalTrigger;
-                    dataAcqThread.expTriggerMode = Camera::eExternalStart;
-                    dataAcqThread.nStacks = ui.spinBoxNumOfStacksWav->value();
-                    dataAcqThread.nFramesPerStack = ui.spinBoxFramesPerStackWav->value();
-                    dataAcqThread.pPositioner->setScanRateAo(ui.spinBoxPiezoSampleRate->value());
-                }
+                dataAcqThread.acqTriggerMode = Camera::eInternalTrigger;
+                dataAcqThread.expTriggerMode = Camera::eExternalStart;
+                dataAcqThread.nStacks = ui.spinBoxNumOfStacksWav->value();
+                dataAcqThread.nFramesPerStack = ui.spinBoxFramesPerStackWav->value();
+                dataAcqThread.pPositioner->setScanRateAo(ui.spinBoxPiezoSampleRate->value());
+                dataAcqThread.exposureTime = ui.doubleSpinBoxExpTimeWav->value();
             }
         }
         else {
@@ -2904,6 +2895,14 @@ void Imagine::on_btnReadWavOpen_clicked()
     conReadHeartbeatCurve->setData(conReadHeartbeatCurveData);
     conReadWavPlot->setAxisScale(QwtPlot::yLeft, miny, maxy);
     conReadWavPlot->setAxisScale(QwtPlot::xBottom, conReadPiezoCurveData->left(), conReadPiezoCurveData->right());
+    ui.cbPiezoReadWav->setChecked(true);
+    ui.cbStimuliReadWav->setChecked(true);
+    ui.cbCameraReadWav->setChecked(true);
+    ui.cbHeartReadWav->setChecked(true);
+    conReadPiezoCurve->show();
+    conReadStimuliCurve->show();
+    conReadCameraCurve->show();
+    conReadHeartbeatCurve->show();
     conReadWavPlot->replot();
 
     //To make test control data 
@@ -2986,4 +2985,49 @@ void Imagine::on_btnReadWavOpen_clicked()
         file3.close();
     }
 }
+
+void Imagine::on_cbPiezoReadWav_clicked(bool checked)
+{
+    if (conReadPiezoCurve) {
+        if (checked)
+            conReadPiezoCurve->show();
+        else
+            conReadPiezoCurve->hide();
+        conReadWavPlot->replot();
+    }
+}
+
+void Imagine::on_cbStimuliReadWav_clicked(bool checked)
+{
+    if (conReadStimuliCurve) {
+        if (checked)
+            conReadStimuliCurve->show();
+        else
+            conReadStimuliCurve->hide();
+        conReadWavPlot->replot();
+    }
+}
+
+void Imagine::on_cbCameraReadWav_clicked(bool checked)
+{
+    if (conReadCameraCurve) {
+        if (checked)
+            conReadCameraCurve->show();
+        else
+            conReadCameraCurve->hide();
+        conReadWavPlot->replot();
+    }
+}
+
+void Imagine::on_cbHeartReadWav_clicked(bool checked)
+{
+    if (conReadHeartbeatCurve) {
+        if (checked)
+            conReadHeartbeatCurve->show();
+        else
+            conReadHeartbeatCurve->hide();
+        conReadWavPlot->replot();
+    }
+}
+
 #pragma endregion

@@ -136,7 +136,7 @@ bool DataAcqThread::preparePositioner(bool isForward, bool useTrigger)
         stPos = endPos;
         endPos = conPiezoWavData->y(0);
         int trigger = (conShutterWavData->y(conPiezoWavData->y(0)) != 0);
-        pPositioner->addMovement(stPos, endPos, duration, trigger);
+//        pPositioner->addMovement(stPos, endPos, duration, trigger);
     }
     else if (isBiDirectionalImaging){
         pPositioner->setScanType(isBiDirectionalImaging);
@@ -447,8 +447,10 @@ nextStack:  //code below is repeated every stack
     }//while, camera is not idle
 
     //close laser shutter
-    digOut->updateOutputBuf(4, false);
-    digOut->write();
+    if (ownPos) {
+        digOut->updateOutputBuf(4, false);
+        digOut->write();
+    }
 
     //below code also causes intermittent crashes
     /*
@@ -469,7 +471,7 @@ nextStack:  //code below is repeated every stack
         fireStimulus(stimuli[curStimIndex].first);
     }//if, should update stimulus
 
-    if (hasPos && ownPos) {
+    if (hasPos && ownPos && !isUsingWav) {
         pPositioner->waitCmd();
     }
 

@@ -294,6 +294,10 @@ private slots:
     void on_btnPiezoWavOpen_clicked();
     void on_btnShutterWavOpen_clicked();
     void on_btnReadWavOpen_clicked();
+    void on_cbPiezoReadWav_clicked(bool checked);
+    void on_cbStimuliReadWav_clicked(bool checked);
+    void on_cbCameraReadWav_clicked(bool checked);
+    void on_cbHeartReadWav_clicked(bool checked);
 
 public:
     Ui::ImagineClass ui;
