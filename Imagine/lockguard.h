@@ -21,10 +21,21 @@
 
 class CLockGuard {
 public:
-   CLockGuard(QMutex* apLock):mpLock(apLock),mOwned(false){
-      mpLock->lock();
-      mOwned=true;
+    CLockGuard(QMutex* apLock) :mpLock(apLock), mOwned(false) {
+        mpLock->lock();
+        mOwned = true;
+    }
+
+    void lock() {
+        if(!mOwned)mpLock->lock();
+        mOwned = true;
+    }
+
+   void unlock() {
+       if(mOwned)mpLock->unlock();
+       mOwned = false;
    }
+
    ~CLockGuard(){
       if(mOwned)mpLock->unlock();
    }

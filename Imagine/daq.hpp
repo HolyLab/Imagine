@@ -69,8 +69,8 @@ public:
    virtual ~Daq(){
    }//dtor,
 
-   double toPhyUnit(double digValue){ //NOTE: cast int to double here
-      return (digValue-minDigitalValue)/(maxDigitalValue-minDigitalValue)
+   double toPhyUnit(int digValue){
+      return ((double)digValue-minDigitalValue)/(maxDigitalValue-minDigitalValue)
          *(maxPhyValue-minPhyValue)+minPhyValue;
    }//toPhyUnit()
 
@@ -114,7 +114,8 @@ public:
 
    //get output buffer address
    //NOTE: data is grouped by channel, i.e. all samples for a channel are close to each other
-   virtual sample_t * getOutputBuf()=0;
+   //virtual sample_t * getOutputBuf()=0;
+   virtual double * getOutputBuf()=0;
 
    //write waveform to driver's buffer
    virtual bool updateOutputBuf()=0;
@@ -135,7 +136,7 @@ public:
    }
 
    //read input from driver
-   virtual bool read(int nScans, sample_t * buf)=0;
+   virtual bool read(int nScans, double * buf)=0;
 };//class, DaqAi
 
 //dig-out 
@@ -175,9 +176,10 @@ public:
    }//dtor,
 
    //return true if success
-   virtual bool readOne(int & reading)=0;
+   //virtual bool readOne(int & reading)=0;
+   virtual bool readOne(double & reading) = 0;
 
-   virtual double toPhyUnit(double digValue)=0;
+   virtual double toPhyUnit(int digValue)=0;
 };//class, NiDaqAiReadOne
 
 //write one sample

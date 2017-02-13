@@ -1,70 +1,77 @@
-#include "spoolthread.h"
-#include "cooke.hpp"
-#include "cookeworkerthread.h"
 #include "imagine.h"
 
+#include <iostream>
+using std::cout;
+using std::cerr;
+using std::endl;
 
-// Moved methods that refer to workerThread into here...
-// Eventually it might be nice to bring this class in line with the
-// style used elsewhere in this codebase, with most code in the .cpp.
+#include "fast_ofstream.hpp"
+#include "circbuf.hpp"
 
-//PRE: itemsize: the size (in bytes) of each item in the circ buf
-SpoolThread::SpoolThread(FastOfstream *ofsSpooling, int itemSize, QObject *parent)
-    : QThread(parent){
+#include <QThread>
+
+#include <QMutex>
+#include <QThread>
+#include <QWaitCondition>
+
+#include "timer_g.hpp"
+#include "spoolthread.h"
+
+//SpoolThread and CookeWorkerThread share access to 3 items:  a circular buffer object, a pool of memory, and a lock
+SpoolThread::SpoolThread(QThread::Priority defaultPriority, FastOfstream *ofsSpooling, Camera * camera, QObject *parent)
+    : WorkerThread(defaultPriority, parent)
+{
     this->ofsSpooling = ofsSpooling;
-    circBuf = nullptr;
-    tmpItem = nullptr;
-    parentThread = (CookeWorkerThread*)parent;
-    allocMemPool(-1);
-
-    // grab the timer...
-    Timer_g gt = parentThread->camera->parentAcqThread->parentImagine->gTimer;
-
-    //NOTE: to make sure fast_ofstream works, we enforce
-    // (the precise cond: #bytes2write_in_total is an integer multiple of phy sector size.
-    //  #bytes2write is itemSize * #items2write
-    // assert(itemSize%4096==0);
-    //NOTE: do it in upstream code instead
-
-    this->itemSize = itemSize;
-
-    int circBufCap = memPoolSize / itemSize;  //memPoolSize is set in spoolthread.h
-    cout << "b4 new CircularBuf: " << gt.read() << endl;
-
-    circBuf = new CircularBuf(circBufCap);
-    cout << "after new CircularBuf: " << gt.read() << endl;
-
-    long long circBufDataSize = size_t(itemSize)*circBuf->capacity();
-    if (circBufDataSize > memPoolSize){
-        freeMemPool();
-        allocMemPool(circBufDataSize);
-    }
-    circBufData = memPool;
-
-    //cout<<"after _aligned_malloc: "<<gt.read()<<endl;
-#ifdef _WIN64
-    assert((unsigned long long)circBufData % (1024 * 64) == 0);
-#else
-    assert((unsigned long)circBufData % (1024 * 64) == 0);
-#endif
-    tmpItem = new char[itemSize]; //todo: align
-
-    //todo: provide way to check out-of-mem etc.. e.g., if(circBufData==nullptr) isInGoodState=false;
-    //          If FastOfstream obj fails (i.e. write error), isInGoodState is set to false too.
-
-    mpLock = new QMutex;
-
-    shouldStop = false;
-
-    cout << "b4 exit spoolthread->ctor: " << gt.read() << endl;
-
-    timer.start();
-
+    this->camera = camera;
 }//ctor,
 
-SpoolThread::~SpoolThread(){
-    freeMemPool();
-    delete circBuf;
-    delete[] tmpItem;
-    delete mpLock;
-}//dtor
+SpoolThread::~SpoolThread(){}//dtor
+
+void SpoolThread::run() {
+    #if defined(_DEBUG)
+        cerr << "enter cooke spooling thread run()" << endl;
+    #endif
+
+    long long timerReading;
+    int curSize;
+    int idx;
+
+    //NOTE: may improve performance by moving live mode image update code to here
+    //      This is because updateLiveImage() currently acquires a lock.
+    //      Could optimize even further by creating the QByteArray from the raw circular buf data.
+    while (true) {
+        //NOTE: can improve performance by using QWaitCondition to wait until another frame is ready
+        //to avoid "priority inversion" we temporarily elevate the priority
+        this->setPriority(QThread::TimeCriticalPriority);
+        camera->circBufLock->lock();
+        if (getShouldStop()) goto finishup;
+        curSize = camera->circBuf->size();
+        if (curSize > 2) {
+            OutputDebugStringW((wstring(L"Current size of circ buf:") + to_wstring(curSize)+ wstring(L"\n")).c_str());
+            idx = camera->circBuf->get();
+            camera->circBufLock->unlock();
+            if (camera->genericAcqMode != Camera::eLive)
+                this->ofsSpooling->write(camera->memPool + idx*size_t(camera->imageSizeBytes), camera->imageSizeBytes);
+            this->setPriority(getDefaultPriority());
+        }
+        else {
+            camera->circBufLock->unlock();
+            this->setPriority(getDefaultPriority());
+            QThread::msleep(10); //let the circular buffer fill a little
+            continue;
+        }
+    }//while,
+finishup:
+    while (!camera->circBuf->empty()) {
+        int idx = camera->circBuf->get();
+        if (camera->genericAcqMode != Camera::eLive) {
+            this->ofsSpooling->write(camera->memPool + idx*size_t(camera->imageSizeBytes), camera->imageSizeBytes);
+        }
+    }
+    camera->circBufLock->unlock();
+    this->setPriority(getDefaultPriority());
+
+#if defined(_DEBUG)
+    cerr << "leave cooke spooling thread run()" << endl;
+#endif
+}//run(),

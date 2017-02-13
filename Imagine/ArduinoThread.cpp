@@ -26,18 +26,18 @@ ArduinoThread::~ArduinoThread() {
 }
 
 void ArduinoThread::run() {
-    forever {
+   // forever {
         // check if we should get out of here
-        if (isInterruptionRequested()) return;
+   //     if (isInterruptionRequested()) return;
         // process incoming events (such as request to send a message to the duino)
-        QCoreApplication::processEvents();
+   //     QCoreApplication::processEvents();
         /*this->exec();
         this->exit();*/
         // read incoming info, if it's there
 //not ready for arduino yet        if (serial->sPort->bytesAvailable() > 0) readIncoming();
         // hang out for a few milliseconds... we'll speed this up later
-        msleep(20);
-    }
+   //     msleep(20);
+   // }
 }
 
 #pragma endregion

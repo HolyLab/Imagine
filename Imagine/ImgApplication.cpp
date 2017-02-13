@@ -7,13 +7,13 @@ const char *ARDUINO_PORT = "COM4";
 
 ImgApplication::ImgApplication(int &argc, char **argv) : QApplication(argc, argv){
     // for now, we'll just start the arduino thread immediately
-    startArduinoThread(ARDUINO_PORT);
+    //startArduinoThread(ARDUINO_PORT);
 }
 
 ImgApplication::~ImgApplication() {
     if (imgOne != NULL) delete(imgOne);
     if (imgTwo != NULL) delete(imgTwo);
-    killArduinoThread();
+    //killArduinoThread();
 }
 
 #pragma endregion
@@ -39,6 +39,7 @@ void ImgApplication::initUI(Camera *cam1, Positioner *pos, Laser *laser, Camera 
         imgOne->setWindowTitle("Imagine (1)");
 		//TODO: all synchronizing record buttons
     }
+    qDebug() << QString("finished initializing UI instance(s)");
 }
 
 #pragma endregion

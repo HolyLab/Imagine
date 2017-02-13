@@ -45,7 +45,8 @@ public:
       minPhyValue=-10;
    }
 
-   bool read(int nScans, sample_t* buf){
+   //bool read(int nScans, sample_t* buf){
+   bool read(int nScans, float64* buf) {
       //do nothing
       double time2wait=nScans/(double)scanRate;
       Sleep(time2wait*1000);

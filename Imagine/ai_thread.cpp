@@ -67,7 +67,7 @@ bool AiThread::startAcq()
 {
     stopRequested = false;
     ai->start();   //TODO: check return value
-    this->start();
+    this->start(QThread::IdlePriority);
 
     return true;
 }
@@ -80,9 +80,11 @@ void AiThread::stopAcq()
 
 void AiThread::run()
 {
-    uInt16* readBuf = new uInt16[readBufSize*chanList.size()];
+    //uInt16* readBuf = new uInt16[readBufSize*chanList.size()];
+	float64* readBuf = new float64[readBufSize*chanList.size()];
     //ScopedPtr_g<uInt16>(readBuf, true); //note: unamed temp var will be free at cur line
-    unique_ptr<uInt16[]> ttScopedPtr(readBuf);
+    //unique_ptr<uInt16[]> ttScopedPtr(readBuf);
+	unique_ptr<float64[]> ttScopedPtr(readBuf);
 
     while (!stopRequested){
         ai->read(readBufSize, readBuf);
@@ -91,7 +93,8 @@ void AiThread::run()
             mutex.lock();
 
             for (int i = 0; i < readBufSize*chanList.size(); ++i){
-                data.push_back(readBuf[i]);
+                //rescale the float value (+-10.0) to a 16-bit integer
+                data.push_back(static_cast<signed short>(std::round(readBuf[i] / 10.0 * 32767)));  //TODO: hardcoded +-10V range of DAQ and 16-bit A/D value
             }//for,
             if (ofs) mSave(*ofs);
         }//local scope to make auto-unlock work

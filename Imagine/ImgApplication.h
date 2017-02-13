@@ -4,7 +4,7 @@
 #include "qapplication.h"
 #include "qstring.h"
 #include "imagine.h"
-#include "camera_g.hpp"
+#include "cooke.hpp"
 #include "positioner.hpp"
 #include "ArduinoThread.h"
 
