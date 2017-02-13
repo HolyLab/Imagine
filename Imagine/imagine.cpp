@@ -2741,7 +2741,7 @@ void Imagine::ControlFileLoad(QByteArray &data1, QByteArray &data2)
 void Imagine::updataSpeedData(int newValue)
 {
     double xMax = conPiezoCurveData->right();
-    Positioner *pos = dataAcqThread.pPositioner;
+    Positioner *pos = dataAcqThread->pPositioner;
     double maxSpeed = pos->maxSpeed();
     double sampleRate = static_cast<double>(newValue);
     double piezoSpeedCurveMax = maxSpeed / sampleRate * xMax;
