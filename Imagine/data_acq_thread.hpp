@@ -112,6 +112,7 @@ public:
 
     bool isLive;
     int idxCurStack;  //the stack we are working on. Since it's 0-based it's also the number of stacks finished so far
+    bool ownPos = false;
 
 signals:
     void imageDisplayReady(const QImage &image, long idx);
