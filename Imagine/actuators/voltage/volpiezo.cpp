@@ -149,7 +149,7 @@ bool VolPiezo::prepareCmd(bool useTrigger)
 
 
     /// now the trigger
-	int aoTTLHigh = 5.0; // ao->toDigUnit(5.0);
+	int aoTTLHigh = 3.3; // ao->toDigUnit(5.0);
 	int aoTTLLow = 0.0; // ao->toDigUnit(0);
     bufAo += ao->nScans;
     buf = bufAo;
