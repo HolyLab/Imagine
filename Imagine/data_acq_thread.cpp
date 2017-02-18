@@ -271,8 +271,6 @@ void DataAcqThread::run_acq_and_save()
     bool startCameraOnce = (acqTriggerMode == Camera::eExternal);
 
     //int framefactor = startCameraOnce ? this->nStacks : 1;
-    if (isUsingWav)
-        startCameraOnce = true;
 
     camera->setSpooling(camFilename.toStdString());
 
@@ -315,6 +313,9 @@ void DataAcqThread::run_acq_and_save()
 
     if (hasPos && ownPos) pPositioner->setPCount();
     bool useTrig = true;
+    if (isUsingWav)
+        useTrig = false;
+
     if (ownPos) preparePositioner(true, useTrig); //nec for volpiezo
 
     //prepare for AI:
