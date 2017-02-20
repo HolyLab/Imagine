@@ -352,9 +352,11 @@ void DataAcqThread::run_acq_and_save()
     double curTime;
     double lastTime;
     double stackStartTime;
+    double stackEndingTime;
+    double timeToWait = 0.0;
+    double maxWaitTime = 2; //in seconds. The frequency to check stop signal
 
 nextStack:  //code below is repeated every stack
-    stackStartTime = gt.read();
 
     //   below code caused an intermittent access violation write error
     /*
@@ -386,6 +388,33 @@ nextStack:  //code below is repeated every stack
     //raise priority here to ensure that the camera and piezo begin (nearly) simultaneously
     QThread::setPriority(QThread::TimeCriticalPriority);
     if (hasPos && ownPos) pPositioner->runCmd(); //will wait on trigger pulse from camera
+
+    if (idxCurStack > 0) { //wait to start next stack, if necessary
+        stackEndingTime = gt.read();
+        if (expTriggerMode != Camera::eAuto && !ownPos) timeToWait = 0;
+        else timeToWait = (timePerStack + idleTimeBwtnStacks)*idxCurStack - stackEndingTime;
+
+        OutputDebugStringW((wstring(L"Waiting for ") + to_wstring(int(timeToWait * 1000)) + wstring(L" milliseconds to start next stack\n")).c_str());
+
+        if ((timeToWait < 0) && ownPos) {
+            emit newLogMsgReady("WARNING: overrun(overall progress): idle time is too short.");
+        }
+        //TODO: warn user when the cycle time of the camera doesn't match the exposure time they ask for.
+        //the camera always returns the minimum cycle time when the user requests a shorter exposure than it can produce.
+        if ((stackEndingTime - stackStartTime >(timePerStack + idleTimeBwtnStacks)) && (expTriggerMode == Camera::eAuto || ownPos)) {
+            nOverrunStacks++;
+            emit newLogMsgReady("WARNING: overrun(current stack): Probably the positioner cannot keep up:\n");
+            QString temp = QString::fromStdString("      The stack was acquired " + to_string(int((stackEndingTime - stackStartTime - (timePerStack + idleTimeBwtnStacks)) * 1000000)) + " microseconds too slowly.\n");
+            emit newLogMsgReady(temp);
+        }
+        while(true) {
+            timeToWait = (timePerStack + idleTimeBwtnStacks)*idxCurStack - gt.read();
+            if (timeToWait > 0.01) QThread::msleep(min(maxWaitTime, timeToWait - .01) * 1000); // *1000: sec -> ms
+            else break;
+        }
+    }
+
+    stackStartTime = gt.read();
     camera->nextStack();
     //lower priority back to default
     QThread::setPriority(getDefaultPriority());
@@ -456,39 +485,10 @@ nextStack:  //code below is repeated every stack
     }
 
 
-    if (idxCurStack < this->nStacks && !stopRequested){
-        if (isBiDirectionalImaging && ownPos){
+    if (idxCurStack < this->nStacks && !stopRequested) {
+        if (isBiDirectionalImaging && ownPos) {
             preparePositioner(idxCurStack % 2 == 0, useTrig);
         }
-
-        double stackEndingTime = gt.read();
-        double timeToWait;
-
-        if (expTriggerMode != Camera::eAuto && !ownPos) timeToWait = 0;
-        else timeToWait = (timePerStack + idleTimeBwtnStacks)*idxCurStack - stackEndingTime;
-
-        OutputDebugStringW((wstring(L"Waiting for ") + to_wstring(int(timeToWait*1000)) + wstring(L" milliseconds to start next stack\n")).c_str());
-
-        if ((timeToWait < 0) && ownPos) {
-            emit newLogMsgReady("WARNING: overrun(overall progress): idle time is too short.");
-        }
-        //TODO: warn user when the cycle time of the camera doesn't match the exposure time they ask for.
-        //the camera always returns the minimum cycle time when the user requests a shorter exposure than it can produce.
-        if ((stackEndingTime - stackStartTime > (timePerStack+idleTimeBwtnStacks)) && (expTriggerMode == Camera::eAuto || ownPos)) {
-            nOverrunStacks++;
-            emit newLogMsgReady("WARNING: overrun(current stack): Probably the positioner cannot keep up:\n");
-            QString temp = QString::fromStdString("      The stack was acquired " + to_string(int((stackEndingTime - stackStartTime- (timePerStack+idleTimeBwtnStacks)) * 1000000)) + " microseconds too slowly.\n");
-            emit newLogMsgReady(temp);
-        }
-
-        double maxWaitTime = 2; //in seconds. The frequency to check stop signal
-    repeatWait:
-        timeToWait = (timePerStack+idleTimeBwtnStacks)*idxCurStack - gt.read();
-        if (timeToWait > 0.01) {
-            QThread::msleep(min(maxWaitTime, timeToWait) * 1000); // *1000: sec -> ms
-        }//if, need wait more than 10ms
-        if (timeToWait > maxWaitTime && !stopRequested) goto repeatWait;
-
         if (!stopRequested) goto nextStack;
     }//if, there're more stacks and no stop requested
 
