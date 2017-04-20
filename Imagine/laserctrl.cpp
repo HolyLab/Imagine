@@ -150,38 +150,58 @@ void LaserCtrlSerial::getTransStatus(bool isAotf, int line)
 //NOTE: line: 1-based numbering
 void LaserCtrlSerial::setShutter(int line, bool isOpen)
 {
+    if (port != NULL)
+        rx = port->readAll(); //clear the un-readed data (such as ack from prev cmd)
     unsigned int curStatus = readShutterStatus();
     bitset<4> bs((unsigned long long)curStatus);
     bs.set(line-1, isOpen);
     int newStatus=bs.to_ulong();
     tx=QString("01%1\r").arg(newStatus, 2, 16, QChar('0')).toLatin1();
     int nWritten = 2;
+    bool isData;
     if (port != NULL) {
         nWritten = port->write(tx);
         qDebug() << "Write : " << nWritten << " bytes";
+        do {
+            isData = port->waitForReadyRead(10);
+        } while (isData);
+        rx = port->readAll();
     }
 }
 
 void LaserCtrlSerial::setShutters(int status)
 {
+    if (port != NULL)
+        rx = port->readAll(); //clear the un-readed data (such as ack from prev cmd)
     tx = QString("01%1\r").arg(status, 2, 16, QChar('0')).toLatin1();
     int nWritten = 2;
+    bool isData;
     if (port != NULL) {
         nWritten = port->write(tx);
         qDebug() << "Write : " << nWritten << " bytes";
+        do {
+            isData = port->waitForReadyRead(10);
+        } while (isData);
+        rx = port->readAll();
     }
 }
 
 void LaserCtrlSerial::setTrans(bool isAotf, int line, int value)
 {
-    if (port != NULL) port->readAll(); //clear the un-readed data (such as ack from prev cmd)
+    if (port != NULL)
+        rx = port->readAll(); //clear the un-readed data (such as ack from prev cmd)
     int op=isAotf?4:6;
     tx=QString("0%1%2%3\r").arg(op).arg(line-1, 2, 16, QChar('0'))
                 .arg(value, 4, 16, QChar('0')).toLatin1();
     int nWritten = 3;
+    bool isData;
     if (port != NULL) {
         nWritten = port->write(tx);
         qDebug() << "Write : " << nWritten << " bytes";
+        do {
+            isData = port->waitForReadyRead(10);
+        } while (isData);
+        rx = port->readAll();
     }
 }
 
@@ -189,8 +209,8 @@ void LaserCtrlSerial::setTrans(bool isAotf, int line, int value)
 //NOTE: line is 1-based numbering
 QByteArray LaserCtrlSerial::readLaserLineSetup(void)
 {
-    if (port != NULL) port->readAll(); //clear the un-readed data (such as ack from prev cmd)
-
+    if (port != NULL)
+        rx = port->readAll(); //clear the un-readed data (such as ack from prev cmd)
     tx = "08\r";
     int nWritten = 1;
     bool isData;

@@ -181,6 +181,10 @@ bool CookeCamera::setAcqParams(int emGain,
         safe_pco(PCO_ResetSettingsToDefault(hCamera), "failed to reset camera settings");
         // skip SetBinning... not applicable to cooke cameras
         // set roi
+        if(isUsingSoftROI)
+            safe_pco(PCO_EnableSoftROI(hCamera, 1, NULL, 0), "failed to set SoftROI enable");
+        else
+            safe_pco(PCO_EnableSoftROI(hCamera, 0, NULL, 0), "failed to set SoftROI disable");
         safe_pco(PCO_SetROI(hCamera, hstart, vstart, hend, vend), "failed to set ROI");
         // frame trigger mode (0 for auto)
         safe_pco(PCO_SetTriggerMode(hCamera, 0), "failed to set frame trigger mode");
@@ -406,11 +410,13 @@ bool CookeCamera::prepCameraOnce()
 
 bool CookeCamera::nextStack()
 {
-    while (!(workerThread->getIsPaused()) && !(workerThread->getShouldStop())) QThread::msleep(5); //could hinder performance
+    while (!(workerThread->getIsPaused()) && !(stopRequested)) QThread::msleep(5); //could hinder performance
 
-    workerThread->setIsPaused(false);
-    (workerThread->getUnPaused())->wakeAll();
-    safe_pco(PCO_SetRecordingState(hCamera, 1), "failed to start camera recording"); //1: run
+    if (!stopRequested) {
+        workerThread->setIsPaused(false);
+        (workerThread->getUnPaused())->wakeAll();
+        safe_pco(PCO_SetRecordingState(hCamera, 1), "failed to start camera recording"); //1: run
+    }
     return true;
 }//startAcq(),
 
@@ -444,4 +450,49 @@ void CookeCamera::printPcoError(int errCode) {
     msgw.assign(msgs.begin(), msgs.end());
     cout << msg << endl;
     OutputDebugStringW((wstring(L"\nPCO error text: ") + msgw).c_str());
+}
+
+const int DummyCamera::nBufs = 2;
+bool DummyCamera::prepCameraOnce()
+{
+    int circBufCap = memPoolSize / imageSizeBytes;  //memPoolSize is set in spoolthread.h
+    circBuf = new CircularBuf(circBufCap);
+    circBufLock = new QMutex;
+    nAcquiredStacks = 0;
+
+    ///set pointers to slots in the ring buffer for data transfer from card to pc
+    for (int i = 0; i < nBufs; ++i) {
+        mBufIndex[i] = -1;
+        mEvent[i] = CreateEvent(0, FALSE, FALSE, NULL);
+        mRingBuf[i] = memPool + (circBuf->peekPut() + i) * size_t(imageSizeBytes);
+    }
+    SpoolThread * s = new SpoolThread(QThread::HighestPriority, ofsSpooling, this);
+    setSpoolThread(s);
+    s->start(QThread::HighestPriority);
+    CameraWorkerThread * w = new CameraWorkerThread(QThread::TimeCriticalPriority, this);
+    setWorkerThread(w);
+    w->start(QThread::TimeCriticalPriority);
+    return true;
+}
+
+bool DummyCamera::stopAcqFinal()
+{
+    //not rely on the "wait abandon"!!!
+    WorkerThread * w = getWorkerThread();
+    SpoolThread * s = getSpoolThread();
+    w->quit();
+    s->requestStop();
+    w->wait();
+    s->wait();
+
+    delete circBuf;
+    delete getWorkerThread();
+    delete getSpoolThread();
+    spoolThread = nullptr;
+    workerThread = nullptr;
+
+    delete ofsSpooling; //the file is closed too
+    ofsSpooling = nullptr;
+
+    return true;
 }

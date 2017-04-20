@@ -27,11 +27,13 @@
 #include "positioner.hpp"
 #include "ai_thread.hpp"
 #include "workerthread.h"
+#include "waveform.h"
 
 class QImage;
 class NiDaqAi;
 class Imagine;
 class CurveData;
+struct WaveData;
 
 class DataAcqThread : public WorkerThread
 {
@@ -47,6 +49,8 @@ public:
     void stopAcq(); //note: this func call is non-blocking
 
     bool preparePositioner(bool isForward = true, bool useTrigger = false);
+    bool prepareDAQ();
+    bool prepareDaqBuffered();
 
     // setter for the camera and positioner... use this instead of setting the var directly
     // yeah, I could make the var private... so can you!
@@ -97,6 +101,11 @@ public:
     bool isBiDirectionalImaging;
     CurveData *conPiezoWavData;
     CurveData *conShutterWavData;
+    CurveData *conLaserWavData;
+    CurveData *conTTL1WavData;
+    CurveData *conTTL2WavData;
+    WaveData *waveData;
+    ControlWaveform *conWaveData;
     bool isUsingWav = false;
     int sampleRate;
 
@@ -123,6 +132,7 @@ signals:
 protected:
     void run();
     void run_acq_and_save();
+    void run_acq_and_save2();
     void run_live();
 
 private:

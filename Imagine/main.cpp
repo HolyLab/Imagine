@@ -44,7 +44,7 @@ using namespace std;
 #include "laserctrl.h"
 
 extern QScriptEngine* se;
-extern DaqDo* digOut;
+extern DigitalControls* digOut;
 extern QString daq;
 extern string rig;
 
@@ -217,10 +217,10 @@ int main(int argc, char *argv[])
 
     splash->showMessage(QString("Initialize the %1 daq ...").arg(daq), align, col);
     if (daq == "ni") {
-        digOut = new NiDaqDo(doname);
+        digOut = new DigitalOut(doname);
     }
     else if (daq == "dummy"){
-        digOut = new DummyDaqDo();
+        digOut = new DummyDigitalOut();
     }
     else {
         QMessageBox::critical(0, "Imagine", "Unsupported daq.",
@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
     Camera *cam1;
 
 	if (cameraVendor == "cooke") cam1 = new CookeCamera;
-	else if (cameraVendor == "dummy") cam1 = new CookeCamera;
+	else if (cameraVendor == "dummy") cam1 = new DummyCamera;
     else {
         QMessageBox::critical(0, "Imagine", "Unsupported camera.", QMessageBox::Ok, QMessageBox::NoButton);
         return 1;
@@ -284,9 +284,11 @@ int main(int argc, char *argv[])
 
     // Laser
     Laser *laser = nullptr;
-    if (rig == "ocpi-2") laser = new Laser("COM");
-    else if (rig == "ocpi-1") laser = new Laser("nidaq");
-    else laser = new Laser("dummy");
+    int maxLaserFreq;
+    maxLaserFreq = se->globalObject().property("maxlaserfreq").toNumber();
+    if (rig == "ocpi-2") laser = new Laser("COM", maxLaserFreq);
+    else if (rig == "ocpi-1") laser = new Laser("nidaq", maxLaserFreq);
+    else laser = new Laser("dummy", maxLaserFreq);
 
     // get rid of the status message
     splash->deleteLater();
@@ -299,5 +301,12 @@ int main(int argc, char *argv[])
     a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
     //set GUI thread to a low priority
     QThread::currentThread()->setPriority(QThread::IdlePriority);
-    return a.exec();
-}
+
+     int retVal = a.exec();
+
+    if (digOut != NULL)
+        delete digOut;
+    digOut = NULL;
+
+    return retVal;
+ }

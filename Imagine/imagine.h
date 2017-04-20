@@ -38,6 +38,7 @@ class CurveData;
 #include <qwt_plot_histogram.h>
 #include "laserctrl.h"
 #include "piezoctrl.h"
+#include "waveform.h"
 
 #define READ_STRING_SETTING(prefs, var, emptyValue)\
   ui.##var->setText( prefs.value(#var).toString() );\
@@ -119,11 +120,13 @@ public:
     int maxROIHSize;
     int maxROIVSize;
     int roiStepsHor;
+    bool isUsingSoftROI = false;
 
     // for laser control
     LaserCtrlSerial *laserCtrlSerial = nullptr;
     // for piezo controller setup
     PiezoCtrlSerial *piezoCtrlSerial = nullptr;
+    int maxLaserFreq;
 
     // display coords in the unit of original image
     int L = -1;
@@ -151,6 +154,12 @@ private:
     CurveData *conShutterCurveData = NULL;
     QwtPlotCurve *piezoSpeedCurve;
     CurveData *piezoSpeedCurveData = NULL;
+    QwtPlotCurve *conLaserCurve;
+    CurveData *conLaserCurveData = NULL;
+    QwtPlotCurve *conTTL1Curve;
+    CurveData *conTTL1CurveData = NULL;
+    QwtPlotCurve *conTTL2Curve;
+    CurveData *conTTL2CurveData = NULL;
     QwtPlot *conReadWavPlot;
     QwtPlotCurve *conReadPiezoCurve;
     QwtPlotCurve *conReadStimuliCurve;
@@ -162,6 +171,9 @@ private:
     CurveData *conReadHeartbeatCurveData = NULL;
     vector<PiezoUiParam> piezoUiParams;
     QString m_OpenDialogLastDirectory;
+    WaveData *waveData;
+    ControlWaveform *conWaveData = NULL;
+
     bool modified;
     bool paramOK;
     int numLaserShutters = 0;
@@ -175,7 +187,10 @@ private:
         const int imageW, const int imageH);
     void updateIntenCurve(const Camera::PixelValue * frame,
         const int imageW, const int imageH, const int frameIdx);
-
+    template<class Type> void setCurveData(CurveData *curveData, QwtPlotCurve *curve,
+        std::vector<Type> &wave, int start, int end, int yoffset);
+    template<class Type> void setCurveData(CurveData *curveData, QwtPlotCurve *curve,
+        QVector<Type> &wave, int start, int end, int factor, int amplitude, int yoffset);
     bool checkRoi();
     bool loadPreset();
     void preparePlots();
@@ -191,8 +206,14 @@ private:
     void readComments(QString file);
     void updateConWave(const int frameIdx, const int value);
     void ControlFileLoad(QByteArray &data1, QByteArray &data2);
-    bool updateControlWavefrom(QString fn1, QString fn2);
+    void updateControlWaveform_old(QString fn);
+    void readControlWaveform(QString fn);
+    void updateControlWaveform(int leftEnd, int rightEnd);
     void updataSpeedData(int newValue);
+    void updataSpeedData(int newValue, int start, int end);
+    bool convertJASONtoWave(vector<double> &wave, QJsonArray &jsonWave, int num);
+    bool convertJASONtoPulse(vector<int> &pulse, QJsonArray &jsonPulse, int num);
+    bool waveformValidityCheck(void);
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();
@@ -294,14 +315,21 @@ private slots:
     void on_btnPzOpenPort_clicked();
     void on_btnPzClosePort_clicked();
     // for piezo controller setup until this line
-    void on_btnPiezoWavOpen_clicked();
-    void on_btnShutterWavOpen_clicked();
+    void on_btnConWavOpen_clicked();
     void on_btnReadWavOpen_clicked();
     void on_cbPiezoReadWav_clicked(bool checked);
     void on_cbStimuliReadWav_clicked(bool checked);
     void on_cbCameraReadWav_clicked(bool checked);
     void on_cbHeartReadWav_clicked(bool checked);
+    void on_cbPiezoConWav_clicked(bool checked);
+    void on_cbLaserConWav_clicked(bool checked);
+    void on_cbCameraConWav_clicked(bool checked);
+    void on_cbTTL1ConWav_clicked(bool checked);
+    void on_cbTTL2ConWav_clicked(bool checked);
     void on_spinBoxPiezoSampleRate_valueChanged(int newValue);
+    void on_sbWavDsplyRight_valueChanged(int value);
+    void on_sbWavDsplyLeft_valueChanged(int value);
+    void on_btnWavDsplyReset_clicked();
 
 public:
     Ui::ImagineClass ui;

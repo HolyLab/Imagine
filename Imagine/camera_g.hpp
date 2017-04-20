@@ -63,7 +63,8 @@ public:
 
     int nStacks, nFramesPerStack, bytesPerPixel;
     long imageSizePixels, imageSizeBytes;
-
+    bool isUsingSoftROI = false;
+    bool stopRequested = false;
 
 protected:
     string model;

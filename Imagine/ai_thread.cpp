@@ -29,7 +29,8 @@ using namespace std;
 
 extern QString daq;
 
-AiThread::AiThread(QString ainame, int readBufSize, int driverBufSize, int scanrate, vector<int> chanList, QObject *parent)
+AiThread::AiThread(QString ainame, int readBufSize, int driverBufSize, int scanrate,
+                vector<int> chanList, string clkName, QObject *parent)
     : QThread(parent)
 {
     this->readBufSize = readBufSize;
@@ -48,7 +49,7 @@ AiThread::AiThread(QString ainame, int readBufSize, int driverBufSize, int scanr
     }
 
     //NOTE: the success return value may be unreliable
-    int success = ai->cfgTiming(scanrate, driverBufSize);
+    int success = ai->cfgTiming(scanrate, driverBufSize, clkName);
     if(!success) {
         throw Daq::EInitDevice("exception: failed to configure AI device timing");
     }
@@ -76,6 +77,11 @@ void AiThread::stopAcq()
 {
     stopRequested = true;
     wait(); //block calling thread until AiThread associated thread is done.
+}
+
+bool AiThread::setTrigger(string clkName)
+{
+    return ai->setTrigger(clkName);
 }
 
 void AiThread::run()

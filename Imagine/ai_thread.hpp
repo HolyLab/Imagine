@@ -39,14 +39,15 @@ public:
     DaqAi* ai;
 
     //NOTE: readBufSize is in scan.
-    AiThread(QString ainame,
-        int readBufSize, int driverBufSize, int scanrate, vector<int> chanList, QObject *parent = 0);
+    AiThread(QString ainame, int readBufSize, int driverBufSize, int scanrate,
+            vector<int> chanList, string clkName = "", QObject *parent = 0);
     ~AiThread();
 
     bool startAcq();
     void stopAcq(); //note: this func call is blocking.
     bool save(ofstream& ofsAi);
     void setOfstream(ofstream* ofs){ this->ofs = ofs; }
+    bool setTrigger(string clkName);
 
 protected:
     void run();

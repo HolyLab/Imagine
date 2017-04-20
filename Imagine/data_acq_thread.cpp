@@ -45,7 +45,7 @@ using namespace std;
 #include "curvedata.h"
 
 QScriptEngine* se;
-DaqDo * digOut = nullptr;
+DigitalControls * digOut = nullptr;
 QString daq;
 string rig;
 const string headerMagic = "IMAGINE";
@@ -77,11 +77,9 @@ DataAcqThread::~DataAcqThread()
 
 void DataAcqThread::genSquareSpike(int duration)
 {
-    digOut->updateOutputBuf(5, true);
-    digOut->write();
+    digOut->singleOut(5, true);
     Sleep(duration);
-    digOut->updateOutputBuf(5, false);
-    digOut->write();
+    digOut->singleOut(5, false);
 }
 
 QString linize(QString lines)
@@ -123,22 +121,7 @@ bool DataAcqThread::preparePositioner(bool isForward, bool useTrigger)
     if (pPositioner->posType == ActuatorPositioner) pPositioner->setDim(1);
 
     // the piezo code only supports the following three lines calling pattern
-    if (isUsingWav) {
-        double duration = 1./static_cast<double>(sampleRate)*1e6; // usec
-        double durationSum;
-        double stPos, endPos;
-        for (int i = 0; i < conPiezoWavData->size()-1; i++) {
-            durationSum = (conPiezoWavData->x(i+1)- conPiezoWavData->x(i))*duration;
-            stPos = conPiezoWavData->y(i);
-            endPos = conPiezoWavData->y(i+1);
-            pPositioner->addMovement(stPos, endPos, durationSum, (conShutterWavData->y(i)!=0));
-        }
-        stPos = endPos;
-        endPos = conPiezoWavData->y(0);
-        int trigger = (conShutterWavData->y(conPiezoWavData->y(0)) != 0);
-//        pPositioner->addMovement(stPos, endPos, duration, trigger);
-    }
-    else if (isBiDirectionalImaging){
+    if (isBiDirectionalImaging){
         pPositioner->setScanType(isBiDirectionalImaging);
         if (isForward){
             pPositioner->addMovement(piezoStartPosUm, piezoStopPosUm, nFramesPerStack*cycleTime*1e6, 1);
@@ -162,6 +145,43 @@ bool DataAcqThread::preparePositioner(bool isForward, bool useTrigger)
 
 }
 
+bool DataAcqThread::prepareDAQ()
+{
+    string clkName;
+
+    if (pPositioner == NULL) {
+        return true;
+    }
+
+    pPositioner->prepareCmd(waveData);
+
+    digOut->prepareCmd(waveData, pPositioner->getClkOut());
+
+    return true;
+}
+
+
+bool DataAcqThread::prepareDaqBuffered()
+{
+    string clkName;
+    bool isOK;
+
+    if (pPositioner == NULL) {
+        return true;
+    }
+    // TODO: move positioner to the position of 1st element
+    isOK = pPositioner->prepareCmdBuffered(conWaveData);
+    if (isOK) {
+        digOut->prepareCmdBuffered(conWaveData, pPositioner->getClkOut());
+        if (isOK)
+            return true;
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
 #pragma endregion
 
 #pragma region Acquisition
@@ -169,18 +189,23 @@ bool DataAcqThread::preparePositioner(bool isForward, bool useTrigger)
 void DataAcqThread::startAcq()
 {
     stopRequested = false;
+    pCamera->stopRequested = false;
     this->start(getDefaultPriority());
 }
 
 void DataAcqThread::stopAcq()
 {
     stopRequested = true;
+    pCamera->stopRequested = true;
 }
 
 void DataAcqThread::run()
 {
     if (isLive) run_live();
-    else run_acq_and_save();
+    else if(isUsingWav)
+        run_acq_and_save2();
+    else
+        run_acq_and_save();
 
     //this is for update ui status only:
     emit newStatusMsgReady(QString("acq-thread-finish"));
@@ -399,8 +424,7 @@ nextStack:  //code below is repeated every stack
     bool isPiezo = hasPos && pPositioner->posType == PiezoControlPositioner;
     //open laser shutter
     if (ownPos) {
-        digOut->updateOutputBuf(4, true);
-        digOut->write();
+        digOut->singleOut(4, true);
     }
     //raise priority here to ensure that the camera and piezo begin (nearly) simultaneously
     QThread::setPriority(QThread::TimeCriticalPriority);
@@ -422,9 +446,15 @@ nextStack:  //code below is repeated every stack
     while (!stopRequested) {
         //to avoid "priority inversion" we temporarily elevate the priority
         this->setPriority(QThread::TimeCriticalPriority);
-        nFramesGotForStack = camera->getNAcquiredFrames();
-        tempNumStacks = camera->getNAcquiredStacks();
 
+        if (pCamera->getModel() == "dummy") {
+            if (!((nFramesGotForStack++)%nFramesPerStack))
+                tempNumStacks++;
+        }
+        else {
+            nFramesGotForStack = camera->getNAcquiredFrames();
+            tempNumStacks = camera->getNAcquiredStacks();
+        }
         this->setPriority(getDefaultPriority());
         if (idxCurStack < tempNumStacks) {
             idxCurStack = tempNumStacks;
@@ -449,8 +479,7 @@ nextStack:  //code below is repeated every stack
 
     //close laser shutter
     if (ownPos) {
-        digOut->updateOutputBuf(4, false);
-        digOut->write();
+        digOut->singleOut(4, false);
     }
 
     //below code also causes intermittent crashes
@@ -467,7 +496,7 @@ nextStack:  //code below is repeated every stack
     //update stimulus if necessary:  idxCurStack
     if (applyStim
         && curStimIndex + 1 < stimuli.size()
-        && stimuli[curStimIndex + 1].second == idxCurStack + 1) {
+        && stimuli[curStimIndex + 1].second == idxCurStack) {
         curStimIndex++;
         fireStimulus(stimuli[curStimIndex].first);
     }//if, should update stimulus
@@ -559,6 +588,179 @@ nextStack:  //code below is repeated every stack
 
 }//run_acq_and_save()
 
+void DataAcqThread::run_acq_and_save2()
+{
+    Camera* camera = pCamera;
+    Timer_g gt;
+    bool hasPos = pPositioner != NULL;
+
+    ////prepare for AO AI and camera:
+
+    ///prepare for camera:
+
+    camFilename = replaceExtName(headerFilename, "cam"); //NOTE: necessary if user overwrite files
+
+                                                         ///piezo feedback data file (only for PI piezo)
+    string positionerFeedbackFile = replaceExtName(headerFilename, "pos").toStdString();
+
+    camera->setSpooling(camFilename.toStdString());
+
+    camera->setAcqModeAndTime(Camera::eAcqAndSave,
+        this->exposureTime,
+        this->nFramesPerStack*this->nStacks,
+        this->acqTriggerMode,
+        this->expTriggerMode);
+    emit newStatusMsgReady(QString("Camera: set acq mode and time: %1")
+        .arg(camera->getErrorMsg().c_str()));
+
+    //get the real params used by the camera:
+    cycleTime = camera->getCycleTime();
+    double timePerStack = nFramesPerStack*cycleTime;
+
+    string wTitle = (*parentImagine).windowTitle().toStdString();
+    bool ownPos = false;
+    if (!wTitle.compare("Imagine")||!wTitle.compare("Imagine (1)")) { // one camera system ex) OCPI-1
+        ownPos = true;
+    }
+
+    if (hasPos && ownPos) pPositioner->setPCount();
+    if (ownPos) {
+        prepareDaqBuffered(); //piezo, camera1 exp, camera2 exp, laser shutter, stimuli (waveform version of 'preparePositioner')
+    }
+    //prepare for AI:
+    QString ainame = se->globalObject().property("ainame").toString();
+    //TODO: make channel recording list depend on who owns the piezo
+    vector<int> aiChanList;
+    //chanList.push_back(0);
+    for (int i = 0; i < 3; ++i) {
+        aiChanList.push_back(i);
+    }
+    aiThread = new AiThread(ainame, 10000, 50000, 10000, aiChanList, pPositioner->getClkOut()); // TODO: set scanRate as the Maximum rate of external clock
+    unique_ptr<AiThread> uniPtrAiThread(aiThread);
+    ofstream *ofsAi = new ofstream(aiFilename.toStdString(), ios::binary | ios::out | ios::trunc);
+    unique_ptr<ofstream> uniPtrOfsAi(ofsAi);
+    aiThread->setOfstream(ofsAi);
+    //start AI
+    aiThread->startAcq();
+
+    //after all devices are prepared, now we can save the file header:
+    QString stackDir = replaceExtName(camFilename, "stacks");
+    saveHeader(headerFilename, aiThread->ai);
+
+    isUpdatingImage = false;
+
+    Camera::PixelValue * frame = (Camera::PixelValue*)_aligned_malloc(sizeof(Camera::PixelValue*)*(camera->imageSizePixels), 4 * 1024);
+
+    idxCurStack = 0; //stack we are currently working on.  We will keep this in sync with camera->nAcquiredStacks
+
+    camera->prepCameraOnce();
+    // start
+//    camera->nextStack(); // wait until next stack and begin to capture
+
+    int nOverrunStacks = 0;
+
+    gt.start(); //seq's start time is 0, the new ref pt
+
+    double curTime;
+    double lastTime;
+    double stackStartTime;
+
+    bool isPiezo = hasPos && pPositioner->posType == PiezoControlPositioner;
+    if (hasPos && ownPos) {
+        digOut->runCmd();
+        pPositioner->runCmd(); //will wait on trigger pulse from camera
+    }
+nextStack:  //code below is repeated every stack
+    stackStartTime = gt.read();
+
+    //raise priority here to ensure that the camera and piezo begin (nearly) simultaneously
+    setPriority(QThread::TimeCriticalPriority);
+    camera->nextStack();
+    //lower priority back to default
+    setPriority(getDefaultPriority());
+
+    long nFramesGotForStack = 0;
+    long tempNumStacks = 0;
+    long tempNumFrames = 0;
+
+    while (!stopRequested) {
+        //to avoid "priority inversion" we temporarily elevate the priority
+        setPriority(QThread::TimeCriticalPriority);
+        if (pCamera->getModel() == "dummy") {
+            if (!((++nFramesGotForStack) % nFramesPerStack))
+                tempNumStacks++;
+        }
+        else {
+            nFramesGotForStack = camera->getNAcquiredFrames();
+            tempNumStacks = camera->getNAcquiredStacks();
+        }
+        setPriority(getDefaultPriority());
+        if (idxCurStack < tempNumStacks) {
+            idxCurStack = tempNumStacks;
+            OutputDebugStringW((wstring(L"Data acq thread finished stack #") + to_wstring(idxCurStack) + wstring(L"\n")).c_str());
+            break;
+        }
+        if (!isUpdatingImage && tempNumFrames != nFramesGotForStack) {
+            tempNumFrames = nFramesGotForStack;
+            QThread::msleep(10);
+            //copy latest frame to display buffer
+            if (!camera->updateLiveImage()) {
+                QThread::msleep(10);
+                continue;
+            }
+            emit imageDataReady(camera->getLiveImage(), nFramesGotForStack - 1, camera->getImageWidth(), camera->getImageHeight()); //-1: due to 0-based indexing
+
+        }
+        else {
+            QThread::msleep(10);
+        }
+    }//while, camera is not idle
+
+    if (idxCurStack < this->nStacks && !stopRequested) {
+//        double stackEndingTime = gt.read();
+
+//        idleTimeBwtnStacks = 0.2; // currently just set (maxpos-minpos)/maxspeed = 400/2000 (but need to check again later)
+        //TODO: warn user when the cycle time of the camera doesn't match the exposure time they ask for.
+        //the camera always returns the minimum cycle time when the user requests a shorter exposure than it can produce.
+/*        if ((stackEndingTime - stackStartTime >(timePerStack + idleTimeBwtnStacks)) && (expTriggerMode == Camera::eAuto || ownPos)) {
+            nOverrunStacks++;
+            emit newLogMsgReady("WARNING: overrun(current stack): Probably the positioner cannot keep up:\n");
+            QString temp = QString::fromStdString("      The stack was acquired " + to_string(int((stackEndingTime - stackStartTime - (timePerStack + idleTimeBwtnStacks)) * 1000000)) + " microseconds too slowly.\n");
+            emit newLogMsgReady(temp);
+        }
+*/
+//        QThread::msleep(100); // ms
+        if (!stopRequested) goto nextStack;
+    }//if, there're more stacks and no stop requested
+
+    this->setPriority(QThread::TimeCriticalPriority);
+    camera->stopAcqFinal(); //priority inversion delays stopping, so we haave to elevate priority
+    this->setPriority(getDefaultPriority());
+
+    ///save ai data:
+    if (ownPos) {
+        aiThread->stopAcq();
+        ofsAi->flush();
+        digOut->abortCmd();
+    }
+    ///reset the actuator to its exact starting pos
+    if (hasPos && ownPos) {
+        pPositioner->abortCmd(); //will wait on trigger pulse from camera
+        emit newStatusMsgReady("Now resetting the actuator to its exact starting pos ...");
+        emit resetActuatorPosReady();
+    }
+
+    QString ttMsg = "Acquisition is done";
+    if (stopRequested) ttMsg += " (User requested STOP)";
+    emit newStatusMsgReady(ttMsg);
+
+    if (!nOverrunStacks) ttMsg = "Idle time is OK (NO overrun).";
+    else {
+        ttMsg = QString("# of overrun stacks: %1").arg(nOverrunStacks);
+    }
+    emit newStatusMsgReady(ttMsg);
+}//run_acq_and_save2()
+
 #pragma endregion
 
 #pragma region Stimulus
@@ -567,10 +769,9 @@ void DataAcqThread::fireStimulus(int valve)
 {
     emit newStatusMsgReady(QString("valve is open: %1").arg(valve));
     for (int i = 0; i < 4; ++i){
-        digOut->updateOutputBuf(i, valve & 1);
+        digOut->singleOut(i, valve & 1);
         valve >>= 1;
     }
-    digOut->write();
 }//fireStimulus(),
 
 #pragma endregion

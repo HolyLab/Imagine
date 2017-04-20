@@ -33,6 +33,10 @@ public:
    bool write(){
       return true;
    }
+
+   bool cfgTiming(int scanRate, int size) { return true; }
+   bool setTrigger(string clkName) { return true; }
+   bool updateOutputBuf() { return true; }
 };//class, DummyDaqDo
 
 
@@ -60,11 +64,17 @@ public:
    bool isSuc(){return true;}
    string getErrorMsg(){return "no error";}
 
-   bool cfgTiming(int scanRate, int size){
+   bool cfgTiming(int scanRate, int size, string clkName = ""){
       //this->scanRate=scanRate;
       this->scanRate=1000;
 
       return true;
    }
+   bool setTrigger(string clkName) {return true;}
+
+   bool wait(double timeToWait) { return true; }
+
+   bool isDone() { return true; }
+
 };//class, DummyDaqAi
 #endif //DUMMY_DAQ_HPP

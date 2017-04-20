@@ -1,8 +1,15 @@
 #include "volpiezo.hpp"
+#include "imagine.h"
 
 #include <Windows.h>
+#define ErrChk(func) if((error=(func))<0) goto Error; else
 
-#include "curvedata.h"
+DAQ_CALLBACK_FP NiDaqDo::nSampleCallback = nullptr;
+DAQ_CALLBACK_FP NiDaqAo::nSampleCallback = nullptr;
+void* NiDaqDo::instance = nullptr;
+void* NiDaqAo::instance = nullptr;
+
+struct WaveData;
 
 double VolPiezo::zpos2voltage(double um)
 {
@@ -101,7 +108,7 @@ bool VolPiezo::prepareCmd(bool useTrigger)
         lastErrorMsg = "prepareCmd: failed to configure timing";
         return false;
     }
-    if (useTrigger) ao->cfgTrigger();
+    if (useTrigger) ao->setTrigger("PFI0");
     if (useTrigger && ao->isError()) {
         cleanup();
         lastErrorMsg = "prepareCmd: failed to configure trigger";
@@ -178,6 +185,170 @@ bool VolPiezo::prepareCmd(bool useTrigger)
     return true;
 }//prepareCmd(),
 
+int VolPiezo::readWaveToBuffer(int num)
+{
+    if (idx >= totalSample) return 0;
+    float64 * bufAo = ao->getOutputBuf();
+    float64 * buf = bufAo - 1;
+    int readNum = (idx + num < totalSample)? num : totalSample - idx;
+    int end = idx + readNum;
+    if (!waveData->piezo1.empty())
+        for (unsigned i = idx; i < end; ++i) {
+            *++buf = zpos2voltage(waveData->piezo1[i]);
+        }
+    if (!waveData->piezo2.empty())
+        for (unsigned i = idx; i < end; ++i) {
+            *++buf = zpos2voltage(waveData->piezo2[i]);
+        }
+    idx += readNum;
+    return readNum;
+}
+
+int VolPiezo::readConWaveToBuffer(int num)
+{
+    if (idx >= totalSample) return 0;
+    float64 * bufAo = ao->getOutputBuf();
+    float64 * buf = bufAo - 1;
+    int readNum = (idx + num < totalSample) ? num : totalSample - idx;
+    int end = idx + readNum;
+    if (!conWaveData->isEmpty(positioner1)) {
+        QVector<int> waveData;
+        conWaveData->readControlWaveform(waveData, positioner1, idx, end - 1, 1);
+        for (unsigned i = 0; i < readNum; ++i) {
+            *++buf = zpos2voltage(waveData[i]);
+        }
+    }
+    if (!conWaveData->isEmpty(positioner2)) {
+        QVector<int> waveData;
+        conWaveData->readControlWaveform(waveData, positioner2, idx, end - 1, 1);
+        for (unsigned i = 0; i < readNum; ++i) {
+            *++buf = zpos2voltage(waveData[i]);
+        }
+    }
+    idx += readNum;
+    return readNum;
+}
+
+bool VolPiezo::prepareCmd(WaveData *waveData)
+{
+    if (ao) cleanup();
+
+    //prepare for AO:
+    if (aoOnce) {
+        delete aoOnce;
+        aoOnce = nullptr;
+    }
+
+    int aoChannelForPiezo1 = 0; //TODO: put this configurable
+    int aoChannelForPiezo2 = 1;
+    vector<int> aoChannels;
+    if(!waveData->piezo1.empty())
+        aoChannels.push_back(aoChannelForPiezo1);
+    if (!waveData->piezo2.empty())
+        aoChannels.push_back(aoChannelForPiezo2);
+
+    int totalSample = waveData->sampleNum;
+
+    ao = new NiDaqAo(aoname, aoChannels);
+
+    ao->cfgTiming(waveData->sampleRate, totalSample);
+
+    if (ao->isError()) {
+        cleanup();
+        lastErrorMsg = "prepareCmd: failed to configure timing";
+        return false;
+    }
+
+    idx = 0;
+    readWaveToBuffer(totalSample);
+
+    ao->updateOutputBuf();
+
+    return true;
+}//prepareCmd(),
+
+void VolPiezo::writeNextSamples(void)
+{
+    readConWaveToBuffer(blockSize);
+    ao->updateOutputBuf(blockSize);
+    return;
+}
+
+bool VolPiezo::prepareCmdBuffered(WaveData *waveData)
+{
+    if (ao) cleanup();
+
+    //prepare for AO:
+    if (aoOnce) {
+        delete aoOnce;
+        aoOnce = nullptr;
+    }
+
+    this->waveData = waveData;
+    int aoChannelForPiezo1 = 0; //TODO: put this configurable
+    int aoChannelForPiezo2 = 1;
+    vector<int> aoChannels;
+    if (!waveData->piezo1.empty())
+        aoChannels.push_back(aoChannelForPiezo1);
+    if (!waveData->piezo2.empty())
+        aoChannels.push_back(aoChannelForPiezo2);
+
+    totalSample = waveData->sampleNum;
+
+    ao = new NiDaqAo(aoname, aoChannels);
+
+    ao->cfgTimingBuffered(waveData->sampleRate, totalSample);
+    if (ao->isError()) {
+        cleanup();
+        lastErrorMsg = "VolPiezo::prepareCmdBuffered: failed to configure timing";
+        return false;
+    }
+
+    blockSize = ao->getBlockSize();
+    ao->setNSampleCallback(CallbackWrapper,this);
+    idx = 0;
+    ao->updateOutputBuf(readWaveToBuffer(2 * blockSize));
+
+    return true;
+}//prepareCmd(),
+
+bool VolPiezo::prepareCmdBuffered(ControlWaveform *conWaveData)
+{
+    if (ao) cleanup();
+
+    //prepare for AO:
+    if (aoOnce) {
+        delete aoOnce;
+        aoOnce = nullptr;
+    }
+
+    this->conWaveData = conWaveData;
+    int aoChannelForPiezo1 = 0; //TODO: put this configurable
+    int aoChannelForPiezo2 = 1;
+    vector<int> aoChannels;
+    if (!conWaveData->isEmpty(positioner1))
+        aoChannels.push_back(aoChannelForPiezo1);
+    if (!conWaveData->isEmpty(positioner2))
+        aoChannels.push_back(aoChannelForPiezo2);
+
+    totalSample = conWaveData->totalSampleNum;
+
+    ao = new NiDaqAo(aoname, aoChannels);
+
+    ao->cfgTimingBuffered(conWaveData->sampleRate, totalSample);
+    if (ao->isError()) {
+        cleanup();
+        lastErrorMsg = "VolPiezo::prepareCmdBuffered: failed to configure timing";
+        return false;
+    }
+
+    blockSize = ao->getBlockSize();
+    ao->setNSampleCallback(CallbackWrapper, this);
+    idx = 0;
+    ao->updateOutputBuf(readConWaveToBuffer(2 * blockSize));
+
+    return true;
+}//prepareCmd(),
 
 bool VolPiezo::runCmd()
 {
@@ -217,3 +388,213 @@ void VolPiezo::cleanup()
 
 }
 
+string VolPiezo::getSyncOut()
+{
+    return ao->getTrigOut();
+}
+
+string VolPiezo::getClkOut()
+{
+    return ao->getClkOut();
+}
+
+
+int DigitalOut::readPulseToBuffer(int num)
+{
+    if (idx >= totalSample) return 0;
+    uInt32 * bufDo = dout->getOutputBuf();
+    uInt32 * buf = bufDo - 1;
+    int readNum = (idx + num < totalSample) ? num : totalSample - idx;
+    int end = idx + readNum;
+    for (unsigned i = idx; i < end; ++i) {
+        uInt32 data = 0;
+        if (!waveData->stimulus1.empty())
+            if (waveData->stimulus1[i]) data |= (0x01 << doChannelForStimulus1);
+        if (!waveData->stimulus2.empty())
+            if (waveData->stimulus2[i]) data |= (0x01 << doChannelForStimulus2);
+        if (!waveData->stimulus3.empty())
+            if (waveData->stimulus3[i]) data |= (0x01 << doChannelForStimulus3);
+        if (!waveData->stimulus4.empty())
+            if (waveData->stimulus4[i]) data |= (0x01 << doChannelForStimulus4);
+        if (!waveData->laser1.empty())
+            if (waveData->laser1[i])    data |= (0x01 << doChannelForlaser1);
+        if (!waveData->laser2.empty())
+            if (waveData->laser2[i])    data |= (0x01 << doChannelForlaser2);
+        if (!waveData->camera1.empty())
+            if (waveData->camera1[i])   data |= (0x01 << doChannelForcamera1);
+        if (!waveData->camera2.empty())
+            if (waveData->camera2[i])   data |= (0x01 << doChannelForcamera2);
+        *++buf = data;
+    }
+    idx += readNum;
+    return readNum;
+}
+
+
+int DigitalOut::readConPulseToBuffer(int num)
+{
+    if (idx >= totalSample) return 0;
+    uInt32 * bufDo = dout->getOutputBuf();
+    uInt32 * buf = bufDo - 1;
+    int readNum = (idx + num < totalSample) ? num : totalSample - idx;
+    int end = idx + readNum;
+    QVector<QVector<int>> waveData(8);
+    conWaveData->readControlWaveform(waveData[doChannelForStimulus1], stimulus1, idx, end - 1, 1);
+    conWaveData->readControlWaveform(waveData[doChannelForStimulus2], stimulus2, idx, end - 1, 1);
+    conWaveData->readControlWaveform(waveData[doChannelForStimulus3], stimulus3, idx, end - 1, 1);
+    conWaveData->readControlWaveform(waveData[doChannelForStimulus4], stimulus4, idx, end - 1, 1);
+    conWaveData->readControlWaveform(waveData[doChannelForlaser1], laser1, idx, end - 1, 1);
+    conWaveData->readControlWaveform(waveData[doChannelForlaser2], laser2, idx, end - 1, 1);
+    conWaveData->readControlWaveform(waveData[doChannelForcamera1], camera1, idx, end - 1, 1);
+    conWaveData->readControlWaveform(waveData[doChannelForcamera2], camera2, idx, end - 1, 1);
+    for (unsigned i = 0; i < readNum; ++i) {
+        uInt32 data = 0;
+        for (int j = 0; j < 8; j++) {
+            if (!waveData[j].isEmpty())
+                if (waveData[j][i]) data |= (0x01 << j);
+        }
+        /*
+        if (!waveData[doChannelForStimulus1].isEmpty())
+            if (waveData[doChannelForStimulus1][i]) data |= (0x01 << doChannelForStimulus1);
+        if (!waveData[doChannelForStimulus2].isEmpty())
+            if (waveData[doChannelForStimulus2][i]) data |= (0x01 << doChannelForStimulus2);
+        if (!waveData[doChannelForStimulus3].isEmpty())
+            if (waveData[doChannelForStimulus3][i]) data |= (0x01 << doChannelForStimulus3);
+        if (!waveData[doChannelForStimulus4].isEmpty())
+            if (waveData[doChannelForStimulus4][i]) data |= (0x01 << doChannelForStimulus4);
+        if (!waveData[doChannelForlaser1].isEmpty())
+            if (waveData[doChannelForlaser1][i])    data |= (0x01 << doChannelForlaser1);
+        if (!waveData[doChannelForlaser2].isEmpty())
+            if (waveData[doChannelForlaser2][i])    data |= (0x01 << doChannelForlaser2);
+        if (!waveData[doChannelForcamera1].isEmpty())
+            if (waveData[doChannelForcamera1][i])   data |= (0x01 << doChannelForcamera1);
+        if (!waveData[doChannelForcamera2].isEmpty())
+            if (waveData[doChannelForcamera2][i])   data |= (0x01 << doChannelForcamera2);
+            */
+        *++buf = data;
+    }
+    idx += readNum;
+    return readNum;
+}
+
+bool DigitalOut::prepareCmd(WaveData *waveData, string clkName)
+{
+    bool retVal;
+
+    totalSample = waveData->sampleNum;
+
+    if (dout) delete dout;
+    dout = new NiDaqDo(doname);
+
+    // DO uses AO sampling clock
+    retVal = dout->cfgTiming(waveData->sampleRate, totalSample, clkName);
+    if(!retVal)
+        return false;
+
+    if (dout->isError()) {
+        lastErrorMsg = "prepareCmd: failed to configure timing";
+        return false;
+    }
+
+    idx = 0;
+    readPulseToBuffer(totalSample);
+
+    dout->updateOutputBuf();
+
+    return true;
+}//prepareCmd(),
+
+void DigitalOut::writeNextSamples(void)
+{
+    readConPulseToBuffer(blockSize);
+    dout->updateOutputBuf(blockSize);
+    return;
+}
+
+bool DigitalOut::prepareCmdBuffered(WaveData *waveData, string clkName)
+{
+    this->waveData = waveData;
+    totalSample = waveData->sampleNum;
+
+    if (dout) delete dout;
+    dout = new NiDaqDo(doname);
+
+    dout->cfgTimingBuffered(waveData->sampleRate, totalSample, clkName);
+    if (dout->isError()) {
+        lastErrorMsg = "DigitalOut::prepareCmdBuffered: failed to configure timing";
+        return false;
+    }
+
+    blockSize = dout->getBlockSize();
+    dout->setNSampleCallback(CallbackWrapper,this);
+    idx = 0;
+    dout->updateOutputBuf(readPulseToBuffer(2 * blockSize));
+
+    return true;
+}//prepareCmdBuffered(),
+
+bool DigitalOut::prepareCmdBuffered(ControlWaveform *conWaveData, string clkName)
+{
+    this->conWaveData = conWaveData;
+    totalSample = conWaveData->totalSampleNum;
+
+    if (dout) delete dout;
+    dout = new NiDaqDo(doname);
+
+    dout->cfgTimingBuffered(conWaveData->sampleRate, totalSample, clkName);
+    if (dout->isError()) {
+        lastErrorMsg = "DigitalOut::prepareCmdBuffered: failed to configure timing";
+        return false;
+    }
+
+    blockSize = dout->getBlockSize();
+    dout->setNSampleCallback(CallbackWrapper, this);
+    idx = 0;
+    dout->updateOutputBuf(readConPulseToBuffer(2 * blockSize));
+
+    return true;
+}//prepareCmdBuffered(),
+
+bool DigitalOut::runCmd()
+{
+    //start piezo movement (and may also trigger the camera):
+    dout->start(); //todo: check error
+
+    return true;
+}
+
+bool DigitalOut::waitCmd()
+{
+    //wait until piezo's orig position is reset
+    dout->wait(-1); //wait until DAQ task is finished
+                  //stop ao task:
+    dout->stop();
+
+    //wait 50ms to have Piezo settled (so ai thread can record its final position)
+    //Sleep(0.05 * 1000); // *1000: sec -> ms
+
+    return true;
+}
+
+bool DigitalOut::abortCmd()
+{
+    //stop ao task:
+    dout->stop();
+
+    return true;
+}
+
+void DigitalOut::cleanup()
+{
+    delete dout;
+    dout = nullptr;
+}
+
+bool DigitalOut::singleOut(int lineIndex, bool newValue)
+{
+    bool retVal;
+    if (!dout->isDone())
+        dout->stop();
+    retVal = dout->outputChannelOnce(lineIndex, newValue);
+    return retVal;
+}

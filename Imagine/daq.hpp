@@ -82,7 +82,8 @@ public:
    //for ai: size is input buf size,
    //for ao: size is #scans to acquire
    //todo: for DIO: size is ...
-   virtual bool cfgTiming(int scanRate, int size)=0;  
+   virtual bool cfgTiming(int scanRate, int size, string clkName)=0;
+   virtual bool setTrigger(string trigName)= 0;
 
    //start task
    virtual bool start()=0;
@@ -103,6 +104,13 @@ public:
 
    //get error msg
    virtual string getErrorMsg()=0;
+
+   //wait task until done
+   virtual bool wait(double timeToWait) = 0;
+
+   //query if task is done
+   virtual bool isDone() = 0;
+
 };//class, ScannableDaq
 
 //class: DAQ Analog Output
@@ -119,12 +127,6 @@ public:
 
    //write waveform to driver's buffer
    virtual bool updateOutputBuf()=0;
-
-   //wait task until done
-   virtual bool wait(double timeToWait)=0;
-
-   //query if task is done
-   virtual bool isDone()=0;
 
 };//class, DaqAo
 
@@ -159,8 +161,11 @@ public:
       data[lineIndex]=newValue;
    }//updateOutputBuf(),
 
+   virtual unsigned long* getOutputBuf() { return nullptr; }
+
    //output data to hardware
    virtual bool write()=0;
+
 };//class, NiDaqDo
 
 //read one sample

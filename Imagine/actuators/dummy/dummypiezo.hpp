@@ -35,10 +35,15 @@ public:
    }
 
    bool prepareCmd(bool useTrig);// { return true; }
+   bool prepareCmd(WaveData *waveData) { return true; }
+   bool prepareCmdBuffered(WaveData *waveData) { return true; }
+   bool prepareCmdBuffered(ControlWaveform *conWaveData) { return true; }
    double zpos2voltage(double um);
    bool runCmd(){ return true;}
    bool waitCmd(){ return true;}
    bool abortCmd(){ return true;}
+   string getSyncOut() { return "";};
+   string getClkOut() { return ""; };
 
 private:
     QString setuptype;
@@ -59,6 +64,8 @@ double DummyPiezo::zpos2voltage(double um)
 
 bool DummyPiezo::prepareCmd(bool useTrig)
 {
+    return true; // block the below code
+
     int aoChannelForPiezo = 0; //TODO: put this configurable
     vector<int> aoChannels;
     aoChannels.push_back(aoChannelForPiezo);
@@ -104,10 +111,9 @@ bool DummyPiezo::prepareCmd(bool useTrig)
     int aoTTLHigh = toDigUnit(5.0);
     int aoTTLLow = toDigUnit(0);
     int test[1000] = { 0, }, mm = 0, mmm;
-    bufAo += nScans;
-    buf = bufAo;
+    buf = bufAo + nScans;
     for (int i = 0; i < nScans; i++) {
-        bufAo[i] = aoTTLLow;
+        buf[i] = aoTTLLow;
     }
     for (unsigned idx = 0; idx < movements.size(); ++idx) {
         const Movement& m = *movements[idx];
@@ -132,7 +138,25 @@ bool DummyPiezo::prepareCmd(bool useTrig)
         buf += nScansNow;
         mm += nScansNow;
     }
+
+    delete bufAo; // This is just dummy piezo. So, delete bufAo.
     return true;
 }
+
+
+class DummyDigitalOut : public DigitalControls {
+
+public:
+    bool prepareCmd(WaveData *waveData, string clkName) { return true; }
+    bool prepareCmdBuffered(WaveData *waveData, string clkName) { return true; }
+    bool prepareCmdBuffered(ControlWaveform *conWaveData, string clkName) { return true; }
+    bool runCmd() { return true; }
+    bool waitCmd() { return true; }
+    bool abortCmd() { return true; }
+    bool singleOut(int lineIndex, bool newValue) { return true; }
+
+private:
+
+};//class, DummyDigitalOut
 
 #endif //DUMMYPIEZO_HPP

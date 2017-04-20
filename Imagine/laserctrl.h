@@ -13,11 +13,16 @@ class Laser : public QObject {
 
 private:
     QString deviceName = NULL;
+    int maxFreq = 10;
 
 public:
-    Laser(const QString name) { deviceName = name; };
+    Laser(const QString name, int freq) {
+        deviceName = name;
+        maxFreq = freq;
+    };
     ~Laser() {};
-    QString getDeviceName (void) { return deviceName; };
+    QString getDeviceName(void) { return deviceName;}
+    int getMaxFreq(void) { return maxFreq;}
 };
 
 class LaserCtrlSerial: public QObject{

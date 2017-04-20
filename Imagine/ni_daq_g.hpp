@@ -34,6 +34,9 @@ using std::endl;
 #include "daq.hpp"
 
 
+
+typedef void(*DAQ_CALLBACK_FP)(void *);
+
 class NiDaq : public virtual Daq {
 protected:
    TaskHandle  taskHandle;
@@ -98,6 +101,21 @@ public:
 
       return errorMsg;
    }//getErrorMsg(),
+
+    //wait task until done
+   bool wait(double timeToWait) {
+       errorCode = DAQmxWaitUntilTaskDone(taskHandle, timeToWait);
+       return !isError();
+   }//wait(),
+
+    //query if task is done
+   bool isDone() {
+       bool32 result;
+       errorCode = DAQmxIsTaskDone(taskHandle, &result);
+
+       return result != 0;
+   }//isDone(),
+
 };//class, NiDaq
 
 //class: NI DAQ Analog Output
@@ -105,13 +123,23 @@ public:
 class NiDaqAo: public NiDaq, public DaqAo {
    sample_t *    dataU16; 
    float64 *    dataF64;
+   string   dev;
+   string trigOut;
+   string clkOut;
+   int blockSize;
 
 public:
+   static DAQ_CALLBACK_FP nSampleCallback;
+   static void *instance;
+
    //create ao channel and add the channel to task
    NiDaqAo(QString devstring, const vector<int> & chs): Daq(chs), NiDaq(chs), DaqAo(chs){
-      dataU16=0;
+ //     dataU16=0;
 	  dataF64 = 0;
-      string dev = devstring.toStdString();
+      dev = devstring.toStdString();
+//      trigOut.assign(dev).append("/StartTrigger");
+      trigOut="/"+dev+"/StartTrigger";
+      clkOut = "/" + dev + "/SampleClock";
       cout << "About to initialize AO device " << dev << endl;
       //string dev="Dev1/ao";
       string chanList=dev+toString(channels[0]);
@@ -148,18 +176,18 @@ public:
    //release mem
    virtual ~NiDaqAo(){
 	  if (dataF64) delete[] dataF64;
-      if(dataU16) delete[] dataU16;
+//      if(dataU16) delete[] dataU16;
    }//dtor,
 
    //set rate and duration, and allocate output buffer
    //return true if success or warning;
    //return false if error
    //note: you can check for error by checking return value OR call .isError() 
-   bool cfgTiming(int scanRate, int nScans){ //nScans: #scans to acquire
+   bool cfgTiming(int scanRate, int nScans, string clkName = ""){ //nScans: #scans to acquire
       this->scanRate=scanRate;
       this->nScans=nScans;
 
-      errorCode=DAQmxCfgSampClkTiming(taskHandle,NULL,
+      errorCode=DAQmxCfgSampClkTiming(taskHandle,clkName.c_str(),
          scanRate,
          DAQmx_Val_Rising,
          DAQmx_Val_FiniteSamps,
@@ -167,8 +195,8 @@ public:
          );
 
       //allocate output buffer
-      if(dataU16)delete[] dataU16;
-      dataU16=0;
+//      if(dataU16)delete[] dataU16;
+//      dataU16=0;
       dataU16=new uInt16[nScans*channels.size()];
 	  if (dataF64)delete[] dataF64;
 	  dataF64 = 0;
@@ -180,8 +208,8 @@ public:
       return !isError();
    }//cfgTiming(),
 
-   bool cfgTrigger() {
-       errorCode=DAQmxCfgDigEdgeStartTrig(taskHandle, "PFI0", DAQmx_Val_Rising);
+   bool setTrigger(string trigName) {
+       errorCode=DAQmxCfgDigEdgeStartTrig(taskHandle, trigName.c_str(), DAQmx_Val_Rising);
        return !isError();
    }//cfgTrigger
 
@@ -230,19 +258,96 @@ public:
       return !isError();
    }//updateOutputBuf(),
 
-   //wait task until done
-   bool wait(double timeToWait){
-      errorCode=DAQmxWaitUntilTaskDone(taskHandle, timeToWait);
-      return !isError();
-   }//wait(),
+   string getTrigOut() { return trigOut; }
+   string getClkOut() { return clkOut; }
 
-   //query if task is done
-   bool isDone(){
-      bool32 result;
-      errorCode=DAQmxIsTaskDone(taskHandle, &result);
+   /* Continuously buffered output mode
+   In this mode, buffer will be filled with a block of new data in every n sample event.
+   With this mode, we can output infinite numbers of data to the analog port.
+   We set the number n arbitrarily as scanRate.
+   1. cfgTimingBuffered()
+   2. setNSampleCallback()
+   3. copy initial two block of n samle data to dataU32[]
+   4. updateOutputBuf(blockSize*2)
+   5. Task start
+   */
+   bool cfgTimingBuffered(int scanRate, int nScans, string clkName = "") {
+       this->scanRate = scanRate;
+       this->nScans = nScans;
+       this->blockSize = scanRate*4;
 
-      return result!=0;
-   }//isDone(),
+       errorCode = DAQmxCfgSampClkTiming(taskHandle, clkName.c_str(),
+           scanRate,
+           DAQmx_Val_Rising,
+           DAQmx_Val_FiniteSamps,
+           nScans
+       );
+
+       //allocate output buffer
+       //      if(dataU16)delete[] dataU16;
+       //      dataU16=0;
+       dataU16 = new uInt16[nScans*channels.size()];
+       if (dataF64)delete[] dataF64;
+       dataF64 = 0;
+       dataF64 = new float64[blockSize * 2 *channels.size()];
+       if (!dataF64) {
+           throw ENoEnoughMem();
+       }
+
+       return !isError();
+   }//cfgTimingBuffered(),
+
+    // aoEveryNCallback : Callback function for every n sample event.
+    // These callback will work after registration using DAQmxRegisterEveryNSamplesEvent().
+    // To make this callback function be called for the first time,
+    // DAQmxWriteDigitalU32 should be called from outside first.
+    // When this DAQmxWriteDigitalU32 is called, two blocks of n samples should be written to the buffer.
+    // Once this callback is called, this function should call DAQmxWriteDigitalU32 repeatly.
+    // In these calls, one next block of n samples should be written to the buffer each time.
+    // Actually, this is a wrapper for customized callback function (nSampleCallback).
+    // This provide a required function format of this callback.
+   static int32 CVICALLBACK aoEveryNCallback(TaskHandle taskHandle, int32 everyNsamplesEventType,
+       uInt32 nSamples, void *callbackData)
+   {
+       if (nSampleCallback) {
+           nSampleCallback(instance);
+       }
+       return 0;
+   }
+
+   // This registers aoEveryNCallback to every N sample event.
+   bool setNSampleCallback(DAQ_CALLBACK_FP callback, void* ins) {
+       nSampleCallback = callback;
+       instance = ins;
+       errorCode = DAQmxRegisterEveryNSamplesEvent(taskHandle,
+           DAQmx_Val_Transferred_From_Buffer,
+           blockSize, 0, aoEveryNCallback, dataF64);
+       return !isError();
+   }//setNSampleCallback
+
+   bool updateOutputBuf(int numSample) {
+       cout << "in AO updateOutputBuf()" << endl;
+       int32 nScanWritten;
+       char  errBuff[2048] = { '\0' };
+       if (DAQmxFailed(errorCode = (DAQmxWriteAnalogF64(taskHandle,
+           numSample,
+           false,
+           DAQmx_Val_WaitInfinitely,
+           DAQmx_Val_GroupByChannel, //data layout, all samples for a channel then for another channel
+           dataF64,
+           &nScanWritten,
+           NULL
+       )))) goto Error;
+
+   Error:
+       if (DAQmxFailed(errorCode))
+           DAQmxGetExtendedErrorInfo(errBuff, 2048);
+
+       cout << "out AO updateOutputBuf()" << endl;
+       return !isError();
+   }//updateOutputBuf(int numSample),
+
+   int getBlockSize(void) { return blockSize; }
 
 };//class, NiDaqAo
 
@@ -310,10 +415,9 @@ public:
    }//dtor, NiDaqAi
 
    //set scan rate and driver's input buffer size in scans
-   bool cfgTiming(int scanRate, int bufSize){
+   bool cfgTiming(int scanRate, int bufSize, string clkName = ""){
       this->scanRate=scanRate;
-
-      errorCode=DAQmxCfgSampClkTiming(taskHandle,"",
+      errorCode=DAQmxCfgSampClkTiming(taskHandle, clkName.c_str(),
          scanRate,
          DAQmx_Val_Rising,
          DAQmx_Val_ContSamps,
@@ -323,13 +427,18 @@ public:
       return isSuc();
    }//cfgTiming(),
 
+   bool setTrigger(string trigName) {
+       errorCode = DAQmxCfgDigEdgeStartTrig(taskHandle, trigName.c_str(), DAQmx_Val_Rising);
+       return !isError();
+   }//cfgTrigger
+
    //read input from driver
    //bool read(int nScans, uInt16 * buf){
    bool read(int nScans, float64 * buf) {
 	  int32 nScansRead;
 	  errorCode=DAQmxReadAnalogF64(taskHandle,
 		  nScans, 
-		  DAQmx_Val_WaitInfinitely,    //timeToWait
+		  5,// timeToWait 5sec,  or DAQmx_Val_WaitInfinitely
 		  DAQmx_Val_GroupByScanNumber, //data layout, here save all data in scan by scan
 		  buf, 
 		  nScans*channels.size(), 
@@ -373,10 +482,17 @@ public:
 
 };//class, NiDaqAi
 
+
 class NiDaqDo: public NiDaq, public DaqDo {
+    uInt32*    dataU32; // burst out buffer
+    int blockSize;
+
 public:
-   //create DO channel and start the task
+    static DAQ_CALLBACK_FP nSampleCallback;
+    static void *instance;
+    //create DO channel and start the task
    NiDaqDo(QString devstring): Daq(vector<int>()), NiDaq(vector<int>()){
+      dataU32 = nullptr;
       string dev = devstring.toStdString();
       cout << "About to initialize DO device with " << dev << endl;
       errorCode=DAQmxCreateDOChan(taskHandle,dev.c_str(),"",DAQmx_Val_ChanForAllLines);
@@ -384,9 +500,9 @@ public:
          throw EInitDevice("exception when call DAQmxCreateDOChan()");
       }
 
-      if(!start()){
-         throw EInitDevice(string("exception when call DAQmxCreateDOChan():\n")+getErrorMsg());
-      }
+//      if(!start()){
+//         throw EInitDevice(string("exception when call DAQmxCreateDOChan():\n")+getErrorMsg());
+//      }
    }//ctor, NiDaqDo()
 
    //stop the task
@@ -394,6 +510,22 @@ public:
       stop();
    }//dtor, ~NiDaqDo()
 
+
+   // single output
+   bool outputChannelOnce(int lineIndex, bool newValue) {
+       assert(lineIndex >= 0 && lineIndex <= 7);
+       data[lineIndex] = newValue;
+       errorCode = DAQmxWriteDigitalLines(taskHandle,
+           1, //numSampsPerChan
+           1, //autoStart
+           10.0, //timeout: 10s
+           DAQmx_Val_GroupByChannel,//
+           data,
+           NULL, //sampsPerChanWritten
+           NULL);//reserved
+
+       return !isError();
+   }//write(),
 
    //output data to hardware
    bool write(){
@@ -409,7 +541,144 @@ public:
       return !isError();
    }//write(),
 
-   bool cfgTiming(int, int){ return true;} //do noting for Dig-out
+//   bool cfgTiming(int, int){ return true;} //do noting for Dig-out
+   bool cfgTiming(int scanRate, int nScans, string clkName = "") {
+       this->scanRate = scanRate;
+       this->nScans = nScans;
+
+       errorCode = DAQmxCfgSampClkTiming(taskHandle, clkName.c_str(),
+           scanRate,
+           DAQmx_Val_Rising,
+           DAQmx_Val_FiniteSamps,
+           nScans
+       );
+
+       //allocate output buffer
+       if (dataU32) delete[] dataU32;
+       dataU32 = new uInt32[nScans];
+       if (!dataU32) {
+           throw ENoEnoughMem();
+       }
+
+       return !isError();
+   }//cfgTiming(),
+
+   bool setTrigger(string trigName) {
+       if (trigName != "")
+           errorCode = DAQmxCfgDigEdgeStartTrig(taskHandle, trigName.c_str(), DAQmx_Val_Rising);
+       else
+           return false;
+       return !isError();
+   }//setTrigger
+
+   uInt32* getOutputBuf() {
+       return dataU32;
+   }//getOutputBuf()
+
+   bool updateOutputBuf() {
+       cout << "in DO updateOutputBuf()" << endl;
+       int32 nScanWritten;
+       char  errBuff[2048] = { '\0' };
+       if (DAQmxFailed(errorCode = (DAQmxWriteDigitalU32(taskHandle,
+           nScans,
+           false,
+           DAQmx_Val_WaitInfinitely,
+           DAQmx_Val_GroupByChannel, //data layout, all samples for a channel then for another channel
+           dataU32,
+           &nScanWritten,
+           NULL
+       )))) goto Error;
+
+   Error:
+       if (DAQmxFailed(errorCode))
+           DAQmxGetExtendedErrorInfo(errBuff, 2048);
+
+       cout << "out DO updateOutputBuf()" << endl;
+       return !isError();
+   }//updateOutputBuf(),
+
+   /* Continuously buffered output mode
+    In this mode, buffer will be filled with a block of new data in every n sample event.
+    With this mode, we can output infinite numbers of data to the digital port.
+    We set the number n arbitrarily as scanRate.
+    1. cfgTimingBuffered()
+    2. setNSampleCallback()
+    3. copy initial two block of n samle data to dataU32[]
+    4. updateOutputBuf(blockSize*2)
+    5. Task start
+    */
+   bool cfgTimingBuffered(int scanRate, int nScans, string clkName = "") {
+       this->scanRate = scanRate;
+       this->nScans = nScans;
+       this->blockSize = scanRate*4;
+       errorCode = DAQmxCfgSampClkTiming(taskHandle, clkName.c_str(),
+           scanRate,
+           DAQmx_Val_Rising,
+           DAQmx_Val_FiniteSamps,
+           nScans
+       );
+
+       //allocate output buffer
+       if (dataU32) delete[] dataU32;
+       dataU32 = new uInt32[blockSize * 2];
+       if (!dataU32) {
+           throw ENoEnoughMem();
+       }
+
+       return !isError();
+   }//cfgTimingBuffered(),
+
+    // doEveryNCallback : Callback function for every n sample event.
+    // These callback will work after registration using DAQmxRegisterEveryNSamplesEvent().
+    // To make this callback function be called for the first time,
+    // DAQmxWriteDigitalU32 should be called from outside first.
+    // When this DAQmxWriteDigitalU32 is called, two blocks of n samples should be written to the buffer.
+    // Once this callback is called, this function should call DAQmxWriteDigitalU32 repeatly.
+    // In these calls, one next block of n samples should be written to the buffer each time.
+    // Actually, this is a wrapper for customized callback function (nSampleCallback).
+    // This provide a required function format of this callback.
+   static int32 CVICALLBACK doEveryNCallback(TaskHandle taskHandle, int32 everyNsamplesEventType,
+       uInt32 nSamples, void *callbackData)
+   {
+       if (nSampleCallback) {
+           nSampleCallback(instance);
+       }
+       return 0;
+   }
+
+   // This registers aoEveryNCallback to every N sample event.
+   bool setNSampleCallback(DAQ_CALLBACK_FP callback, void* ins) {
+       nSampleCallback = callback;
+       instance = ins;
+       errorCode = DAQmxRegisterEveryNSamplesEvent(taskHandle,
+           DAQmx_Val_Transferred_From_Buffer,
+           blockSize, 0, doEveryNCallback, dataU32);
+       return !isError();
+   }//setNSampleCallback
+
+   bool updateOutputBuf(int numSample) {
+       cout << "in DO updateOutputBuf()" << endl;
+       int32 nScanWritten;
+       char  errBuff[2048] = { '\0' };
+       if (DAQmxFailed(errorCode = (DAQmxWriteDigitalU32(taskHandle,
+           numSample,
+           false,
+           DAQmx_Val_WaitInfinitely,
+           DAQmx_Val_GroupByChannel, //data layout, all samples for a channel then for another channel
+           dataU32,
+           &nScanWritten,
+           NULL
+       )))) goto Error;
+
+   Error:
+       if (DAQmxFailed(errorCode))
+           DAQmxGetExtendedErrorInfo(errBuff, 2048);
+
+       cout << "out DO updateOutputBuf()" << endl;
+       return !isError();
+   }//updateOutputBuf(int numSample),
+
+   int getBlockSize(void) { return blockSize; }
 
 };//class, NiDaqDo
 
@@ -493,6 +762,7 @@ public:
    int toDigUnit(double phyValue){
       return ao->toDigUnit(phyValue);
    }//toDigUnit(),
+
 };//class, NiDaqAoWriteOne 
 
 #endif //NI_DAQ_G_HPP

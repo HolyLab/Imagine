@@ -7,9 +7,10 @@ using namespace std;
 #include <QtSerialPort/QSerialPort>
 
 #include "ni_daq_g.hpp"
+#include "positioner.hpp"
 
 QSerialPort *port;
-extern DaqDo * digOut;
+extern DigitalControls * digOut;
 
 bool openShutterDevice(const QString& dev)
 {
@@ -118,8 +119,7 @@ bool setShutterStatus(int line, bool isOpen)
 //NOTE: line: 0-based numbering
 bool setDio(int line, bool isOpen)
 {
-    digOut->updateOutputBuf(line, isOpen);
-    digOut->write();
+    digOut->singleOut(line, isOpen);
 
     return true;
 }
