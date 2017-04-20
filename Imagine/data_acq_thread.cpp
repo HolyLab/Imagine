@@ -322,7 +322,6 @@ void DataAcqThread::run_acq_and_save()
         posOwner = (*parentImagine).ui.comboBoxPositionerOwner->currentText().toStdString();
     }
 
-    bool ownPos = false;
     if (!wTitle.compare("Imagine (2)") && !posOwner.compare("Camera 2")) {
         ownPos = true;
     }
