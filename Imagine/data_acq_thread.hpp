@@ -33,7 +33,6 @@ class QImage;
 class NiDaqAi;
 class Imagine;
 class CurveData;
-struct WaveData;
 
 class DataAcqThread : public WorkerThread
 {
@@ -104,7 +103,6 @@ public:
     CurveData *conLaserWavData;
     CurveData *conTTL1WavData;
     CurveData *conTTL2WavData;
-    WaveData *waveData;
     ControlWaveform *conWaveData;
     bool isUsingWav = false;
     int sampleRate;
@@ -133,7 +131,7 @@ signals:
 protected:
     void run();
     void run_acq_and_save();
-    void run_acq_and_save2();
+    void run_acq_and_save_wav();
     void run_live();
 
 private:

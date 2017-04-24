@@ -35,8 +35,6 @@ public:
    }
 
    bool prepareCmd(bool useTrig);// { return true; }
-   bool prepareCmd(WaveData *waveData) { return true; }
-   bool prepareCmdBuffered(WaveData *waveData) { return true; }
    bool prepareCmdBuffered(ControlWaveform *conWaveData) { return true; }
    double zpos2voltage(double um);
    bool runCmd(){ return true;}
@@ -147,8 +145,6 @@ bool DummyPiezo::prepareCmd(bool useTrig)
 class DummyDigitalOut : public DigitalControls {
 
 public:
-    bool prepareCmd(WaveData *waveData, string clkName) { return true; }
-    bool prepareCmdBuffered(WaveData *waveData, string clkName) { return true; }
     bool prepareCmdBuffered(ControlWaveform *conWaveData, string clkName) { return true; }
     bool runCmd() { return true; }
     bool waitCmd() { return true; }

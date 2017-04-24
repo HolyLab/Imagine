@@ -7,8 +7,6 @@
 #include "curvedata.h"
 #include "waveform.h"
 
-struct WaveData;
-
 class VolPiezo : public Positioner {
     string clkName;// use AO as trigger for DO and AI
 public:
@@ -35,8 +33,6 @@ public:
     bool addMovement(double from, double to, double duration, int trigger);
 
     bool prepareCmd(bool useTrigger);
-    bool prepareCmd(WaveData *waveData);
-    bool prepareCmdBuffered(WaveData *waveData);
     bool prepareCmdBuffered(ControlWaveform *conWaveData);
     bool runCmd();
     bool waitCmd();
@@ -60,7 +56,6 @@ private:
     QString setuptype;
     int idx;
     int blockSize;
-    WaveData *waveData;
     ControlWaveform *conWaveData = NULL;
     int totalSample;
 
@@ -88,8 +83,6 @@ public:
     }
     ~DigitalOut() { delete dout; dout = nullptr; }
 
-    bool prepareCmd(WaveData *waveData, string clkName);
-    bool prepareCmdBuffered(WaveData *waveData, string clkName);
     bool prepareCmdBuffered(ControlWaveform *conWaveData, string clkName);
     bool runCmd();
     bool waitCmd();
@@ -108,7 +101,6 @@ private:
     int idx;
     int blockSize;
     int totalSample;
-    WaveData *waveData;
     ControlWaveform *conWaveData = NULL;
 };//class, DigitalBurstOut
 

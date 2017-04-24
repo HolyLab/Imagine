@@ -145,22 +145,6 @@ bool DataAcqThread::preparePositioner(bool isForward, bool useTrigger)
 
 }
 
-bool DataAcqThread::prepareDAQ()
-{
-    string clkName;
-
-    if (pPositioner == NULL) {
-        return true;
-    }
-
-    pPositioner->prepareCmd(waveData);
-
-    digOut->prepareCmd(waveData, pPositioner->getClkOut());
-
-    return true;
-}
-
-
 bool DataAcqThread::prepareDaqBuffered()
 {
     string clkName;
@@ -201,9 +185,10 @@ void DataAcqThread::stopAcq()
 
 void DataAcqThread::run()
 {
-    if (isLive) run_live();
+    if (isLive)
+        run_live();
     else if(isUsingWav)
-        run_acq_and_save2();
+        run_acq_and_save_wav();
     else
         run_acq_and_save();
 
@@ -337,9 +322,6 @@ void DataAcqThread::run_acq_and_save()
 
     if (hasPos && ownPos) pPositioner->setPCount();
     bool useTrig = true;
-    if (isUsingWav)
-        useTrig = false;
-
     if (ownPos) preparePositioner(true, useTrig); //nec for volpiezo
 
     //prepare for AI:
@@ -418,7 +400,7 @@ nextStack:  //code below is repeated every stack
         .arg(stackStartTime, 10, 'f', 4) //width=10, fixed point, 4 decimal digits 
         );
     */
-    if (hasPos && ownPos && !isUsingWav) pPositioner->optimizeCmd(); //This function currently does nothing for voltage positioner.  Is this okay?
+    if (hasPos && ownPos) pPositioner->optimizeCmd(); //This function currently does nothing for voltage positioner.  Is this okay?
 
     bool isPiezo = hasPos && pPositioner->posType == PiezoControlPositioner;
     //open laser shutter
@@ -500,13 +482,12 @@ nextStack:  //code below is repeated every stack
         fireStimulus(stimuli[curStimIndex].first);
     }//if, should update stimulus
 
-    if (hasPos && ownPos && !isUsingWav) {
+    if (hasPos && ownPos) {
         pPositioner->waitCmd();
     }
 
 
     if (idxCurStack < this->nStacks && !stopRequested){
-        if (isUsingWav) goto nextStack;
         if (isBiDirectionalImaging && ownPos){
             preparePositioner(idxCurStack % 2 == 0, useTrig);
         }
@@ -587,7 +568,7 @@ nextStack:  //code below is repeated every stack
 
 }//run_acq_and_save()
 
-void DataAcqThread::run_acq_and_save2()
+void DataAcqThread::run_acq_and_save_wav()
 {
     Camera* camera = pCamera;
     Timer_g gt;
@@ -742,8 +723,15 @@ nextStack:  //code below is repeated every stack
         ofsAi->flush();
         digOut->abortCmd();
     }
+    //fire post-seq stimulus:
+    if (applyStim) {
+        int postSeqStim = 0; //TODO: get this value from stim file header
+        fireStimulus(postSeqStim);
+    }
     ///reset the actuator to its exact starting pos
     if (hasPos && ownPos) {
+        aiThread->stopAcq();
+        aiThread->save(*ofsAi);
         pPositioner->abortCmd(); //will wait on trigger pulse from camera
         emit newStatusMsgReady("Now resetting the actuator to its exact starting pos ...");
         emit resetActuatorPosReady();

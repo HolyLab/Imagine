@@ -410,7 +410,9 @@ bool CookeCamera::prepCameraOnce()
 
 bool CookeCamera::nextStack()
 {
-    while (!(workerThread->getIsPaused()) && !(stopRequested)) QThread::msleep(5); //could hinder performance
+    bool workerPaused = workerThread->getIsPaused();
+    while (!workerPaused && !stopRequested)
+        QThread::msleep(5); //could hinder performance
 
     if (!stopRequested) {
         workerThread->setIsPaused(false);

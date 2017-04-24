@@ -11,7 +11,6 @@ using std::vector;
 using std::string;
 
 class DataAcqThread;
-struct WaveData;
 
 // enum for the different types of positioners
 typedef enum e_PositionerType {
@@ -70,8 +69,6 @@ public:
     virtual bool testCmd(){ return true; }  // check if the movement sequence is valid (e.g., the timing)
 
     virtual bool prepareCmd(bool useTrigger) = 0; // after prepare, runCmd() will move it in real
-    virtual bool prepareCmd(WaveData *waveData) = 0; // after prepare, runCmd() will move it in real
-    virtual bool prepareCmdBuffered(WaveData *waveData) = 0;
     virtual bool prepareCmdBuffered(ControlWaveform *waveData) = 0;
     virtual void optimizeCmd(){} // reduce the delay between runCmd() and the time when the positioner reaches the start position
     virtual bool runCmd() = 0;  //NOTE: this is repeatable (i.e. once prepared, you can run same cmd more than once)
@@ -94,8 +91,6 @@ public:
     virtual ~DigitalControls() {}
 
     virtual string getLastErrorMsg() { return lastErrorMsg; }
-    virtual bool prepareCmd(WaveData *waveData, string clkName) = 0;
-    virtual bool prepareCmdBuffered(WaveData *waveData, string clkName) = 0;
     virtual bool prepareCmdBuffered(ControlWaveform *waveData, string clkName) = 0;
     virtual bool runCmd() = 0;
     virtual bool waitCmd() = 0;

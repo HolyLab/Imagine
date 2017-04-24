@@ -171,7 +171,6 @@ private:
     CurveData *conReadHeartbeatCurveData = NULL;
     vector<PiezoUiParam> piezoUiParams;
     QString m_OpenDialogLastDirectory;
-    WaveData *waveData;
     ControlWaveform *conWaveData = NULL;
 
     bool modified;
@@ -181,7 +180,6 @@ private:
     QString file=""; // config file name
     void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
     void updateStatus(ImagineStatus newStatus, ImagineAction newAction);
-    double zpos2voltage(double um); //z-position to piezo voltage
     void updateImage();
 	void updateHist(const Camera::PixelValue * frame,
         const int imageW, const int imageH);
@@ -204,7 +202,6 @@ private:
     void readSettings(QString file);
     void writeComments(QString file);
     void readComments(QString file);
-    void updateConWave(const int frameIdx, const int value);
     void ControlFileLoad(QByteArray &data1, QByteArray &data2);
     void updateControlWaveform_old(QString fn);
     void readControlWaveform(QString fn);

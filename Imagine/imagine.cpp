@@ -115,7 +115,7 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabWaveform));
     }
     else {  // Imagine(1)
-        waveData = new WaveData;
+        conWaveData = new ControlWaveform;
     }
     //adjust size
     QRect tRect = geometry();
@@ -408,9 +408,6 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
 
 Imagine::~Imagine()
 {
-    if (waveData)
-        delete waveData;
-
     if (conWaveData)
         delete conWaveData;
 
@@ -2378,15 +2375,16 @@ void Imagine::writeSettings(QString file)
     WRITE_SETTING(prefs, spinBoxDisplayAreaSize);
     prefs.endGroup();
 
-    prefs.beginGroup("Advanced");
-    WRITE_CHECKBOX_SETTING(prefs, cbPositionerWav);
-    WRITE_SETTING(prefs, spinBoxPiezoSampleRate);
-    WRITE_SETTING(prefs, spinBoxNumOfStacks);
-    WRITE_SETTING(prefs, spinBoxFramesPerStack);
-    WRITE_STRING_SETTING(prefs, lineEditConWaveFile);
-    prefs.endGroup();
-
     if (masterImagine == NULL) {
+        prefs.beginGroup("Waveform");
+        WRITE_CHECKBOX_SETTING(prefs, cbPositionerWav);
+        WRITE_SETTING(prefs, spinBoxPiezoSampleRate);
+        WRITE_SETTING(prefs, spinBoxSampleNumber);
+//        WRITE_SETTING(prefs, spinBoxNumOfStacks);
+//        WRITE_SETTING(prefs, spinBoxFramesPerStack);
+        WRITE_STRING_SETTING(prefs, lineEditConWaveFile);
+        prefs.endGroup();
+
         prefs.beginGroup("Laser");
         WRITE_CHECKBOX_SETTING(prefs, cbLine1);
         WRITE_SETTING(prefs, doubleSpinBox_aotfLine1);
@@ -2476,15 +2474,16 @@ void Imagine::readSettings(QString file)
     READ_SETTING(prefs, spinBoxDisplayAreaSize, ok, i, 0, Int);
     prefs.endGroup();
 
-    prefs.beginGroup("Advanced");
-    READ_BOOL_SETTING(prefs, cbPositionerWav, false);
-    READ_SETTING(prefs, spinBoxPiezoSampleRate, ok, i, 10000, Int);
-    WRITE_SETTING(prefs, spinBoxNumOfStacks, ok, i, 5, Int);
-    WRITE_SETTING(prefs, spinBoxFramesPerStack, ok, i, 20, Int);
-    READ_STRING_SETTING(prefs, lineEditConWaveFile, "");
-    prefs.endGroup();
-
     if (masterImagine == NULL) {
+        prefs.beginGroup("Waveform");
+        READ_BOOL_SETTING(prefs, cbPositionerWav, false);
+        READ_SETTING(prefs, spinBoxPiezoSampleRate, ok, i, 10000, Int);
+        READ_SETTING(prefs, spinBoxSampleNumber, ok, i, 100000, Int);
+//        WRITE_SETTING(prefs, spinBoxNumOfStacks, ok, i, 5, Int);
+//        WRITE_SETTING(prefs, spinBoxFramesPerStack, ok, i, 20, Int);
+        READ_STRING_SETTING(prefs, lineEditConWaveFile, "");
+        prefs.endGroup();
+
         prefs.beginGroup("Laser");
         READ_BOOL_SETTING(prefs, cbLine1, true); // READ_CHECKBOX_SETTING
         READ_SETTING(prefs, doubleSpinBox_aotfLine1, ok, d, 50.0, Double);
@@ -2755,137 +2754,6 @@ void Imagine::on_btnPzClosePort_clicked()
     ui.btnSendSerialCmd->setEnabled(false);
 }
 
-void Imagine::ControlFileLoad(QByteArray &data1, QByteArray &data2)
-{
-    BOOL data1_valid = (data1.size() != 0) ? true : false;
-    BOOL data2_valid = (data2.size() != 0) ? true : false;
-    QDataStream *dStream1, *dStream2;
-    unsigned short us;
-    vector <int> xpoint1;
-    vector <int> xpoint2;
-    vector <double> ypoint1;
-    vector <double> ypoint2;
-    double y1=0, y2=0, oldy1=0, oldy2=0, maxy=0;
-    int width;
-    int datasize;
-
-    if(data1_valid){
-        width = data1.size() / 2;
-        conPiezoCurveData = new CurveData(width); // parameter should not be xpoint.size()
-        dStream1 = new QDataStream(data1);
-//        dStream1->setByteOrder(QDataStream::LittleEndian);//BigEndian, LittleEndian
-    }
-    if (data2_valid) {
-        width = data2.size() / 2;
-        conShutterCurveData = new CurveData(width); // parameter should not be xpoint.size()
-        dStream2 = new QDataStream(data2);
-//        dStream2->setByteOrder(QDataStream::LittleEndian);//BigEndian, LittleEndian
-    }
-    piezoSpeedCurveData = new CurveData(width);
-    // first point
-    if(data1_valid){
-        (*dStream1) >> us; // piezo
-        y1 = static_cast<double>(us);
-        oldy1 = y1;
-        if(y1 > maxy) maxy = y1;
-        xpoint1.push_back(0);
-        ypoint1.push_back(y1);
-    }
-    if(data2_valid){
-        (*dStream2) >> us; // shutter
-        y2 = static_cast<double>(us);
-        oldy2 = y2;
-        if (y2 > maxy) maxy = y2;
-        xpoint2.push_back(0);
-        ypoint2.push_back(y2);
-    }
-    // next points except the last one
-    for (int i = 1; i < width-1; i++)
-    {
-        if (data1_valid) {
-            (*dStream1) >> us; // piezo (.ai file)
-            y1 = static_cast<double>(us);
-            if (y1 > maxy) maxy = y1;
-        }
-        if (data2_valid) {
-            (*dStream2) >> us; // piezo (.ai file)
-            y2 = static_cast<double>(us);
-            if (y2 > maxy) maxy = y2;
-        }
-        if ((oldy1 != y1) || (oldy2 != y2)) { // only save different one from previous point
-            if (data1_valid) {
-                if (xpoint1.back() != i - 1) {
-                    xpoint1.push_back(i - 1);
-                    ypoint1.push_back(y1);
-                }
-                xpoint1.push_back(i);
-                ypoint1.push_back(y1);
-            }
-            if (data2_valid) {
-                if (xpoint2.back() != i - 1) {
-                    xpoint2.push_back(i - 1);
-                    ypoint2.push_back(oldy2);
-                }
-                xpoint2.push_back(i);
-                ypoint2.push_back(y2);
-            }
-            oldy1 = y1;
-            oldy2 = y2;
-        }
-    }
-    // last point is always saved
-    if (data1_valid) {
-        (*dStream1) >> us;
-        y1 = static_cast<double>(us);
-        if (y1 > maxy) maxy = y1;
-        xpoint1.push_back(width-1);
-        ypoint1.push_back(y1);
-        datasize = xpoint1.size();
-    }
-    if (data2_valid) {
-        (*dStream2) >> us;
-        y2 = static_cast<double>(us);
-        if (y2 > maxy) maxy = y2;
-        xpoint2.push_back(width-1);
-        ypoint2.push_back(y2);
-        datasize = xpoint2.size();
-    }
-
-    for (int i = 0; i < datasize; i++)
-    {
-        if ((conPiezoCurveData) && (data1_valid))
-            conPiezoCurveData->append(static_cast<double>(xpoint1[i]), ypoint1[i]);
-        if ((conShutterCurveData) && (data2_valid))
-            conShutterCurveData->append(static_cast<double>(xpoint2[i]), ypoint2[i]);
-    }
-
-    if ((conPiezoCurveData) && (data1_valid)) {
-        conPiezoCurve->setData(conPiezoCurveData);
-        conWavPlot->setAxisScale(QwtPlot::xBottom, conPiezoCurveData->left(), conPiezoCurveData->right());
-    }
-    if ((conShutterCurveData) && (data2_valid)) {
-        conShutterCurve->setData(conShutterCurveData);
-        conWavPlot->setAxisScale(QwtPlot::xBottom, conShutterCurveData->left(), conShutterCurveData->right());
-    }
-    updataSpeedData(ui.spinBoxPiezoSampleRate->value());
-    piezoSpeedCurve->setData(piezoSpeedCurveData);
-    conWavPlot->setAxisScale(QwtPlot::yLeft, 0, maxy);
-    conWavPlot->replot();
-}
-
-void Imagine::updataSpeedData(int newValue)
-{
-    double xMax = conPiezoCurveData->right();
-    Positioner *pos = dataAcqThread->pPositioner;
-    double maxSpeed = pos->maxSpeed();
-    double sampleRate = static_cast<double>(newValue);
-    double piezoSpeedCurveMax = maxSpeed / sampleRate * xMax;
-    piezoSpeedCurveData->clear();
-    piezoSpeedCurveData->append(0., 0.);
-    piezoSpeedCurveData->append(xMax, piezoSpeedCurveMax);
-    conWavPlot->replot();
-}
-
 void Imagine::updataSpeedData(int newValue, int start, int end)
 {
     double sampleRate = static_cast<double>(newValue);
@@ -2899,35 +2767,6 @@ void Imagine::updataSpeedData(int newValue, int start, int end)
     piezoSpeedCurveData->append(dStart, 0.);
     piezoSpeedCurveData->append(dEnd, piezoSpeedCurveMax);
     conWavPlot->replot();
-}
-
-bool Imagine::convertJASONtoWave(vector<double> &wave, QJsonArray &jsonWave, int num)
-{
-    wave.begin();
-    if (!jsonWave.isEmpty()) {
-        for (int i = 0; i < num; ++i) {
-            wave.push_back(jsonWave[i].toDouble());
-        }
-        return true;
-    }
-    else
-        return false;
-}
-
-bool Imagine::convertJASONtoPulse(vector<int> &pulse, QJsonArray &jsonPulse, int num)
-{
-    pulse.begin();
-    if (!jsonPulse.isEmpty()) {
-        for (int i = 0; i < num; ++i) {
-            if (jsonPulse[i].toBool())
-                pulse.push_back(20);
-            else
-                pulse.push_back(0);
-        }
-        return true;
-    }
-    else
-        return false;
 }
 
 template<class Type> void Imagine::setCurveData(CurveData *curveData, QwtPlotCurve *curve,
@@ -2946,124 +2785,6 @@ template<class Type> void Imagine::setCurveData(CurveData *curveData, QwtPlotCur
         curveData->append(static_cast<double>(i), wave[(i - start) / factor]* amplitude + yoffset);
     curve->setData(curveData);
     conWavPlot->setAxisScale(QwtPlot::xBottom, curveData->left(), curveData->right());
-}
-
-void Imagine::updateControlWaveform_old(QString fn)
-{
-    enum SaveFormat {
-        Json, Binary
-    };
-    SaveFormat saveFormat;
-    QJsonObject alldata;
-    QJsonObject metadata;
-    QJsonObject analog;
-    QJsonObject digital;
-    QJsonArray piezo1Wave;
-    QJsonArray camera1Pulse;
-    QJsonArray laser1Pulse;
-    QJsonArray stimulus1Pulse;
-    QJsonArray stimulus2Pulse;
-    double exposureTime;
-    int nStacks;
-    int nFrames;
-    int retVal;
-    QFileInfo fi(fn);
-
-    m_OpenDialogLastDirectory = fi.absolutePath();
-    QString ext = fi.suffix();
-    if (ext == "json")
-        saveFormat = Json;
-    else if (ext == "bin")
-        saveFormat = Binary;
-    else {
-        QMessageBox::warning(this, tr("File name error."),
-            tr("File extention is not 'json' nor 'bin'."));
-        return;
-    }
-    QFile loadFile(fn);
-
-    if (!loadFile.open(QIODevice::ReadOnly)) {
-        qWarning("Couldn't open save file.");
-        return;
-    }
-
-    QByteArray loadData = loadFile.readAll();
-    QJsonDocument loadDoc(saveFormat == Json
-        ? QJsonDocument::fromJson(loadData)
-        : QJsonDocument::fromBinaryData(loadData));
-
-    // parsing
-    alldata = loadDoc.object();
-    metadata = alldata["metadata"].toObject();
-    analog = alldata["analog waveform"].toObject();
-    digital = alldata["digital pulse"].toObject();
-    waveData->sampleRate = metadata["sample rate"].toInt();
-    waveData->sampleNum = metadata["sample num"].toInt();
-    exposureTime = metadata["exposure"].toDouble();
-    nStacks = metadata["stacks"].toInt();
-    nFrames = metadata["frames"].toInt();
-    piezo1Wave = analog["piezo1"].toArray();
-    camera1Pulse = digital["camera1"].toArray();
-    laser1Pulse = digital["laser1"].toArray();
-    stimulus1Pulse = digital["stimulus1"].toArray();
-    stimulus2Pulse = digital["stimulus2"].toArray();
-
-    ui.spinBoxPiezoSampleRate->setValue(waveData->sampleRate);
-    ui.doubleSpinBoxExpTimeWav->setValue(exposureTime);
-    ui.spinBoxNumOfStacksWav->setValue(nStacks);
-    ui.spinBoxFramesPerStackWav->setValue(nFrames);
-
-    // read jason data to waveform data
-    retVal = convertJASONtoWave(waveData->piezo1, piezo1Wave, waveData->sampleNum);
-    if (retVal) {
-        // graph data setup with waveform data
-        conPiezoCurveData = new CurveData(waveData->sampleNum); // parameter should not be xpoint.size()
-        setCurveData(conPiezoCurveData, conPiezoCurve, waveData->piezo1, 0, waveData->sampleNum, 0);
-        ui.cbPiezoConWav->setChecked(true);
-    }
-    retVal = convertJASONtoPulse(waveData->camera1, camera1Pulse, waveData->sampleNum);
-    if (retVal) {
-        // graph data setup with waveform data
-        conShutterCurveData = new CurveData(waveData->sampleNum);
-        setCurveData(conShutterCurveData, conShutterCurve, waveData->camera1, 0, waveData->sampleNum, 0);
-        ui.cbCameraConWav->setChecked(true);
-    }
-    retVal = convertJASONtoPulse(waveData->laser1, laser1Pulse, waveData->sampleNum);
-    if (retVal) {
-        // graph data setup with waveform data
-        conLaserCurveData = new CurveData(waveData->sampleNum);
-        setCurveData(conLaserCurveData, conLaserCurve, waveData->laser1, 0, waveData->sampleNum, 20);
-        ui.cbLaserConWav->setChecked(true);
-    }
-    retVal = convertJASONtoPulse(waveData->stimulus1, stimulus1Pulse, waveData->sampleNum);
-    if (retVal) {
-        // graph data setup with waveform data
-        conTTL1CurveData = new CurveData(waveData->sampleNum);
-        setCurveData(conTTL1CurveData, conTTL1Curve, waveData->stimulus1, 0, waveData->sampleNum, 40);
-        ui.cbTTL1ConWav->setChecked(true);
-    }
-    retVal = convertJASONtoPulse(waveData->stimulus2, stimulus2Pulse, waveData->sampleNum);
-    if (retVal) {
-        // graph data setup with waveform data
-        conTTL2CurveData = new CurveData(waveData->sampleNum);
-        setCurveData(conTTL2CurveData, conTTL2Curve, waveData->stimulus2, 0, waveData->sampleNum,  60);
-        ui.cbTTL2ConWav->setChecked(true);
-    }
-
-    // graph data for piezo speed
-    piezoSpeedCurveData = new CurveData(waveData->sampleNum);
-    int left = 0, right = waveData->sampleNum;
-    ui.sbWavDsplyLeft->setValue(left);
-    ui.sbWavDsplyRight->setValue(right);
-    ui.sbWavDsplyLeft->setMinimum(0);
-    ui.sbWavDsplyLeft->setMaximum(right);
-    ui.sbWavDsplyRight->setMinimum(left);
-    ui.sbWavDsplyRight->setMaximum(waveData->sampleNum);
-    updataSpeedData(waveData->sampleRate, left, right);
-    piezoSpeedCurve->setData(piezoSpeedCurveData);
-    Positioner *pos = dataAcqThread->pPositioner;
-    conWavPlot->setAxisScale(QwtPlot::yLeft, 0, pos->maxPos() + 50);
-    conWavPlot->replot();
 }
 
 void Imagine::readControlWaveform(QString fn)
@@ -3147,7 +2868,6 @@ void Imagine::updateControlWaveform(int leftEnd, int rightEnd){
     dest.clear();
     retVal = conWaveData->readControlWaveform(dest, positioner1, leftEnd, rightEnd, factor);
     if (retVal) {
-        // graph data setup with waveform data
         if (conPiezoCurveData)
             delete conPiezoCurveData;
         conPiezoCurveData = new CurveData(conWaveData->totalSampleNum); // parameter should not be xpoint.size()
@@ -3157,7 +2877,6 @@ void Imagine::updateControlWaveform(int leftEnd, int rightEnd){
     dest.clear();
     retVal = conWaveData->readControlWaveform(dest, camera1, leftEnd, rightEnd, factor);
     if (retVal) {
-        // graph data setup with waveform data
         if (conShutterCurveData)
             delete conShutterCurveData;
         conShutterCurveData = new CurveData(conWaveData->totalSampleNum);
@@ -3167,7 +2886,6 @@ void Imagine::updateControlWaveform(int leftEnd, int rightEnd){
     dest.clear();
     retVal = conWaveData->readControlWaveform(dest, laser1, leftEnd, rightEnd, factor);
     if (retVal) {
-        // graph data setup with waveform data
         if (conLaserCurveData)
             delete conLaserCurveData;
         conLaserCurveData = new CurveData(conWaveData->totalSampleNum);
@@ -3177,7 +2895,6 @@ void Imagine::updateControlWaveform(int leftEnd, int rightEnd){
     dest.clear();
     retVal = conWaveData->readControlWaveform(dest, stimulus1, leftEnd, rightEnd, factor);
     if (retVal) {
-        // graph data setup with waveform data
         if (conTTL1CurveData)
             delete conTTL1CurveData;
         conTTL1CurveData = new CurveData(conWaveData->totalSampleNum);
@@ -3187,7 +2904,6 @@ void Imagine::updateControlWaveform(int leftEnd, int rightEnd){
     dest.clear();
     retVal = conWaveData->readControlWaveform(dest, stimulus2, leftEnd, rightEnd, factor);
     if (retVal) {
-        // graph data setup with waveform data
         if (conTTL2CurveData)
             delete conTTL2CurveData;
         conTTL2CurveData = new CurveData(conWaveData->totalSampleNum);
@@ -3211,7 +2927,8 @@ void Imagine::updateControlWaveform(int leftEnd, int rightEnd){
     ui.sbWavDsplyLeft->setMinimum(0);
     ui.sbWavDsplyLeft->setMaximum(rightEnd);
     ui.sbWavDsplyRight->setMinimum(leftEnd);
-    ui.sbWavDsplyRight->setMaximum(conWaveData->totalSampleNum - 1);
+    if(conWaveData->totalSampleNum>0)
+        ui.sbWavDsplyRight->setMaximum(conWaveData->totalSampleNum - 1);
 }
 
 void Imagine::on_btnConWavOpen_clicked()
@@ -3226,409 +2943,6 @@ void Imagine::on_btnConWavOpen_clicked()
     ui.lineEditConWaveFile->setText(wavFilename);
 
     readControlWaveform(wavFilename);
-}
-
-/**** JSON Data Structure of control waveform for OCPI ****
-    {
-        "metadata":{
-            "sample rate": 6000,
-            "sample num": 600000,
-            "exposure": 0.01,
-            "stacks": 9,
-            "frames": 20,
-        },
-        "analog waveform":{
-            "piezo": [1,2,,,],
-        },
-        "digital pulse":{
-            "exposure": [true,false,,,],
-            "laser": [true,false,,,],
-            "TTL1": [],
-            "TTL2": [true,false,,,]
-        }
-        "metadata": {
-            "exposure": 0.01,
-            "frames": 20,
-            "sample num": 168,
-            "sample rate": 1000,
-            "stacks": 5
-        }
-}
-**********************************************************/
-int genControlFileJSONold(void)
-{
-    enum SaveFormat {
-        Json, Binary
-    };
-    QJsonObject alldata;
-    QJsonObject metadata;
-    QJsonObject analog;
-    QJsonObject digital;
-    QJsonArray piezoWave;
-    QJsonArray expPulse;
-    QJsonArray laserPulse;
-    QJsonArray TTL1Pulse;
-    QJsonArray TTL2Pulse;
-    QVariantList* pzList = new QVariantList;    // QJsonArray::append() is too slow
-    QVariantList* camList = new QVariantList;   // So, we store data to QVariantList container first.
-    QVariantList* lsrList = new QVariantList;   // Then, we convert it using QJsonArray::fromVariantList
-    QVariantList* stmList = new QVariantList;   // to contain the data to QJsonArray.
-
-    qint16 piezo;
-    bool shutter, laser, ttl2;
-    double piezom1, piezo0, piezop1, piezoavg = 0.;
-    // Parameter
-    // ampleRate, tatalSamples, nStacks, nFrames
-    // 1000, 16800000, 19200, 20 (16800000/1000 = 16800sec = 4.6hr)
-    // 10000, 7000000, 800,20 (7000000/10000 = 700sec = 11.6min)
-    int sampleRate = 1000; // 2000
-    long totalSamples = 168;// 70000;
-    int nStacks = 5;// 8; // 5
-    int nFrames = 20;
-    double exposureTime = 0.01; // sec : 0.008 ~ 0.012 is optimal
-
-    // prepare data
-    metadata["sample rate"] = sampleRate;
-    metadata["sample num"] = totalSamples;
-    metadata["exposure"] = exposureTime;
-    metadata["stacks"] = nStacks;
-    metadata["frames"] = nFrames;
-
-    int perStackSamples = totalSamples / nStacks;
-    int piezoDelaySamples = sampleRate/100; // 4000
-    int piezoRisingSamples = 60 * (sampleRate/100);
-    int piezoFallingSamples = 20 * (sampleRate / 100);
-    double piezoStartPos = 100.;
-    double piezoStopPos = 400.;
-    int shutterControlMarginSamples = 5 * (sampleRate / 100); // shutter control begin and end from piezo start and stop
-    int stakShutterCtrlSamples = piezoRisingSamples - 2 * shutterControlMarginSamples;
-    int frameShutterCtrlSamples = stakShutterCtrlSamples / nFrames;
-    int exposureSamples = static_cast<int>(exposureTime*static_cast<double>(sampleRate));
-    if (exposureSamples>frameShutterCtrlSamples - 50*(sampleRate/10000))
-        return 1;
-    piezoavg = piezoStartPos;
-    ttl2 = false;
-    for (int i = 0; i < totalSamples; i++)
-    {
-        int ii = i % perStackSamples;
-        if ((ii >= piezoDelaySamples) && (ii < piezoDelaySamples + piezoRisingSamples)) {
-            piezoavg += (piezoStopPos - piezoStartPos) / static_cast<double>(piezoRisingSamples);
-        }
-        else if ((ii >= piezoDelaySamples + piezoRisingSamples) &&
-            (ii < piezoDelaySamples + piezoRisingSamples + piezoFallingSamples)) {
-            piezoavg -= (piezoStopPos - piezoStartPos) / static_cast<double>(piezoFallingSamples);
-        }
-        piezo = static_cast<qint16>(piezoavg + 0.5);
-        pzList->append(piezo);
-    }
-    piezoWave= QJsonArray::fromVariantList(*pzList);
-    delete pzList;
-
-    for (int i = 0; i < totalSamples; i++)
-    {
-        int ii = i % perStackSamples;
-        if ((ii >= piezoDelaySamples + shutterControlMarginSamples) &&
-            (ii <= piezoDelaySamples + piezoRisingSamples - shutterControlMarginSamples)) {
-            int j = (ii - piezoDelaySamples + shutterControlMarginSamples) % frameShutterCtrlSamples;
-            if ((j > 0) && (j <= exposureSamples)) { // (0.008~0.012sec)*(sampling rate) is optimal
-                shutter = true;
-            }
-            else {
-                shutter = false;
-            }
-        }
-        else {
-            shutter = false;
-        }
-        camList->append(shutter);
-        //        lsrList.append(laser);
-        //        stmList.append(ttl2);
-    }
-    expPulse = QJsonArray::fromVariantList(*camList);
-    delete camList;
-
-    for (int i = 0; i < totalSamples; i++)
-    {
-        int ii = i % perStackSamples;
-        if ((ii >= piezoDelaySamples + shutterControlMarginSamples) &&
-            (ii <= piezoDelaySamples + piezoRisingSamples - shutterControlMarginSamples)) {
-            laser = true;
-        }
-        else {
-            laser = false;
-        }
-        lsrList->append(laser);
-        //        stmList.append(ttl2);
-    }
-    laserPulse = QJsonArray::fromVariantList(*lsrList);
-    delete lsrList;
-
-    for (int i = 0; i < totalSamples; i++)
-    {
-        int ii = i % perStackSamples;
-        if ((ii >= piezoDelaySamples) && (ii < piezoDelaySamples + piezoRisingSamples)) {
-            ttl2 = true;
-        }
-        else if ((ii >= piezoDelaySamples + piezoRisingSamples) &&
-            (ii < piezoDelaySamples + piezoRisingSamples + piezoFallingSamples)) {
-            ttl2 = false;
-        }
-        else {
-            ttl2 = false;
-        }
-        stmList->append(ttl2);
-    }
-    TTL2Pulse = QJsonArray::fromVariantList(*stmList);
-    delete stmList;
-
-    analog["piezo1"] = piezoWave;
-    digital["camera1"] = expPulse;
-    digital["laser1"] = laserPulse;
-    digital["stimulus1"] = TTL1Pulse;
-    digital["stimulus2"] = TTL2Pulse;
-    alldata["metadata"] = metadata;
-    alldata["analog waveform"] = analog;
-    alldata["digital pulse"] = digital;
-
-    // save data
-    SaveFormat saveFormat = Json;// Binary;
-    QFile saveFile(saveFormat == Json
-        ? QStringLiteral("controls.json")
-        : QStringLiteral("controls.bin"));
-    if (!saveFile.open(QIODevice::WriteOnly)) {
-        qWarning("Couldn't open save file.");
-        return false;
-    }
-    QJsonDocument saveDoc(alldata);
-    saveFile.write(saveFormat == Json
-        ? saveDoc.toJson()
-        : saveDoc.toBinaryData());
-    return 0;
-}
-
-/**** JSON Data Structure of control waveform for OCPI ****
-{
-    "version": "v1.0",
-    "analog waveform":{
-        "positioner1": [5, "positioner1_001", 2, "positioner1_002",,,] // [repeat time1, wave name1, repeat time2, wave name2,,,]
-    },
-    "digital pulse":{
-        "camera1": [5, "camera1_001",,,],   "_comment": "[repeat time1, wave name1, repeat time2, wave name2,,,]",
-        "laser1": [5, "laser1_001",,,],
-        "stimulus1": [5, "stimulus1_001",,,]
-    }
-    "metadata":{
-    "frames": 20
-        "bi-direction": false,
-        "exposure": 0.01,
-        "frames": 20,
-        "sample num": 600000,
-        "stacks": 9
-    },
-    "wave list":{ "_comment": "We use run length code [runs,value,runs,value,,,]",
-        "camera1_001":[20, 1,,,],
-        "camera1_002":[20, 1,,,],
-        "laser1_001":[20, 1,,,],
-        "laser1_002":[20, 1,,,],
-        "positioner1_001":[20, 100,,,],
-        "positioner1_002":[20, 100,,,]
-    }
-}
-**********************************************************/
-void genWaveform(QJsonArray &jarray, double startPos, double stopPos, int nDelay, int nRising, int nFalling, int nTotal)
-{
-    QVariantList* list = new QVariantList;
-    qint16 wav, wavPrev;
-    int runLength = 0;
-    double  avg = startPos;
-
-    for (int i = 0; i < nTotal; i++)
-    {
-        int ii = i % nTotal;
-        if ((ii >= nDelay) && (ii < nDelay + nRising)) {
-            avg += (stopPos - startPos) / static_cast<double>(nRising);
-        }
-        else if ((ii >= nDelay + nRising) &&
-            (ii < nDelay + nRising + nFalling)) {
-            avg -= (stopPos - startPos) / static_cast<double>(nFalling);
-        }
-        wav = static_cast<qint16>(avg + 0.5);
-        if ((wav != wavPrev)&&i) {
-            list->append(runLength);
-            list->append(wavPrev);
-            runLength = 1;
-        }
-        else {
-            runLength++;
-        }
-        wavPrev = wav;
-    }
-    list->append(runLength);
-    list->append(wavPrev);
-    // QJsonArray::append() is too slow
-    // So, we store data to QVariantList container first.
-    // Then, we convert it using QJsonArray::fromVariantList
-    // to contain the data to QJsonArray.
-    jarray =  QJsonArray::fromVariantList(*list);
-    delete list;
-}
-
-void genPulse(QJsonArray &jarray, int nDelay, int nRising, int nFalling, int nTotal, int nMargin, int nShutter, int nExposure)
-{
-    QVariantList* list = new QVariantList;
-    int pulse, pulsePrev;
-    int runLength = 0;
-
-    for (int i = 0; i < nTotal; i++)
-    {
-        int ii = i % nTotal;
-        if ((ii >= nDelay + nMargin) &&
-            (ii < nDelay + nRising - nMargin)) {
-            int j = (ii - nDelay - nMargin) % nShutter;
-            if ((j >= 0) && (j <= nExposure)) {
-                pulse = 1;
-            }
-            else {
-                pulse = 0;
-            }
-        }
-        else if ((ii >= nDelay + nRising - nMargin) &&
-            (ii < nDelay + nRising + nFalling)) {
-            pulse = 0;
-        }
-        else {
-            pulse = 0;
-        }
-        if ((pulse != pulsePrev)&&i) {
-            list->append(runLength);
-            list->append(pulsePrev);
-            runLength = 1;
-        }
-        else {
-            runLength++;
-        }
-        pulsePrev = pulse;
-    }
-    list->append(runLength);
-    list->append(pulsePrev);
-    jarray = QJsonArray::fromVariantList(*list);
-    delete list;
-}
-
-int genControlFileJSON(void)
-{
-    enum SaveFormat {
-        Json, Binary
-    };
-    QString version = "v1.0";
-    QJsonObject alldata;
-    QJsonObject metadata;
-    QJsonObject analog;
-    QJsonObject digital;
-    QJsonObject wavelist;
-    QJsonArray piezo1_001, piezo1_002;
-    QJsonArray camera1_001, camera1_002;
-    QJsonArray laser1_001, laser1_002;
-    QJsonArray stimulus1_001, stimulus1_002;
-    QJsonArray stimulus2_001, stimulus2_002;
-    QJsonArray piezo1, camera1, laser1, stimulus1, stimulus2;
-    QJsonArray piezo2, camera2, laser2, stimulus3, stimulus4;
-
-    qint16 piezo;
-    bool shutter, laser, ttl2;
-    double piezom1, piezo0, piezop1, piezoavg = 0.;
-    // Parameter
-    // ampleRate, tatalSamples, nStacks, nFrames
-    // 1000, 16800000, 19200, 20 (16800000/1000 = 16800sec = 4.6hr)
-    // 10000, 7000000, 800, 20 (7000000/10000 = 700sec = 11.6min)
-    int sampleRate = 10000; // 2000
-    long totalSamples = 70000;// 70000;
-    int nStacks = 8;// 8; // 5
-    int nFrames = 20;
-    double exposureTime = 0.01; // sec : 0.008 ~ 0.012 is optimal
-    bool bidirection = false;
-    // prepare data
-    metadata["sample rate"] = sampleRate;
-    metadata["sample num"] = totalSamples;
-    metadata["exposure"] = exposureTime;
-    metadata["bi-direction"] = bidirection;
-    metadata["stacks"] = nStacks;
-    metadata["frames"] = nFrames;
-
-    int perStackSamples = totalSamples / nStacks;
-    int piezoDelaySamples = sampleRate / 100; // 4000
-    int piezoRisingSamples = 60 * (sampleRate / 100);
-    int piezoFallingSamples = 20 * (sampleRate / 100);
-    double piezoStartPos = 100.;
-    double piezoStopPos = 400.;
-    int shutterControlMarginSamples = 5 * (sampleRate / 100); // shutter control begin and end from piezo start and stop
-    int stakShutterCtrlSamples = piezoRisingSamples - 2 * shutterControlMarginSamples; // full stack period sample number
-    int frameShutterCtrlSamples = stakShutterCtrlSamples / nFrames;     // one frame sample number
-    int exposureSamples = static_cast<int>(exposureTime*static_cast<double>(sampleRate));  // (0.008~0.012sec)*(sampling rate) is optimal
-
-    if (exposureSamples>frameShutterCtrlSamples - 50 * (sampleRate / 10000))
-        return 1;
-    piezoavg = piezoStartPos;
-    ttl2 = false;
-
-     genWaveform(piezo1_001, piezoStartPos, piezoStopPos, piezoDelaySamples,
-        piezoRisingSamples, piezoFallingSamples, perStackSamples);
-     genWaveform(piezo1_002, piezoStartPos, piezoStopPos, piezoDelaySamples,
-        piezoFallingSamples, piezoRisingSamples, perStackSamples);
-     genPulse(camera1_001, piezoDelaySamples, piezoRisingSamples, piezoFallingSamples, perStackSamples,
-        shutterControlMarginSamples, frameShutterCtrlSamples, exposureSamples);
-     genPulse(camera1_002, piezoDelaySamples, piezoFallingSamples, piezoRisingSamples, perStackSamples,
-        shutterControlMarginSamples, frameShutterCtrlSamples, exposureSamples);
-     genPulse(laser1_001, piezoDelaySamples, piezoRisingSamples, piezoFallingSamples, perStackSamples,
-        shutterControlMarginSamples, frameShutterCtrlSamples, frameShutterCtrlSamples);
-     genPulse(laser1_002, piezoDelaySamples, piezoFallingSamples, piezoRisingSamples, perStackSamples,
-        shutterControlMarginSamples, frameShutterCtrlSamples, frameShutterCtrlSamples);
-     genPulse(stimulus1_001, piezoDelaySamples, piezoRisingSamples, piezoFallingSamples, perStackSamples,
-        0, frameShutterCtrlSamples, frameShutterCtrlSamples);
-     genPulse(stimulus1_002, piezoDelaySamples, piezoFallingSamples, piezoRisingSamples, perStackSamples,
-        0, frameShutterCtrlSamples, frameShutterCtrlSamples);
-
-    wavelist["positioner1_001"] = piezo1_001;
-    wavelist["positioner1_002"] = piezo1_002;
-    wavelist["camera1_001"] = camera1_001;
-    wavelist["camera1_002"] = camera1_002;
-    wavelist["laser1_001"] = laser1_001;
-    wavelist["laser1_002"] = laser1_002;
-    wavelist["stimulus1_001"] = stimulus1_001;
-    wavelist["stimulus1_002"] = stimulus1_002;
-    wavelist["stimulus2_001"] = stimulus2_001;
-    wavelist["stimulus2_002"] = stimulus2_002;
-    piezo1 = { 3, "positioner1_001", 2, "positioner1_001", nStacks - 3 - 2, "positioner1_001"};
-    camera1 = { 3, "camera1_001", 2, "camera1_001", nStacks - 3 - 2, "camera1_001"};
-    camera2 = { 3, "camera1_001", 2, "camera1_001", nStacks - 3 - 2, "camera1_001" };
-    laser1 = { 3, "laser1_001", 2, "laser1_001", nStacks - 3 - 2, "laser1_001"};
-    stimulus1 = { 3, "stimulus1_001", 2, "stimulus1_001", nStacks - 3 - 2, "stimulus1_001"};
-    analog["positioner1"] = piezo1;
-    digital["camera1"] = camera1;
-    digital["camera2"] = camera2;
-    digital["laser1"] = laser1;
-    digital["stimulus1"] = stimulus1;
-    digital["stimulus2"] = stimulus2;
-    alldata["metadata"] = metadata;
-    alldata["analog waveform"] = analog;
-    alldata["digital pulse"] = digital;
-    alldata["wave list"] = wavelist;
-    alldata["version"] = version;
-
-    // save data
-    SaveFormat saveFormat = Binary;// Binary;Json
-    QFile saveFile(saveFormat == Json
-        ? QStringLiteral("controls.json")
-        : QStringLiteral("controls.bin"));
-    if (!saveFile.open(QIODevice::WriteOnly)) {
-        qWarning("Couldn't open save file.");
-        return false;
-    }
-    QJsonDocument saveDoc(alldata);
-    saveFile.write(saveFormat == Json
-        ? saveDoc.toJson()
-        : saveDoc.toBinaryData());
-    return 0;
 }
 
 void Imagine::on_btnReadWavOpen_clicked()
@@ -3812,7 +3126,6 @@ void Imagine::on_sbWavDsplyRight_valueChanged(int value)
     int left = ui.sbWavDsplyLeft->value();
     ui.sbWavDsplyLeft->setMaximum(value);
     updateControlWaveform(left, value);
-    // conWavPlot->setAxisScale(QwtPlot::xBottom, left, value);
     conWavPlot->replot();
 }
 
@@ -3821,21 +3134,22 @@ void Imagine::on_sbWavDsplyLeft_valueChanged(int value)
     int right = ui.sbWavDsplyRight->value();
     ui.sbWavDsplyRight->setMinimum(value);
     updateControlWaveform(value, right);
-//    conWavPlot->setAxisScale(QwtPlot::xBottom, value, right);
     conWavPlot->replot();
 }
 
 void Imagine::on_btnWavDsplyReset_clicked()
 {
     ui.sbWavDsplyLeft->setValue(0);
-//    on_sbWavDsplyLeft_valueChanged(0);
     ui.sbWavDsplyRight->setValue(conWaveData->totalSampleNum - 1);
-//    on_sbWavDsplyRight_valueChanged(conWaveData->totalSampleNum - 1);
 }
 
 void Imagine::on_spinBoxPiezoSampleRate_valueChanged(int newValue)
 {
-    if (piezoSpeedCurveData&&conPiezoCurveData) updataSpeedData(newValue);
+    if (piezoSpeedCurveData&&conPiezoCurveData) {
+        int left = ui.sbWavDsplyLeft->value();
+        int right = ui.sbWavDsplyRight->value();
+        updataSpeedData(newValue, left, right);
+    }
 }
 
 #pragma endregion

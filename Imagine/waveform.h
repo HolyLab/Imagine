@@ -1,3 +1,32 @@
+/**** JSON Data Structure of control waveform for OCPI ****
+{
+    "version": "v1.0",
+    "analog waveform":{
+        "positioner1": [5, "positioner1_001", 2, "positioner1_002",,,]
+    },
+    "digital pulse":{
+        "camera1": [5, "camera1_001",,,],   "_comment": "[repeat time1, wave name1, repeat time2, wave name2,,,]",
+        "laser1": [5, "laser1_001",,,],
+        "stimulus1": [5, "stimulus1_001",,,]
+    }
+    "metadata":{
+        "frames": 20
+        "bi-direction": false,
+        "exposure": 0.01,
+        "frames": 20,
+        "sample num": 600000,
+        "stacks": 9
+    },
+    "wave list":{ "_comment": "We use run length code [runs,value,runs,value,,,]",
+        "camera1_001":[20, 1,,,],
+        "camera1_002":[20, 1,,,],
+        "laser1_001":[20, 1,,,],
+        "laser1_002":[20, 1,,,],
+        "positioner1_001":[20, 100,,,],
+        "positioner1_002":[20, 100,,,]
+    }
+}
+**********************************************************/
 #ifndef WAVEFORM_H
 #define WAVEFORM_H
 
@@ -9,6 +38,8 @@
 using namespace std;
 
 #define MAX_NUM_WAVEFORM 100
+
+int genControlFileJSON(void);
 
 typedef enum {
     positioner1,
@@ -44,12 +75,12 @@ private:
 
 public:
     QString version;
-    int sampleRate;
-    int totalSampleNum;
-    int nStacks;
-    int nFrames;
-    double exposureTime;
-    bool bidirection;
+    int sampleRate = 10000;
+    int totalSampleNum = 0;
+    int nStacks = 0;
+    int nFrames = 0;
+    double exposureTime = 0;
+    bool bidirection = false;
 
     ControlWaveform();
     ~ControlWaveform();
@@ -62,105 +93,7 @@ public:
     bool getCtrlSampleValue(ControlSignal name, int idx, int &value);
     int positionerSpeedCheck(int maxSpeed, ControlSignal name);
     int laserSpeedCheck(double maxFreq, ControlSignal name);
+
 }; // ControlWaveform
 
-class WaveData : public QObject {
-    Q_OBJECT
-
-public:
-    int sampleNum;
-    int sampleRate;
-    vector<double> piezo1;
-    vector<double> piezo2;
-    vector<int> camera1;
-    vector<int> camera2;
-    vector<int> laser1;
-    vector<int> laser2;
-    vector<int> laser3;
-    vector<int> laser4;
-    vector<int> laser5;
-    vector<int> stimulus1;
-    vector<int> stimulus2;
-    vector<int> stimulus3;
-    vector<int> stimulus4;
-    vector<int> stimulus5;
-    vector<int> stimulus6;
-    vector<int> stimulus7;
-    vector<int> stimulus8;
-    vector<vector<double>> waveList;
-    vector<vector<int>> pulseList;
-
-    WaveData(void) {
-        waveList.push_back(piezo1);
-        waveList.push_back(piezo2);
-        pulseList.push_back(camera1);
-        pulseList.push_back(camera2);
-        pulseList.push_back(laser1);
-        pulseList.push_back(laser2);
-        pulseList.push_back(laser3);
-        pulseList.push_back(laser4);
-        pulseList.push_back(laser5);
-        pulseList.push_back(stimulus1);
-        pulseList.push_back(stimulus2);
-        pulseList.push_back(stimulus3);
-        pulseList.push_back(stimulus4);
-        pulseList.push_back(stimulus5);
-        pulseList.push_back(stimulus6);
-        pulseList.push_back(stimulus7);
-        pulseList.push_back(stimulus8);
-    }
-    ~WaveData() {}
-
-    bool isWavIndexValid(int index)
-    {
-        int listStart = static_cast<int>(ControlSignal::positioner1);
-        int listEnd = static_cast<int>(ControlSignal::positioner2);
-        if ((index < listStart) || (index > listEnd)) {
-            if (waveList[index].empty())
-                return false;
-        }
-        else
-            return false;
-    }
-
-    bool isPulseIndexValid(int index)
-    {
-        int listStart = static_cast<int>(ControlSignal::camera1);
-        int listEnd = static_cast<int>(ControlSignal::stimulus8);
-        if ((index < listStart) || (index > listEnd)) {
-            index -= listStart;
-            if (pulseList[index].empty())
-                return false;
-        }
-        else
-            return false;
-    }
-
-    bool readWaveform(qint16 *dest, ControlSignal idx, int begin, int end, int inc)
-    {
-        int index = static_cast<int>(idx);
-        if(!isWavIndexValid(index))
-            return false;
-
-        for (int i = begin; i <= end; i += inc)
-            if (i<waveList[index].size())
-                *dest++ = waveList[index][i];
-            else
-                *dest++ = waveList[index][waveList[index].size()-1];
-    }
-
-    bool readPulse(int *dest, ControlSignal idx, int begin, int end, int inc)
-    {
-        int index = static_cast<int>(idx);
-        if (!isPulseIndexValid(index))
-            return false;
-
-        index -= static_cast<int>(ControlSignal::camera1);
-        for (int i = begin; i <= end; i += inc)
-            if(i<pulseList[index].size())
-                *dest++ = pulseList[index][i];
-            else
-                *dest++ = pulseList[index][pulseList[index].size()-1];
-    }
-};
 #endif //WAVEFORM_H
