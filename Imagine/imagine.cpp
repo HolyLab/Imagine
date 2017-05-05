@@ -536,17 +536,6 @@ void Imagine::updateIntenCurve(const Camera::PixelValue * frame,
     intenPlot->replot();
 }//updateIntenCurve(),
 
-/*
-void Imagine::updateConWave(const int frameIdx, const int value)
-{
-    //TODO: if not visible, just return
-    conPiezoCurveData->append(frameIdx, value);
-    conPiezoCurve->setData(conPiezoCurveData);
-    conWavPlot->setAxisScale(QwtPlot::xBottom, conPiezoCurveData->left(), conPiezoCurveData->right());
-    conWavPlot->replot();
-}//updateConWave()
-*/
-
 void prepareCurve(QwtPlotCurve *curve, QwtPlot *plot,
     QwtText &xTitle, QwtText &yTitle, QColor color)
 {
@@ -633,17 +622,21 @@ void Imagine::preparePlots()
     QwtText xTitle("Sample index");
     QwtText yTitle("Position");
     conWavPlot = new QwtPlot;// (ui.frameConWav);
-    conPiezoCurve = new QwtPlotCurve("Positioner waveform");
-    conShutterCurve = new QwtPlotCurve("Shutter waveform");
-    conLaserCurve = new QwtPlotCurve("Laser waveform");
-    conTTL1Curve = new QwtPlotCurve("TTL1 waveform");
-    conTTL2Curve = new QwtPlotCurve("TTL2 waveform");
+    conAO1Curve = new QwtPlotCurve("AO1 waveform");
+    conAO2Curve = new QwtPlotCurve("AO2 waveform");
+    conDO1Curve = new QwtPlotCurve("DO1 waveform");
+    conDO2Curve = new QwtPlotCurve("DO2 waveform");
+    conDO3Curve = new QwtPlotCurve("DO3 waveform");
+    conDO4Curve = new QwtPlotCurve("DO4 waveform");
+    conDO5Curve = new QwtPlotCurve("DO5 waveform");
     piezoSpeedCurve = new QwtPlotCurve("Positioner max speed");
-    prepareCurve(conPiezoCurve, conWavPlot, xTitle, yTitle, Qt::red);
-    prepareCurve(conShutterCurve, conWavPlot, xTitle, yTitle, Qt::blue);
-    prepareCurve(conLaserCurve, conWavPlot, xTitle, yTitle, Qt::green);
-    prepareCurve(conTTL1Curve, conWavPlot, xTitle, yTitle, Qt::black);
-    prepareCurve(conTTL2Curve, conWavPlot, xTitle, yTitle, Qt::magenta);
+    prepareCurve(conAO1Curve, conWavPlot, xTitle, yTitle, Qt::red);
+    prepareCurve(conAO2Curve, conWavPlot, xTitle, yTitle, Qt::blue);
+    prepareCurve(conDO1Curve, conWavPlot, xTitle, yTitle, Qt::green);
+    prepareCurve(conDO2Curve, conWavPlot, xTitle, yTitle, Qt::black);
+    prepareCurve(conDO3Curve, conWavPlot, xTitle, yTitle, Qt::magenta);
+    prepareCurve(conDO4Curve, conWavPlot, xTitle, yTitle, Qt::darkGreen);
+    prepareCurve(conDO5Curve, conWavPlot, xTitle, yTitle, Qt::darkYellow);
     prepareCurve(piezoSpeedCurve, conWavPlot, xTitle, yTitle, Qt::cyan);
     ui.conWavLayout->addWidget(conWavPlot);
 
@@ -1333,44 +1326,10 @@ void Imagine::on_spinBoxVend_valueChanged(int newValue)
         ui.spinBoxVstart->setValue(maxROIVSize + 1 - newValue);
 }
 
-int piezoSpeedCheck(Positioner *pos, vector<double> wave, int sampleRate)
-{
-    int interval = 5;
-    double distance, time, speed;
-    int dataSize = wave.size();
-    for (int i = 0; i < dataSize - interval; i++) {
-        int ii = i%dataSize;
-        distance = (wave[ii + interval] - wave[ii]);
-        time = static_cast<double>(interval) / static_cast<double>(sampleRate); // sec
-        speed = distance / time; // piezostep/sec
-        if ((distance != 1) && (abs(speed) > pos->maxSpeed())) {
-            return 0;
-        }
-    }
-    return dataSize;
-}
-
-int laserSpeedCheck(double maxFreq, vector<int> wave, int sampleRate)
-{
-    int lastIdx = -1;
-    double freq, durationInSamples;
-    int dataSize = wave.size();
-    for (int i = 0; i < dataSize - 1; i++) {
-        if ((wave[i] == 0) && (wave[i+1] != 0)) { // check rising edge
-            durationInSamples = static_cast<double>(i - lastIdx);
-            freq = static_cast<double>(sampleRate) / durationInSamples;
-            if (freq > maxFreq)
-                return 0;
-            lastIdx = i;
-        }
-    }
-    return dataSize;
-}
-
 
 bool Imagine::waveformValidityCheck(void)
 {
-    int sampleNum, piezoSampleNum;
+    int sampleNum;
     bool piezoWaveEmpty = true;
     bool cameraWaveEmpty = true;
     bool laserWaveEmpty = false;
@@ -1386,61 +1345,99 @@ bool Imagine::waveformValidityCheck(void)
     laserWaveEmpty &= conWaveData->isEmpty(laser4);
     laserWaveEmpty &= conWaveData->isEmpty(laser5);
     if (piezoWaveEmpty || cameraWaveEmpty || laserWaveEmpty) {// at least one piezo and one camera and one laser should be exist
-        errorMsg.append("Control waveforms are not correctly loaded\n");
+        errorMsg.append("At least one positioner, one camera and one laser control waveform are needed\n");
     }
     else {
         // piezo speed check
         if (!conWaveData->isEmpty(positioner1)) {
             Positioner *pos = dataAcqThread->pPositioner;
-            piezoSampleNum = conWaveData->positionerSpeedCheck(pos->maxSpeed(), positioner1);
-            if (piezoSampleNum == -1) {
+            int retVal = conWaveData->positionerSpeedCheck(pos->maxSpeed(), positioner1, ui.spinBoxPiezoSampleRate->value(), sampleNum);
+            if (retVal == -1) {
                 errorMsg.append("Positioner 1 control is too fast\n");
             }
+            if (sampleNum != conWaveData->totalSampleNum)
+                errorMsg.append("Positioner 1 sample # is different from total sample #\n");
         }
         if (!conWaveData->isEmpty(positioner2)) {
             Positioner *pos = dataAcqThread->pPositioner; // should set with second positioner pointer
-            sampleNum = conWaveData->positionerSpeedCheck(pos->maxSpeed(), positioner2);
-            if (sampleNum == -1) {
+            int retVal = conWaveData->positionerSpeedCheck(pos->maxSpeed(), positioner2, ui.spinBoxPiezoSampleRate->value(), sampleNum);
+            if (retVal == -1) {
                 errorMsg.append("Positioner 2 control is too fast\n");
             }
-            else if (sampleNum != piezoSampleNum)
-                errorMsg.append("Positioner 2 sample # is different from positioner 1 sample #\n");
+            if (sampleNum != conWaveData->totalSampleNum)
+                errorMsg.append("Positioner 2 sample # is different from total sample #\n");
         }
         // laser speed check
         if (!conWaveData->isEmpty(laser1)) {
-            sampleNum = conWaveData->laserSpeedCheck(maxLaserFreq, laser1);  // OCPI-1 should be less then 25Hz
-            if (sampleNum == -1)
+            int retVal = conWaveData->laserSpeedCheck(maxLaserFreq, laser1, sampleNum);  // OCPI-1 should be less then 25Hz
+            if (retVal == -1)
                 errorMsg.append("Laser 1 control is too fast\n");
-            else if (sampleNum != piezoSampleNum)
-                errorMsg.append("Laser 1 sample # is different from piezo sample #\n");
+            if (sampleNum != conWaveData->totalSampleNum)
+                errorMsg.append("Laser 1 sample # is different from total sample #\n");
         }
         if (!conWaveData->isEmpty(laser2)) {
-            sampleNum = conWaveData->laserSpeedCheck(maxLaserFreq, laser2);
-            if (sampleNum == -1)
+            int retVal = conWaveData->laserSpeedCheck(maxLaserFreq, laser2, sampleNum);
+            if (retVal == -1)
                 errorMsg.append("Laser 2 control is too fast\n");
-            else if (sampleNum != piezoSampleNum)
-                errorMsg.append("Laser 2 sample # is different from piezo sample #\n");
+            if (sampleNum != conWaveData->totalSampleNum)
+                errorMsg.append("Laser 2 sample # is different from total sample #\n");
         }
         if (!conWaveData->isEmpty(laser3)) {
-            sampleNum = conWaveData->laserSpeedCheck(maxLaserFreq, laser3);
-            if (sampleNum == -1)
+            int retVal = conWaveData->laserSpeedCheck(maxLaserFreq, laser3, sampleNum);
+            if (retVal == -1)
                 errorMsg.append("Laser 3 control is too fast\n");
-            else if (sampleNum != piezoSampleNum)
-                errorMsg.append("Laser 3 sample # is different from piezo sample #\n");
+            if (sampleNum != conWaveData->totalSampleNum)
+                errorMsg.append("Laser 3 sample # is different from total sample #\n");
         }
         if (!conWaveData->isEmpty(laser4)) {
-            sampleNum = conWaveData->laserSpeedCheck(maxLaserFreq, laser4);
-            if (sampleNum == -1)
+            int retVal = conWaveData->laserSpeedCheck(maxLaserFreq, laser4, sampleNum);
+            if (retVal == -1)
                 errorMsg.append("Laser 4 control is too fast\n");
-            else if (sampleNum != piezoSampleNum)
-                errorMsg.append("Laser 4 sample # is different from piezo sample #\n");
+            if (sampleNum != conWaveData->totalSampleNum)
+                errorMsg.append("Laser 4 sample # is different from total sample #\n");
         }
         if (!conWaveData->isEmpty(laser5)) {
-            sampleNum = conWaveData->laserSpeedCheck(maxLaserFreq, laser5);
-            if (sampleNum == -1)
+            int retVal = conWaveData->laserSpeedCheck(maxLaserFreq, laser5, sampleNum);
+            if (retVal == -1)
                 errorMsg.append("Laser 5 control is too fast\n");
-            else if (sampleNum != piezoSampleNum)
-                errorMsg.append("Laser 5 sample # is different from piezo sample #\n");
+            if (sampleNum != conWaveData->totalSampleNum)
+                errorMsg.append("Laser 5 sample # is different from total sample #\n");
+        }
+        // Camera 1~2, Stimulus 1~5 sample number check
+        if (!conWaveData->isEmpty(camera1)) {
+            sampleNum = conWaveData->getCtrlSampleNum(camera1);
+            if (sampleNum != conWaveData->totalSampleNum)
+                errorMsg.append("Camera 1 sample # is different from total sample #\n");
+        }
+        if (!conWaveData->isEmpty(camera2)) {
+            sampleNum = conWaveData->getCtrlSampleNum(camera2);
+            if (sampleNum != conWaveData->totalSampleNum)
+                errorMsg.append("Camera 2 sample # is different from total sample #\n");
+        }
+        if (!conWaveData->isEmpty(stimulus1)) {
+            sampleNum = conWaveData->getCtrlSampleNum(stimulus1);
+            if (sampleNum != conWaveData->totalSampleNum)
+                errorMsg.append("Stimulus 1 sample # is different from total sample #\n");
+        }
+        if (!conWaveData->isEmpty(stimulus2)) {
+            sampleNum = conWaveData->getCtrlSampleNum(stimulus2);
+            if (sampleNum != conWaveData->totalSampleNum)
+                errorMsg.append("Stimulus 2 sample # is different from total sample #\n");
+        }
+        if (!conWaveData->isEmpty(stimulus3)) {
+            sampleNum = conWaveData->getCtrlSampleNum(stimulus3);
+            if (sampleNum != conWaveData->totalSampleNum)
+                errorMsg.append("Stimulus 3 sample # is different from total sample #\n");
+        }
+        if (!conWaveData->isEmpty(stimulus4)) {
+            sampleNum = conWaveData->getCtrlSampleNum(stimulus4);
+            if (sampleNum != conWaveData->totalSampleNum)
+                errorMsg.append("Stimulus 4 sample # is different from total sample #\n");
+        }
+        if (!conWaveData->isEmpty(stimulus5)) {
+            sampleNum = conWaveData->getCtrlSampleNum(stimulus5);
+            if (sampleNum != conWaveData->totalSampleNum)
+                errorMsg.append("Stimulus 5 sample # is different from total sample #\n");
         }
     }
     if (errorMsg != "") {
@@ -2754,7 +2751,7 @@ void Imagine::on_btnPzClosePort_clicked()
     ui.btnSendSerialCmd->setEnabled(false);
 }
 
-void Imagine::updataSpeedData(int newValue, int start, int end)
+void Imagine::updataSpeedData(CurveData *curveData, int newValue, int start, int end)
 {
     double sampleRate = static_cast<double>(newValue);
     double dStart = static_cast<double>(start);
@@ -2763,10 +2760,9 @@ void Imagine::updataSpeedData(int newValue, int start, int end)
     Positioner *pos = dataAcqThread->pPositioner;
     double maxSpeed = pos->maxSpeed();
     double piezoSpeedCurveMax = maxSpeed / sampleRate * width;
-    piezoSpeedCurveData->clear();
-    piezoSpeedCurveData->append(dStart, 0.);
-    piezoSpeedCurveData->append(dEnd, piezoSpeedCurveMax);
-    conWavPlot->replot();
+    curveData->clear();
+    curveData->append(dStart, 0.);
+    curveData->append(dEnd, piezoSpeedCurveMax);
 }
 
 template<class Type> void Imagine::setCurveData(CurveData *curveData, QwtPlotCurve *curve,
@@ -2837,6 +2833,7 @@ void Imagine::readControlWaveform(QString fn)
     bool isOk = conWaveData->loadJsonDocument(loadDoc);
 
     if (isOk) {
+        ui.cbPositionerWav->setChecked(true);
         ui.spinBoxPiezoSampleRate->setValue(conWaveData->sampleRate);
         ui.doubleSpinBoxExpTimeWav->setValue(conWaveData->exposureTime);
         ui.spinBoxNumOfStacksWav->setValue(conWaveData->nStacks);
@@ -2850,14 +2847,18 @@ void Imagine::readControlWaveform(QString fn)
     }
 }
 
-// read jason data to waveform data
-void Imagine::updateControlWaveform(int leftEnd, int rightEnd){
-
+bool Imagine::loadConWavDataAndPlot(int leftEnd, int rightEnd, int wavIdx)
+{
     int retVal;
     int curveDataSampleNum = 1000;
     int sampleNum = rightEnd - leftEnd + 1;
     int factor = sampleNum / curveDataSampleNum;
+    int amplitude, yoffset;
     QVector<int> dest;
+    ControlSignal sig;
+    CurveData *curveData = NULL;
+    QwtPlotCurve *curve;
+    QCheckBox *cBox;
 
     if (factor == 0) {
         curveDataSampleNum = sampleNum;
@@ -2865,58 +2866,89 @@ void Imagine::updateControlWaveform(int leftEnd, int rightEnd){
     }
     else
         curveDataSampleNum = sampleNum / factor;
-    dest.clear();
-    retVal = conWaveData->readControlWaveform(dest, positioner1, leftEnd, rightEnd, factor);
-    if (retVal) {
-        if (conPiezoCurveData)
-            delete conPiezoCurveData;
-        conPiezoCurveData = new CurveData(conWaveData->totalSampleNum); // parameter should not be xpoint.size()
-        setCurveData(conPiezoCurveData, conPiezoCurve, dest, leftEnd, rightEnd, factor, 1, 0);
-        ui.cbPiezoConWav->setChecked(true);
-    }
-    dest.clear();
-    retVal = conWaveData->readControlWaveform(dest, camera1, leftEnd, rightEnd, factor);
-    if (retVal) {
-        if (conShutterCurveData)
-            delete conShutterCurveData;
-        conShutterCurveData = new CurveData(conWaveData->totalSampleNum);
-        setCurveData(conShutterCurveData, conShutterCurve, dest, leftEnd, rightEnd, factor, 10, 0);
-        ui.cbCameraConWav->setChecked(true);
-    }
-    dest.clear();
-    retVal = conWaveData->readControlWaveform(dest, laser1, leftEnd, rightEnd, factor);
-    if (retVal) {
-        if (conLaserCurveData)
-            delete conLaserCurveData;
-        conLaserCurveData = new CurveData(conWaveData->totalSampleNum);
-        setCurveData(conLaserCurveData, conLaserCurve, dest, leftEnd, rightEnd, factor, 10, 20);
-        ui.cbLaserConWav->setChecked(true);
-    }
-    dest.clear();
-    retVal = conWaveData->readControlWaveform(dest, stimulus1, leftEnd, rightEnd, factor);
-    if (retVal) {
-        if (conTTL1CurveData)
-            delete conTTL1CurveData;
-        conTTL1CurveData = new CurveData(conWaveData->totalSampleNum);
-        setCurveData(conTTL1CurveData, conTTL1Curve, dest, leftEnd, rightEnd, factor, 10, 40);
-        ui.cbTTL1ConWav->setChecked(true);
-    }
-    dest.clear();
-    retVal = conWaveData->readControlWaveform(dest, stimulus2, leftEnd, rightEnd, factor);
-    if (retVal) {
-        if (conTTL2CurveData)
-            delete conTTL2CurveData;
-        conTTL2CurveData = new CurveData(conWaveData->totalSampleNum);
-        setCurveData(conTTL2CurveData, conTTL2Curve, dest, leftEnd, rightEnd, factor, 10, 60);
-        ui.cbTTL2ConWav->setChecked(true);
+
+    switch (wavIdx)
+    {
+        case 0: // AO1
+            sig = static_cast<ControlSignal>(ui.comboBoxAO1->currentIndex());
+            curve = conAO1Curve;
+            cBox = ui.cbAO1Wav;
+            amplitude = 1;
+            yoffset = 0;
+            break;
+        case 1: // AO2
+            sig = static_cast<ControlSignal>(ui.comboBoxAO2->currentIndex());
+            curve = conAO2Curve;
+            cBox = ui.cbAO2Wav;
+            amplitude = 1;
+            yoffset = 0;
+            break;
+        case 2: // DO1
+            sig = static_cast<ControlSignal>(ui.comboBoxDO1->currentIndex() + 2);
+            curve = conDO1Curve;
+            cBox = ui.cbDO1Wav;
+            amplitude = 10;
+            yoffset = 0;
+            break;
+        case 3: // DO2
+            sig = static_cast<ControlSignal>(ui.comboBoxDO2->currentIndex() + 2);
+            curve = conDO2Curve;
+            cBox = ui.cbDO2Wav;
+            amplitude = 10;
+            yoffset = 15;
+            break;
+        case 4: // DO3
+            sig = static_cast<ControlSignal>(ui.comboBoxDO3->currentIndex() + 2);
+            curve = conDO3Curve;
+            cBox = ui.cbDO3Wav;
+            amplitude = 10;
+            yoffset = 30;
+            break;
+        case 5: // DO4
+            sig = static_cast<ControlSignal>(ui.comboBoxDO4->currentIndex() + 2);
+            curve = conDO4Curve;
+            cBox = ui.cbDO4Wav;
+            amplitude = 10;
+            yoffset = 45;
+            break;
+        case 6: // DO5
+        default:
+            sig = static_cast<ControlSignal>(ui.comboBoxDO5->currentIndex() + 2);
+            curve = conDO5Curve;
+            cBox = ui.cbDO5Wav;
+            amplitude = 10;
+            yoffset = 60;
+            break;
     }
 
+    dest.clear();
+    retVal = conWaveData->readControlWaveform(dest, sig, leftEnd, rightEnd, factor);
+    if (retVal) {
+        curveData = new CurveData(conWaveData->totalSampleNum); // parameter should not be xpoint.size()
+        setCurveData(curveData, curve, dest, leftEnd, rightEnd, factor, amplitude, yoffset);
+        cBox->setChecked(true);
+        curve->show();
+        return true;
+    }
+    else {
+        curve->setData(NULL);
+        cBox->setChecked(false);
+        curve->hide();
+        return false;
+    }
+}
+
+// read jason data to waveform data
+void Imagine::updateControlWaveform(int leftEnd, int rightEnd)
+{
+    for (int i = 0; i < 7; i++)
+        loadConWavDataAndPlot(leftEnd, rightEnd, i);
+
     // graph data for piezo speed
-    if (piezoSpeedCurveData)
-        delete piezoSpeedCurveData;
-    piezoSpeedCurveData = new CurveData(conWaveData->totalSampleNum);
-    updataSpeedData(conWaveData->sampleRate, leftEnd, rightEnd);
-    piezoSpeedCurve->setData(piezoSpeedCurveData);
+    CurveData *curveData = NULL;
+    curveData = new CurveData(conWaveData->totalSampleNum);
+    updataSpeedData(curveData, ui.spinBoxPiezoSampleRate->value(), leftEnd, rightEnd);
+    piezoSpeedCurve->setData(curveData);
     Positioner *pos = dataAcqThread->pPositioner;
     conWavPlot->setAxisScale(QwtPlot::yLeft, 0, pos->maxPos() + 50);
     conWavPlot->replot();
@@ -3000,7 +3032,7 @@ void Imagine::on_btnReadWavOpen_clicked()
         if (y < miny) miny = y;
         conReadHeartbeatCurveData->append(static_cast<double>(i), y);
     }
-    //QRectF bound = conPiezoCurveData->boundingRect();
+    //QRectF bound = conAO1CurveData->boundingRect();
     conReadPiezoCurve->setData(conReadPiezoCurveData);
     conReadStimuliCurve->setData(conReadStimuliCurveData);
     conReadCameraCurve->setData(conReadCameraCurveData);
@@ -3066,59 +3098,123 @@ void Imagine::on_cbHeartReadWav_clicked(bool checked)
     }
 }
 
-void Imagine::on_cbPiezoConWav_clicked(bool checked)
+void Imagine::on_cbAO1Wav_clicked(bool state)
 {
-    if (conPiezoCurve) {
-        if (checked)
-            conPiezoCurve->show();
-        else
-            conPiezoCurve->hide();
-        conWavPlot->replot();
-    }
+    if (state)
+        conAO1Curve->show();
+    else
+        conAO1Curve->hide();
+    conWavPlot->replot();
 }
 
-void Imagine::on_cbLaserConWav_clicked(bool checked)
+void Imagine::on_cbAO2Wav_clicked(bool state)
 {
-    if (conLaserCurve) {
-        if (checked)
-            conLaserCurve->show();
-        else
-            conLaserCurve->hide();
-        conWavPlot->replot();
-    }
+    if (state)
+        conAO2Curve->show();
+    else
+        conAO2Curve->hide();
+    conWavPlot->replot();
 }
 
-void Imagine::on_cbCameraConWav_clicked(bool checked)
+void Imagine::on_cbDO1Wav_clicked(bool state)
 {
-    if (conShutterCurve) {
-        if (checked)
-            conShutterCurve->show();
-        else
-            conShutterCurve->hide();
-        conWavPlot->replot();
-    }
+    if (state)
+        conDO1Curve->show();
+    else
+        conDO1Curve->hide();
+    conWavPlot->replot();
 }
 
-void Imagine::on_cbTTL1ConWav_clicked(bool checked)
+void Imagine::on_cbDO2Wav_clicked(bool state)
 {
-    if (conTTL1Curve) {
-        if (checked)
-            conTTL1Curve->show();
-        else
-            conTTL1Curve->hide();
-        conWavPlot->replot();
-    }
+    if (state)
+        conDO2Curve->show();
+    else
+        conDO2Curve->hide();
+    conWavPlot->replot();
 }
 
-void Imagine::on_cbTTL2ConWav_clicked(bool checked)
+void Imagine::on_cbDO3Wav_clicked(bool state)
 {
-    if (conTTL2Curve) {
-        if (checked)
-            conTTL2Curve->show();
-        else
-            conTTL2Curve->hide();
-        conWavPlot->replot();
-    }
+    if (state)
+        conDO3Curve->show();
+    else
+        conDO3Curve->hide();
+    conWavPlot->replot();
+}
+
+void Imagine::on_cbDO4Wav_clicked(bool state)
+{
+    if (state)
+        conDO4Curve->show();
+    else
+        conDO4Curve->hide();
+    conWavPlot->replot();
+}
+
+void Imagine::on_cbDO5Wav_clicked(bool state)
+{
+    if (state)
+        conDO5Curve->show();
+    else
+        conDO5Curve->hide();
+    conWavPlot->replot();
+}
+
+void Imagine::on_comboBoxAO1_currentIndexChanged(int index)
+{
+    int left = ui.sbWavDsplyLeft->value();
+    int right = ui.sbWavDsplyRight->value();
+    loadConWavDataAndPlot(left, right, 0);
+    on_cbAO1Wav_clicked(ui.cbAO1Wav->isChecked());
+}
+
+void Imagine::on_comboBoxAO2_currentIndexChanged(int index)
+{
+    int left = ui.sbWavDsplyLeft->value();
+    int right = ui.sbWavDsplyRight->value();
+    loadConWavDataAndPlot(left, right, 1);
+    on_cbAO2Wav_clicked(ui.cbAO2Wav->isChecked());
+}
+
+void Imagine::on_comboBoxDO1_currentIndexChanged(int index)
+{
+    int left = ui.sbWavDsplyLeft->value();
+    int right = ui.sbWavDsplyRight->value();
+    loadConWavDataAndPlot(left, right, 2);
+    on_cbDO1Wav_clicked(ui.cbDO1Wav->isChecked());
+}
+
+void Imagine::on_comboBoxDO2_currentIndexChanged(int index)
+{
+    int left = ui.sbWavDsplyLeft->value();
+    int right = ui.sbWavDsplyRight->value();
+    loadConWavDataAndPlot(left, right, 3);
+    on_cbDO2Wav_clicked(ui.cbDO2Wav->isChecked());
+}
+
+void Imagine::on_comboBoxDO3_currentIndexChanged(int index)
+{
+    int left = ui.sbWavDsplyLeft->value();
+    int right = ui.sbWavDsplyRight->value();
+    loadConWavDataAndPlot(left, right, 4);
+    on_cbDO3Wav_clicked(ui.cbDO3Wav->isChecked());
+}
+
+void Imagine::on_comboBoxDO4_currentIndexChanged(int index)
+{
+    int left = ui.sbWavDsplyLeft->value();
+    int right = ui.sbWavDsplyRight->value();
+    loadConWavDataAndPlot(left, right, 5);
+    on_cbDO4Wav_clicked(ui.cbDO4Wav->isChecked());
+}
+
+void Imagine::on_comboBoxDO5_currentIndexChanged(int index)
+{
+    int left = ui.sbWavDsplyLeft->value();
+    int right = ui.sbWavDsplyRight->value();
+    loadConWavDataAndPlot(left, right, 6);
+    on_cbDO5Wav_clicked(ui.cbDO5Wav->isChecked());
 }
 
 void Imagine::on_sbWavDsplyRight_valueChanged(int value)
@@ -3145,11 +3241,12 @@ void Imagine::on_btnWavDsplyReset_clicked()
 
 void Imagine::on_spinBoxPiezoSampleRate_valueChanged(int newValue)
 {
-    if (piezoSpeedCurveData&&conPiezoCurveData) {
-        int left = ui.sbWavDsplyLeft->value();
-        int right = ui.sbWavDsplyRight->value();
-        updataSpeedData(newValue, left, right);
-    }
+    int left = ui.sbWavDsplyLeft->value();
+    int right = ui.sbWavDsplyRight->value();
+    CurveData *curveData = new CurveData(conWaveData->totalSampleNum);
+    updataSpeedData(curveData, newValue, left, right);
+    piezoSpeedCurve->setData(curveData);
+    conWavPlot->replot();
 }
 
 #pragma endregion

@@ -308,18 +308,25 @@ int DigitalOut::readConPulseToBuffer(int num)
     uInt32 * buf = bufDo - 1;
     int readNum = (idx + num < totalSample) ? num : totalSample - idx;
     int end = idx + readNum;
-    QVector<QVector<int>> waveData(8);
+    QVector<QVector<int>> waveData(24);
     conWaveData->readControlWaveform(waveData[doChannelForStimulus1], stimulus1, idx, end - 1, 1);
     conWaveData->readControlWaveform(waveData[doChannelForStimulus2], stimulus2, idx, end - 1, 1);
     conWaveData->readControlWaveform(waveData[doChannelForStimulus3], stimulus3, idx, end - 1, 1);
     conWaveData->readControlWaveform(waveData[doChannelForStimulus4], stimulus4, idx, end - 1, 1);
+    conWaveData->readControlWaveform(waveData[doChannelForStimulus5], stimulus5, idx, end - 1, 1);
+    conWaveData->readControlWaveform(waveData[doChannelForStimulus6], stimulus6, idx, end - 1, 1);
+    conWaveData->readControlWaveform(waveData[doChannelForStimulus7], stimulus7, idx, end - 1, 1);
+    conWaveData->readControlWaveform(waveData[doChannelForStimulus8], stimulus8, idx, end - 1, 1);
     conWaveData->readControlWaveform(waveData[doChannelForlaser1], laser1, idx, end - 1, 1);
     conWaveData->readControlWaveform(waveData[doChannelForlaser2], laser2, idx, end - 1, 1);
+    conWaveData->readControlWaveform(waveData[doChannelForlaser3], laser3, idx, end - 1, 1);
+    conWaveData->readControlWaveform(waveData[doChannelForlaser4], laser4, idx, end - 1, 1);
+    conWaveData->readControlWaveform(waveData[doChannelForlaser5], laser5, idx, end - 1, 1);
     conWaveData->readControlWaveform(waveData[doChannelForcamera1], camera1, idx, end - 1, 1);
     conWaveData->readControlWaveform(waveData[doChannelForcamera2], camera2, idx, end - 1, 1);
     for (unsigned i = 0; i < readNum; ++i) {
         uInt32 data = 0;
-        for (int j = 0; j < 8; j++) {
+        for (int j = 0; j < 24; j++) {
             if (!waveData[j].isEmpty())
                 if (waveData[j][i]) data |= (0x01 << j);
         }

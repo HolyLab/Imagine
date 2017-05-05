@@ -814,8 +814,8 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
 
     //camera related:
     header << "[camera]" << endl
-        << "original image depth=14" << endl    //effective bits per pixel
-        << "saved image depth=14" << endl       //effective bits per pixel
+        << "original image depth=16" << endl    //effective bits per pixel
+        << "saved image depth=16" << endl       //effective bits per pixel
         << "image width=" << camera.getImageWidth() << endl
         << "image height=" << camera.getImageHeight() << endl
         << "number of frames requested=" << nStacks*nFramesPerStack << endl

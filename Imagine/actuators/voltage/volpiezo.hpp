@@ -64,15 +64,21 @@ private:
 };//class, VolPiezo
 
 typedef enum  {
-    // 0~3:stimuli, 4:camera1, 5:camera2, 6:laser1, 7:laser2
-    doChannelForcamera1 = 5,//TODO: put this configurable
-    doChannelForcamera2 = 7,
-    doChannelForlaser1 = 4,
-    doChannelForlaser2 = 6,
+    doChannelForcamera1 = 5,
+    doChannelForcamera2 = 6,
+    doChannelForlaser1 = 7,
+    doChannelForlaser2 = 8,
+    doChannelForlaser3 = 9,
+    doChannelForlaser4 = 10,
+    doChannelForlaser5 = 11,
     doChannelForStimulus1 = 0,
     doChannelForStimulus2 = 1,
     doChannelForStimulus3 = 2,
-    doChannelForStimulus4 = 3
+    doChannelForStimulus4 = 3,
+    doChannelForStimulus5 = 4,
+    doChannelForStimulus6 = 12,
+    doChannelForStimulus7 = 13,
+    doChannelForStimulus8 = 14
 }PortLayout;
 
 class DigitalOut : public DigitalControls {

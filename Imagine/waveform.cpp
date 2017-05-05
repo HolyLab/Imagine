@@ -259,17 +259,19 @@ done:
     return true;
 }
 
-int ControlWaveform::positionerSpeedCheck(int maxSpeed, ControlSignal name)
+int ControlWaveform::positionerSpeedCheck(int maxSpeed, ControlSignal name, int userSampleRate, int &dataSize)
 {
-    int dataSize = getCtrlSampleNum(name);
+    dataSize = getCtrlSampleNum(name);
     if (dataSize == 0)
         return 0;
-    int interval = 5;
+    int interval = 100;
     double distance, time, speed;
     int controlIdx, repeat, waveIdx;
     int sampleIdx, startSampleIdx = 0, prevStartSampleIdx, sampleIdxInWave;
     QVector<bool> usedWaveIdx(waveList.size(),false);
     int wave0, wave1, margin;
+
+    time = static_cast<double>(interval) / static_cast<double>(userSampleRate); // sec
 
     for (controlIdx = 0; controlIdx < controlList[name]->size(); controlIdx += 2) {
         repeat = controlList[name]->at(controlIdx);
@@ -283,11 +285,12 @@ int ControlWaveform::positionerSpeedCheck(int maxSpeed, ControlSignal name)
             for (int i = 0; i < getWaveSampleNum(waveIdx) - margin; i++) {
                 getWaveSampleValue(waveIdx, i, wave0);
                 getWaveSampleValue(waveIdx, (i + interval)%getWaveSampleNum(waveIdx), wave1);
-                distance = (wave1 - wave0);
-                time = static_cast<double>(interval) / static_cast<double>(sampleRate); // sec
-                speed = distance / time; // piezostep/sec
-                if ((distance != 1) && (abs(speed) >maxSpeed)) {
-                    return -1;
+                distance = abs(wave1 - wave0) - 1;
+                if (distance > 1) {
+                    speed = distance / time; // piezostep/sec
+                    if (speed > maxSpeed) {
+                        return -1;
+                    }
                 }
             }
             usedWaveIdx[waveIdx] = true;
@@ -297,21 +300,22 @@ int ControlWaveform::positionerSpeedCheck(int maxSpeed, ControlSignal name)
             for (int i = getWaveSampleNum(waveIdx) - interval, j = 0; i < getWaveSampleNum(waveIdx); i++, j++) {
                 getWaveSampleValue(oldWaveIdx, i, wave0);
                 getWaveSampleValue(waveIdx, j, wave1);
-                distance = (wave1 - wave0);
-                time = static_cast<double>(interval) / static_cast<double>(sampleRate); // sec
-                speed = distance / time; // piezostep/sec
-                if ((distance != 1) && (abs(speed) >maxSpeed)) {
-                    return -1;
+                distance = abs(wave1 - wave0) - 1;
+                if (distance > 1) {
+                    speed = distance / time; // piezostep/sec
+                    if (speed > maxSpeed) {
+                        return -1;
+                    }
                 }
             }
         }
     }
-    return dataSize;
+    return 1;
 }
 
-int ControlWaveform::laserSpeedCheck(double maxFreq, ControlSignal name)
+int ControlWaveform::laserSpeedCheck(double maxFreq, ControlSignal name, int &dataSize)
 {
-    int dataSize = getCtrlSampleNum(name);
+    dataSize = getCtrlSampleNum(name);
     if (dataSize == 0)
         return 0;
     int waveIdx, controlIdx;
@@ -337,7 +341,7 @@ int ControlWaveform::laserSpeedCheck(double maxFreq, ControlSignal name)
             usedWaveIdx[waveIdx] = true;
         }
     }
-    return dataSize;
+    return 1;
 }
 
 /******* Generate waveform *******************************************/
@@ -388,7 +392,6 @@ void genWaveform(QJsonArray &jarray, double startPos, double stopPos, int nDelay
     int runLength = 0;
     double  avg = startPos;
 
-//    jarray.clear();
     for (int i = 0; i < nTotal; i++)
     {
         int ii = i % nTotal;
@@ -426,7 +429,6 @@ void genPulse(QJsonArray &jarray, int nDelay, int nRising, int nFalling, int nTo
     int pulse, pulsePrev;
     int runLength = 0;
 
-//    jarray.clear();
     for (int i = 0; i < nTotal; i++)
     {
         int ii = i % nTotal;
@@ -485,7 +487,7 @@ void genBiDirection(QVariantList &vlarray, QVariantList refArray, int nDelay, in
     conWavToRunLength(buf2, vlarray);
 }
 
-void genCosineWave(QVariantList &vlarray, QVariantList &vlparray, double amplitude, int offset, int freq, int pulseNum)
+void genCosineWave(QVariantList &vlarray, QVariantList &vlparray, QVariantList &vlparray2, double amplitude, int offset, int freq, int pulseNum)
 {
     double value;
     double damp = static_cast<double>(amplitude);
@@ -495,7 +497,8 @@ void genCosineWave(QVariantList &vlarray, QVariantList &vlparray, double amplitu
     int level = offset - amplitude + margin / 2;
     int levelStep = (2 * amplitude - 100) / pulseNum;
     int j = 0;
-    QVariantList buf1, buf2;
+    QVariantList buf1, buf2, buf3;
+    int initLevel = level;
 
     for (int i = 0; i < freq; i++) {
         value = -damp*cos(dfreq*static_cast<double>(i));
@@ -515,11 +518,14 @@ void genCosineWave(QVariantList &vlarray, QVariantList &vlparray, double amplitu
         else {
             buf2.push_back(0);
         }
+        if (ival >= initLevel)
+            buf3.push_back(1);
+        else
+            buf3.push_back(0);
     }
-    int num1 = buf1.size();
-    int num2 = buf2.size();
     conWavToRunLength(buf1, vlarray);
     conWavToRunLength(buf2, vlparray);
+    conWavToRunLength(buf3, vlparray2);
 }
 
 void genMoveFromToWave(QVariantList &vlarray, int startPos, int stopPos, int duration)
@@ -635,28 +641,36 @@ int genControlFileJSON(void)
     wavelist["stimulus_bidirection"] = stimulus_bidirection;
 
     // This is for sine wave
+    QVariantList buf3;
     int amplitude = 150;
     int offset = 250;
     int freqInSampleNum = 10000;
     piezoStartPos = 100;
     piezoStopPos = offset;
     int durationInSample = (piezoStopPos - piezoStartPos)*sampleRate / 2000 + 50; // this should longer than (piezoStopPos- piezoStartPos)*sampleRate/piezo_maxspeed
-    genCosineWave(buf1, buf2, amplitude, offset, freqInSampleNum, nFrames);
-    QVariantList buf11, buf22;
+    // buf1: wave, buf2: pulse
+    genCosineWave(buf1, buf2, buf3, amplitude, offset, freqInSampleNum, nFrames);
+    QVariantList buf11, buf22, buf33;
+    // buf11: bi-directional wave
     genBiDirection(buf11, buf1, 0, getRunLengthSize(buf1), 0);
     QJsonArray piezo_cos = QJsonArray::fromVariantList(buf11);
+    // buf22: bi-directional pulse
     genBiDirection(buf22, buf2, 0, getRunLengthSize(buf2), 0);
     QJsonArray pulse_cos = QJsonArray::fromVariantList(buf22);
-//    genMoveFromToWave(buf1, piezoStartPos, piezoStopPos, durationInSample);
+    // buf22: bi-directional pulse
+    genBiDirection(buf33, buf3, 0, getRunLengthSize(buf3), 0);
+    QJsonArray pulse2_cos = QJsonArray::fromVariantList(buf33);
+    //    genMoveFromToWave(buf1, piezoStartPos, piezoStopPos, durationInSample);
 //    QJsonArray piezo_moveto = QJsonArray::fromVariantList(buf1);
 //    genConstantWave(buf1, 0, durationInSample);
 //    QJsonArray zero_wav = QJsonArray::fromVariantList(buf1);
     wavelist["piezo_cos"] = piezo_cos;
     wavelist["pulse_cos"] = pulse_cos;
-//    wavelist["piezo_moveto"] = piezo_moveto;
+    wavelist["pulse2_cos"] = pulse2_cos;
+    //    wavelist["piezo_moveto"] = piezo_moveto;
 //    wavelist["zero_wav"] = zero_wav;
 
-    /* Triangle pulses
+    /* Triangle pulses 
     piezo1 = { 3, "positioner1_001", 2, "positioner1_001", nStacks - 3 - 2, "positioner1_001" };
     camera1 = { 3, "camera1_001", 2, "camera1_001", nStacks - 3 - 2, "camera1_001" };
     camera2 = { 3, "camera1_001", 2, "camera1_001", nStacks - 3 - 2, "camera1_001" };
@@ -664,18 +678,18 @@ int genControlFileJSON(void)
     stimulus1 = { 3, "stimulus1_001", 2, "stimulus1_001", nStacks - 3 - 2, "stimulus1_001" };
     bidirection = false;
     totalSamples = 70000;
-     */
+    */
 
     /* cosine */
     piezo1 = { nStacks, "piezo_cos" };
     camera1 = { nStacks, "pulse_cos" };
 //    camera2 = { 1, "zero_wav", nStacks, "pulse_cos" };
-//    laser1 = { 1, "zero_wav", nStacks, "pulse_cos" };
+    laser1 = { nStacks, "pulse2_cos" };
 //    stimulus1 = { 1, "zero_wav", nStacks, "pulse_cos" };
     bidirection = true;
     totalSamples = nStacks*getRunLengthSize(piezo_cos.toVariantList());
 
-    /* Bi-directional waveform
+    /* Bi-directional waveform 
     piezo1 = { nStacks, "piezo_bidirection" };
     camera1 = { nStacks, "camera_bidirection" };
     camera2 = { nStacks, "camera_bidirection" };
@@ -705,7 +719,7 @@ int genControlFileJSON(void)
     alldata["wave list"] = wavelist;
     alldata["version"] = version;
     // save data
-    SaveFormat saveFormat = Binary;// Binary;Json
+    SaveFormat saveFormat = Json;// Binary;Json
     QFile saveFile(saveFormat == Json
         ? QStringLiteral("controls.json")
         : QStringLiteral("controls.bin"));

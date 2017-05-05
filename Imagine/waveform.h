@@ -1,29 +1,38 @@
 /**** JSON Data Structure of control waveform for OCPI ****
 {
+    // This comment syntex is not allowed in JSON format
+    // If you really want a comment, make a dummy field such as
+    "_comment": "This is a comment",
+
     "version": "v1.0",
-    "analog waveform":{
-        "positioner1": [5, "positioner1_001", 2, "positioner1_002",,,]
-    },
-    "digital pulse":{
-        "camera1": [5, "camera1_001",,,],   "_comment": "[repeat time1, wave name1, repeat time2, wave name2,,,]",
-        "laser1": [5, "laser1_001",,,],
-        "stimulus1": [5, "stimulus1_001",,,]
-    }
     "metadata":{
-        "frames": 20
-        "bi-direction": false,
-        "exposure": 0.01,
-        "frames": 20,
-        "sample num": 600000,
-        "stacks": 9
+        "bi-direction": false,  // bi-directional acquisition
+        "exposure": 0.01,       // Camera exposure. Currently, this value is not used.
+        "sample num": 600000,   // Total sample number
+        "stacks": 9,
+        "frames": 20            // frames per stack
+        // Default sample rate is 10000 but this value can be changed at the OCPI Imagein GUI
     },
+    // postioner1, positioner2 are connected to positioners in the microscope
+    "analog waveform":{
+        "positioner1": [5, "triangle_001", 2, "triangle_002"] // [repeat_time, wavefrom name,,,]
+    },
+    // camera1, camera2, laser1, laser2, stimulus1, stimulus2, stimulus3, stimulus4
+    // are connected to camera exposures, laser shutters and stimulus ports of the microscope
+    "digital pulse":{
+        "camera1": [5, "shutter_long", 2, "shutter_short"],
+        "laser1": [5, "laser_001", 2, "laser_002",],
+        "stimulus1": [7, "valve1_001"]
+    }
     "wave list":{ "_comment": "We use run length code [runs,value,runs,value,,,]",
-        "camera1_001":[20, 1,,,],
-        "camera1_002":[20, 1,,,],
-        "laser1_001":[20, 1,,,],
-        "laser1_002":[20, 1,,,],
-        "positioner1_001":[20, 100,,,],
-        "positioner1_002":[20, 100,,,]
+        "shutter_long":[10, 0, 20, 1], // If this pulse is used to control DAQ digital output
+        "shutter_short":[12, 0, 18, 1], // zero mean 0V, not zero means 5V out.
+        "laser_001":[20, 1],
+        "laser_002":[20, 1],
+        "valve1_001":[10,0, 200, 1],
+        "triangle_001":[20, 100,,,], // If this pulse is used to control positioner
+        "triangle_002":[20, 100,,,]  // the maximum value is 400(OCPI-1) and 800(OCPI-2)
+                                     // And, the value type is integer.
     }
 }
 **********************************************************/
@@ -91,8 +100,8 @@ public:
     bool isEmpty(ControlSignal name);
     int getCtrlSampleNum(ControlSignal name);
     bool getCtrlSampleValue(ControlSignal name, int idx, int &value);
-    int positionerSpeedCheck(int maxSpeed, ControlSignal name);
-    int laserSpeedCheck(double maxFreq, ControlSignal name);
+    int positionerSpeedCheck(int maxSpeed, ControlSignal name, int userSampleRate, int &dataSize);
+    int laserSpeedCheck(double maxFreq, ControlSignal name, int &dataSize);
 
 }; // ControlWaveform
 

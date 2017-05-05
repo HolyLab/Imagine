@@ -148,18 +148,14 @@ private:
     QwtPlotCurve *intenCurve;
     CurveData *intenCurveData;
     QwtPlot *conWavPlot;
-    QwtPlotCurve *conPiezoCurve;
-    CurveData *conPiezoCurveData = NULL;
-    QwtPlotCurve *conShutterCurve;
-    CurveData *conShutterCurveData = NULL;
     QwtPlotCurve *piezoSpeedCurve;
-    CurveData *piezoSpeedCurveData = NULL;
-    QwtPlotCurve *conLaserCurve;
-    CurveData *conLaserCurveData = NULL;
-    QwtPlotCurve *conTTL1Curve;
-    CurveData *conTTL1CurveData = NULL;
-    QwtPlotCurve *conTTL2Curve;
-    CurveData *conTTL2CurveData = NULL;
+    QwtPlotCurve *conAO1Curve;
+    QwtPlotCurve *conAO2Curve;
+    QwtPlotCurve *conDO1Curve;
+    QwtPlotCurve *conDO2Curve;
+    QwtPlotCurve *conDO3Curve;
+    QwtPlotCurve *conDO4Curve;
+    QwtPlotCurve *conDO5Curve;
     QwtPlot *conReadWavPlot;
     QwtPlotCurve *conReadPiezoCurve;
     QwtPlotCurve *conReadStimuliCurve;
@@ -202,15 +198,11 @@ private:
     void readSettings(QString file);
     void writeComments(QString file);
     void readComments(QString file);
-    void ControlFileLoad(QByteArray &data1, QByteArray &data2);
-    void updateControlWaveform_old(QString fn);
     void readControlWaveform(QString fn);
     void updateControlWaveform(int leftEnd, int rightEnd);
-    void updataSpeedData(int newValue);
-    void updataSpeedData(int newValue, int start, int end);
-    bool convertJASONtoWave(vector<double> &wave, QJsonArray &jsonWave, int num);
-    bool convertJASONtoPulse(vector<int> &pulse, QJsonArray &jsonPulse, int num);
+    void updataSpeedData(CurveData *curveData, int newValue, int start, int end);
     bool waveformValidityCheck(void);
+    bool loadConWavDataAndPlot(int leftEnd, int rightEnd, int wavIdx);
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();
@@ -318,15 +310,24 @@ private slots:
     void on_cbStimuliReadWav_clicked(bool checked);
     void on_cbCameraReadWav_clicked(bool checked);
     void on_cbHeartReadWav_clicked(bool checked);
-    void on_cbPiezoConWav_clicked(bool checked);
-    void on_cbLaserConWav_clicked(bool checked);
-    void on_cbCameraConWav_clicked(bool checked);
-    void on_cbTTL1ConWav_clicked(bool checked);
-    void on_cbTTL2ConWav_clicked(bool checked);
+    void on_cbAO1Wav_clicked(bool state);
+    void on_cbAO2Wav_clicked(bool state);
+    void on_cbDO2Wav_clicked(bool state);
+    void on_cbDO1Wav_clicked(bool state);
+    void on_cbDO3Wav_clicked(bool state);
+    void on_cbDO4Wav_clicked(bool state);
+    void on_cbDO5Wav_clicked(bool state);
     void on_spinBoxPiezoSampleRate_valueChanged(int newValue);
     void on_sbWavDsplyRight_valueChanged(int value);
     void on_sbWavDsplyLeft_valueChanged(int value);
     void on_btnWavDsplyReset_clicked();
+    void on_comboBoxAO1_currentIndexChanged(int index);
+    void on_comboBoxAO2_currentIndexChanged(int index);
+    void on_comboBoxDO1_currentIndexChanged(int index);
+    void on_comboBoxDO2_currentIndexChanged(int index);
+    void on_comboBoxDO3_currentIndexChanged(int index);
+    void on_comboBoxDO4_currentIndexChanged(int index);
+    void on_comboBoxDO5_currentIndexChanged(int index);
 
 public:
     Ui::ImagineClass ui;
