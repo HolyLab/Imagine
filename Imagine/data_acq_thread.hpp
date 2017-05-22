@@ -48,7 +48,6 @@ public:
     void stopAcq(); //note: this func call is non-blocking
 
     bool preparePositioner(bool isForward = true, bool useTrigger = false);
-    bool prepareDAQ();
     bool prepareDaqBuffered();
 
     // setter for the camera and positioner... use this instead of setting the var directly

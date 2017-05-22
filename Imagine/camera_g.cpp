@@ -114,7 +114,6 @@ bool Camera::updateLiveImage()
     //copies data
     //for optimization purposes we could also try QByteArray::fromRawData
     liveImage = QByteArray(temp, imageSizeBytes);
-    return true;
 
     return true;
 }

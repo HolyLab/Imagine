@@ -88,9 +88,54 @@ public:
 };//class, CookeCamera
 
 
+class DummyCameraThread : public WorkerThread {
+    Q_OBJECT
+private:
+    int chipWidth;
+    int chipHeight;
+    int bytesPerPixel = 2;
+    int framesPerStack;
+    long long dummyImgDataSize;
+    long imageSizePixels;
+    long imageSizeBytes;
+    char *dummyImg = nullptr;
+    char *buff[2];
+    HANDLE hEvent[2];
+    DWORD *pStatus[2];
+    long long dummyImgIdx;
+    long frameNum;
+    char *test;
+    volatile int put_idx, get_idx;
+    volatile bool recording;
+    volatile bool cancel;
+    QMutex mutex;
+
+public:
+    DummyCameraThread(QThread::Priority defaultPriority, QString fn, QObject *parent = 0);
+    ~DummyCameraThread();
+    unsigned long extractFrameCounter(unsigned short* rawData);
+    bool getImageDataSize(QString filename);
+    void SetRecordingState(bool bValue);
+    void CancelImages();
+    void AddBufferExtern(HANDLE evnt, char* ringBuf, long size, DWORD *status);
+    void resetDummyCamera(void);
+    bool getRecording(void) { return recording;}
+    void run(void);
+
+    int getChipHeight(void) { return chipHeight;}
+    int getChipWidth(void) { return chipWidth;}
+    int getBytesPerPixel(void) { return bytesPerPixel;}
+    bool getCancel(void) { return cancel;}
+    int getPut_idx(void) { return put_idx;}
+    int getGet_idx(void) { return get_idx;}
+
+ };//class, DummyCameraThread
+
+
 class DummyCamera : public Camera {
 public:
-    friend class CameraWorkerThread;
+    friend class DummyWorkerThread;
+    friend class DummyCameraThread;
 
 private:
     HANDLE hCamera;
@@ -113,19 +158,28 @@ private:
     DWORD driverStatus[2];
     char* mRingBuf[2]; //m_pic12
 
-                       //CookeWorkerThread* workerThread;
+    int bufferIdx;
+    DummyCameraThread *sudoCamera = nullptr;
 
 public:
-    DummyCamera() { model = "dummy"; } // should be reimplemented? using CookCamera() and change vender name
+    DummyCamera(QString filename) {
+        vendor = "dummy";
+        sudoCamera = new DummyCameraThread(QThread::TimeCriticalPriority, filename);
+    } // should be reimplemented? using CookCamera() and change vender name
 
-    ~DummyCamera() { } // this is enough
+    ~DummyCamera() {
+        if (sudoCamera) {
+            sudoCamera->quit();
+            sudoCamera->wait();
+            delete sudoCamera;
+            sudoCamera = nullptr;
+        }
+    }
 
-    bool init() {
-        return true;
-    } // should be reimplemented
+    bool init();
     bool fini() {
         return true;
-    } // should be reimplemented
+    }
 
     bool setAcqParams(int emGain,  // should be reimplemented
         int preAmpGainIdx,
@@ -143,18 +197,19 @@ public:
         AcqTriggerMode acqTriggerMode,
         ExpTriggerMode expTriggerMode
     ) {
+        this->genericAcqMode = genericAcqMode;
+        this->nFrames = anFrames;
+        this->acqTriggerMode = acqTriggerMode;
+        this->expTriggerMode = expTriggerMode;
         return true;
     }
 
     bool prepCameraOnce();
-    bool nextStack() {
-        return true;
-    }  // should be reimplemented
+    bool nextStack();
 
-    double getCycleTime() { return 1000; } // should be reimplemented
+    double getCycleTime() { return 0.03; }
 
     void printPcoError(int errCode) {} // should be reimplemented
-    bool stopAcqFinal();
 
     string getErrorMsg() { return "dummy getErrorMsg()"; };
 
@@ -167,6 +222,7 @@ public:
     }
 
     int getROIStepsHor(void) { return 160; };
+    long extractFrameCounter(PixelValue* rawData);
 
 };//class, DummyCamera
 

@@ -11,6 +11,7 @@
 #include "imagine.h"
 #include "spoolthread.h"
 #include "fast_ofstream.hpp"
+#include "misc.hpp"
 
 #define PCO_ERRT_H_CREATE_OBJECT
 
@@ -410,8 +411,7 @@ bool CookeCamera::prepCameraOnce()
 
 bool CookeCamera::nextStack()
 {
-    bool workerPaused = workerThread->getIsPaused();
-    while (!workerPaused && !stopRequested)
+    while (!workerThread->getIsPaused() && !stopRequested)
         QThread::msleep(5); //could hinder performance
 
     if (!stopRequested) {
@@ -454,6 +454,46 @@ void CookeCamera::printPcoError(int errCode) {
     OutputDebugStringW((wstring(L"\nPCO error text: ") + msgw).c_str());
 }
 
+
+long DummyCamera::extractFrameCounter(PixelValue* rawData)
+{
+    unsigned long result = 0;
+    for (int i = 0; i < 4; ++i) {
+        unsigned hex = rawData[i];
+        result = result * 100 + hex / 16 * 10 + hex % 16;
+    }
+
+    return result;
+}
+
+bool DummyCamera::init()
+{
+    //sensor width/height
+    this->chipHeight = sudoCamera->getChipHeight();
+    this->chipWidth = sudoCamera->getChipWidth();
+    this->bytesPerPixel = sudoCamera->getBytesPerPixel();
+
+    this->imageSizePixels = chipHeight * chipWidth;
+    this->imageSizeBytes = imageSizePixels*bytesPerPixel;
+
+    //model
+    this->model = "dummy";
+
+    allocBlackImage();
+    allocMemPool((long long)5529600 * 2 * 100); //100 full frames
+
+    //these get initialized and deleted by prepCameraOnce() and stopCameraFinal()
+    this->circBuf = nullptr;
+    this->circBufLock = nullptr;
+
+    sudoCamera->resetDummyCamera();
+    sudoCamera->start(QThread::TimeCriticalPriority);
+
+    errorCode = PCO_NOERROR; // For sudo camera, always no error.
+
+    return true;
+}//init(),
+
 const int DummyCamera::nBufs = 2;
 bool DummyCamera::prepCameraOnce()
 {
@@ -464,37 +504,183 @@ bool DummyCamera::prepCameraOnce()
 
     ///set pointers to slots in the ring buffer for data transfer from card to pc
     for (int i = 0; i < nBufs; ++i) {
-        mBufIndex[i] = -1;
         mEvent[i] = CreateEvent(0, FALSE, FALSE, NULL);
         mRingBuf[i] = memPool + (circBuf->peekPut() + i) * size_t(imageSizeBytes);
     }
+    sudoCamera->resetDummyCamera();
     SpoolThread * s = new SpoolThread(QThread::HighestPriority, ofsSpooling, this);
     setSpoolThread(s);
     s->start(QThread::HighestPriority);
-    CameraWorkerThread * w = new CameraWorkerThread(QThread::TimeCriticalPriority, this);
+    DummyWorkerThread * w = new DummyWorkerThread(QThread::TimeCriticalPriority, this);
     setWorkerThread(w);
     w->start(QThread::TimeCriticalPriority);
+
     return true;
 }
 
-bool DummyCamera::stopAcqFinal()
+bool DummyCamera::nextStack()
 {
-    //not rely on the "wait abandon"!!!
-    WorkerThread * w = getWorkerThread();
-    SpoolThread * s = getSpoolThread();
-    w->quit();
-    s->requestStop();
-    w->wait();
-    s->wait();
+    while (!workerThread->getIsPaused() && !stopRequested)
+        QThread::msleep(5); //could hinder performance
 
-    delete circBuf;
-    delete getWorkerThread();
-    delete getSpoolThread();
-    spoolThread = nullptr;
-    workerThread = nullptr;
-
-    delete ofsSpooling; //the file is closed too
-    ofsSpooling = nullptr;
-
+    if (!stopRequested) {
+        workerThread->setIsPaused(false);
+        (workerThread->getUnPaused())->wakeAll();
+        sudoCamera->SetRecordingState(true);
+    }
     return true;
+}//startAcq(),
+
+unsigned long DummyCameraThread::extractFrameCounter(unsigned short* rawData)
+{
+    unsigned long result = 0;
+    for (int i = 0; i < 4; ++i) {
+        unsigned hex = rawData[i];
+        result = result * 100 + hex / 16 * 10 + hex % 16;
+    }
+    return result;
+}
+
+DummyCameraThread::DummyCameraThread(QThread::Priority defaultPriority, QString fn, QObject *parent)
+    : WorkerThread(defaultPriority, parent)
+{
+    getImageDataSize(fn);
+    framesPerStack = 20; //20 full frames
+    dummyImgDataSize = (long long)imageSizePixels * 2 * framesPerStack;
+
+    QString camFilename = replaceExtName(fn, "cam");
+    QFile file(camFilename);
+    if (!file.open(QFile::ReadOnly)) {
+        qDebug("Error reading dummy camera file");
+        assert(0);
+    }
+    dummyImg = (char*)_aligned_malloc(dummyImgDataSize, 1024 * 64);
+    assert((unsigned long long)(dummyImg) % (1024 * 64) == 0);
+    file.read(dummyImg, dummyImgDataSize);
+    for (int j = 0; j < 3; j++) {
+        unsigned short *rawData = (unsigned short *)(dummyImg + j*imageSizeBytes);
+        unsigned long result = extractFrameCounter(rawData);
+        qDebug("%d ", result);
+    }
+    recording = false;
+}
+
+DummyCameraThread::~DummyCameraThread()
+{
+    _aligned_free(dummyImg);
+    dummyImg = nullptr;
+}
+
+bool DummyCameraThread::getImageDataSize(QString filename)
+{
+    QFile file(filename);
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        qDebug("Error reading dummy camera imagine file");
+        return false;
+    }
+
+    QTextStream in(&file);
+    QString line;
+    bool ok1=false, ok2 = false, ok3 = false;
+
+    do {
+        line = in.readLine(); // // OCPI-1(2560X2160), OCPI-2(2048X2048)
+        if (line.contains(QString("image width="), Qt::CaseSensitive))
+            chipWidth = line.remove(0, QString("image width=").size()).toInt(&ok1);
+        else if (line.contains(QString("image height="), Qt::CaseSensitive))
+            chipHeight = line.remove(0, QString("image height=").size()).toInt(&ok2);
+        else if (line.contains(QString("frames per stack="), Qt::CaseSensitive))
+            framesPerStack = line.remove(0, QString("frames per stack=").size()).toInt(&ok3);
+
+    } while (!line.isNull());
+
+    file.close();
+
+    if (ok1&&ok2) {
+        imageSizePixels = chipHeight * chipWidth;
+        imageSizeBytes = imageSizePixels * bytesPerPixel;
+        return true;
+    }
+    else
+        return false;
+}
+
+void DummyCameraThread::SetRecordingState(bool bValue)
+{
+    mutex.lock();
+    recording = bValue;
+    mutex.unlock();
+}
+
+void DummyCameraThread::CancelImages()
+{
+    mutex.lock();
+    cancel = true;
+    mutex.unlock();
+}
+
+void DummyCameraThread::AddBufferExtern(HANDLE evnt, char* ringBuf, long size, DWORD *status)
+{
+    int idx = getPut_idx();
+    buff[idx] = ringBuf;
+    imageSizeBytes = size;
+    pStatus[idx] = status;
+    hEvent[idx] = evnt;
+    qDebug("P%d %X", idx, buff[idx]);
+    put_idx = (++idx) % 2;
+    //    test = ringBuf;
+}
+
+void DummyCameraThread::resetDummyCamera(void)
+{
+    recording = false;
+    dummyImgIdx = 0;
+    put_idx = 0;
+    get_idx = 0;
+    frameNum = 0;
+    cancel = false;
+}
+
+void DummyCameraThread::run()
+{
+    while (true)
+    {
+        if (getRecording())
+        {
+            int idx = getGet_idx();
+            char *buffer = buff[idx];
+            frameNum++;
+            int rem, num = frameNum;
+            unsigned short frameCnt[4];
+            for (int i = 3; i >= 0; i--) {
+                rem = num % 100;
+                num = num / 100;
+                frameCnt[i] = (rem / 10) * 16 + (rem % 10);
+            }
+            memcpy(buffer, &(dummyImg[dummyImgIdx]), imageSizeBytes);
+            dummyImgIdx += imageSizeBytes;
+            for (int i = 0; i < 8; i++)
+                (*buffer++) = ((char *)frameCnt)[i];
+
+            msleep(30);
+            if (!getCancel()) {
+                dummyImgIdx = dummyImgIdx % dummyImgDataSize;
+                *pStatus[idx] = 0; // don't care
+                qDebug("E%d %X", idx, buff[idx]);
+                SetEvent(hEvent[idx]);
+                qDebug("G%d %X", idx, buff[idx]);
+                get_idx = (++idx) % 2;
+                msleep(20);
+            }
+            else {
+                frameNum = 0;
+                mutex.lock();
+                cancel = false;
+                mutex.unlock();
+                msleep(100);
+            }
+        }
+        else
+            frameNum = frameNum;
+    }
 }

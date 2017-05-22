@@ -3,6 +3,10 @@
         <file>Resources/start_acq.bmp</file>
         <file>Resources/start_live.bmp</file>
         <file>Resources/stop.bmp</file>
+        <file>Resources/next.bmp</file>
+        <file>Resources/play.bmp</file>
+        <file>Resources/playback.bmp</file>
+        <file>Resources/previous.bmp</file>
     </qresource>
     <qresource prefix="/images" >
         <file>Resources/logo.jpg</file>

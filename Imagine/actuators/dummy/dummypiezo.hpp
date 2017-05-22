@@ -5,9 +5,6 @@
 #include "curvedata.h"
 
 class DummyPiezo: public Positioner {
-protected:
-    vector<Movement* > movements;
-
 public:
     DummyPiezo(QString ctrlrsetup){
         posType = DummyPositioner;

@@ -231,7 +231,10 @@ int main(int argc, char *argv[])
     // check out many cameras are attached
     splash->showMessage(QString("Counting cameras..."), align, col);
     int nCams = 0;
-    getCamCount(&nCams);
+    if (rig != "dummy")
+        getCamCount(&nCams);
+    else
+        nCams = 1; // For testing two window GUI for dummy cameras (2:two window)
 
     // not sure why this is positioned here
     splash->showMessage(QString("qAp is thinking about life ..."), align, col);
@@ -243,21 +246,18 @@ int main(int argc, char *argv[])
     Camera *cam1;
 
 	if (cameraVendor == "cooke") cam1 = new CookeCamera;
-	else if (cameraVendor == "dummy") cam1 = new DummyCamera;
+	else if (cameraVendor == "dummy") cam1 = new DummyCamera("t1.imagine");
     else {
         QMessageBox::critical(0, "Imagine", "Unsupported camera.", QMessageBox::Ok, QMessageBox::NoButton);
         return 1;
     }
-	if (cameraVendor != "dummy") {
+	if ((cameraVendor == "cooke")||(cameraVendor == "dummy")) {
 		if (!cam1->init()){
 			splash->showMessage("Failed to initialize camera 1.", align, col);
 			QMessageBox::critical(splash, "Imagine", "Failed to initialize camera 1.",
 				QMessageBox::Ok, QMessageBox::NoButton);
 			return 1;
 		}
-	}
-	else {	// daewoo : for testing two window GUI for dummy cameras
-		nCams = 1;  // set as the number of window <= 2
 	}
 
     Camera *cam2 = nullptr;
@@ -267,12 +267,12 @@ int main(int argc, char *argv[])
         splash->showMessage(QString("Initializing (%1) camera 2 ...").arg(cameraVendor), align, col);
         
 		if (cameraVendor == "cooke") cam2 = new CookeCamera;
-		else if (cameraVendor == "dummy") cam2 = new CookeCamera; // DummyCamera;
+		else if (cameraVendor == "dummy") cam2 = new DummyCamera("t2.imagine");
         else {
             QMessageBox::critical(0, "Imagine", "Unsupported camera.", QMessageBox::Ok, QMessageBox::NoButton);
             return 1;
         }
-        if (cameraVendor != "dummy") { // daewoo : for testing two window GUI for dummy cameras
+        if ((cameraVendor == "cooke") || (cameraVendor == "dummy")) {
             if (!cam2->init()) {
                 splash->showMessage("Failed to initialize camera 2.", align, col);
                 QMessageBox::critical(splash, "Imagine", "Failed to initialize camera 2.",

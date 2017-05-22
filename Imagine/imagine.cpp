@@ -30,6 +30,7 @@
 #include <QScriptProgram>
 #include <QApplication>
 #include <QInputDialog>
+#include <QColorDialog>
 
 #include <qwt_plot.h>
 #include <qwt_plot_grid.h>
@@ -85,9 +86,10 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
     pixmapper->moveToThread(&pixmapperThread);
     connect(&pixmapperThread, &QThread::finished, pixmapper, &QObject::deleteLater);
     connect(this, &Imagine::makePixmap, pixmapper, &Pixmapper::handleImg);
+    connect(this, &Imagine::makeColorPixmap, pixmapper, &Pixmapper::handleColorImg);
     connect(pixmapper, &Pixmapper::pixmapReady, this, &Imagine::handlePixmap);
+    connect(pixmapper, &Pixmapper::pixmapColorReady, this, &Imagine::handleColorPixmap);
     pixmapperThread.start(QThread::IdlePriority);
-
 
     minPixelValueByUser = 0;
     maxPixelValueByUser = 1 << 16;
@@ -183,7 +185,7 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
 
     maxROIHSize = camera.getChipWidth();
     maxROIVSize = camera.getChipHeight();
- //   roiStepsHor = camera.getROIStepsHor(); // OCPI-II return 20
+ //   roiStepsHor = camera.getROIStepsHor(); // OCPI-2 return 20
     roiStepsHor = 160;
 
     if (maxROIHSize == 0) {// this is for GUI test at dummy HW
@@ -404,6 +406,16 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
         ui.btnSendSerialCmd->setVisible(false);
     }
     /* for piezo setup until this line */
+
+    ui.groupBoxPlayCamImage->setEnabled(false);
+    ui.groupBoxBlendingOption->setEnabled(false);
+
+    img1Color = QColor(255, 0, 0);
+    img2Color = QColor(0, 255, 0);
+    applyImgColor(ui.widgetImg1Color, img1Color);
+    applyImgColor(ui.widgetImg2Color, img2Color);
+    alpha = 50;
+    ui.hsBlending->setValue(alpha);
 }
 
 Imagine::~Imagine()
@@ -425,6 +437,8 @@ Imagine::~Imagine()
     piezoCtrlThread.quit();
     piezoCtrlThread.wait();
     // for piezo control until this line
+
+    stopDisplayCamFile();
 }
 
 #pragma endregion
@@ -432,9 +446,12 @@ Imagine::~Imagine()
 
 #pragma region DRAWING
 
-void Imagine::updateImage()
+void Imagine::updateImage(bool isColor)
 {
-    if (lastRawImg.isNull() || isPixmapping) return;
+    if (isColor)
+        if (lastRawImg.isNull()|| lastRawImg2.isNull() || isPixmapping) return;
+    else
+        if (lastRawImg.isNull() || isPixmapping) return;
     isPixmapping = true;
 
     // making the pixmap is expensive - push it to another thread
@@ -452,11 +469,26 @@ void Imagine::updateImage()
         L = T = 0; H = lastImgH; W = lastImgW;
     }
 
-    emit makePixmap(lastRawImg, lastImgW, lastImgH, factor, displayAreaSize,
-        L, T, W, H, xd, xc, yd, yc, minPixelValue, maxPixelValue, colSat);
+    if(isColor)
+        emit makeColorPixmap(lastRawImg, lastRawImg2, img1Color, img2Color, alpha
+            , lastImgW, lastImgH, factor, factor2, displayAreaSize,
+            L, T, W, H, xd, xc, yd, yc, minPixelValue, maxPixelValue,
+            minPixelValue2, maxPixelValue2, colSat);
+    else
+        emit makePixmap(lastRawImg, lastImgW, lastImgH, factor, displayAreaSize,
+            L, T, W, H, xd, xc, yd, yc, minPixelValue, maxPixelValue, colSat);
 }
 
 void Imagine::handlePixmap(const QPixmap &pxmp, const QImage &img) {
+    // pop the new pixmap into the label, and hey-presto
+    pixmap = pxmp;
+    image = img;
+    ui.labelImage->setPixmap(pxmp);
+    ui.labelImage->adjustSize();
+    isPixmapping = false;
+}
+
+void Imagine::handleColorPixmap(const QPixmap &pxmp, const QImage &img) {
     // pop the new pixmap into the label, and hey-presto
     pixmap = pxmp;
     image = img;
@@ -718,7 +750,7 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
             //user can change the setting when acq. is running
             if (maxPixelValue == -1 || maxPixelValue == 0){
                 calcMinMaxValues(frame, imageW, imageH);
-            }//if, need update min/max values. 
+            }//if, need update min/max values.
         }//if, min/max are from the first frame
         else if (ui.actionAutoScaleOnAllFrames->isChecked()){
             calcMinMaxValues(frame, imageW, imageH);
@@ -732,7 +764,8 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
         if (ui.actionColorizeSaturatedPixels->isChecked()) factor *= 254 / 255.0;
     }//else, adjust contrast(i.e. scale data by min/max values)
 
-    updateImage();
+    isUpdateImgColor = false;
+    updateImage(isUpdateImgColor);
 
     nUpdateImage++;
     appendLog(QString().setNum(nUpdateImage)
@@ -741,6 +774,77 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
 done:
     dataAcqThread->isUpdatingImage = false;
 }//updateDisplay(),
+
+void Imagine::updateDisplayColor(const QByteArray &data1, const QByteArray &data2, long idx, int imageW, int imageH)
+{
+    dataAcqThread->isUpdatingImage = true;
+
+    // If something breaks... probably these units are wrong.
+    lastRawImg = data1;
+    lastRawImg2 = data2;
+    lastImgH = imageH;
+    lastImgW = imageW;
+
+    Camera::PixelValue * frame1 = (Camera::PixelValue *)data1.constData();
+    Camera::PixelValue * frame2 = (Camera::PixelValue *)data2.constData();
+    if (ui.actionFlickerControl->isChecked()) {
+        int oldMax = maxPixelValue;
+        calcMinMaxValues(frame1, frame2, imageW, imageH);
+        if (maxPixelValue == 0) {
+            if (++nContinousBlackFrames < 3) {
+                maxPixelValue = oldMax;
+                goto done;
+            }
+            else nContinousBlackFrames = 0;
+        }//if, black frame
+        else {
+            nContinousBlackFrames = 0; //reset counter
+        }
+        maxPixelValue = oldMax; //?? do nothing?
+    }
+
+    //copy and scale data
+    if (ui.actionNoAutoScale->isChecked()) {
+        minPixelValue = maxPixelValue = 0;
+        minPixelValue2 = maxPixelValue2 = 0;
+        factor = 1.0 / (1 << 4); //i.e. /(2^14)*(2^10). note: not >>8 b/c it's 14-bit camera. TODO: take care of 16 bit camera?
+    }//if, no contrast adjustment
+    else {
+        if (ui.actionAutoScaleOnFirstFrame->isChecked()) {
+            //user can change the setting when acq. is running
+            if (maxPixelValue == -1 || maxPixelValue == 0
+                || maxPixelValue2 == -1 || maxPixelValue2 == 0) {
+                calcMinMaxValues(frame1, frame2, imageW, imageH);
+            }//if, need update min/max values.
+        }//if, min/max are from the first frame
+        else if (ui.actionAutoScaleOnAllFrames->isChecked()) {
+            calcMinMaxValues(frame1, frame2, imageW, imageH);
+        }//else if, min/max are from each frame's own data
+        else {
+            minPixelValue = minPixelValueByUser;
+            maxPixelValue = maxPixelValueByUser;
+            minPixelValue2 = minPixelValueByUser;
+            maxPixelValue2 = maxPixelValueByUser;
+        }//else, user supplied min/max
+
+        factor = 1023.0 / (maxPixelValue - minPixelValue);
+        factor2 = 1023.0 / (maxPixelValue2 - minPixelValue2);
+        if (ui.actionColorizeSaturatedPixels->isChecked()) {
+            factor *= 1024 / 1023;
+            factor2 *= 1024 / 1023;
+        }
+    }//else, adjust contrast(i.e. scale data by min/max values)
+
+    isUpdateImgColor = true;
+    updateImage(isUpdateImgColor);
+
+    nUpdateImage++;
+    appendLog(QString().setNum(nUpdateImage)
+        + "-th updated frame(0-based)=" + QString().setNum(idx));
+
+done:
+    dataAcqThread->isUpdatingImage = false;
+}//updateDisplayColor(),
 
 void Imagine::updateStatus(const QString &str)
 {
@@ -795,6 +899,22 @@ void Imagine::calcMinMaxValues(Camera::PixelValue * frame, int imageW, int image
         if (frame[i] == (1 << 16) - 1) continue; //todo: this is a tmp fix for dead pixels
         if (frame[i]>maxPixelValue) maxPixelValue = frame[i];
         else if (frame[i] < minPixelValue) minPixelValue = frame[i];
+    }//for, each pixel
+}
+
+void Imagine::calcMinMaxValues(Camera::PixelValue * frame1, Camera::PixelValue * frame2, int imageW, int imageH)
+{
+    minPixelValue = maxPixelValue = frame1[0];
+    for (int i = 1; i<imageW*imageH; i++) {
+        if (frame1[i] == (1 << 16) - 1) continue; //todo: this is a tmp fix for dead pixels
+        if (frame1[i] > maxPixelValue) maxPixelValue = frame1[i];
+        else if (frame1[i] < minPixelValue) minPixelValue = frame1[i];
+    }//for, each pixel
+    minPixelValue2 = maxPixelValue2 = frame1[0];
+    for (int i = 1; i<imageW*imageH; i++) {
+        if (frame2[i] == (1 << 16) - 1) continue; //todo: this is a tmp fix for dead pixels
+        if (frame2[i] > maxPixelValue2) maxPixelValue2 = frame2[i];
+        else if (frame2[i] < minPixelValue2) minPixelValue2 = frame2[i];
     }//for, each pixel
 }
 
@@ -962,7 +1082,7 @@ void Imagine::zoom_onMouseReleased(QMouseEvent* event)
 
     done:
         //refresh the image
-        updateImage();
+        updateImage(isUpdateImgColor);
     }//if, dragging
 
 }
@@ -970,7 +1090,7 @@ void Imagine::zoom_onMouseReleased(QMouseEvent* event)
 void Imagine::on_actionDisplayFullImage_triggered()
 {
     L = -1;
-    updateImage();
+    updateImage(isUpdateImgColor);
 
 }
 
@@ -990,7 +1110,7 @@ void Imagine::zoom_onMouseMoved(QMouseEvent* event)
         zoom_curPos = event->pos();
 
         if (!pixmap.isNull()){ //TODO: if(pixmap && idle)
-            updateImage();
+            updateImage(isUpdateImgColor);
         }
     }
 }
@@ -1051,6 +1171,8 @@ void Imagine::on_actionStartAcqAndSave_triggered()
         dataAcqThread->curStimIndex = 0;
     }
 
+    holdDisplayCamFile();
+
     intenCurveData->clear();
 
     dataAcqThread->isLive = false;
@@ -1080,6 +1202,8 @@ void Imagine::on_actionStartLive_triggered()
     nUpdateImage = 0;
     minPixelValue = maxPixelValue = -1;
 
+    holdDisplayCamFile();
+    
     intenCurveData->clear();
 
     dataAcqThread->isLive = true;
@@ -3248,5 +3372,373 @@ void Imagine::on_spinBoxPiezoSampleRate_valueChanged(int newValue)
     piezoSpeedCurve->setData(curveData);
     conWavPlot->replot();
 }
+
+/****** Image Display *****************************************************/
+#define IMAGINE_VALID_CHECK(container)\
+        if(line.contains("IMAGINE", Qt::CaseSensitive)){\
+            bool ok; container = true;}
+#define READ_IMAGINE_INT(key,container)\
+        else if (line.contains(QString(key).append("="), Qt::CaseSensitive)){\
+            bool ok; container = line.remove(0, QString(key).size()+1).section(' ',0,0).toInt(&ok);}
+#define READ_IMAGINE_DOUBLE(key,container)\
+        else if (line.contains(QString(key).append("="), Qt::CaseSensitive)){\
+            bool ok; container = line.remove(0, QString(key).size()+1).section(' ',0,0).toDouble(&ok);}
+#define READ_IMAGINE_STRING(key,container)\
+        else if (line.contains(QString(key).append("="), Qt::CaseSensitive)){\
+            bool ok; container = line.remove(0, QString(key).size()+1);}
+
+void Imagine::readImagineFile(QString filename, ImagineData &img)
+{
+    QFile file(filename);
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        QMessageBox::warning(this, tr("Imagine"),
+            tr("Cannot read file %1:\n%2.")
+            .arg(filename)
+            .arg(file.errorString()));
+        return;
+    }
+
+    QTextStream in(&file);
+    QString line;
+    do {
+        line = in.readLine();
+        IMAGINE_VALID_CHECK(img.valid) // should not use ;
+            READ_IMAGINE_INT("header version", img.version)
+            READ_IMAGINE_STRING("app version", img.appVersion)
+            READ_IMAGINE_STRING("date and time", img.dateNtime)
+            READ_IMAGINE_STRING("rig", img.rig)
+            READ_IMAGINE_STRING("binning", img.binning) // TODO: need more parsing
+            READ_IMAGINE_STRING("label list", img.stimlabelList) // TODO: need more parsing
+            READ_IMAGINE_INT("image width", img.imgWidth)
+            READ_IMAGINE_INT("image height", img.imgHeight)
+            READ_IMAGINE_INT("nStacks", img.nStacks)
+            READ_IMAGINE_INT("frames per stack", img.framesPerStack)
+            READ_IMAGINE_DOUBLE("exposure time", img.exposure)
+            READ_IMAGINE_STRING("pixel order", img.pixelOrder)
+            READ_IMAGINE_STRING("pixel data type", img.dataType)
+    } while (!line.isNull());
+
+        if (img.dataType == "uint16")
+            img.bytesPerPixel = 2;
+        else
+            img.bytesPerPixel = 1;
+        img.imageSizePixels = img.imgHeight * img.imgWidth;
+        img.imageSizeBytes = img.imageSizePixels * img.bytesPerPixel;
+
+        file.close();
+}
+
+void Imagine::holdDisplayCamFile()
+{
+    ui.rbImgCameraEnable->setChecked(true);
+    ui.cbImg1Enable->setChecked(true);
+//    ui.cbImg2Enable->setChecked(false);
+    img1.enable = false;
+    img2.enable = false;
+    cbImgEnable_clicked();
+}
+
+void Imagine::stopDisplayCamFile()
+{
+//    ui.cbImg1Enable->setChecked(false);
+//    ui.cbImg2Enable->setChecked(false);
+    img1.valid = false;
+    img2.valid = false;
+    img1.enable = false;
+    img2.enable = false;
+    img1.camValid = false;
+    img2.camValid = false;
+    img1.camImage.clear();
+    img2.camImage.clear();
+    if (img1.camFile.isOpen())
+        img1.camFile.close();
+    if (img2.camFile.isOpen())
+        img2.camFile.close();
+}
+
+void Imagine::on_btnImg1LoadFile_clicked()
+{
+    // read .imagine file
+    QString filename = QFileDialog::getOpenFileName(this, tr("Select an Imagine file 1"),
+        m_OpenDialogLastDirectory,
+        tr("Imagine File (*.imagine)"));
+    if (true == filename.isEmpty()) { return; }
+    QFileInfo fi(filename);
+    m_OpenDialogLastDirectory = fi.absolutePath();
+    ui.lineEditImg1Filename->setText(filename);
+    ui.cbImg1Enable->setChecked(true);
+    ui.rbImgFileEnable->setChecked(true);
+    img1.enable = true;
+
+    readImagineAndCamFile(filename, img1);
+
+    cbImgEnable_clicked();
+}
+
+void Imagine::on_btnImg2LoadFile_clicked()
+{
+    // read .imagine file
+    QString filename = QFileDialog::getOpenFileName(this, tr("Select an Imagine file 2"),
+        m_OpenDialogLastDirectory,
+        tr("Imagine File (*.imagine)"));
+    if (true == filename.isEmpty()) { return; }
+    QFileInfo fi(filename);
+    m_OpenDialogLastDirectory = fi.absolutePath();
+    ui.lineEditImg2Filename->setText(filename);
+    ui.cbImg2Enable->setChecked(true);
+    ui.rbImgFileEnable->setChecked(true);
+    img2.enable = true;
+
+    readImagineAndCamFile(filename, img2);
+
+    cbImgEnable_clicked();
+}
+
+void Imagine::readImagineAndCamFile(QString filename, ImagineData &img)
+{
+    readImagineFile(filename, img);
+    if (img1.valid && img1.enable && img2.valid && img2.enable) {
+        imgFramesPerStack = min(img1.framesPerStack, img2.framesPerStack);
+        imgNStacks = min(img1.nStacks, img2.nStacks);
+    }
+    else {
+        imgFramesPerStack = img.framesPerStack;
+        imgNStacks = img.nStacks;
+    }
+
+    // read .cam file
+    QString camFilename = replaceExtName(filename, "cam");
+    img.camFile.setFileName(camFilename);
+    if (!img.camFile.open(QFile::ReadOnly)) {
+        QMessageBox::warning(this, tr("Imagine"),
+            tr("Cannot read file %1:\n%2.")
+            .arg(camFilename)
+            .arg(img.camFile.errorString()));
+    }
+
+    imgFrameIdx = 0; // 0-based
+    imgStackIdx = 0; // 0-based
+
+    readCamImages();
+
+    ui.sbFrameIdx->setValue(imgFrameIdx);
+    ui.sbStackIdx->setValue(imgStackIdx);
+}
+
+void Imagine::applyImgColor(QWidget *widget, QColor color)
+{
+    QPalette pal = widget->palette();
+    pal.setColor(QPalette::Window, color);
+    widget->setPalette(pal);
+
+}
+
+void Imagine::on_pbImg1Color_clicked()
+{
+    img1Color = QColorDialog::getColor(img1Color, this);
+    applyImgColor(ui.widgetImg1Color, img1Color);
+    readCamImages();
+}
+
+void Imagine::on_pbImg2Color_clicked()
+{
+    img2Color = QColorDialog::getColor(img2Color, this);
+    applyImgColor(ui.widgetImg2Color, img2Color);
+    readCamImages();
+}
+
+void Imagine::blendImages()
+{
+    bool found;
+    int totalImgIdx;
+    if (img1.valid&&img1.enable) {
+        img1.currentFrameIdx = imgFrameIdx;
+        img1.currentStackIdx = imgStackIdx;
+        totalImgIdx = img1.currentStackIdx*img1.framesPerStack + img1.currentFrameIdx;
+        img1.camValid = img1.camFile.seek(totalImgIdx*img1.imageSizeBytes);
+        if (img1.camValid) {
+            img1.camImage = img1.camFile.read(img1.imageSizeBytes);
+        }
+        else
+            appendLog("Image 1 : invalid stack and frame numbers");
+    }
+    if (img2.valid&&img2.enable) {
+        img2.currentFrameIdx = imgFrameIdx;
+        img2.currentStackIdx = imgStackIdx;
+        totalImgIdx = img2.currentStackIdx*img2.framesPerStack + img2.currentFrameIdx;
+        img2.camValid = img2.camFile.seek(totalImgIdx*img2.imageSizeBytes);
+        if (img2.camValid) {
+            img2.camImage = img2.camFile.read(img2.imageSizeBytes);
+        }
+        else
+            appendLog("Image 2 : invalid stack and frame numbers");
+    }
+}
+
+void Imagine::readCamImages()
+{
+    blendImages();
+
+    nUpdateImage = 0;
+    minPixelValue = maxPixelValue = -1;
+    minPixelValue2 = maxPixelValue2 = -1;
+    if (img1.enable && img1.camValid && img2.enable && img2.camValid)
+        updateDisplayColor(img1.camImage, img2.camImage, imgFrameIdx, img1.imgWidth, img1.imgHeight);
+    else if (img1.enable && img1.camValid)
+        updateDisplay(img1.camImage, imgFrameIdx, img1.imgWidth, img1.imgHeight);
+    else if (img2.enable && img2.valid)
+        updateDisplay(img2.camImage, imgFrameIdx, img2.imgWidth, img2.imgHeight);
+}
+
+void Imagine::on_pbFramePlayback_clicked()
+{
+    imgFrameIdx = 0;
+    readCamImages();
+    ui.sbFrameIdx->setValue(imgFrameIdx);
+
+}
+
+void Imagine::on_pbFramePlay_clicked()
+{
+    imgFrameIdx = imgFramesPerStack -1;
+    readCamImages();
+    ui.sbFrameIdx->setValue(imgFrameIdx);
+}
+
+void Imagine::on_pbFramePrevious_clicked()
+{
+    imgFrameIdx--;
+    if (imgFrameIdx < 0) imgFrameIdx = imgFramesPerStack - 1;
+    readCamImages();
+    ui.sbFrameIdx->setValue(imgFrameIdx);
+}
+
+void Imagine::on_pbFrameNext_clicked()
+{
+    imgFrameIdx++;
+    imgFrameIdx %= imgFramesPerStack;
+    readCamImages();
+    ui.sbFrameIdx->setValue(imgFrameIdx);
+}
+
+void Imagine::on_pbStackPlayback_clicked()
+{
+    imgStackIdx = 0;
+    readCamImages();
+    ui.sbStackIdx->setValue(imgStackIdx);
+}
+
+void Imagine::on_pbStackPlay_clicked()
+{
+    imgStackIdx = imgNStacks - 1;
+    readCamImages();
+    ui.sbStackIdx->setValue(imgStackIdx);
+}
+
+void Imagine::on_pbStackPrevious_clicked()
+{
+    imgStackIdx--;
+    if (imgStackIdx < 0) imgStackIdx = imgNStacks - 1;
+    readCamImages();
+    ui.sbStackIdx->setValue(imgStackIdx);
+}
+
+void Imagine::on_pbStackNext_clicked()
+{
+    imgStackIdx++;
+    imgStackIdx %= imgNStacks;
+    readCamImages();
+    ui.sbStackIdx->setValue(imgStackIdx);
+}
+
+void Imagine::cbImgEnable_clicked()
+{
+    if ((img1.enable && img1.camValid) || (img2.enable && img2.camValid))
+        ui.groupBoxPlayCamImage->setEnabled(true);
+    else
+        ui.groupBoxPlayCamImage->setEnabled(false);
+    if ((img1.enable && img1.camValid) && (img2.enable && img2.camValid))
+        ui.groupBoxBlendingOption->setEnabled(true);
+    else
+        ui.groupBoxBlendingOption->setEnabled(false);
+}
+
+void Imagine::on_cbImg1Enable_clicked(bool checked)
+{
+    if (ui.rbImgFileEnable->isChecked()) {
+        img1.enable = checked;
+        cbImgEnable_clicked();
+        readCamImages();
+    }
+}
+
+void Imagine::on_cbImg2Enable_clicked(bool checked)
+{
+    if (ui.rbImgFileEnable->isChecked()) {
+        img2.enable = checked;
+        cbImgEnable_clicked();
+        readCamImages();
+    }
+}
+
+void Imagine::on_rbImgCameraEnable_toggled(bool checked)
+{
+    L = -1; // full image
+    if (checked) { // camera
+        ui.groupBoxPlayCamImage->setEnabled(false);
+        if(ui.cbImg1Enable->isChecked()&& ui.cbImg2Enable->isChecked())
+            ui.groupBoxBlendingOption->setEnabled(true);
+        else
+            ui.groupBoxBlendingOption->setEnabled(false);
+        //show logo
+        QByteArray live1 = dataAcqThread->pCamera->getLiveImage();
+        int width = dataAcqThread->pCamera->getImageWidth();
+        int height = dataAcqThread->pCamera->getImageHeight();
+        // check camera 2 image : QByteArray live2 = dataAcqThread->pCamera->getLiveImage();
+        if (live1.size() != 0) { //&& (live2 != 0) then blending
+            maxPixelValue = -1;
+            updateDisplay(live1, 0, width, height);
+        }
+        else {
+            QImage tImage(":/images/Resources/logo.jpg"); //todo: put logo here
+            if (!tImage.isNull()) {
+                ui.labelImage->setPixmap(QPixmap::fromImage(tImage));
+                ui.labelImage->adjustSize();
+            }
+        }
+    }
+    else { // imagine file
+        img1.enable = ui.cbImg1Enable->isChecked();
+        img2.enable = ui.cbImg2Enable->isChecked();
+        cbImgEnable_clicked();
+        readCamImages();
+    }
+}
+
+void Imagine::on_rbImgFileEnable_toggled(bool checked)
+{
+    return;
+}
+
+void Imagine::on_sbFrameIdx_valueChanged(int newValue)
+{
+    imgFrameIdx %= imgFramesPerStack;
+    ui.sbFrameIdx->setValue(imgFrameIdx);
+    readCamImages();
+}
+
+void Imagine::on_sbStackIdx_valueChanged(int newValue)
+{
+    imgStackIdx %= imgNStacks;
+    ui.sbStackIdx->setValue(imgStackIdx);
+    readCamImages();
+}
+
+void Imagine::on_hsBlending_valueChanged()
+{
+    alpha = ui.hsBlending->value();
+    readCamImages();
+}
+
 
 #pragma endregion

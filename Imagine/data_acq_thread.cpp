@@ -428,14 +428,8 @@ nextStack:  //code below is repeated every stack
         //to avoid "priority inversion" we temporarily elevate the priority
         this->setPriority(QThread::TimeCriticalPriority);
 
-        if (pCamera->getModel() == "dummy") {
-            if (!((nFramesGotForStack++)%nFramesPerStack))
-                tempNumStacks++;
-        }
-        else {
-            nFramesGotForStack = camera->getNAcquiredFrames();
-            tempNumStacks = camera->getNAcquiredStacks();
-        }
+        nFramesGotForStack = camera->getNAcquiredFrames();
+        tempNumStacks = camera->getNAcquiredStacks();
         this->setPriority(getDefaultPriority());
         if (idxCurStack < tempNumStacks) {
             idxCurStack = tempNumStacks;

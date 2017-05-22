@@ -39,7 +39,6 @@ public:
     bool abortCmd();
     string getSyncOut();
     string getClkOut();
-    int readWaveToBuffer(int num);
     int readConWaveToBuffer(int num);
     void writeNextSamples(void);
     static void CallbackWrapper(void* context) {
@@ -66,19 +65,20 @@ private:
 typedef enum  {
     doChannelForcamera1 = 5,
     doChannelForcamera2 = 6,
-    doChannelForlaser1 = 7,
+    doChannelForlaser1 = 4,
     doChannelForlaser2 = 8,
     doChannelForlaser3 = 9,
     doChannelForlaser4 = 10,
     doChannelForlaser5 = 11,
-    doChannelForStimulus1 = 0,
+    doChannelForStimulus1 = 0,// NI DAQ Digital port P0.0
     doChannelForStimulus2 = 1,
     doChannelForStimulus3 = 2,
     doChannelForStimulus4 = 3,
-    doChannelForStimulus5 = 4,
+    doChannelForStimulus5 = 7,
     doChannelForStimulus6 = 12,
     doChannelForStimulus7 = 13,
-    doChannelForStimulus8 = 14
+    doChannelForStimulus8 = 14,
+    doChannelForStimulus9 = 15,// P0.15
 }PortLayout;
 
 class DigitalOut : public DigitalControls {
@@ -94,7 +94,6 @@ public:
     bool waitCmd();
     bool abortCmd();
     bool singleOut(int lineIndex, bool newValue);
-    int readPulseToBuffer(int num);
     int readConPulseToBuffer(int num);
     void writeNextSamples(void);
     static void CallbackWrapper(void* context) {

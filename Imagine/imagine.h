@@ -96,6 +96,43 @@ struct PiezoUiParam {
     PiezoUiParam(){ valid = false; }
 };
 
+class ImagineData
+{
+public:
+    // data for cam file
+    bool valid = false;
+    int version;
+    QString appVersion;
+    QString dateNtime;
+    QString rig;
+    QString stimlabelList;
+    int imgWidth;
+    int imgHeight;
+    int nStacks;
+    int framesPerStack;
+    double exposure;
+    QString pixelOrder;
+    QString binning;
+    QString dataType;
+    int bytesPerPixel;
+    int imageSizePixels;
+    int imageSizeBytes;
+
+    // data for display control
+    bool camValid = false;
+    bool enable = false;
+    int currentFrameIdx;
+    int currentStackIdx;
+    QFile camFile;
+    QByteArray camImage;
+};
+
+typedef struct {
+    unsigned short red;
+    unsigned short green;
+    unsigned short blue;
+} ColorPixelValue;
+
 class Imagine : public QMainWindow
 {
     Q_OBJECT
@@ -112,15 +149,26 @@ public:
     Pixmapper *pixmapper = nullptr;
     bool isPixmapping = false;
     QPixmap pixmap;
+    QPixmap pixmapColor;
     QImage image;
+    QImage imageClor;
     QByteArray lastRawImg;
+    QByteArray lastRawImg2;
+    bool isUpdateImgColor;
     int lastImgH = 0;
     int lastImgW = 0;
     double factor = 0.0;
+    double factor2 = 0.0;
     int maxROIHSize;
     int maxROIVSize;
     int roiStepsHor;
     bool isUsingSoftROI = false;
+    ImagineData img1, img2;
+    QByteArray camImage;
+    int imgFramesPerStack, imgNStacks;
+    int imgFrameIdx, imgStackIdx;
+    QColor img1Color, img2Color;
+    int alpha;
 
     // for laser control
     LaserCtrlSerial *laserCtrlSerial = nullptr;
@@ -140,6 +188,7 @@ protected:
 private:
     QScrollArea* scrollArea;
     int minPixelValue, maxPixelValue;
+    int minPixelValue2, maxPixelValue2;
     int minPixelValueByUser, maxPixelValueByUser;
     int nContinousBlackFrames;
     QwtPlot *histPlot;
@@ -175,8 +224,9 @@ private:
     int laserShutterIndex[8] = { 0, };
     QString file=""; // config file name
     void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
+    void calcMinMaxValues(Camera::PixelValue * frame1, Camera::PixelValue * frame2, int imageW, int imageH);
     void updateStatus(ImagineStatus newStatus, ImagineAction newAction);
-    void updateImage();
+    void updateImage(bool color);
 	void updateHist(const Camera::PixelValue * frame,
         const int imageW, const int imageH);
     void updateIntenCurve(const Camera::PixelValue * frame,
@@ -203,6 +253,14 @@ private:
     void updataSpeedData(CurveData *curveData, int newValue, int start, int end);
     bool waveformValidityCheck(void);
     bool loadConWavDataAndPlot(int leftEnd, int rightEnd, int wavIdx);
+    void readImagineFile(QString file, ImagineData &img);
+    void readImagineAndCamFile(QString filename, ImagineData &img1);
+    void blendImages();
+    void readCamImages();
+    void cbImgEnable_clicked();
+    void holdDisplayCamFile();
+    void stopDisplayCamFile();
+    void applyImgColor(QWidget *widget, QColor color);
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();
@@ -259,6 +317,7 @@ private slots:
     void updateStatus(const QString &str);
     void appendLog(const QString& msg);
     void updateDisplay(const QByteArray &data16, long idx, int imageW, int imageH);
+    void updateDisplayColor(const QByteArray &data1, const QByteArray &data2, long idx, int imageW, int imageH);
     void zoom_onMousePressed(QMouseEvent*);
     void zoom_onMouseMoved(QMouseEvent*);
     void zoom_onMouseReleased(QMouseEvent*);
@@ -329,17 +388,45 @@ private slots:
     void on_comboBoxDO4_currentIndexChanged(int index);
     void on_comboBoxDO5_currentIndexChanged(int index);
 
+    void on_btnImg1LoadFile_clicked();
+    void on_btnImg2LoadFile_clicked();
+    void on_cbImg1Enable_clicked(bool checked);
+    void on_cbImg2Enable_clicked(bool checked);
+    void on_rbImgCameraEnable_toggled(bool checked);
+    void on_rbImgFileEnable_toggled(bool checked);
+    void on_pbFramePlayback_clicked();
+    void on_pbFramePrevious_clicked();
+    void on_pbFrameNext_clicked();
+    void on_pbFramePlay_clicked();
+    void on_pbStackPlayback_clicked();
+    void on_pbStackPrevious_clicked();
+    void on_pbStackNext_clicked();
+    void on_pbStackPlay_clicked();
+    void on_pbImg1Color_clicked();
+    void on_pbImg2Color_clicked();
+    void on_sbFrameIdx_valueChanged(int newValue);
+    void on_sbStackIdx_valueChanged(int newValue);
+    void on_hsBlending_valueChanged();
+
 public:
     Ui::ImagineClass ui;
 public slots:
     // handle pixmap of recently acquired frame
     void handlePixmap(const QPixmap &pxmp, const QImage &img);
+    void handleColorPixmap(const QPixmap &pxmp, const QImage &img);
 signals:
     void makePixmap(const QByteArray &ba, const int imageW, const int imageH,
         const double scaleFactor, const double dAreaSize,
         const int dLeft, const int dTop, const int dWidth, const int dHeight,
         const int xDown, const int xCur, const int yDown, const int yCur,
         const int minPixVal, const int maxPixVal, bool colorizeSat);
+    void makeColorPixmap(const QByteArray &ba1, const QByteArray &ba2, QColor color1,
+        QColor color2, int alpha, const int imageW, const int imageH,
+        const double scaleFactor1, const double scaleFactor2, const double dAreaSize,
+        const int dLeft, const int dTop, const int dWidth, const int dHeight,
+        const int xDown, const int xCur, const int yDown, const int yCur,
+        const int minPixVal1, const int maxPixVal1,
+        const int minPixVal2, const int maxPixVal2, bool colorizeSat);
 
     // for laser control from this line
     void openLaserSerialPort(QString portName);
