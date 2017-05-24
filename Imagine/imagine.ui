@@ -1934,7 +1934,7 @@
                  <number>800</number>
                 </property>
                 <property name="value">
-                 <number>100</number>
+                 <number>30</number>
                 </property>
                </widget>
               </item>
@@ -2142,9 +2142,69 @@
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_9">
                <item>
-                <layout class="QHBoxLayout" name="layoutPlayCamImage">
-                 <item>
-                  <widget class="QLabel" name="label_62">
+                <layout class="QGridLayout" name="gridLayout_2">
+                 <property name="sizeConstraint">
+                  <enum>QLayout::SetMinimumSize</enum>
+                 </property>
+                 <item row="1" column="3">
+                  <widget class="QSpinBox" name="sbFrameIdx">
+                   <property name="maximumSize">
+                    <size>
+                     <width>50</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="wrapping">
+                    <bool>true</bool>
+                   </property>
+                   <property name="frame">
+                    <bool>true</bool>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="buttonSymbols">
+                    <enum>QAbstractSpinBox::UpDownArrows</enum>
+                   </property>
+                   <property name="showGroupSeparator" stdset="0">
+                    <bool>false</bool>
+                   </property>
+                   <property name="maximum">
+                    <number>10000</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_57">
+                   <property name="maximumSize">
+                    <size>
+                     <width>50</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                   <property name="text">
+                    <string>Stack</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QPushButton" name="pbStackFastBackward">
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="imagine.qrc">
+                     <normaloff>:/icons/Resources/fastbackwardG.bmp</normaloff>
+                     <disabledoff>:/icons/Resources/fastbackwardD.bmp</disabledoff>
+                     <disabledon>:/icons/Resources/fastbackwardD.bmp</disabledon>:/icons/Resources/fastbackwardG.bmp</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_63">
                    <property name="maximumSize">
                     <size>
                      <width>40</width>
@@ -2159,108 +2219,33 @@
                    </property>
                   </widget>
                  </item>
-                 <item>
+                 <item row="1" column="1">
+                  <widget class="QPushButton" name="pbFrameFastBackward">
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="imagine.qrc">
+                     <normaloff>:/icons/Resources/fastbackwardG.bmp</normaloff>
+                     <disabledoff>:/icons/Resources/fastbackwardD.bmp</disabledoff>
+                     <disabledon>:/icons/Resources/fastbackwardD.bmp</disabledon>:/icons/Resources/fastbackwardG.bmp</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="2">
                   <widget class="QPushButton" name="pbFramePlayback">
                    <property name="text">
                     <string/>
                    </property>
                    <property name="icon">
                     <iconset resource="imagine.qrc">
-                     <normaloff>:/icons/Resources/playback.bmp</normaloff>:/icons/Resources/playback.bmp</iconset>
+                     <normaloff>:/icons/Resources/playbackG.bmp</normaloff>
+                     <disabledoff>:/icons/Resources/playbackD.bmp</disabledoff>
+                     <disabledon>:/icons/Resources/playbackD.bmp</disabledon>:/icons/Resources/playbackG.bmp</iconset>
                    </property>
                   </widget>
                  </item>
-                 <item>
-                  <widget class="QPushButton" name="pbFramePrevious">
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="imagine.qrc">
-                     <normaloff>:/icons/Resources/previous.bmp</normaloff>:/icons/Resources/previous.bmp</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QSpinBox" name="sbFrameIdx">
-                   <property name="maximumSize">
-                    <size>
-                     <width>50</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="frame">
-                    <bool>true</bool>
-                   </property>
-                   <property name="buttonSymbols">
-                    <enum>QAbstractSpinBox::NoButtons</enum>
-                   </property>
-                   <property name="showGroupSeparator" stdset="0">
-                    <bool>false</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pbFrameNext">
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="imagine.qrc">
-                     <normaloff>:/icons/Resources/next.bmp</normaloff>:/icons/Resources/next.bmp</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pbFramePlay">
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="imagine.qrc">
-                     <normaloff>:/icons/Resources/play.bmp</normaloff>:/icons/Resources/play.bmp</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="label_57">
-                   <property name="maximumSize">
-                    <size>
-                     <width>50</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="toolTip">
-                    <string/>
-                   </property>
-                   <property name="text">
-                    <string>:    Stack</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pbStackPlayback">
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="imagine.qrc">
-                     <normaloff>:/icons/Resources/playback.bmp</normaloff>:/icons/Resources/playback.bmp</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pbStackPrevious">
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="imagine.qrc">
-                     <normaloff>:/icons/Resources/previous.bmp</normaloff>:/icons/Resources/previous.bmp</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
+                 <item row="0" column="3">
                   <widget class="QSpinBox" name="sbStackIdx">
                    <property name="maximumSize">
                     <size>
@@ -2268,36 +2253,184 @@
                      <height>16777215</height>
                     </size>
                    </property>
+                   <property name="wrapping">
+                    <bool>true</bool>
+                   </property>
                    <property name="frame">
                     <bool>true</bool>
                    </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
                    <property name="buttonSymbols">
-                    <enum>QAbstractSpinBox::NoButtons</enum>
+                    <enum>QAbstractSpinBox::UpDownArrows</enum>
                    </property>
                    <property name="showGroupSeparator" stdset="0">
                     <bool>false</bool>
                    </property>
+                   <property name="maximum">
+                    <number>10000</number>
+                   </property>
                   </widget>
                  </item>
-                 <item>
-                  <widget class="QPushButton" name="pbStackNext">
+                 <item row="0" column="2">
+                  <widget class="QPushButton" name="pbStackPlayback">
                    <property name="text">
                     <string/>
                    </property>
                    <property name="icon">
                     <iconset resource="imagine.qrc">
-                     <normaloff>:/icons/Resources/next.bmp</normaloff>:/icons/Resources/next.bmp</iconset>
+                     <normaloff>:/icons/Resources/playbackG.bmp</normaloff>
+                     <disabledoff>:/icons/Resources/playbackD.bmp</disabledoff>
+                     <disabledon>:/icons/Resources/playbackD.bmp</disabledon>:/icons/Resources/playbackG.bmp</iconset>
                    </property>
                   </widget>
                  </item>
-                 <item>
+                 <item row="0" column="8">
+                  <widget class="QLabel" name="labelNumverOfStack">
+                   <property name="maximumSize">
+                    <size>
+                     <width>40</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                   <property name="text">
+                    <string>0</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="7">
+                  <widget class="QLabel" name="label_69">
+                   <property name="maximumSize">
+                    <size>
+                     <width>1000</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                   <property name="text">
+                    <string>Number of stack : </string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="6">
+                  <widget class="QPushButton" name="pbStackFastForward">
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="imagine.qrc">
+                     <normaloff>:/icons/Resources/fastforwardG.bmp</normaloff>
+                     <disabledoff>:/icons/Resources/fastforwardD.bmp</disabledoff>
+                     <disabledon>:/icons/Resources/fastforwardD.bmp</disabledon>:/icons/Resources/fastforwardG.bmp</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="5">
                   <widget class="QPushButton" name="pbStackPlay">
                    <property name="text">
                     <string/>
                    </property>
                    <property name="icon">
                     <iconset resource="imagine.qrc">
-                     <normaloff>:/icons/Resources/play.bmp</normaloff>:/icons/Resources/play.bmp</iconset>
+                     <normaloff>:/icons/Resources/playG.bmp</normaloff>
+                     <disabledoff>:/icons/Resources/playD.bmp</disabledoff>
+                     <disabledon>:/icons/Resources/playD.bmp</disabledon>:/icons/Resources/playG.bmp</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="8">
+                  <widget class="QLabel" name="labelFramesPerStack">
+                   <property name="maximumSize">
+                    <size>
+                     <width>40</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                   <property name="text">
+                    <string>0</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="7">
+                  <widget class="QLabel" name="label_64">
+                   <property name="maximumSize">
+                    <size>
+                     <width>1000</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                   <property name="text">
+                    <string>Frames per stack : </string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="6">
+                  <widget class="QPushButton" name="pbFrameFastForward">
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="imagine.qrc">
+                     <normaloff>:/icons/Resources/fastforwardG.bmp</normaloff>
+                     <disabledoff>:/icons/Resources/fastforwardD.bmp</disabledoff>
+                     <disabledon>:/icons/Resources/fastforwardD.bmp</disabledon>:/icons/Resources/fastforwardG.bmp</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="4">
+                  <widget class="QPushButton" name="pbStackPause">
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="imagine.qrc">
+                     <normaloff>:/icons/Resources/pauseG.bmp</normaloff>
+                     <disabledoff>:/icons/Resources/pauseD.bmp</disabledoff>
+                     <disabledon>:/icons/Resources/pauseD.bmp</disabledon>:/icons/Resources/pauseG.bmp</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="5">
+                  <widget class="QPushButton" name="pbFramePlay">
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="imagine.qrc">
+                     <normaloff>:/icons/Resources/playG.bmp</normaloff>
+                     <disabledoff>:/icons/Resources/playD.bmp</disabledoff>
+                     <disabledon>:/icons/Resources/playD.bmp</disabledon>:/icons/Resources/playG.bmp</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="4">
+                  <widget class="QPushButton" name="pbFramePause">
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="imagine.qrc">
+                     <normaloff>:/icons/Resources/pauseG.bmp</normaloff>
+                     <disabledoff>:/icons/Resources/pauseD.bmp</disabledoff>
+                     <disabledon>:/icons/Resources/pauseD.bmp</disabledon>:/icons/Resources/pauseG.bmp</iconset>
                    </property>
                   </widget>
                  </item>
@@ -2369,6 +2502,9 @@
                    <property name="maximum">
                     <number>100</number>
                    </property>
+                   <property name="singleStep">
+                    <number>2</number>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -2408,6 +2544,88 @@
                  </item>
                 </layout>
                </item>
+               <item>
+                <layout class="QHBoxLayout" name="layoutBlendingOption_3">
+                 <item>
+                  <widget class="QCheckBox" name="cbEnableMismatch">
+                   <property name="maximumSize">
+                    <size>
+                     <width>200</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Mismatch correction for image 2</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_2">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+              <zorder></zorder>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBoxBlendingOption_2">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>50</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="title">
+               <string/>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_10">
+               <item>
+                <layout class="QHBoxLayout" name="layoutBlendingOption_2">
+                 <property name="sizeConstraint">
+                  <enum>QLayout::SetMinimumSize</enum>
+                 </property>
+                 <item>
+                  <widget class="QPushButton" name="pbSaveImage">
+                   <property name="maximumSize">
+                    <size>
+                     <width>180</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Save current image</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_10">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
               </layout>
               <zorder></zorder>
              </widget>
@@ -2424,6 +2642,19 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pbTestButton">
+              <property name="maximumSize">
+               <size>
+                <width>100</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Test</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>

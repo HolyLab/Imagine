@@ -90,6 +90,12 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
     connect(pixmapper, &Pixmapper::pixmapReady, this, &Imagine::handlePixmap);
     connect(pixmapper, &Pixmapper::pixmapColorReady, this, &Imagine::handleColorPixmap);
     pixmapperThread.start(QThread::IdlePriority);
+    imagePlay = new ImagePlay();
+    imagePlay->moveToThread(&imagePlayThread);
+    connect(&imagePlayThread, &QThread::finished, imagePlay, &QObject::deleteLater);
+    imagePlayThread.start(QThread::IdlePriority);
+    connect(this, &Imagine::startIndexRunning, imagePlay, &ImagePlay::indexRun);
+    connect(imagePlay, &ImagePlay::nextIndexIsReady, this, &Imagine::readNextCamImages);
 
     minPixelValueByUser = 0;
     maxPixelValueByUser = 1 << 16;
@@ -742,7 +748,8 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
 
     //copy and scale data
     if (ui.actionNoAutoScale->isChecked()){
-        minPixelValue = maxPixelValue = 0;
+        minPixelValue = 0;
+        maxPixelValue = (1 << 14)-1;
         factor = 1.0 / (1 << 6); //i.e. /(2^14)*(2^8). note: not >>8 b/c it's 14-bit camera. TODO: take care of 16 bit camera?
     }//if, no contrast adjustment
     else {
@@ -805,8 +812,10 @@ void Imagine::updateDisplayColor(const QByteArray &data1, const QByteArray &data
 
     //copy and scale data
     if (ui.actionNoAutoScale->isChecked()) {
-        minPixelValue = maxPixelValue = 0;
-        minPixelValue2 = maxPixelValue2 = 0;
+        minPixelValue = 0;
+        maxPixelValue = (1 << 14) - 1;
+        minPixelValue2 = 0;
+        maxPixelValue2 = (1 << 14) - 1;
         factor = 1.0 / (1 << 4); //i.e. /(2^14)*(2^10). note: not >>8 b/c it's 14-bit camera. TODO: take care of 16 bit camera?
     }//if, no contrast adjustment
     else {
@@ -910,7 +919,7 @@ void Imagine::calcMinMaxValues(Camera::PixelValue * frame1, Camera::PixelValue *
         if (frame1[i] > maxPixelValue) maxPixelValue = frame1[i];
         else if (frame1[i] < minPixelValue) minPixelValue = frame1[i];
     }//for, each pixel
-    minPixelValue2 = maxPixelValue2 = frame1[0];
+    minPixelValue2 = maxPixelValue2 = frame2[0];
     for (int i = 1; i<imageW*imageH; i++) {
         if (frame2[i] == (1 << 16) - 1) continue; //todo: this is a tmp fix for dead pixels
         if (frame2[i] > maxPixelValue2) maxPixelValue2 = frame2[i];
@@ -3470,7 +3479,12 @@ void Imagine::on_btnImg1LoadFile_clicked()
     ui.rbImgFileEnable->setChecked(true);
     img1.enable = true;
 
-    readImagineAndCamFile(filename, img1);
+    bool succeed = readImagineAndCamFile(filename, img1);
+    if (succeed == false) {
+        ui.cbImg1Enable->setChecked(false);
+        ui.lineEditImg1Filename->setText("");
+        img1.enable = false;
+    }
 
     cbImgEnable_clicked();
 }
@@ -3489,22 +3503,58 @@ void Imagine::on_btnImg2LoadFile_clicked()
     ui.rbImgFileEnable->setChecked(true);
     img2.enable = true;
 
-    readImagineAndCamFile(filename, img2);
+    bool succeed = readImagineAndCamFile(filename, img2);
+    if (succeed == false) {
+        ui.cbImg2Enable->setChecked(false);
+        ui.lineEditImg1Filename->setText("");
+        img2.enable = false;
+    }
 
     cbImgEnable_clicked();
 }
 
-void Imagine::readImagineAndCamFile(QString filename, ImagineData &img)
+bool Imagine::compareDimensions()
 {
+    if ((img1.nStacks != img2.nStacks) || (img1.framesPerStack != img2.framesPerStack) ||
+        (img1.imgWidth != img2.imgWidth) || (img1.imgHeight != img2.imgHeight)) {
+        QMessageBox::warning(this, tr("Imagine"),
+            tr("Number of stacks, frames per stack, image width and height of image 1 an image 2 should be same."));
+        return false;
+    }
+    else
+        return true;
+}
+
+void Imagine::setupDimensions(int stacks, int frames, int width, int height)
+{
+    imgNStacks = stacks;
+    imgFramesPerStack = frames;
+    imgWidth = width;
+    imgHeight = height;
+}
+
+bool Imagine::readImagineAndCamFile(QString filename, ImagineData &img)
+{
+    bool retVal = true;
     readImagineFile(filename, img);
     if (img1.valid && img1.enable && img2.valid && img2.enable) {
-        imgFramesPerStack = min(img1.framesPerStack, img2.framesPerStack);
-        imgNStacks = min(img1.nStacks, img2.nStacks);
+        if (!compareDimensions()) {
+            img.valid = false;
+            return false;
+        }
+        else
+            setupDimensions(img.nStacks, img.framesPerStack, img.imgWidth, img.imgHeight);
+    }
+    else if(img.valid){
+        setupDimensions(img.nStacks, img.framesPerStack, img.imgWidth, img.imgHeight);
     }
     else {
-        imgFramesPerStack = img.framesPerStack;
-        imgNStacks = img.nStacks;
+        setupDimensions(0, 0, 0, 0);
     }
+    ui.sbStackIdx->setMaximum(imgNStacks-1);
+    ui.sbFrameIdx->setMaximum(imgFramesPerStack-1);
+    ui.labelNumverOfStack->setText(QString("%1").arg(imgNStacks));
+    ui.labelFramesPerStack->setText(QString("%1").arg(imgFramesPerStack));
 
     // read .cam file
     QString camFilename = replaceExtName(filename, "cam");
@@ -3518,11 +3568,13 @@ void Imagine::readImagineAndCamFile(QString filename, ImagineData &img)
 
     imgFrameIdx = 0; // 0-based
     imgStackIdx = 0; // 0-based
+    L = -1;
 
     readCamImages();
 
     ui.sbFrameIdx->setValue(imgFrameIdx);
     ui.sbStackIdx->setValue(imgStackIdx);
+    return true;
 }
 
 void Imagine::applyImgColor(QWidget *widget, QColor color)
@@ -3550,7 +3602,7 @@ void Imagine::on_pbImg2Color_clicked()
 void Imagine::blendImages()
 {
     bool found;
-    int totalImgIdx;
+    qint64 totalImgIdx;
     if (img1.valid&&img1.enable) {
         img1.currentFrameIdx = imgFrameIdx;
         img1.currentStackIdx = imgStackIdx;
@@ -3583,72 +3635,133 @@ void Imagine::readCamImages()
     minPixelValue = maxPixelValue = -1;
     minPixelValue2 = maxPixelValue2 = -1;
     if (img1.enable && img1.camValid && img2.enable && img2.camValid)
-        updateDisplayColor(img1.camImage, img2.camImage, imgFrameIdx, img1.imgWidth, img1.imgHeight);
+        updateDisplayColor(img1.camImage, img2.camImage, imgFrameIdx, imgWidth, imgHeight);
     else if (img1.enable && img1.camValid)
         updateDisplay(img1.camImage, imgFrameIdx, img1.imgWidth, img1.imgHeight);
     else if (img2.enable && img2.valid)
         updateDisplay(img2.camImage, imgFrameIdx, img2.imgWidth, img2.imgHeight);
 }
 
+void Imagine::readNextCamImages(int stack1, int frameIdx1, int stack2, int frameIdx2)
+{
+    if (ui.rbImgCameraEnable->isChecked())
+        return;
+    if (imgStackIdx != stack1) {
+        imgStackIdx = stack1;
+        ui.sbStackIdx->setValue(imgStackIdx);
+    }
+    if (imgFrameIdx != frameIdx1) {
+        imgFrameIdx = frameIdx1;
+        ui.sbFrameIdx->setValue(imgFrameIdx);
+    }
+}
+
+void Imagine::setFrameIndexSpeed(int speed1, int speed2)
+{
+    if (img1.camValid) {
+        img1.framePlaySpeed = speed1;
+        imagePlay->framePlaySpeed1 = img1.framePlaySpeed;
+        img1.stackPlaySpeed = 0;
+        img2.stackPlaySpeed = 0;
+        imagePlay->stackPlaySpeed1 = 0;
+        imagePlay->stackPlaySpeed2 = 0;
+    }
+    if (img2.camValid) {
+        img2.framePlaySpeed = speed2;
+        imagePlay->framePlaySpeed2 = img2.framePlaySpeed;
+        img1.stackPlaySpeed = 0;
+        img2.stackPlaySpeed = 0;
+        imagePlay->stackPlaySpeed1 = 0;
+        imagePlay->stackPlaySpeed2 = 0;
+    }
+    if (!imagePlay->isRunning)
+        emit startIndexRunning(imgStackIdx, imgFrameIdx, img1.nStacks, img1.framesPerStack,
+            imgStackIdx, imgFrameIdx, img2.nStacks, img2.framesPerStack);
+}
+
 void Imagine::on_pbFramePlayback_clicked()
 {
-    imgFrameIdx = 0;
-    readCamImages();
-    ui.sbFrameIdx->setValue(imgFrameIdx);
-
+    setFrameIndexSpeed(-1, -1);
 }
 
 void Imagine::on_pbFramePlay_clicked()
 {
-    imgFrameIdx = imgFramesPerStack -1;
-    readCamImages();
-    ui.sbFrameIdx->setValue(imgFrameIdx);
+    setFrameIndexSpeed(1, 1);
 }
 
-void Imagine::on_pbFramePrevious_clicked()
+void Imagine::on_pbFrameFastBackward_clicked()
 {
-    imgFrameIdx--;
-    if (imgFrameIdx < 0) imgFrameIdx = imgFramesPerStack - 1;
-    readCamImages();
-    ui.sbFrameIdx->setValue(imgFrameIdx);
+    setFrameIndexSpeed(-5, -5);
 }
 
-void Imagine::on_pbFrameNext_clicked()
+void Imagine::on_pbFrameFastForward_clicked()
 {
-    imgFrameIdx++;
-    imgFrameIdx %= imgFramesPerStack;
-    readCamImages();
-    ui.sbFrameIdx->setValue(imgFrameIdx);
+    setFrameIndexSpeed(5, 5);
+}
+
+void Imagine::on_pbFramePause_clicked()
+{
+    setFrameIndexSpeed(0, 0);
+}
+
+void Imagine::setStackIndexSpeed(int speed1, int speed2)
+{
+    if (img1.camValid) {
+        img1.stackPlaySpeed = speed1;
+        imagePlay->stackPlaySpeed1 = img1.stackPlaySpeed;
+        img1.framePlaySpeed = 0;
+        img2.framePlaySpeed = 0;
+        imagePlay->framePlaySpeed1 = 0;
+        imagePlay->framePlaySpeed2 = 0;
+    }
+    if (img2.camValid) {
+        img2.stackPlaySpeed = speed2;
+        imagePlay->stackPlaySpeed2 = img2.stackPlaySpeed;
+        img1.framePlaySpeed = 0;
+        img2.framePlaySpeed = 0;
+        imagePlay->framePlaySpeed1 = 0;
+        imagePlay->framePlaySpeed2 = 0;
+    }
+    if(!imagePlay->isRunning)
+        emit startIndexRunning(imgStackIdx, imgFrameIdx, img1.nStacks, img1.framesPerStack,
+            imgStackIdx, imgFrameIdx, img2.nStacks, img2.framesPerStack);
 }
 
 void Imagine::on_pbStackPlayback_clicked()
 {
-    imgStackIdx = 0;
-    readCamImages();
-    ui.sbStackIdx->setValue(imgStackIdx);
+    setStackIndexSpeed(-1, -1);
 }
 
 void Imagine::on_pbStackPlay_clicked()
 {
-    imgStackIdx = imgNStacks - 1;
-    readCamImages();
-    ui.sbStackIdx->setValue(imgStackIdx);
+    setStackIndexSpeed(1, 1);
 }
 
-void Imagine::on_pbStackPrevious_clicked()
+void Imagine::on_pbStackFastBackward_clicked()
 {
-    imgStackIdx--;
-    if (imgStackIdx < 0) imgStackIdx = imgNStacks - 1;
-    readCamImages();
-    ui.sbStackIdx->setValue(imgStackIdx);
+    setStackIndexSpeed(-5, -5);
 }
 
-void Imagine::on_pbStackNext_clicked()
+void Imagine::on_pbStackFastForward_clicked()
 {
-    imgStackIdx++;
-    imgStackIdx %= imgNStacks;
+    setStackIndexSpeed(5, 5);
+}
+
+void Imagine::on_pbStackPause_clicked()
+{
+    setStackIndexSpeed(0, 0);
+}
+
+void Imagine::on_sbFrameIdx_valueChanged(int newValue)
+{
+    imgFrameIdx = newValue;
     readCamImages();
-    ui.sbStackIdx->setValue(imgStackIdx);
+}
+
+void Imagine::on_sbStackIdx_valueChanged(int newValue)
+{
+    imgStackIdx = newValue;
+    readCamImages();
 }
 
 void Imagine::cbImgEnable_clicked()
@@ -3685,6 +3798,15 @@ void Imagine::on_rbImgCameraEnable_toggled(bool checked)
 {
     L = -1; // full image
     if (checked) { // camera
+        img1.stackPlaySpeed = 0;
+        img2.stackPlaySpeed = 0;
+        imagePlay->stackPlaySpeed1 = 0;
+        imagePlay->stackPlaySpeed2 = 0;
+        img1.framePlaySpeed = 0;
+        img2.framePlaySpeed = 0;
+        imagePlay->framePlaySpeed1 = 0;
+        imagePlay->framePlaySpeed2 = 0;
+        // TODO: need to clear signals for ImagePlay and Pixmapper
         ui.groupBoxPlayCamImage->setEnabled(false);
         if(ui.cbImg1Enable->isChecked()&& ui.cbImg2Enable->isChecked())
             ui.groupBoxBlendingOption->setEnabled(true);
@@ -3720,25 +3842,66 @@ void Imagine::on_rbImgFileEnable_toggled(bool checked)
     return;
 }
 
-void Imagine::on_sbFrameIdx_valueChanged(int newValue)
-{
-    imgFrameIdx %= imgFramesPerStack;
-    ui.sbFrameIdx->setValue(imgFrameIdx);
-    readCamImages();
-}
-
-void Imagine::on_sbStackIdx_valueChanged(int newValue)
-{
-    imgStackIdx %= imgNStacks;
-    ui.sbStackIdx->setValue(imgStackIdx);
-    readCamImages();
-}
-
 void Imagine::on_hsBlending_valueChanged()
 {
     alpha = ui.hsBlending->value();
     readCamImages();
 }
 
+void transform(QByteArray &img1, QByteArray &img2, int width, int height, TransformParam param)
+{
+    img2.clear();
+    width *= 2;   //2bytes per pixel
+    int size = width * height;
+    img2.append(img1, size);
+    /*
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j+=2) {
+            img2.append(img1[i*width + j],2);
+        }
+    }
+    */
+}
+
+void Imagine::on_pbTestButton_clicked()
+{
+    img2.param.alpha = 0.01; // radian
+    img2.param.beta = 0.01;
+    img2.param.gamma = 0.05;
+    img2.param.shiftX = 20; // pixels
+    img2.param.shiftY = 15;
+    img2.param.shiftZ = 10;
+
+    if (img1.valid&&img1.enable && (ui.lineEditImg2Filename->text() == "")) {
+        int transNStacks = 1;// img1.nStacks;
+        int transFramesPerStack = 1;// img1.framesPerStack;
+        for (int i = 0; i < transNStacks; i++) {
+            for (int j = 0; j < transFramesPerStack; j++) {
+                /*
+                int totalImgIdx = i*img1.framesPerStack + j;
+                img1.camValid = img1.camFile.seek(totalImgIdx*img1.imageSizeBytes);
+                if (img1.camValid) {
+                    img1.camImage = img1.camFile.read(img1.imageSizeBytes);
+                }
+                else
+                    appendLog("Image 1 : invalid stack and frame numbers");
+                    */
+                transform(img1.camImage, img2.camImage, img1.imgWidth, img1.imgHeight, img2.param);
+                img2.camValid = true;
+                if (ui.rbImgFileEnable->isChecked() && true) {
+                    cbImgEnable_clicked();
+                    readCamImages();
+                }
+            }
+        }
+    }
+}
+
+void Imagine::on_cbEnableMismatch_clicked(bool checked)
+{
+//    findMismatch(img1.camImage, img2.camImage, img1.imgWidth, img1.imgHeight, param);
+    img2.correctMismatch = true;
+    transform(img1.camImage, img2.camImage, img1.imgWidth, img1.imgHeight, img2.param);
+}
 
 #pragma endregion

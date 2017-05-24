@@ -3,10 +3,21 @@
         <file>Resources/start_acq.bmp</file>
         <file>Resources/start_live.bmp</file>
         <file>Resources/stop.bmp</file>
-        <file>Resources/next.bmp</file>
-        <file>Resources/play.bmp</file>
+        <file>Resources/fastbackward.bmp</file>
+        <file>Resources/fastbackwardG.bmp</file>
+        <file>Resources/fastbackwardD.bmp</file>
         <file>Resources/playback.bmp</file>
-        <file>Resources/previous.bmp</file>
+        <file>Resources/playbackG.bmp</file>
+        <file>Resources/playbackD.bmp</file>
+        <file>Resources/pause.bmp</file>
+        <file>Resources/pauseG.bmp</file>
+        <file>Resources/pauseD.bmp</file>
+        <file>Resources/play.bmp</file>
+        <file>Resources/playG.bmp</file>
+        <file>Resources/playD.bmp</file>
+        <file>Resources/fastforward.bmp</file>
+        <file>Resources/fastforwardG.bmp</file>
+        <file>Resources/fastforwardD.bmp</file>
     </qresource>
     <qresource prefix="/images" >
         <file>Resources/logo.jpg</file>

@@ -170,3 +170,52 @@ void Pixmapper::handleColorImg(const QByteArray &ba1, const QByteArray &ba2,
 }
 
 #pragma endregion
+
+
+#pragma region Lifecycle
+
+ImagePlay::ImagePlay(QObject *parent) : QObject(parent) {
+
+}
+
+ImagePlay::~ImagePlay() {
+
+}
+
+void ImagePlay::indexRun(int strtStackIdx1, int strtFrameIdx1, int nStacks1, int framesPerStack1,
+                        int strtStackIdx2, int strtFrameIdx2, int nStacks2, int framesPerStack2)
+{
+    stackIdx1 = strtStackIdx1;
+    frameIdx1 = strtFrameIdx1;
+    stackIdx2 = strtStackIdx2;
+    frameIdx2 = strtFrameIdx2;
+
+    isRunning = true;
+    while (stackPlaySpeed1 || framePlaySpeed1 || stackPlaySpeed2 || framePlaySpeed2)
+    {
+        stackIdx1 += stackPlaySpeed1;
+        if (stackIdx1 < 0)
+            stackIdx1 = nStacks1 - 1;
+        else if (stackIdx1 >= nStacks1)
+            stackIdx1 = 0;
+        frameIdx1 += framePlaySpeed1;
+        if (frameIdx1 < 0)
+            frameIdx1 = framesPerStack1 - 1;
+        else if (frameIdx1 >= framesPerStack1)
+            frameIdx1 = 0;
+        stackIdx2 += stackPlaySpeed2;
+        if (stackIdx2 < 0)
+            stackIdx2 = nStacks2 - 1;
+        else if (stackIdx2 >= nStacks2)
+            stackIdx2 = 0;
+        frameIdx2 += framePlaySpeed2;
+        if (frameIdx2 < 0)
+            frameIdx2 = framesPerStack1 - 2;
+        else if (frameIdx2 >= framesPerStack2)
+            frameIdx2 = 0;
+        QThread::msleep(500);
+        emit nextIndexIsReady(stackIdx1, frameIdx1, stackIdx2, frameIdx2);
+    }
+    isRunning = false;
+}
+#pragma endregion

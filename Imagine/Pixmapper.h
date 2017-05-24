@@ -30,3 +30,24 @@ signals:
     void pixmapReady(const QPixmap &pxmp, const QImage &img);
     void pixmapColorReady(const QPixmap &pxmp, const QImage &img);
 };
+
+class ImagePlay : public QObject {
+    Q_OBJECT
+public:
+    ImagePlay(QObject *parent = 0);
+    ~ImagePlay();
+    int stackPlaySpeed1 = 0;
+    int framePlaySpeed1 = 0;
+    int stackPlaySpeed2 = 0;
+    int framePlaySpeed2 = 0;
+    int stackIdx1, frameIdx1, stackIdx2, frameIdx2;
+    bool isRunning = false;
+
+public
+    slots:
+    void indexRun(int strtStackIdx1, int strtFrameIdx1, int nStacks1, int framesPerStack1,
+                int strtStackIdx2, int strtFrameIdx2, int nStacks2, int framesPerStack2);
+    signals:
+    void nextIndexIsReady(int nextStackIdx1, int nextFrameIdx1,
+                        int nextStackIdx2, int nextFrameIdx2);
+};

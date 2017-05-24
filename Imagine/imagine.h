@@ -96,6 +96,11 @@ struct PiezoUiParam {
     PiezoUiParam(){ valid = false; }
 };
 
+typedef struct {
+    double alpha, beta, gamma;
+    double shiftX, shiftY, shiftZ;
+} TransformParam;
+
 class ImagineData
 {
 public:
@@ -121,8 +126,12 @@ public:
     // data for display control
     bool camValid = false;
     bool enable = false;
+    bool correctMismatch = false;
     int currentFrameIdx;
     int currentStackIdx;
+    int stackPlaySpeed = 0;
+    int framePlaySpeed = 0;
+    TransformParam param;
     QFile camFile;
     QByteArray camImage;
 };
@@ -139,6 +148,7 @@ class Imagine : public QMainWindow
     QThread pixmapperThread;
     QThread laserCtrlThread;
     QThread piezoCtrlThread;
+    QThread imagePlayThread;
 public:
     Imagine(Camera *cam, Positioner *pos = NULL, Laser *laser = NULL, Imagine *mImagine = NULL,
         QWidget *parent = 0, Qt::WindowFlags flags = 0);
@@ -147,6 +157,7 @@ public:
     
 	Imagine *masterImagine; //Positioner and stimulus control / interface is restricted to only the master instance
     Pixmapper *pixmapper = nullptr;
+    ImagePlay *imagePlay = nullptr;
     bool isPixmapping = false;
     QPixmap pixmap;
     QPixmap pixmapColor;
@@ -165,6 +176,7 @@ public:
     bool isUsingSoftROI = false;
     ImagineData img1, img2;
     QByteArray camImage;
+    int imgWidth, imgHeight;
     int imgFramesPerStack, imgNStacks;
     int imgFrameIdx, imgStackIdx;
     QColor img1Color, img2Color;
@@ -254,13 +266,17 @@ private:
     bool waveformValidityCheck(void);
     bool loadConWavDataAndPlot(int leftEnd, int rightEnd, int wavIdx);
     void readImagineFile(QString file, ImagineData &img);
-    void readImagineAndCamFile(QString filename, ImagineData &img1);
+    bool readImagineAndCamFile(QString filename, ImagineData &img1);
     void blendImages();
     void readCamImages();
     void cbImgEnable_clicked();
     void holdDisplayCamFile();
     void stopDisplayCamFile();
     void applyImgColor(QWidget *widget, QColor color);
+    void setStackIndexSpeed(int speed1, int speed2);
+    void setFrameIndexSpeed(int speed1, int speed2);
+    bool compareDimensions();
+    void setupDimensions(int stacks, int frames, int width, int height);
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();
@@ -395,18 +411,23 @@ private slots:
     void on_rbImgCameraEnable_toggled(bool checked);
     void on_rbImgFileEnable_toggled(bool checked);
     void on_pbFramePlayback_clicked();
-    void on_pbFramePrevious_clicked();
-    void on_pbFrameNext_clicked();
     void on_pbFramePlay_clicked();
+    void on_pbFrameFastBackward_clicked();
+    void on_pbFrameFastForward_clicked();
+    void on_pbFramePause_clicked();
     void on_pbStackPlayback_clicked();
-    void on_pbStackPrevious_clicked();
-    void on_pbStackNext_clicked();
     void on_pbStackPlay_clicked();
-    void on_pbImg1Color_clicked();
-    void on_pbImg2Color_clicked();
+    void on_pbStackFastBackward_clicked();
+    void on_pbStackFastForward_clicked();
+    void on_pbStackPause_clicked();
     void on_sbFrameIdx_valueChanged(int newValue);
     void on_sbStackIdx_valueChanged(int newValue);
+    void on_pbImg1Color_clicked();
+    void on_pbImg2Color_clicked();
     void on_hsBlending_valueChanged();
+    void on_cbEnableMismatch_clicked(bool checked);
+
+    void on_pbTestButton_clicked();
 
 public:
     Ui::ImagineClass ui;
@@ -414,6 +435,7 @@ public slots:
     // handle pixmap of recently acquired frame
     void handlePixmap(const QPixmap &pxmp, const QImage &img);
     void handleColorPixmap(const QPixmap &pxmp, const QImage &img);
+    void readNextCamImages(int stack1, int frameIdx1, int stack2, int frameIdx2);
 signals:
     void makePixmap(const QByteArray &ba, const int imageW, const int imageH,
         const double scaleFactor, const double dAreaSize,
@@ -427,6 +449,8 @@ signals:
         const int xDown, const int xCur, const int yDown, const int yCur,
         const int minPixVal1, const int maxPixVal1,
         const int minPixVal2, const int maxPixVal2, bool colorizeSat);
+    void startIndexRunning(int strtStackIdx1, int strtFrameIdx1, int nStacks1, int framesPerStack1,
+        int strtStackIdx2, int strtFrameIdx2, int nStacks2, int framesPerStack2);
 
     // for laser control from this line
     void openLaserSerialPort(QString portName);
