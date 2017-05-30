@@ -681,6 +681,6 @@ void DummyCameraThread::run()
             }
         }
         else
-            frameNum = frameNum;
+            sleep(1);
     }
 }

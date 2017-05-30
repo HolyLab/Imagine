@@ -31,6 +31,7 @@
 #include <QApplication>
 #include <QInputDialog>
 #include <QColorDialog>
+#include <QTextBrowser>
 
 #include <qwt_plot.h>
 #include <qwt_plot_grid.h>
@@ -422,6 +423,10 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
     applyImgColor(ui.widgetImg2Color, img2Color);
     alpha = 50;
     ui.hsBlending->setValue(alpha);
+
+    // This is help window
+    helpDialog = new HelpDialog;
+    helpDialog->initHelp("helpmain.htm");
 }
 
 Imagine::~Imagine()
@@ -1243,6 +1248,11 @@ void Imagine::on_actionStop_triggered()
 {
     dataAcqThread->stopAcq();
     updateStatus(eStopping, curAction);
+}
+
+void Imagine::on_actionViewHelp_triggered()
+{
+    helpDialog->show();
 }
 
 void Imagine::on_actionOpenShutter_triggered()
@@ -2973,6 +2983,10 @@ void Imagine::readControlWaveform(QString fn)
         ui.spinBoxFramesPerStackWav->setValue(conWaveData->nFrames);
         ui.spinBoxSampleNumber->setValue(conWaveData->totalSampleNum);
         ui.cbBidirection->setChecked(conWaveData->bidirection);
+        Positioner *pos = dataAcqThread->pPositioner;
+        ui.sbWavDsplyTop->setValue(pos->maxPos() + 50);
+        ui.sbWavDsplyTop->setMinimum(0);
+        ui.sbWavDsplyTop->setMaximum(pos->maxPos() + 50);
         updateControlWaveform(0, conWaveData->totalSampleNum - 1);
     }
     else {
@@ -3082,8 +3096,7 @@ void Imagine::updateControlWaveform(int leftEnd, int rightEnd)
     curveData = new CurveData(conWaveData->totalSampleNum);
     updataSpeedData(curveData, ui.spinBoxPiezoSampleRate->value(), leftEnd, rightEnd);
     piezoSpeedCurve->setData(curveData);
-    Positioner *pos = dataAcqThread->pPositioner;
-    conWavPlot->setAxisScale(QwtPlot::yLeft, 0, pos->maxPos() + 50);
+    conWavPlot->setAxisScale(QwtPlot::yLeft, 0, ui.sbWavDsplyTop->value());
     conWavPlot->replot();
 
     // ui update
@@ -3110,7 +3123,7 @@ void Imagine::on_btnConWavOpen_clicked()
     readControlWaveform(wavFilename);
 }
 
-void Imagine::on_btnReadWavOpen_clicked()
+void Imagine::on_btnReadAiWavOpen_clicked()
 {
     QString wavFilename = QFileDialog::getOpenFileName(
         this,
@@ -3182,9 +3195,6 @@ void Imagine::on_btnReadWavOpen_clicked()
     conReadHeartbeatCurve->show();
     conReadWavPlot->replot();
 
-    //To make test control data 
-    if(genControlFileJSON())
-        appendLog("exposureSamples > frameShutterCtrlSamples-50");
 }
 
 void Imagine::on_cbPiezoReadWav_clicked(bool checked)
@@ -3363,6 +3373,12 @@ void Imagine::on_sbWavDsplyLeft_valueChanged(int value)
     int right = ui.sbWavDsplyRight->value();
     ui.sbWavDsplyRight->setMinimum(value);
     updateControlWaveform(value, right);
+    conWavPlot->replot();
+}
+
+void Imagine::on_sbWavDsplyTop_valueChanged(int value)
+{
+    conWavPlot->setAxisScale(QwtPlot::yLeft, 0, value);
     conWavPlot->replot();
 }
 
@@ -3902,6 +3918,13 @@ void Imagine::on_cbEnableMismatch_clicked(bool checked)
 //    findMismatch(img1.camImage, img2.camImage, img1.imgWidth, img1.imgHeight, param);
     img2.correctMismatch = true;
     transform(img1.camImage, img2.camImage, img1.imgWidth, img1.imgHeight, img2.param);
+}
+
+void Imagine::on_pbGenerate_clicked()
+{
+    //To make test control data
+    if (genControlFileJSON())
+        appendLog("exposureSamples > frameShutterCtrlSamples-50");
 }
 
 #pragma endregion

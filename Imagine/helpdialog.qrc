@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/icons" >
+        <file>Resources/playback.bmp</file>
+        <file>Resources/playbackG.bmp</file>
+        <file>Resources/playbackD.bmp</file>
+        <file>Resources/play.bmp</file>
+        <file>Resources/playG.bmp</file>
+        <file>Resources/playD.bmp</file>
+    </qresource>
+    <qresource prefix="/images" >
+        <file>Resources/logo.jpg</file>
+    </qresource>
+</RCC>

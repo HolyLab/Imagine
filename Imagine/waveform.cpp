@@ -559,6 +559,174 @@ int genControlFileJSON(void)
     QJsonObject analog;
     QJsonObject digital;
     QJsonObject wavelist;
+    QJsonArray piezo1_001;
+    QJsonArray camera1_001;
+    QJsonArray laser1_001;
+    QJsonArray valve_on, valve_off;
+    QJsonArray piezo1, camera1, laser1, stimulus1, stimulus2;
+    QJsonArray piezo2, camera2, laser2, stimulus3, stimulus4;
+
+    qint16 piezo;
+    bool shutter, laser, ttl2;
+    double piezom1, piezo0, piezop1, piezoavg = 0.;
+
+    /* For metadata                     */
+    int sampleRate = 10000;     // This can be configurable in the GUI
+    long totalSamples = 0;      // this will be calculated later;
+    int nStacks = 10;           // number of stack
+    int nFrames = 20;           // frames per stack
+    double exposureTime = 0.01; // This can be configurable in the GUI
+    bool bidirection = false;   // Bi-directional capturing mode
+
+    /* Generating waveforms and pulses                            */
+    /* Refer to help menu in Imagine                              */
+
+    ////////  Generating subsequences of waveforms and pulses  ////////
+
+    ///  Piezo waveform  ///
+    //  paramters specified by user
+    int piezoDelaySamples = 100;
+    int piezoRisingSamples = 6000;
+    int piezoFallingSamples = 4000;
+    int piezoWaitSamples = 800;
+    double piezoStartPos = 100.;
+    double piezoStopPos = 800.;
+    // generating piezo waveform
+    int perStackSamples = piezoRisingSamples + piezoFallingSamples + piezoWaitSamples;
+    genWaveform(piezo1_001, piezoStartPos, piezoStopPos, piezoDelaySamples,
+        piezoRisingSamples, piezoFallingSamples, perStackSamples);
+
+    /// initial delay ///
+    //  paramters specified by user
+    int initDelaySamples = 500;
+    // generating delay waveform
+    QVariantList buf1;
+    genConstantWave(buf1, piezoStartPos, initDelaySamples);
+    QJsonArray initDelay_wav = QJsonArray::fromVariantList(buf1);
+    // generating delay pulse
+    genConstantWave(buf1, 0, initDelaySamples);
+    QJsonArray initDelay_pulse = QJsonArray::fromVariantList(buf1);
+
+    /// camera shutter pulse ///
+    // paramters specified by user
+    int shutterControlMarginSamples = 500; // shutter control begin after piezo start and stop before piezo stop
+    // generating camera shutter pulse
+    int stakShutterCtrlSamples = piezoRisingSamples - 2 * shutterControlMarginSamples; // full stack period sample number
+    int frameShutterCtrlSamples = stakShutterCtrlSamples / nFrames;     // one frame sample number
+    int exposureSamples = static_cast<int>(exposureTime*static_cast<double>(sampleRate));  // (0.008~0.012sec)*(sampling rate) is optimal
+    if (exposureSamples > frameShutterCtrlSamples - 50 * (sampleRate / 10000))
+        return 1;
+    genPulse(camera1_001, piezoDelaySamples, piezoRisingSamples, piezoFallingSamples, perStackSamples,
+        shutterControlMarginSamples, frameShutterCtrlSamples, exposureSamples);
+
+    /// laser shutter pulse ///
+    // paramters specified by user
+    int laserControlMarginSamples = 400; // laser control begin after piezo start and stop before piezo stop
+    // generating laser shutter pulse
+    stakShutterCtrlSamples = piezoRisingSamples - 2 * laserControlMarginSamples; // full stack period sample number
+    int laserShutterCtrlSamples = stakShutterCtrlSamples / nFrames;     // one frame sample number
+    genPulse(laser1_001, piezoDelaySamples, piezoRisingSamples, piezoFallingSamples, perStackSamples,
+        shutterControlMarginSamples, laserShutterCtrlSamples, laserShutterCtrlSamples);
+
+    /// stimulus valve pulse ///
+    // paramters specified by user
+    int valveOffSamples = 100;
+    int valveOnSamples = 6000;
+    // generating stimulus valve pulse
+    genConstantWave(buf1, 0, perStackSamples);
+    valve_off = QJsonArray::fromVariantList(buf1);
+    genPulse(valve_on, 0, valveOnSamples + 2*valveOffSamples, piezoFallingSamples, perStackSamples,
+        valveOffSamples, valveOnSamples, valveOnSamples);
+
+    // these values are calculated from user specified parameters
+    piezoavg = piezoStartPos;
+    ttl2 = false;
+
+    ///  Register subsequences to waveform list  ///
+    wavelist["delay_wave"] = initDelay_wav;
+    wavelist["delay_pulse"] = initDelay_pulse;
+    wavelist["positioner1_001"] = piezo1_001;
+    wavelist["camera1_001"] = camera1_001;
+    wavelist["laser1_001"] = laser1_001;
+    wavelist["valve_on"] = valve_on;
+    wavelist["valve_off"] = valve_off;
+
+
+    ////////  Generating full sequences of waveforms and pulses  ////////
+    piezo1 = { 1, "delay_wave", nStacks, "positioner1_001"};
+    camera1 = { 1, "delay_pulse", nStacks, "camera1_001" };
+    laser1 = { 1, "delay_pulse", nStacks, "laser1_001" };
+    stimulus1.append(1);
+    stimulus1.append("delay_pulse");
+    stimulus2.append(1);
+    stimulus2.append("delay_pulse");
+    stimulus1.append(2); // stack 1, 2
+    stimulus1.append("valve_off");
+    stimulus2.append(2);
+    stimulus2.append("valve_off");
+    for (int i = 3; i <= nStacks; i++) { // stack 3 ~ nStack
+        int j = i % 4;
+        if (j == 0) {
+            stimulus1.append(2);
+            stimulus1.append("valve_on");
+            stimulus2.append(2);
+            stimulus2.append("valve_off");
+        }
+        else if(j == 2){
+            stimulus1.append(2);
+            stimulus1.append("valve_off");
+            stimulus2.append(2);
+            stimulus2.append("valve_on");
+        }
+    }
+    totalSamples = initDelaySamples + nStacks * perStackSamples;
+
+    analog["positioner1"] = piezo1;
+    digital["camera1"] = camera1;
+    digital["camera2"] = camera2;
+    digital["laser1"] = laser1;
+    digital["stimulus1"] = stimulus1;
+    digital["stimulus2"] = stimulus2;
+
+    metadata["sample rate"] = sampleRate;
+    metadata["sample num"] = totalSamples;
+    metadata["exposure"] = exposureTime;
+    metadata["bi-direction"] = bidirection;
+    metadata["stacks"] = nStacks;
+    metadata["frames"] = nFrames;
+
+    alldata["metadata"] = metadata;
+    alldata["analog waveform"] = analog;
+    alldata["digital pulse"] = digital;
+    alldata["wave list"] = wavelist;
+    alldata["version"] = version;
+    // save data
+    SaveFormat saveFormat = Json;// Binary;Json
+    QFile saveFile(saveFormat == Json
+        ? QStringLiteral("controls.json")
+        : QStringLiteral("controls.bin"));
+    if (!saveFile.open(QIODevice::WriteOnly)) {
+        qWarning("Couldn't open save file.");
+        return false;
+    }
+    QJsonDocument saveDoc(alldata);
+    saveFile.write(saveFormat == Json
+        ? saveDoc.toJson()
+        : saveDoc.toBinaryData());
+    return 0;
+}
+
+int genControlFileJSON_Old(void)
+{
+    enum SaveFormat {
+        Json, Binary
+    };
+    QString version = "v1.0";
+    QJsonObject alldata;
+    QJsonObject metadata;
+    QJsonObject analog;
+    QJsonObject digital;
+    QJsonObject wavelist;
     QJsonArray piezo1_001, piezo1_002;
     QJsonArray camera1_001, camera1_002;
     QJsonArray laser1_001, laser1_002;
@@ -648,7 +816,7 @@ int genControlFileJSON(void)
     piezoStartPos = 100;
     piezoStopPos = offset;
     int durationInSample = (piezoStopPos - piezoStartPos)*sampleRate / 2000 + 50; // this should longer than (piezoStopPos- piezoStartPos)*sampleRate/piezo_maxspeed
-    // buf1: wave, buf2: pulse
+                                                                                  // buf1: wave, buf2: pulse
     genCosineWave(buf1, buf2, buf3, amplitude, offset, freqInSampleNum, nFrames);
     QVariantList buf11, buf22, buf33;
     // buf11: bi-directional wave
@@ -661,16 +829,16 @@ int genControlFileJSON(void)
     genBiDirection(buf33, buf3, 0, getRunLengthSize(buf3), 0);
     QJsonArray pulse2_cos = QJsonArray::fromVariantList(buf33);
     //    genMoveFromToWave(buf1, piezoStartPos, piezoStopPos, durationInSample);
-//    QJsonArray piezo_moveto = QJsonArray::fromVariantList(buf1);
-//    genConstantWave(buf1, 0, durationInSample);
-//    QJsonArray zero_wav = QJsonArray::fromVariantList(buf1);
+    //    QJsonArray piezo_moveto = QJsonArray::fromVariantList(buf1);
+    //    genConstantWave(buf1, 0, durationInSample);
+    //    QJsonArray zero_wav = QJsonArray::fromVariantList(buf1);
     wavelist["piezo_cos"] = piezo_cos;
     wavelist["pulse_cos"] = pulse_cos;
     wavelist["pulse2_cos"] = pulse2_cos;
     //    wavelist["piezo_moveto"] = piezo_moveto;
-//    wavelist["zero_wav"] = zero_wav;
+    //    wavelist["zero_wav"] = zero_wav;
 
-    /* Triangle pulses 
+    /* Triangle pulses
     piezo1 = { 3, "positioner1_001", 2, "positioner1_001", nStacks - 3 - 2, "positioner1_001" };
     camera1 = { 3, "camera1_001", 2, "camera1_001", nStacks - 3 - 2, "camera1_001" };
     camera2 = { 3, "camera1_001", 2, "camera1_001", nStacks - 3 - 2, "camera1_001" };
@@ -683,13 +851,13 @@ int genControlFileJSON(void)
     /* cosine */
     piezo1 = { nStacks, "piezo_cos" };
     camera1 = { nStacks, "pulse_cos" };
-//    camera2 = { 1, "zero_wav", nStacks, "pulse_cos" };
+    //    camera2 = { 1, "zero_wav", nStacks, "pulse_cos" };
     laser1 = { nStacks, "pulse2_cos" };
-//    stimulus1 = { 1, "zero_wav", nStacks, "pulse_cos" };
+    //    stimulus1 = { 1, "zero_wav", nStacks, "pulse_cos" };
     bidirection = true;
     totalSamples = nStacks*getRunLengthSize(piezo_cos.toVariantList());
 
-    /* Bi-directional waveform 
+    /* Bi-directional waveform
     piezo1 = { nStacks, "piezo_bidirection" };
     camera1 = { nStacks, "camera_bidirection" };
     camera2 = { nStacks, "camera_bidirection" };

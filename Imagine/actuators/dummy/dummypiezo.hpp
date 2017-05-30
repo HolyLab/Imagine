@@ -6,15 +6,17 @@
 
 class DummyPiezo: public Positioner {
 public:
-    DummyPiezo(QString ctrlrsetup){
+    DummyPiezo(int maxposition, int maxspeed, QString ctrlrsetup){
+        maxpos = maxposition;
+        maxspd = maxspeed;
         posType = DummyPositioner;
         setuptype = ctrlrsetup;
     }
    ~DummyPiezo(){}
 
    double minPos(){return 0;}
-   double maxPos(){return 400; }
-   double maxSpeed() { return 2000; }
+   double maxPos(){return maxpos; }
+   double maxSpeed() { return maxspd; }
    QString getCtrlrSetupType() { return setuptype; }
    bool curPos(double* pos){*pos=500; return true;}
    bool moveTo(double to){ return true;}
@@ -41,6 +43,8 @@ public:
    string getClkOut() { return ""; };
 
 private:
+    int maxpos = 0;
+    int maxspd = 0;
     QString setuptype;
 
 };//class, DummyPiezo

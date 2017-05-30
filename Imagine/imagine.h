@@ -39,6 +39,7 @@ class CurveData;
 #include "laserctrl.h"
 #include "piezoctrl.h"
 #include "waveform.h"
+#include "helpdialog.h"
 
 #define READ_STRING_SETTING(prefs, var, emptyValue)\
   ui.##var->setText( prefs.value(#var).toString() );\
@@ -181,6 +182,7 @@ public:
     int imgFrameIdx, imgStackIdx;
     QColor img1Color, img2Color;
     int alpha;
+    HelpDialog *helpDialog;
 
     // for laser control
     LaserCtrlSerial *laserCtrlSerial = nullptr;
@@ -380,7 +382,7 @@ private slots:
     void on_btnPzClosePort_clicked();
     // for piezo controller setup until this line
     void on_btnConWavOpen_clicked();
-    void on_btnReadWavOpen_clicked();
+    void on_btnReadAiWavOpen_clicked();
     void on_cbPiezoReadWav_clicked(bool checked);
     void on_cbStimuliReadWav_clicked(bool checked);
     void on_cbCameraReadWav_clicked(bool checked);
@@ -395,6 +397,7 @@ private slots:
     void on_spinBoxPiezoSampleRate_valueChanged(int newValue);
     void on_sbWavDsplyRight_valueChanged(int value);
     void on_sbWavDsplyLeft_valueChanged(int value);
+    void on_sbWavDsplyTop_valueChanged(int value);
     void on_btnWavDsplyReset_clicked();
     void on_comboBoxAO1_currentIndexChanged(int index);
     void on_comboBoxAO2_currentIndexChanged(int index);
@@ -427,8 +430,11 @@ private slots:
     void on_hsBlending_valueChanged();
     void on_cbEnableMismatch_clicked(bool checked);
 
-    void on_pbTestButton_clicked();
+    void on_actionViewHelp_triggered();
 
+    void on_pbTestButton_clicked();
+    void on_pbGenerate_clicked();
+    
 public:
     Ui::ImagineClass ui;
 public slots:
@@ -468,5 +474,4 @@ signals:
     void sendPiezoCtrlCmd(QString cmd);
     // for piezo controller setup until this line
 };
-
 #endif // IMAGINE_H

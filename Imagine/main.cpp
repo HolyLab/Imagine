@@ -195,23 +195,18 @@ int main(int argc, char *argv[])
     Qt::GlobalColor col = Qt::red;
     splash->showMessage(QString("Initialize the %1 actuator ...").arg(positionerType), align, col);
     Positioner *pos = nullptr;
-    int maxposition;
-    int maxspeed;
-    QString ctrlrsetup;
+    int maxposition = se->globalObject().property("maxposition").toNumber();
+    int maxspeed = se->globalObject().property("maxspeed").toNumber();
+    QString ctrlrsetup = se->globalObject().property("ctrlrsetup").toString();
     if (positionerType == "volpiezo") {
-        maxposition = se->globalObject().property("maxposition").toNumber();
-        maxspeed = se->globalObject().property("maxspeed").toNumber();
-        ctrlrsetup = se->globalObject().property("ctrlrsetup").toString();
         pos = new VolPiezo(ainame, aoname, maxposition, maxspeed, ctrlrsetup);
     }
     else if (positionerType == "dummy") {
-        ctrlrsetup = se->globalObject().property("ctrlrsetup").toString();
-        pos = new DummyPiezo(ctrlrsetup);
+        pos = new DummyPiezo(maxposition, maxspeed, ctrlrsetup);
     }
     else {
         QMessageBox::critical(0, "Imagine", "Unsupported positioner."
             , QMessageBox::Ok, QMessageBox::NoButton);
-
         return 1;
     }
 
