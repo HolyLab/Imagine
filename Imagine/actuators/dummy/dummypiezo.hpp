@@ -14,9 +14,9 @@ public:
     }
    ~DummyPiezo(){}
 
-   double minPos(){return 0;}
-   double maxPos(){return maxpos; }
-   double maxSpeed() { return maxspd; }
+   int minPos(){return 0;}
+   int maxPos(){return maxpos; }
+   int maxSpeed() { return maxspd; }
    QString getCtrlrSetupType() { return setuptype; }
    bool curPos(double* pos){*pos=500; return true;}
    bool moveTo(double to){ return true;}

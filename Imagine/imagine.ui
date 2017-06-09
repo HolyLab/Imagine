@@ -3336,6 +3336,18 @@
            <layout class="QGridLayout" name="gridLayout">
             <item row="0" column="2">
              <widget class="QLabel" name="label_37">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="text">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#000000;&quot;&gt;Piezo speed&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -3357,7 +3369,7 @@
             <item row="0" column="3">
              <widget class="QCheckBox" name="cbAO1Wav">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -3375,6 +3387,21 @@
             </item>
             <item row="0" column="5">
              <widget class="QComboBox" name="comboBoxAO1">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="editable">
+               <bool>false</bool>
+              </property>
               <item>
                <property name="text">
                 <string>Positioner 1</string>
@@ -3443,10 +3470,16 @@
             <item row="0" column="11">
              <widget class="QComboBox" name="comboBoxDO1">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
               </property>
               <property name="currentIndex">
                <number>0</number>
@@ -3530,6 +3563,12 @@
             </item>
             <item row="1" column="0">
              <widget class="QCheckBox" name="cbDO2Wav">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="layoutDirection">
                <enum>Qt::RightToLeft</enum>
               </property>
@@ -3543,6 +3582,12 @@
             </item>
             <item row="1" column="3">
              <widget class="QCheckBox" name="cbDO3Wav">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="layoutDirection">
                <enum>Qt::RightToLeft</enum>
               </property>
@@ -3634,6 +3679,18 @@
             </item>
             <item row="0" column="8">
              <widget class="QComboBox" name="comboBoxAO2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="currentIndex">
                <number>1</number>
               </property>
@@ -3652,10 +3709,16 @@
             <item row="1" column="11">
              <widget class="QComboBox" name="comboBoxDO5">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
               </property>
               <property name="currentIndex">
                <number>9</number>
@@ -3740,10 +3803,16 @@
             <item row="1" column="2">
              <widget class="QComboBox" name="comboBoxDO2">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
               </property>
               <property name="currentIndex">
                <number>2</number>
@@ -3828,10 +3897,16 @@
             <item row="1" column="5">
              <widget class="QComboBox" name="comboBoxDO3">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
               </property>
               <property name="currentIndex">
                <number>7</number>
@@ -3916,10 +3991,16 @@
             <item row="1" column="8">
              <widget class="QComboBox" name="comboBoxDO4">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
               </property>
               <property name="currentIndex">
                <number>8</number>

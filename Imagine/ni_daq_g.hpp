@@ -274,7 +274,7 @@ public:
    bool cfgTimingBuffered(int scanRate, int nScans, string clkName = "") {
        this->scanRate = scanRate;
        this->nScans = nScans;
-       this->blockSize = scanRate*4;
+       this->blockSize = (nScans < scanRate * 8) ? nScans / 2 : scanRate * 4;
 
        errorCode = DAQmxCfgSampClkTiming(taskHandle, clkName.c_str(),
            scanRate,
@@ -610,7 +610,7 @@ public:
    bool cfgTimingBuffered(int scanRate, int nScans, string clkName = "") {
        this->scanRate = scanRate;
        this->nScans = nScans;
-       this->blockSize = scanRate*4;
+       this->blockSize = (nScans < scanRate * 8) ? nScans / 2 : scanRate * 4;
        errorCode = DAQmxCfgSampClkTiming(taskHandle, clkName.c_str(),
            scanRate,
            DAQmx_Val_Rising,

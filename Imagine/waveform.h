@@ -5,28 +5,77 @@
     "_comment": "This is a comment",
 
     "version": "v1.0",
+
     "metadata":{
-        "bi-direction": false,  // bi-directional acquisition
-        "exposure": 0.01,       // Camera exposure. Currently, this value is not used.
-        "sample num": 600000,   // Total sample number
+        "bi-direction": false,              // bi-directional acquisition
+        "exposure time in seconds": 0.01,   // Camera exposure. Currently, this value is not used
+        "sample num": 600000,               // Total sample number
         "stacks": 9,
-        "frames": 20            // frames per stack
-        // Default sample rate is 10000 but this value can be changed at the OCPI Imagein GUI
+        "frames per stack": 20,
+        "samples per second": 10000,
+        "rig": "ocpi-2"
     },
-    // postioner1, positioner2 are connected to positioners in the microscope
+
+    // Analog waveform : AO0 ~ AO3(output), AI0 ~ AI31(input)
     "analog waveform":{
-        "positioner1": [5, "triangle_001", 2, "triangle_002"] // [repeat_time, wavefrom name,,,]
+        // secured controls : port assignment to the control name is fixed
+        // Output : axial piezo(AO0), horizontal piezo(AO1)
+        "axial piezo": {
+            "daq channel": "AO0",
+            "sequence": [5, "triangle_001", 2, "triangle_002"] // [repeat_time, wavefrom name,,,]
+        },
+        // Input : axial piezo monitor(AI0), horizontal piezo monitor(AI1)
+        "axial piezo monitor": {
+            "daq channel": "AI0"
+        },
+
+        // custom controls : can use custom name and assign any non-secured port
+        // non-secured port : AO2, AO3(output), AI2 ~ AI31(input)
+        // Output
+        "mirror control": { // This name is an example
+            "daq channel": "AO2",
+            "sequence": [5, "mirror_001", 2, "mirror_002"]
+        },
+        // Input
+        "mirror position": { // This name is an example
+            "daq channel": "AI2"
+        }
     },
-    // camera1, camera2, laser1, laser2, stimulus1, stimulus2, stimulus3, stimulus4
-    // are connected to camera exposures, laser shutters and stimulus ports of the microscope
+
+    // Digital pulse : P0.0 ~ P0.23(output), P0.24 ~ P0.31(input)
     "digital pulse":{
-        "camera1": [5, "shutter_long", 2, "shutter_short"],
-        "laser1": [5, "laser_001", 2, "laser_002",],
-        "stimulus1": [7, "valve1_001"]
+        // secured controls : port assignment to the control name is fixed
+        // Output : all lasers(P0.4), camera1(P0.5), camera2(P0.6), reserved(P0.7),
+        //          488nm laser(P0.8), 561nm laser(P0.9), 405nm laser(P0.10),
+        //          445nm laser(P0.11), 514nm laser(P0.12)
+        "camera1": {
+            "daq channel": "P0.5",
+            "sequence": [5, "shutter_long", 2, "shutter_short"]
+        },
+        "all lasers": {
+            "daq channel": "P0.4",
+            "sequence": [5, "laser_001", 2, "laser_002",]
+        },
+        // Input : camera1 frame TTL(P0.24), camera2 frame TTL(P0.25)
+        "camera1 frame TTL": {
+            "daq channel": "P0.24"
+        },
+        // custom controls : can use custom name and assign any non-secured port
+        // non-secured port : P0.0 ~ P0.3(output), P0.13 ~ P0.23(output), P0.26 ~ P0.31(input)
+        // Output
+       "stimulus1": { // This name is an example
+            "daq channel": "P0.0",
+            "sequence": [7, "valve1_001"]
+        },
+        // Input
+        "heartbeat": { // This name is an example
+            "daq channel": "P0.1",
+        }
     }
+
     "wave list":{ "_comment": "We use run length code [runs,value,runs,value,,,]",
         "shutter_long":[10, 0, 20, 1], // If this pulse is used to control DAQ digital output
-        "shutter_short":[12, 0, 18, 1], // zero mean 0V, not zero means 5V out.
+        "shutter_short":[12, 0, 18, 1], // zero mean 0V, non-zero means High TTL out.
         "laser_001":[20, 1],
         "laser_002":[20, 1],
         "valve1_001":[10,0, 200, 1],
@@ -42,48 +91,121 @@
 #include <QString>
 #include <QObject>
 #include <QtCore>
-#include <vector>
+#include "ni_daq_g.hpp"
 
 using namespace std;
 
 #define MAX_NUM_WAVEFORM 100
 
-int genControlFileJSON(void);
+#define CF_VERSION          "v1.0"
 
-typedef enum {
-    positioner1,
-    positioner2,
-    camera1,
-    camera2,
-    laser1,
-    laser2,
-    laser3,
-    laser4,
-    laser5,
-    stimulus1,
-    stimulus2,
-    stimulus3,
-    stimulus4,
-    stimulus5,
-    stimulus6,
-    stimulus7,
-    stimulus8
-} ControlSignal;
+#define STR_Rig             "rig"
+#define STR_SampleRate      "samples per second"
+#define STR_TotalSamples    "sample num"
+#define STR_Exposure        "exposure time in seconds"
+#define STR_BiDir           "bi-direction"
+#define STR_Stacks          "stacks"
+#define STR_Frames          "frames per stack"
+#define STR_Metadata        "metadata"
+#define STR_Analog          "analog waveform"
+#define STR_Digital         "digital pulse"
+#define STR_WaveList        "wave list"
+#define STR_Version         "version"
+#define STR_Seq             "sequence"
+#define STR_Channel         "daq channel"
+#define STR_AOHEADER        "AO"
+#define STR_AIHEADER        "AI"
+#define STR_P0HEADER        "P0."
+
+#define STR_piezo           "piezo"
+#define STR_piezo_mon       "piezo monitor"
+#define STR_laser           "laser"
+#define STR_camera          "camera"
+#define STR_axial_piezo     "axial piezo"
+#define STR_hor_piezo       "horizontal piezo"
+#define STR_axial_piezo_mon "axial piezo monitor"
+#define STR_hor_piezo_mon   "horizontal piezo monitor"
+#define STR_all_lasers      "all lasers"
+#define STR_camera1         "camera1"
+#define STR_camera2         "camera2"
+#define STR_488nm_laser     "488nm laser"
+#define STR_561nm_laser     "561nm laser"
+#define STR_405nm_laser     "405nm laser"
+#define STR_445nm_laser     "445nm laser"
+#define STR_514nm_laser     "514nm laser"
+#define STR_camera1_mon     "camera1 frame TTL"
+#define STR_camera2_mon     "camera2 frame TTL"
+
+enum CFErrorCode : unsigned int
+{
+    NO_CF_ERROR                 = 0,
+    // load file error
+    ERR_INVALID_VERSION         = 1 << 0,
+    ERR_RIG_MISMATCHED          = 1 << 1,
+    ERR_INVALID_PORT_ASSIGNMENT = 1 << 2,
+    ERR_SHORT_CONTROL_SEQ       = 1 << 3,
+    ERR_WAVEFORM_MISSING        = 1 << 4,
+    // waveform validity error
+    ERR_CONTROL_SEQ_MISSING     = 1 << 5,
+    ERR_SAMPLE_NUM_MISMATCHED   = 1 << 6,
+    ERR_PIEZO_SPEED_FAST        = 1 << 7,
+    ERR_PIEZO_INSTANT_CHANGE    = 1 << 8,
+    ERR_LASER_SPEED_FAST        = 1 << 8,
+    ERR_LASER_INSTANT_CHANGE    = 1 << 10,
+    ERR_SHORT_WAVEFORM          = 1 << 11
+} ; // command file error code
 
 class ControlWaveform : public QObject {
     Q_OBJECT
 
 private:
-    int retVal;
+    int numAOChannel, numAIChannel, numP0Channel, numChannel;
+    QString rig;
     QVector<QVector<int> *> controlList;
+    QVector<QVector<int> *> portList;
     QVector<QVector<int> *> waveList;
+    QString errorMsg = "";
 
-    int lookUpWave(QString wn, QVector <QString> &wavName, QJsonObject wavelist);
+    QVector<QVector<QString>> channelSignalList;
+
+    QVector<QVector<QString>> ocpi1Secured = { // secured signal name for OCPI-1
+        // Analog output (AO0 ~ AO1)
+        { QString(STR_AOHEADER).append("0"), STR_piezo },
+        // Analog input (AI0 ~ AI15)
+        { QString(STR_AIHEADER).append("0"), STR_piezo_mon },
+        // Digital output (P0.0 ~ P0.7)
+        { QString(STR_P0HEADER).append("4"), STR_laser },
+        { QString(STR_P0HEADER).append("5"), STR_camera }
+        // Digital input (not supported)
+    };
+
+    QVector<QVector<QString>> ocpi2Secured = { // secured signal name for OCPI-2
+        // Analog output (AO0 ~ AO3)
+        { QString(STR_AOHEADER).append("0"), STR_axial_piezo },
+        { QString(STR_AOHEADER).append("1"), STR_hor_piezo },
+        // Analog input (AI0 ~ AI31)
+        { QString(STR_AIHEADER).append("0"), STR_axial_piezo_mon },
+        { QString(STR_AIHEADER).append("1"), STR_hor_piezo_mon },
+        // Digital output (P0.0 ~ P0.23)
+        { QString(STR_P0HEADER).append("4"), STR_all_lasers },
+        { QString(STR_P0HEADER).append("5"), STR_camera1 },
+        { QString(STR_P0HEADER).append("6"), STR_camera2 },
+        { QString(STR_P0HEADER).append("8"), STR_488nm_laser },
+        { QString(STR_P0HEADER).append("9"), STR_561nm_laser },
+        { QString(STR_P0HEADER).append("10"),STR_405nm_laser },
+        { QString(STR_P0HEADER).append("11"),STR_445nm_laser },
+        { QString(STR_P0HEADER).append("12"),STR_514nm_laser },
+        // Digital input (P0.24 ~ P0.31)
+        { QString(STR_P0HEADER).append("24"),STR_camera1_mon },
+        { QString(STR_P0HEADER).append("25"),STR_camera2_mon }
+    };
+
+    CFErrorCode lookUpWave(QString wn, QVector <QString> &wavName,
+        QJsonObject wavelist, int &waveIdx);
     int getWaveSampleNum(int waveIdx);
     bool getWaveSampleValue(int waveIdx, int sampleIdx, int &value);
 
 public:
-    QString version;
     int sampleRate = 10000;
     int totalSampleNum = 0;
     int nStacks = 0;
@@ -91,17 +213,34 @@ public:
     double exposureTime = 0;
     bool bidirection = false;
 
-    ControlWaveform();
+    ControlWaveform(QString rig);
     ~ControlWaveform();
 
-    bool loadJsonDocument(QJsonDocument &loadDoc);
-    bool readControlWaveform(QVector<int> &dest, ControlSignal name,
+    CFErrorCode loadJsonDocument(QJsonDocument &loadDoc);
+    bool readControlWaveform(QVector<int> &dest, int ctrlIdx,
             int begin, int end, int downSampleRate);
-    bool isEmpty(ControlSignal name);
-    int getCtrlSampleNum(ControlSignal name);
-    bool getCtrlSampleValue(ControlSignal name, int idx, int &value);
-    int positionerSpeedCheck(int maxSpeed, ControlSignal name, int userSampleRate, int &dataSize);
-    int laserSpeedCheck(double maxFreq, ControlSignal name, int &dataSize);
+    bool isEmpty(int ctrlIdx);
+    bool isEmpty(QString signalName);
+    int getCtrlSampleNum(int ctrlIdx);
+    QString getSignalName(int ctrlIdx);
+    QString getSignalName(QString channelName);
+    int getChannelIdxFromSig(QString signalName);
+    int getChannelIdxFromCh(QString channelName);
+    int getAIBegin(void);
+    int getP0Begin(void);
+    int getNumAOChannel(void);
+    int getNumAIChannel(void);
+    int getNumP0Channel(void);
+    int getNumChannel(void);
+    bool getCtrlSampleValue(int ctrlIdx, int idx, int &value);
+    bool isPiezoWaveEmpty(void);
+    bool isCameraPulseEmpty(void);
+    bool isLaserPulseEmpty(void);
+    CFErrorCode positionerSpeedCheck(int maxSpeed, int ctrlIdx, int &dataSize);
+    CFErrorCode laserSpeedCheck(double maxFreq, int ctrlIdx, int &dataSize);
+    CFErrorCode waveformValidityCheck(int maxPiezoSpeed, int maxLaserFreq);
+    QString getErrorMsg(void);
+    int genControlFileJSON(void);
 
 }; // ControlWaveform
 

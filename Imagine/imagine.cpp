@@ -73,9 +73,11 @@ int nUpdateImage;
 
 #pragma region LIFECYCLE
 
-Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, QWidget *parent, Qt::WindowFlags flags)
+Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
+    Imagine *mImagine, QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
 {
+    this->rig = rig;
     m_OpenDialogLastDirectory = QDir::homePath();
     masterImagine = mImagine;
     dataAcqThread = new DataAcqThread(QThread::NormalPriority, cam, pos, this, parent);
@@ -124,7 +126,7 @@ Imagine::Imagine(Camera *cam, Positioner *pos, Laser *laser, Imagine *mImagine, 
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabWaveform));
     }
     else {  // Imagine(1)
-        conWaveData = new ControlWaveform;
+        conWaveData = new ControlWaveform(rig);
     }
     //adjust size
     QRect tRect = geometry();
@@ -1472,119 +1474,10 @@ void Imagine::on_spinBoxVend_valueChanged(int newValue)
 
 bool Imagine::waveformValidityCheck(void)
 {
-    int sampleNum;
-    bool piezoWaveEmpty = true;
-    bool cameraWaveEmpty = true;
-    bool laserWaveEmpty = false;
-    QString errorMsg="";
-
-    piezoWaveEmpty &= conWaveData->isEmpty(positioner1);
-    piezoWaveEmpty &= conWaveData->isEmpty(positioner2);
-    cameraWaveEmpty &= conWaveData->isEmpty(camera1);
-    cameraWaveEmpty &= conWaveData->isEmpty(camera2);
-    laserWaveEmpty &= conWaveData->isEmpty(laser1);
-    laserWaveEmpty &= conWaveData->isEmpty(laser2);
-    laserWaveEmpty &= conWaveData->isEmpty(laser3);
-    laserWaveEmpty &= conWaveData->isEmpty(laser4);
-    laserWaveEmpty &= conWaveData->isEmpty(laser5);
-    if (piezoWaveEmpty || cameraWaveEmpty || laserWaveEmpty) {// at least one piezo and one camera and one laser should be exist
-        errorMsg.append("At least one positioner, one camera and one laser control waveform are needed\n");
-    }
-    else {
-        // piezo speed check
-        if (!conWaveData->isEmpty(positioner1)) {
-            Positioner *pos = dataAcqThread->pPositioner;
-            int retVal = conWaveData->positionerSpeedCheck(pos->maxSpeed(), positioner1, ui.spinBoxPiezoSampleRate->value(), sampleNum);
-            if (retVal == -1) {
-                errorMsg.append("Positioner 1 control is too fast\n");
-            }
-            if (sampleNum != conWaveData->totalSampleNum)
-                errorMsg.append("Positioner 1 sample # is different from total sample #\n");
-        }
-        if (!conWaveData->isEmpty(positioner2)) {
-            Positioner *pos = dataAcqThread->pPositioner; // should set with second positioner pointer
-            int retVal = conWaveData->positionerSpeedCheck(pos->maxSpeed(), positioner2, ui.spinBoxPiezoSampleRate->value(), sampleNum);
-            if (retVal == -1) {
-                errorMsg.append("Positioner 2 control is too fast\n");
-            }
-            if (sampleNum != conWaveData->totalSampleNum)
-                errorMsg.append("Positioner 2 sample # is different from total sample #\n");
-        }
-        // laser speed check
-        if (!conWaveData->isEmpty(laser1)) {
-            int retVal = conWaveData->laserSpeedCheck(maxLaserFreq, laser1, sampleNum);  // OCPI-1 should be less then 25Hz
-            if (retVal == -1)
-                errorMsg.append("Laser 1 control is too fast\n");
-            if (sampleNum != conWaveData->totalSampleNum)
-                errorMsg.append("Laser 1 sample # is different from total sample #\n");
-        }
-        if (!conWaveData->isEmpty(laser2)) {
-            int retVal = conWaveData->laserSpeedCheck(maxLaserFreq, laser2, sampleNum);
-            if (retVal == -1)
-                errorMsg.append("Laser 2 control is too fast\n");
-            if (sampleNum != conWaveData->totalSampleNum)
-                errorMsg.append("Laser 2 sample # is different from total sample #\n");
-        }
-        if (!conWaveData->isEmpty(laser3)) {
-            int retVal = conWaveData->laserSpeedCheck(maxLaserFreq, laser3, sampleNum);
-            if (retVal == -1)
-                errorMsg.append("Laser 3 control is too fast\n");
-            if (sampleNum != conWaveData->totalSampleNum)
-                errorMsg.append("Laser 3 sample # is different from total sample #\n");
-        }
-        if (!conWaveData->isEmpty(laser4)) {
-            int retVal = conWaveData->laserSpeedCheck(maxLaserFreq, laser4, sampleNum);
-            if (retVal == -1)
-                errorMsg.append("Laser 4 control is too fast\n");
-            if (sampleNum != conWaveData->totalSampleNum)
-                errorMsg.append("Laser 4 sample # is different from total sample #\n");
-        }
-        if (!conWaveData->isEmpty(laser5)) {
-            int retVal = conWaveData->laserSpeedCheck(maxLaserFreq, laser5, sampleNum);
-            if (retVal == -1)
-                errorMsg.append("Laser 5 control is too fast\n");
-            if (sampleNum != conWaveData->totalSampleNum)
-                errorMsg.append("Laser 5 sample # is different from total sample #\n");
-        }
-        // Camera 1~2, Stimulus 1~5 sample number check
-        if (!conWaveData->isEmpty(camera1)) {
-            sampleNum = conWaveData->getCtrlSampleNum(camera1);
-            if (sampleNum != conWaveData->totalSampleNum)
-                errorMsg.append("Camera 1 sample # is different from total sample #\n");
-        }
-        if (!conWaveData->isEmpty(camera2)) {
-            sampleNum = conWaveData->getCtrlSampleNum(camera2);
-            if (sampleNum != conWaveData->totalSampleNum)
-                errorMsg.append("Camera 2 sample # is different from total sample #\n");
-        }
-        if (!conWaveData->isEmpty(stimulus1)) {
-            sampleNum = conWaveData->getCtrlSampleNum(stimulus1);
-            if (sampleNum != conWaveData->totalSampleNum)
-                errorMsg.append("Stimulus 1 sample # is different from total sample #\n");
-        }
-        if (!conWaveData->isEmpty(stimulus2)) {
-            sampleNum = conWaveData->getCtrlSampleNum(stimulus2);
-            if (sampleNum != conWaveData->totalSampleNum)
-                errorMsg.append("Stimulus 2 sample # is different from total sample #\n");
-        }
-        if (!conWaveData->isEmpty(stimulus3)) {
-            sampleNum = conWaveData->getCtrlSampleNum(stimulus3);
-            if (sampleNum != conWaveData->totalSampleNum)
-                errorMsg.append("Stimulus 3 sample # is different from total sample #\n");
-        }
-        if (!conWaveData->isEmpty(stimulus4)) {
-            sampleNum = conWaveData->getCtrlSampleNum(stimulus4);
-            if (sampleNum != conWaveData->totalSampleNum)
-                errorMsg.append("Stimulus 4 sample # is different from total sample #\n");
-        }
-        if (!conWaveData->isEmpty(stimulus5)) {
-            sampleNum = conWaveData->getCtrlSampleNum(stimulus5);
-            if (sampleNum != conWaveData->totalSampleNum)
-                errorMsg.append("Stimulus 5 sample # is different from total sample #\n");
-        }
-    }
-    if (errorMsg != "") {
-        QMessageBox::critical(this, "Imagine", errorMsg, QMessageBox::Ok, QMessageBox::NoButton);
+    Positioner *pos = dataAcqThread->pPositioner;
+    conWaveData->waveformValidityCheck(pos->maxSpeed(), maxLaserFreq);
+    if (conWaveData->getErrorMsg() != "") {
+        QMessageBox::critical(this, "Imagine", conWaveData->getErrorMsg(), QMessageBox::Ok, QMessageBox::NoButton);
         return false;
     }
     return true;
@@ -2948,7 +2841,7 @@ void Imagine::readControlWaveform(QString fn)
 
     if (conWaveData)
         delete conWaveData;
-    conWaveData = new ControlWaveform;
+    conWaveData = new ControlWaveform(rig);
 
     m_OpenDialogLastDirectory = fi.absolutePath();
     QString ext = fi.suffix();
@@ -2973,9 +2866,10 @@ void Imagine::readControlWaveform(QString fn)
         ? QJsonDocument::fromJson(loadData)
         : QJsonDocument::fromBinaryData(loadData));
 
-    bool isOk = conWaveData->loadJsonDocument(loadDoc);
+    CFErrorCode err = conWaveData->loadJsonDocument(loadDoc);
 
-    if (isOk) {
+    if (err == NO_CF_ERROR) {
+        // GUI metadata display
         ui.cbPositionerWav->setChecked(true);
         ui.spinBoxPiezoSampleRate->setValue(conWaveData->sampleRate);
         ui.doubleSpinBoxExpTimeWav->setValue(conWaveData->exposureTime);
@@ -2983,14 +2877,66 @@ void Imagine::readControlWaveform(QString fn)
         ui.spinBoxFramesPerStackWav->setValue(conWaveData->nFrames);
         ui.spinBoxSampleNumber->setValue(conWaveData->totalSampleNum);
         ui.cbBidirection->setChecked(conWaveData->bidirection);
+
+        // GUI waveform y axis display value adjusting box setup
         Positioner *pos = dataAcqThread->pPositioner;
         ui.sbWavDsplyTop->setValue(pos->maxPos() + 50);
         ui.sbWavDsplyTop->setMinimum(0);
         ui.sbWavDsplyTop->setMaximum(pos->maxPos() + 50);
+        if (conWaveData->totalSampleNum>0)
+            ui.sbWavDsplyRight->setMaximum(conWaveData->totalSampleNum - 1);
+
+        // Waveform selection combobox setup
+        QStringList aoList, doList;
+        int numNonAOEmpty = 0, numNonDOEmpty = 0;
+        QComboBox* comboBoxes[] = { ui.comboBoxAO1, ui.comboBoxAO2, ui.comboBoxDO1,
+                    ui.comboBoxDO2, ui.comboBoxDO3, ui.comboBoxDO4, ui.comboBoxDO5};
+        aoList.push_back("empty");
+        doList.push_back("empty");
+        for (int i = 0; i < conWaveData->getNumChannel(); i++) {
+            if (!conWaveData->isEmpty(i)) {
+                if (i < 2) {
+                    aoList.push_back(conWaveData->getSignalName(i));
+                    numNonAOEmpty++;
+                }
+                else {
+                    doList.push_back(conWaveData->getSignalName(i));
+                    numNonDOEmpty++;
+                }
+            }
+        }
+        for (int i = 0; i < 7; i++ ) {
+            comboBoxes[i]->clear();
+            if (i < 2) {
+                comboBoxes[i]->addItems(aoList);
+                if (numNonAOEmpty > i)
+                    comboBoxes[i]->setCurrentIndex(i+1);
+            }
+            else {
+                comboBoxes[i]->addItems(doList);
+                if (numNonDOEmpty > i - 2)
+                    comboBoxes[i]->setCurrentIndex(i - 1);
+            }
+        }
+
+        // GUI waveform display
         updateControlWaveform(0, conWaveData->totalSampleNum - 1);
     }
     else {
-        // display error message (version different)
+        if (err & ERR_INVALID_VERSION) {
+            QMessageBox::critical(this, "Imagine", "Invalid command file version. Please check the version.",
+                                    QMessageBox::Ok, QMessageBox::NoButton);
+        }
+        if (err & ERR_RIG_MISMATCHED) {
+            QMessageBox::critical(this, "Imagine", "Invalid rig name. Please check the name.",
+                                    QMessageBox::Ok, QMessageBox::NoButton);
+        }
+        if ((err & ERR_INVALID_PORT_ASSIGNMENT)|| (err & ERR_WAVEFORM_MISSING)) {
+            if (conWaveData->getErrorMsg() != "") {
+                QMessageBox::critical(this, "Imagine", conWaveData->getErrorMsg(),
+                                    QMessageBox::Ok, QMessageBox::NoButton);
+            }
+        }
     }
 }
 
@@ -3002,10 +2948,12 @@ bool Imagine::loadConWavDataAndPlot(int leftEnd, int rightEnd, int wavIdx)
     int factor = sampleNum / curveDataSampleNum;
     int amplitude, yoffset;
     QVector<int> dest;
-    ControlSignal sig;
+    int ctrlIdx;
     CurveData *curveData = NULL;
     QwtPlotCurve *curve;
     QCheckBox *cBox;
+    QString sigName;
+    int p0Begin = conWaveData->getP0Begin();
 
     if (factor == 0) {
         curveDataSampleNum = sampleNum;
@@ -3017,42 +2965,42 @@ bool Imagine::loadConWavDataAndPlot(int leftEnd, int rightEnd, int wavIdx)
     switch (wavIdx)
     {
         case 0: // AO1
-            sig = static_cast<ControlSignal>(ui.comboBoxAO1->currentIndex());
+            sigName = ui.comboBoxAO1->currentText();
             curve = conAO1Curve;
             cBox = ui.cbAO1Wav;
             amplitude = 1;
             yoffset = 0;
             break;
         case 1: // AO2
-            sig = static_cast<ControlSignal>(ui.comboBoxAO2->currentIndex());
+            sigName = ui.comboBoxAO2->currentText();
             curve = conAO2Curve;
             cBox = ui.cbAO2Wav;
             amplitude = 1;
             yoffset = 0;
             break;
         case 2: // DO1
-            sig = static_cast<ControlSignal>(ui.comboBoxDO1->currentIndex() + 2);
+            sigName = ui.comboBoxDO1->currentText();
             curve = conDO1Curve;
             cBox = ui.cbDO1Wav;
             amplitude = 10;
             yoffset = 0;
             break;
         case 3: // DO2
-            sig = static_cast<ControlSignal>(ui.comboBoxDO2->currentIndex() + 2);
+            sigName = ui.comboBoxDO2->currentText();
             curve = conDO2Curve;
             cBox = ui.cbDO2Wav;
             amplitude = 10;
             yoffset = 15;
             break;
         case 4: // DO3
-            sig = static_cast<ControlSignal>(ui.comboBoxDO3->currentIndex() + 2);
+            sigName = ui.comboBoxDO3->currentText();
             curve = conDO3Curve;
             cBox = ui.cbDO3Wav;
             amplitude = 10;
             yoffset = 30;
             break;
         case 5: // DO4
-            sig = static_cast<ControlSignal>(ui.comboBoxDO4->currentIndex() + 2);
+            sigName = ui.comboBoxDO4->currentText();
             curve = conDO4Curve;
             cBox = ui.cbDO4Wav;
             amplitude = 10;
@@ -3060,7 +3008,7 @@ bool Imagine::loadConWavDataAndPlot(int leftEnd, int rightEnd, int wavIdx)
             break;
         case 6: // DO5
         default:
-            sig = static_cast<ControlSignal>(ui.comboBoxDO5->currentIndex() + 2);
+            sigName = ui.comboBoxDO5->currentText();
             curve = conDO5Curve;
             cBox = ui.cbDO5Wav;
             amplitude = 10;
@@ -3069,7 +3017,8 @@ bool Imagine::loadConWavDataAndPlot(int leftEnd, int rightEnd, int wavIdx)
     }
 
     dest.clear();
-    retVal = conWaveData->readControlWaveform(dest, sig, leftEnd, rightEnd, factor);
+    ctrlIdx = conWaveData->getChannelIdxFromSig(sigName);
+    retVal = conWaveData->readControlWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor);
     if (retVal) {
         curveData = new CurveData(conWaveData->totalSampleNum); // parameter should not be xpoint.size()
         setCurveData(curveData, curve, dest, leftEnd, rightEnd, factor, amplitude, yoffset);
@@ -3105,8 +3054,6 @@ void Imagine::updateControlWaveform(int leftEnd, int rightEnd)
     ui.sbWavDsplyLeft->setMinimum(0);
     ui.sbWavDsplyLeft->setMaximum(rightEnd);
     ui.sbWavDsplyRight->setMinimum(leftEnd);
-    if(conWaveData->totalSampleNum>0)
-        ui.sbWavDsplyRight->setMaximum(conWaveData->totalSampleNum - 1);
 }
 
 void Imagine::on_btnConWavOpen_clicked()
@@ -3396,6 +3343,7 @@ void Imagine::on_spinBoxPiezoSampleRate_valueChanged(int newValue)
     updataSpeedData(curveData, newValue, left, right);
     piezoSpeedCurve->setData(curveData);
     conWavPlot->replot();
+    conWaveData->sampleRate = newValue;
 }
 
 /****** Image Display *****************************************************/
@@ -3923,7 +3871,8 @@ void Imagine::on_cbEnableMismatch_clicked(bool checked)
 void Imagine::on_pbGenerate_clicked()
 {
     //To make test control data
-    if (genControlFileJSON())
+    ControlWaveform example(rig);
+    if (example.genControlFileJSON())
         appendLog("exposureSamples > frameShutterCtrlSamples-50");
 }
 

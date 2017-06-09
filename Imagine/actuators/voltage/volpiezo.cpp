@@ -190,18 +190,13 @@ int VolPiezo::readConWaveToBuffer(int num)
     float64 * buf = bufAo - 1;
     int readNum = (idx + num < totalSample) ? num : totalSample - idx;
     int end = idx + readNum;
-    if (!conWaveData->isEmpty(positioner1)) {
-        QVector<int> waveData;
-        conWaveData->readControlWaveform(waveData, positioner1, idx, end - 1, 1);
-        for (unsigned i = 0; i < readNum; ++i) {
-            *++buf = zpos2voltage(waveData[i]);
-        }
-    }
-    if (!conWaveData->isEmpty(positioner2)) {
-        QVector<int> waveData;
-        conWaveData->readControlWaveform(waveData, positioner2, idx, end - 1, 1);
-        for (unsigned i = 0; i < readNum; ++i) {
-            *++buf = zpos2voltage(waveData[i]);
+    for (int i = 0; i < numAOChannel; i++) {
+        if (!conWaveData->isEmpty(i)) {
+            QVector<int> waveData;
+            conWaveData->readControlWaveform(waveData, i, idx, end - 1, 1);
+            for (unsigned j = 0; j < readNum; ++j) {
+                *++buf = zpos2voltage(waveData[j]);
+            }
         }
     }
     idx += readNum;
@@ -226,13 +221,12 @@ bool VolPiezo::prepareCmdBuffered(ControlWaveform *conWaveData)
     }
 
     this->conWaveData = conWaveData;
-    int aoChannelForPiezo1 = 0; //TODO: put this configurable
-    int aoChannelForPiezo2 = 1;
+    numAOChannel = conWaveData->getNumAOChannel();
     vector<int> aoChannels;
-    if (!conWaveData->isEmpty(positioner1))
-        aoChannels.push_back(aoChannelForPiezo1);
-    if (!conWaveData->isEmpty(positioner2))
-        aoChannels.push_back(aoChannelForPiezo2);
+    for (int i = 0; i < numAOChannel; i++) {
+        if (!conWaveData->isEmpty(i))
+            aoChannels.push_back(i);
+    }
 
     totalSample = conWaveData->totalSampleNum;
 
@@ -308,25 +302,15 @@ int DigitalOut::readConPulseToBuffer(int num)
     uInt32 * buf = bufDo - 1;
     int readNum = (idx + num < totalSample) ? num : totalSample - idx;
     int end = idx + readNum;
-    QVector<QVector<int>> waveData(24);
-    conWaveData->readControlWaveform(waveData[doChannelForStimulus1], stimulus1, idx, end - 1, 1);
-    conWaveData->readControlWaveform(waveData[doChannelForStimulus2], stimulus2, idx, end - 1, 1);
-    conWaveData->readControlWaveform(waveData[doChannelForStimulus3], stimulus3, idx, end - 1, 1);
-    conWaveData->readControlWaveform(waveData[doChannelForStimulus4], stimulus4, idx, end - 1, 1);
-    conWaveData->readControlWaveform(waveData[doChannelForStimulus5], stimulus5, idx, end - 1, 1);
-    conWaveData->readControlWaveform(waveData[doChannelForStimulus6], stimulus6, idx, end - 1, 1);
-    conWaveData->readControlWaveform(waveData[doChannelForStimulus7], stimulus7, idx, end - 1, 1);
-    conWaveData->readControlWaveform(waveData[doChannelForStimulus8], stimulus8, idx, end - 1, 1);
-    conWaveData->readControlWaveform(waveData[doChannelForlaser1], laser1, idx, end - 1, 1);
-    conWaveData->readControlWaveform(waveData[doChannelForlaser2], laser2, idx, end - 1, 1);
-    conWaveData->readControlWaveform(waveData[doChannelForlaser3], laser3, idx, end - 1, 1);
-    conWaveData->readControlWaveform(waveData[doChannelForlaser4], laser4, idx, end - 1, 1);
-    conWaveData->readControlWaveform(waveData[doChannelForlaser5], laser5, idx, end - 1, 1);
-    conWaveData->readControlWaveform(waveData[doChannelForcamera1], camera1, idx, end - 1, 1);
-    conWaveData->readControlWaveform(waveData[doChannelForcamera2], camera2, idx, end - 1, 1);
+    int numP0Channel = conWaveData->getNumP0Channel();
+    int p0Begin = conWaveData->getP0Begin();
+    QVector<QVector<int>> waveData(numP0Channel);
+    for (int i = 0; i < numP0Channel; i++) {
+        conWaveData->readControlWaveform(waveData[i], i + p0Begin, idx, end - 1, 1);
+    }
     for (unsigned i = 0; i < readNum; ++i) {
-        uInt32 data = 0;
-        for (int j = 0; j < 24; j++) {
+        uInt32 data = 0; // If there is no specific signal on that channel, default value is 0;
+        for (int j = 0; j < numP0Channel; j++) {
             if (!waveData[j].isEmpty())
                 if (waveData[j][i]) data |= (0x01 << j);
         }

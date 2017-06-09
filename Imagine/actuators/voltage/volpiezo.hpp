@@ -23,9 +23,9 @@ public:
     ~VolPiezo() { delete aoOnce; delete ao; }
 
 	//TODO: make these configurable elsewhere.  may be better to subclass VolPiezo for individual positioner models
-    double minPos(){ return 0; }
-    double maxPos(){ return maxpos; }
-    double maxSpeed(){ return maxspd; } //microns per second
+    int minPos(){ return 0; }
+    int maxPos(){ return maxpos; }
+    int maxSpeed(){ return maxspd; } //microns per second
     QString getCtrlrSetupType() { return setuptype; }
     bool curPos(double* pos);
     bool moveTo(double to);
@@ -48,6 +48,7 @@ public:
 private:
     QString ainame;
     QString aoname;
+    int numAOChannel;
     NiDaqAoWriteOne * aoOnce;
     NiDaqAo* ao;
     int maxpos = 0;
@@ -62,6 +63,7 @@ private:
     void cleanup();
 };//class, VolPiezo
 
+/*
 typedef enum  {
     doChannelForcamera1 = 5,
     doChannelForcamera2 = 6,
@@ -80,6 +82,7 @@ typedef enum  {
     doChannelForStimulus8 = 14,
     doChannelForStimulus9 = 15,// P0.15
 }PortLayout;
+*/
 
 class DigitalOut : public DigitalControls {
 public:

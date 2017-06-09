@@ -156,7 +156,7 @@ bool DataAcqThread::prepareDaqBuffered()
     // TODO: move positioner to the position of 1st element
     isOK = pPositioner->prepareCmdBuffered(conWaveData);
     if (isOK) {
-        digOut->prepareCmdBuffered(conWaveData, pPositioner->getClkOut());
+        isOK = digOut->prepareCmdBuffered(conWaveData, pPositioner->getClkOut());
         if (isOK)
             return true;
         else

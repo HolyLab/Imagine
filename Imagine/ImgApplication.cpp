@@ -25,15 +25,15 @@ void ImgApplication::showUi() {
     if (imgTwo != NULL) imgTwo->show();
 }
 
-void ImgApplication::initUI(Camera *cam1, Positioner *pos, Laser *laser, Camera *cam2) {
+void ImgApplication::initUI(QString rig, Camera *cam1, Positioner *pos, Laser *laser, Camera *cam2) {
     // init first window
-    Imagine *w1p = new Imagine(cam1, pos, laser);
+    Imagine *w1p = new Imagine(rig, cam1, pos, laser);
     imgOne = w1p;
 
     // init second window if needed.  The first window is "master", meaning that it controls the positioner.
     Imagine *w2p = nullptr;
     if (cam2 != NULL) {
-        w2p = new Imagine(cam2, pos, laser, w1p);
+        w2p = new Imagine(rig, cam2, pos, laser, w1p);
         imgTwo = w2p;
         imgTwo->setWindowTitle("Imagine (2)");
         imgOne->setWindowTitle("Imagine (1)");

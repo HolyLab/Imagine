@@ -151,11 +151,12 @@ class Imagine : public QMainWindow
     QThread piezoCtrlThread;
     QThread imagePlayThread;
 public:
-    Imagine(Camera *cam, Positioner *pos = NULL, Laser *laser = NULL, Imagine *mImagine = NULL,
-        QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    Imagine(QString rig, Camera *cam, Positioner *pos = NULL, Laser *laser = NULL,
+        Imagine *mImagine = NULL, QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~Imagine();
     DataAcqThread *dataAcqThread;
     
+    QString rig;
 	Imagine *masterImagine; //Positioner and stimulus control / interface is restricted to only the master instance
     Pixmapper *pixmapper = nullptr;
     ImagePlay *imagePlay = nullptr;
@@ -197,7 +198,6 @@ public:
     int T;
 protected:
     void closeEvent(QCloseEvent *event);
-
 
 private:
     QScrollArea* scrollArea;
