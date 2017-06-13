@@ -148,18 +148,19 @@ enum CFErrorCode : unsigned int
     // waveform validity error
     ERR_CONTROL_SEQ_MISSING     = 1 << 5,
     ERR_SAMPLE_NUM_MISMATCHED   = 1 << 6,
-    ERR_PIEZO_SPEED_FAST        = 1 << 7,
-    ERR_PIEZO_INSTANT_CHANGE    = 1 << 8,
-    ERR_LASER_SPEED_FAST        = 1 << 8,
-    ERR_LASER_INSTANT_CHANGE    = 1 << 10,
-    ERR_SHORT_WAVEFORM          = 1 << 11
+    ERR_PIEZO_VALUE_HIGH        = 1 << 7,
+    ERR_PIEZO_SPEED_FAST        = 1 << 8,
+    ERR_PIEZO_INSTANT_CHANGE    = 1 << 9,
+    ERR_LASER_SPEED_FAST        = 1 << 10,
+    ERR_LASER_INSTANT_CHANGE    = 1 << 11,
+    ERR_SHORT_WAVEFORM          = 1 << 12
 } ; // command file error code
 
 class ControlWaveform : public QObject {
     Q_OBJECT
 
 private:
-    int numAOChannel, numAIChannel, numP0Channel, numChannel;
+    int numAOChannel, numAIChannel, numP0Channel, numP0InChannel, numChannel;
     QString rig;
     QVector<QVector<int> *> controlList;
     QVector<QVector<int> *> portList;
@@ -228,19 +229,24 @@ public:
     int getChannelIdxFromCh(QString channelName);
     int getAIBegin(void);
     int getP0Begin(void);
+    int getP0InBegin(void);
     int getNumAOChannel(void);
     int getNumAIChannel(void);
     int getNumP0Channel(void);
+    int getNumP0InChannel(void);
     int getNumChannel(void);
     bool getCtrlSampleValue(int ctrlIdx, int idx, int &value);
     bool isPiezoWaveEmpty(void);
     bool isCameraPulseEmpty(void);
     bool isLaserPulseEmpty(void);
-    CFErrorCode positionerSpeedCheck(int maxSpeed, int ctrlIdx, int &dataSize);
+    CFErrorCode positionerSpeedCheck(int maxPos, int maxSpeed, int ctrlIdx, int &dataSize);
     CFErrorCode laserSpeedCheck(double maxFreq, int ctrlIdx, int &dataSize);
-    CFErrorCode waveformValidityCheck(int maxPiezoSpeed, int maxLaserFreq);
+    CFErrorCode waveformValidityCheck(int maxPos, int maxPiezoSpeed, int maxLaserFreq);
     QString getErrorMsg(void);
     int genControlFileJSON(void);
+    int genTriangle(bool bidir);
+    int genSinusoidal(bool bidir);
+
 
 }; // ControlWaveform
 

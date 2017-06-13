@@ -1475,12 +1475,14 @@ void Imagine::on_spinBoxVend_valueChanged(int newValue)
 bool Imagine::waveformValidityCheck(void)
 {
     Positioner *pos = dataAcqThread->pPositioner;
-    conWaveData->waveformValidityCheck(pos->maxSpeed(), maxLaserFreq);
+    CFErrorCode err = conWaveData->waveformValidityCheck(pos->maxPos(), pos->maxSpeed(), maxLaserFreq);
     if (conWaveData->getErrorMsg() != "") {
         QMessageBox::critical(this, "Imagine", conWaveData->getErrorMsg(), QMessageBox::Ok, QMessageBox::NoButton);
-        return false;
     }
-    return true;
+    if (err == NO_CF_ERROR)
+        return true;
+    else
+        return false;
 }
 
 void Imagine::on_btnApply_clicked()
@@ -2842,6 +2844,14 @@ void Imagine::readControlWaveform(QString fn)
     if (conWaveData)
         delete conWaveData;
     conWaveData = new ControlWaveform(rig);
+    conAO1Curve->setData(0);
+    conAO2Curve->setData(0);
+    conDO1Curve->setData(0);
+    conDO2Curve->setData(0);
+    conDO3Curve->setData(0);
+    conDO4Curve->setData(0);
+    conDO5Curve->setData(0);
+    conWavPlot->replot();
 
     m_OpenDialogLastDirectory = fi.absolutePath();
     QString ext = fi.suffix();
@@ -2921,6 +2931,11 @@ void Imagine::readControlWaveform(QString fn)
 
         // GUI waveform display
         updateControlWaveform(0, conWaveData->totalSampleNum - 1);
+        // Even though there is no error, if there are some warnings, we show them.
+        if (conWaveData->getErrorMsg() != "") {
+            QMessageBox::critical(this, "Imagine", conWaveData->getErrorMsg(),
+                QMessageBox::Ok, QMessageBox::NoButton);
+        }
     }
     else {
         if (err & ERR_INVALID_VERSION) {
@@ -3333,6 +3348,7 @@ void Imagine::on_btnWavDsplyReset_clicked()
 {
     ui.sbWavDsplyLeft->setValue(0);
     ui.sbWavDsplyRight->setValue(conWaveData->totalSampleNum - 1);
+    ui.sbWavDsplyTop->setValue(ui.sbWavDsplyTop->maximum());
 }
 
 void Imagine::on_spinBoxPiezoSampleRate_valueChanged(int newValue)

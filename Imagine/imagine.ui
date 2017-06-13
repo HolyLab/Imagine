@@ -3177,7 +3177,7 @@
             <item>
              <widget class="QLabel" name="label_36">
               <property name="text">
-               <string>Sampling rate</string>
+               <string>Samples per second</string>
               </property>
              </widget>
             </item>
@@ -3200,7 +3200,7 @@
             <item>
              <widget class="QLabel" name="label_41">
               <property name="text">
-               <string>Sample number</string>
+               <string>Sample num</string>
               </property>
              </widget>
             </item>
@@ -3289,7 +3289,7 @@
             <item>
              <widget class="QLabel" name="label_46">
               <property name="text">
-               <string>exposure</string>
+               <string>Exposure time (sec)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
