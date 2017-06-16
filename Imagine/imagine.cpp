@@ -126,7 +126,7 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabWaveform));
     }
     else {  // Imagine(1)
-        conWaveData = new ControlWaveform(rig);
+        conWaveData = new ControlWaveform();
     }
     //adjust size
     QRect tRect = geometry();
@@ -1495,9 +1495,12 @@ void Imagine::on_btnApply_clicked()
     }
 
     Camera* camera = dataAcqThread->pCamera;
-
     QString acqTriggerModeStr = ui.comboBoxAcqTriggerMode->currentText();
- 	QString expTriggerModeStr = ui.comboBoxExpTriggerMode->currentText();
+    QString expTriggerModeStr = ui.comboBoxExpTriggerMode->currentText();
+    if (ui.cbPositionerWav->isChecked()) {
+        acqTriggerModeStr = "Internal";
+        expTriggerModeStr = ui.comboBoxExpTriggerModeWav->currentText();
+    }
     Camera::AcqTriggerMode acqTriggerMode;
 	Camera::ExpTriggerMode expTriggerMode;
     if (acqTriggerModeStr == "External") acqTriggerMode = Camera::eExternal;
@@ -1550,16 +1553,28 @@ void Imagine::on_btnApply_clicked()
         if (ui.cbPositionerWav->isChecked()) { // waveform enabled
             if (!waveformValidityCheck())
                 return; // waveform is not valid
-            dataAcqThread->sampleRate = ui.spinBoxPiezoSampleRate->value();
-            dataAcqThread->nStacks = ui.spinBoxNumOfStacksWav->value();
-            dataAcqThread->nFramesPerStack = ui.spinBoxFramesPerStackWav->value();
+            dataAcqThread->sampleRate = conWaveData->sampleRate;
+            dataAcqThread->nStacks = conWaveData->nStacks;
+            dataAcqThread->nFramesPerStack = conWaveData->nFrames;
             dataAcqThread->exposureTime = ui.doubleSpinBoxExpTimeWav->value();
             dataAcqThread->isBiDirectionalImaging = ui.cbBidirection->isChecked();
             dataAcqThread->isUsingWav = true;
             dataAcqThread->conWaveData = conWaveData;
-            dataAcqThread->acqTriggerMode = Camera::eInternalTrigger;
-            dataAcqThread->expTriggerMode = Camera::eExternalStart;
-            dataAcqThread->pPositioner->setScanRateAo(ui.spinBoxPiezoSampleRate->value());
+            dataAcqThread->pPositioner->setScanRateAo(conWaveData->sampleRate);
+            if (slaveImagine != nullptr) { // waveform enabled
+                slaveImagine->dataAcqThread->sampleRate = conWaveData->sampleRate;
+                slaveImagine->dataAcqThread->nStacks = conWaveData->nStacks;
+                slaveImagine->dataAcqThread->nFramesPerStack = conWaveData->nFrames;
+                slaveImagine->dataAcqThread->exposureTime = ui.doubleSpinBoxExpTimeWav->value();
+                slaveImagine->dataAcqThread->isBiDirectionalImaging = ui.cbBidirection->isChecked();
+                slaveImagine->dataAcqThread->isUsingWav = true;
+                slaveImagine->dataAcqThread->acqTriggerMode = dataAcqThread->acqTriggerMode;
+                slaveImagine->dataAcqThread->expTriggerMode = dataAcqThread->expTriggerMode;
+                slaveImagine->dataAcqThread->pPositioner->setScanRateAo(conWaveData->sampleRate);
+                if (ui.comboBoxPositionerOwner->currentText() == "Camera 2") { // postioner owner is camera 2
+                    slaveImagine->dataAcqThread->conWaveData = conWaveData; // Imagine (2) should be able to access wavedata
+                }
+            }
         }
         else {
             dataAcqThread->isUsingWav = false;
@@ -1567,21 +1582,7 @@ void Imagine::on_btnApply_clicked()
         }
     }
     else { // Imagine (2)
-        if (masterImagine->ui.cbPositionerWav->isChecked()) { // waveform enabled
-            dataAcqThread->sampleRate = masterImagine->ui.spinBoxPiezoSampleRate->value();
-            dataAcqThread->nStacks = masterImagine->ui.spinBoxNumOfStacksWav->value();
-            dataAcqThread->nFramesPerStack = masterImagine->ui.spinBoxFramesPerStackWav->value();
-            dataAcqThread->exposureTime = masterImagine->ui.doubleSpinBoxExpTimeWav->value();
-            dataAcqThread->isBiDirectionalImaging = masterImagine->ui.cbBidirection->isChecked();
-            dataAcqThread->isUsingWav = true;
-            dataAcqThread->acqTriggerMode = Camera::eInternalTrigger;
-            dataAcqThread->expTriggerMode = Camera::eExternalStart;
-            dataAcqThread->pPositioner->setScanRateAo(masterImagine->ui.spinBoxPiezoSampleRate->value());
-            if (masterImagine->ui.comboBoxPositionerOwner->currentText() == "Camera 2") { // postioner owner is camera 2
-                dataAcqThread->conWaveData = masterImagine->conWaveData; // Imagine (2) should be able to access wavedata
-            }
-        }
-        else {
+        if (!masterImagine->ui.cbPositionerWav->isChecked()) { // waveform disabled
             dataAcqThread->isUsingWav = false;
             dataAcqThread->pPositioner->setScanRateAo(10000); // Hard coded
         }
@@ -2413,10 +2414,8 @@ void Imagine::writeSettings(QString file)
     if (masterImagine == NULL) {
         prefs.beginGroup("Waveform");
         WRITE_CHECKBOX_SETTING(prefs, cbPositionerWav);
-        WRITE_SETTING(prefs, spinBoxPiezoSampleRate);
-        WRITE_SETTING(prefs, spinBoxSampleNumber);
-//        WRITE_SETTING(prefs, spinBoxNumOfStacks);
-//        WRITE_SETTING(prefs, spinBoxFramesPerStack);
+        WRITE_COMBO_SETTING(prefs, comboBoxExpTriggerModeWav);
+        WRITE_SETTING(prefs, doubleSpinBoxExpTimeWav);
         WRITE_STRING_SETTING(prefs, lineEditConWaveFile);
         prefs.endGroup();
 
@@ -2512,10 +2511,8 @@ void Imagine::readSettings(QString file)
     if (masterImagine == NULL) {
         prefs.beginGroup("Waveform");
         READ_BOOL_SETTING(prefs, cbPositionerWav, false);
-        READ_SETTING(prefs, spinBoxPiezoSampleRate, ok, i, 10000, Int);
-        READ_SETTING(prefs, spinBoxSampleNumber, ok, i, 100000, Int);
-//        WRITE_SETTING(prefs, spinBoxNumOfStacks, ok, i, 5, Int);
-//        WRITE_SETTING(prefs, spinBoxFramesPerStack, ok, i, 20, Int);
+        READ_COMBO_SETTING(prefs, comboBoxExpTriggerModeWav, 0);
+        READ_SETTING(prefs, doubleSpinBoxExpTimeWav, ok, d, 0.0107, Double);
         READ_STRING_SETTING(prefs, lineEditConWaveFile, "");
         prefs.endGroup();
 
@@ -2834,7 +2831,7 @@ void Imagine::readControlWaveformFile(QString fn)
 
     if (conWaveData)
         delete conWaveData;
-    conWaveData = new ControlWaveform(rig);
+    conWaveData = new ControlWaveform();
     conAO1Curve->setData(0);
     conAO2Curve->setData(0);
     conDO1Curve->setData(0);
@@ -2872,11 +2869,12 @@ void Imagine::readControlWaveformFile(QString fn)
     if (err == NO_CF_ERROR) {
         // GUI metadata display
         ui.cbPositionerWav->setChecked(true);
-        ui.spinBoxPiezoSampleRate->setValue(conWaveData->sampleRate);
         ui.doubleSpinBoxExpTimeWav->setValue(conWaveData->exposureTime);
-        ui.spinBoxNumOfStacksWav->setValue(conWaveData->nStacks);
-        ui.spinBoxFramesPerStackWav->setValue(conWaveData->nFrames);
-        ui.spinBoxSampleNumber->setValue(conWaveData->totalSampleNum);
+
+        ui.labelPiezoSampleRate->setText(QString("%1").arg(conWaveData->sampleRate));
+        ui.labelNumOfStacksWav->setText(QString("%1").arg(conWaveData->nStacks));
+        ui.labelFramesPerStackWav->setText(QString("%1").arg(conWaveData->nFrames));
+        ui.labelSampleNumber->setText(QString("%1").arg(conWaveData->totalSampleNum));
         ui.cbBidirection->setChecked(conWaveData->bidirection);
 
         // GUI waveform y axis display value adjusting box setup
@@ -3055,7 +3053,7 @@ void Imagine::updateControlWaveform(int leftEnd, int rightEnd)
     // graph data for piezo speed
     CurveData *curveData = NULL;
     curveData = new CurveData(conWaveData->totalSampleNum);
-    updataSpeedData(curveData, ui.spinBoxPiezoSampleRate->value(), leftEnd, rightEnd);
+    updataSpeedData(curveData, conWaveData->sampleRate, leftEnd, rightEnd);
     piezoSpeedCurve->setData(curveData);
     conWavPlot->setAxisScale(QwtPlot::yLeft, 0, ui.sbWavDsplyTop->value());
     conWavPlot->replot();
@@ -3319,6 +3317,18 @@ void Imagine::on_comboBoxDO5_currentIndexChanged(int index)
     on_cbDO5Wav_clicked(ui.cbDO5Wav->isChecked());
 }
 
+void Imagine::on_comboBoxExpTriggerModeWav_currentIndexChanged(int index)
+{
+    if (index == 0) { // External Start : exposure follows spinbox value
+        ui.doubleSpinBoxExpTimeWav->setEnabled(true);
+    }
+    else { // External Control : exposure just follows control waveform
+        // GUI just display exposure value from control file
+        ui.doubleSpinBoxExpTimeWav->setValue(conWaveData->exposureTime);
+        ui.doubleSpinBoxExpTimeWav->setEnabled(false);
+    }
+}
+
 void Imagine::on_sbWavDsplyRight_valueChanged(int value)
 {
     int left = ui.sbWavDsplyLeft->value();
@@ -3346,17 +3356,6 @@ void Imagine::on_btnWavDsplyReset_clicked()
     ui.sbWavDsplyLeft->setValue(0);
     ui.sbWavDsplyRight->setValue(conWaveData->totalSampleNum - 1);
     ui.sbWavDsplyTop->setValue(ui.sbWavDsplyTop->maximum());
-}
-
-void Imagine::on_spinBoxPiezoSampleRate_valueChanged(int newValue)
-{
-    int left = ui.sbWavDsplyLeft->value();
-    int right = ui.sbWavDsplyRight->value();
-    CurveData *curveData = new CurveData(conWaveData->totalSampleNum);
-    updataSpeedData(curveData, newValue, left, right);
-    piezoSpeedCurve->setData(curveData);
-    conWavPlot->replot();
-    conWaveData->sampleRate = newValue;
 }
 
 /****** Image Display *****************************************************/
@@ -3884,7 +3883,7 @@ void Imagine::on_cbEnableMismatch_clicked(bool checked)
 void Imagine::on_pbGenerate_clicked()
 {
     //To make test control data
-    ControlWaveform example(rig);
+    ControlWaveform example;
     if (example.genControlFileJSON())
         appendLog("exposureSamples > frameShutterCtrlSamples-50");
 }

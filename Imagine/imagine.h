@@ -158,6 +158,7 @@ public:
     
     QString rig;
 	Imagine *masterImagine; //Positioner and stimulus control / interface is restricted to only the master instance
+    Imagine *slaveImagine = nullptr;
     Pixmapper *pixmapper = nullptr;
     ImagePlay *imagePlay = nullptr;
     bool isPixmapping = false;
@@ -196,6 +197,9 @@ public:
     int W;
     int H;
     int T;
+
+    void setSlaveWindow(Imagine *sImagine) { slaveImagine = sImagine;  };
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -392,7 +396,6 @@ private slots:
     void on_cbDO3Wav_clicked(bool state);
     void on_cbDO4Wav_clicked(bool state);
     void on_cbDO5Wav_clicked(bool state);
-    void on_spinBoxPiezoSampleRate_valueChanged(int newValue);
     void on_sbWavDsplyRight_valueChanged(int value);
     void on_sbWavDsplyLeft_valueChanged(int value);
     void on_sbWavDsplyTop_valueChanged(int value);
@@ -404,6 +407,7 @@ private slots:
     void on_comboBoxDO3_currentIndexChanged(int index);
     void on_comboBoxDO4_currentIndexChanged(int index);
     void on_comboBoxDO5_currentIndexChanged(int index);
+    void on_comboBoxExpTriggerModeWav_currentIndexChanged(int index);
 
     void on_btnImg1LoadFile_clicked();
     void on_btnImg2LoadFile_clicked();

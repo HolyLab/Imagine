@@ -203,7 +203,7 @@ private:
         { QString(STR_AIHEADER).append("1"), STR_hor_piezo_mon },
         // Digital output (P0.0 ~ P0.23)
         { QString(STR_P0HEADER).append("4"), STR_all_lasers },      // 40
-        { QString(STR_P0HEADER).append("5"), STR_camera1 },         
+        { QString(STR_P0HEADER).append("5"), STR_camera1 },
         { QString(STR_P0HEADER).append("6"), STR_camera2 },
         { QString(STR_P0HEADER).append("8"), STR_488nm_laser },     // 44
         { QString(STR_P0HEADER).append("9"), STR_561nm_laser },
@@ -229,7 +229,7 @@ public:
     double exposureTime = 0;
     bool bidirection = false;
 
-    ControlWaveform(QString rig);
+    ControlWaveform();
     ~ControlWaveform();
 
     CFErrorCode loadJsonDocument(QJsonDocument &loadDoc);

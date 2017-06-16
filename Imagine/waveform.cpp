@@ -23,7 +23,7 @@ CFErrorCode& operator&=(CFErrorCode& X, CFErrorCode Y) {
     X = X & Y; return X;
 }
 
-ControlWaveform::ControlWaveform(QString rigName)
+ControlWaveform::ControlWaveform()
 {
     rig = se->globalObject().property("rig").toString();
     maxPiezoPos = se->globalObject().property("maxposition").toNumber();
