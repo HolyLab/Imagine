@@ -192,10 +192,10 @@ int VolPiezo::readConWaveToBuffer(int num)
     int end = idx + readNum;
     for (int i = 0; i < numAOChannel; i++) {
         if (!conWaveData->isEmpty(i)) {
-            QVector<int> waveData;
-            conWaveData->readControlWaveform(waveData, i, idx, end - 1, 1);
+            QVector<float> waveData;
+            conWaveData->readControlWaveform(waveData, i, idx, end - 1, 1, PDT_VOLTAGE);
             for (unsigned j = 0; j < readNum; ++j) {
-                *++buf = zpos2voltage(waveData[j]);
+                *++buf = waveData[j];
             }
         }
     }

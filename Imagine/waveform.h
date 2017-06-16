@@ -96,6 +96,7 @@
 using namespace std;
 
 #define MAX_NUM_WAVEFORM 100
+#define PIEZO_10V_INT16_VALUE  32767.   // max value of uint16 (double constant)
 
 #define CF_VERSION          "v1.0"
 
@@ -148,23 +149,36 @@ enum CFErrorCode : unsigned int
     // waveform validity error
     ERR_CONTROL_SEQ_MISSING     = 1 << 5,
     ERR_SAMPLE_NUM_MISMATCHED   = 1 << 6,
-    ERR_PIEZO_VALUE_HIGH        = 1 << 7,
+    ERR_PIEZO_VALUE_INVALID     = 1 << 7,
     ERR_PIEZO_SPEED_FAST        = 1 << 8,
     ERR_PIEZO_INSTANT_CHANGE    = 1 << 9,
     ERR_LASER_SPEED_FAST        = 1 << 10,
     ERR_LASER_INSTANT_CHANGE    = 1 << 11,
     ERR_SHORT_WAVEFORM          = 1 << 12
-} ; // command file error code
+}; // command file error code
+
+enum PiezoDataType
+{
+    PDT_RAW         = 0,
+    PDT_VOLTAGE     = 1,
+    PDT_Z_POSITION  = 2
+};
 
 class ControlWaveform : public QObject {
     Q_OBJECT
 
 private:
     int numAOChannel, numAIChannel, numP0Channel, numP0InChannel, numChannel;
+    double piezo10Vint16Value;
     QString rig;
+    int maxPiezoPos;
+    int maxPiezoSpeed;
     QVector<QVector<int> *> controlList;
     QVector<QVector<int> *> portList;
-    QVector<QVector<int> *> waveList;
+    QVector<QVector<int> *> waveList_Raw;       // positioner waveform (raw format) 
+                                                // + analog waveform +  digital waveform
+    QVector<QVector<int> *> waveList_Pos;       // analog waveform (piezo position format) 
+    QVector<QVector<float64> *> waveList_Vol;   // analog waveform (voltage format) 
     QString errorMsg = "";
 
     QVector<QVector<QString>> channelSignalList;
@@ -182,29 +196,30 @@ private:
 
     QVector<QVector<QString>> ocpi2Secured = { // secured signal name for OCPI-2
         // Analog output (AO0 ~ AO3)
-        { QString(STR_AOHEADER).append("0"), STR_axial_piezo },
+        { QString(STR_AOHEADER).append("0"), STR_axial_piezo },     // 0
         { QString(STR_AOHEADER).append("1"), STR_hor_piezo },
         // Analog input (AI0 ~ AI31)
-        { QString(STR_AIHEADER).append("0"), STR_axial_piezo_mon },
+        { QString(STR_AIHEADER).append("0"), STR_axial_piezo_mon }, // 4
         { QString(STR_AIHEADER).append("1"), STR_hor_piezo_mon },
         // Digital output (P0.0 ~ P0.23)
-        { QString(STR_P0HEADER).append("4"), STR_all_lasers },
-        { QString(STR_P0HEADER).append("5"), STR_camera1 },
+        { QString(STR_P0HEADER).append("4"), STR_all_lasers },      // 40
+        { QString(STR_P0HEADER).append("5"), STR_camera1 },         
         { QString(STR_P0HEADER).append("6"), STR_camera2 },
-        { QString(STR_P0HEADER).append("8"), STR_488nm_laser },
+        { QString(STR_P0HEADER).append("8"), STR_488nm_laser },     // 44
         { QString(STR_P0HEADER).append("9"), STR_561nm_laser },
         { QString(STR_P0HEADER).append("10"),STR_405nm_laser },
         { QString(STR_P0HEADER).append("11"),STR_445nm_laser },
         { QString(STR_P0HEADER).append("12"),STR_514nm_laser },
         // Digital input (P0.24 ~ P0.31)
-        { QString(STR_P0HEADER).append("24"),STR_camera1_mon },
+        { QString(STR_P0HEADER).append("24"),STR_camera1_mon },     // 68
         { QString(STR_P0HEADER).append("25"),STR_camera2_mon }
     };
 
     CFErrorCode lookUpWave(QString wn, QVector <QString> &wavName,
-        QJsonObject wavelist, int &waveIdx);
+        QJsonObject wavelist, int &waveIdx, int dataType);
     int getWaveSampleNum(int waveIdx);
-    bool getWaveSampleValue(int waveIdx, int sampleIdx, int &value);
+    template<class Typ> bool getWaveSampleValue(int waveIdx, int sampleIdx,
+            Typ &value, PiezoDataType dataType = PDT_RAW);
 
 public:
     int sampleRate = 10000;
@@ -218,8 +233,10 @@ public:
     ~ControlWaveform();
 
     CFErrorCode loadJsonDocument(QJsonDocument &loadDoc);
-    bool readControlWaveform(QVector<int> &dest, int ctrlIdx,
-            int begin, int end, int downSampleRate);
+    template<class Typ> bool readControlWaveform(QVector<Typ> &dest, int ctrlIdx,
+            int begin, int end, int downSampleRate, PiezoDataType dataType = PDT_RAW);
+    template<class Typ> bool getCtrlSampleValue(int ctrlIdx, int idx, Typ &value,
+            PiezoDataType dataType = PDT_RAW);
     bool isEmpty(int ctrlIdx);
     bool isEmpty(QString signalName);
     int getCtrlSampleNum(int ctrlIdx);
@@ -235,7 +252,6 @@ public:
     int getNumP0Channel(void);
     int getNumP0InChannel(void);
     int getNumChannel(void);
-    bool getCtrlSampleValue(int ctrlIdx, int idx, int &value);
     bool isPiezoWaveEmpty(void);
     bool isCameraPulseEmpty(void);
     bool isLaserPulseEmpty(void);
@@ -246,8 +262,82 @@ public:
     int genControlFileJSON(void);
     int genTriangle(bool bidir);
     int genSinusoidal(bool bidir);
-
-
+    int raw2Zpos(int raw);
+    float64 raw2Voltage(int raw);
 }; // ControlWaveform
 
+
+/******* Template functions *********/
+// To use these template functions from the outside of this class
+// These funtion definitions should be located in this header file and shoud include this header file.
+
+int findValue(QVector<int> *wav, int begin, int end, int sampleIdx);
+int findValuePos(QVector<int> *wav, QVector<int> *wav_p, int begin, int end, int sampleIdx);
+float64 findValueVol(QVector<int> *wav, QVector<float64> *wav_v, int begin, int end, int sampleIdx);
+
+// Read control signal data from index 'begin' to 'end' with downsample rate 'downSampleRate' to 'dest' vector
+template<class Typ>
+bool ControlWaveform::readControlWaveform(QVector<Typ> &dest, int ctrlIdx,
+    int begin, int end, int downSampleRate, PiezoDataType dataType)
+{
+    if (controlList.isEmpty())
+        return false;
+
+    int controlIdx = 0, repeat, waveIdx, repeatLeft;
+    int sampleIdx = begin, startSampleIdx = 0, prevStartSampleIdx, sampleIdxInWave;
+
+    while (1) {
+        for (; controlIdx < controlList[ctrlIdx]->size(); controlIdx += 2) {
+            repeat = controlList[ctrlIdx]->at(controlIdx);
+            repeatLeft = repeat;
+            waveIdx = controlList[ctrlIdx]->at(controlIdx + 1);
+            for (int j = 0; j < repeat; j++) {
+                prevStartSampleIdx = startSampleIdx;
+                startSampleIdx += getWaveSampleNum(waveIdx);
+                if (sampleIdx < startSampleIdx) {
+                    for (; sampleIdx < startSampleIdx; sampleIdx += downSampleRate) {
+                        sampleIdxInWave = sampleIdx - prevStartSampleIdx;
+                        Typ value;
+                        bool isValid = getWaveSampleValue(waveIdx, sampleIdxInWave, value, dataType);
+                        if (isValid)
+                            dest.push_back(value);
+                        else
+                            goto idx_error;
+                        if (sampleIdx >= end - downSampleRate + 1)
+                            goto done;
+                    }
+                }
+            }
+        }
+        break;
+    }
+
+idx_error:
+    return false;
+done:
+    return true;
+}
+
+// Read wave signal data at index 'sampleIdx' to variable 'value'
+template<class Typ>
+bool ControlWaveform::getWaveSampleValue(int waveIdx, int sampleIdx, Typ &value, PiezoDataType dataType)
+{
+    if (waveList_Raw.isEmpty())
+        return false;
+
+    int sum = 0;
+
+    if (sampleIdx >= waveList_Raw[waveIdx]->last()) {
+        return false;
+    }
+    int begin = 0;
+    int end = waveList_Raw[waveIdx]->size() / 2;
+    if (dataType == PDT_RAW)
+        value = findValue(waveList_Raw[waveIdx], begin, end, sampleIdx);
+    else if (dataType == PDT_VOLTAGE)
+        value = findValueVol(waveList_Raw[waveIdx], waveList_Vol[waveIdx], begin, end, sampleIdx);
+    else if (dataType == PDT_Z_POSITION)
+        value = findValuePos(waveList_Raw[waveIdx], waveList_Pos[waveIdx], begin, end, sampleIdx);
+    return true;
+}
 #endif //WAVEFORM_H

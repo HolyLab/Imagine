@@ -2619,7 +2619,7 @@ void Imagine::on_actionLoad_Configuration_triggered()
     readComments(file);
 
     QString conFileName = ui.lineEditConWaveFile->text();
-    readControlWaveform(conFileName);
+    readControlWaveformFile(conFileName);
 
     on_btnApply_clicked();
 }
@@ -2804,15 +2804,6 @@ void Imagine::updataSpeedData(CurveData *curveData, int newValue, int start, int
 }
 
 template<class Type> void Imagine::setCurveData(CurveData *curveData, QwtPlotCurve *curve,
-    std::vector<Type> &wave, int start, int end, int yoffset)
-{
-    for (int i = start; i < end; i ++)
-        curveData->append(static_cast<double>(i), wave[i]+ yoffset);
-    curve->setData(curveData);
-    conWavPlot->setAxisScale(QwtPlot::xBottom, curveData->left(), curveData->right());
-}
-
-template<class Type> void Imagine::setCurveData(CurveData *curveData, QwtPlotCurve *curve,
     QVector<Type> &wave, int start, int end, int factor, int amplitude, int yoffset)
 {
     for (int i = start; i <= end; i += factor)
@@ -2821,7 +2812,7 @@ template<class Type> void Imagine::setCurveData(CurveData *curveData, QwtPlotCur
     conWavPlot->setAxisScale(QwtPlot::xBottom, curveData->left(), curveData->right());
 }
 
-void Imagine::readControlWaveform(QString fn)
+void Imagine::readControlWaveformFile(QString fn)
 {
     enum SaveFormat {
         Json, Binary
@@ -2905,11 +2896,11 @@ void Imagine::readControlWaveform(QString fn)
         doList.push_back("empty");
         for (int i = 0; i < conWaveData->getNumChannel(); i++) {
             if (!conWaveData->isEmpty(i)) {
-                if (i < 2) {
+                if (i < conWaveData->getAIBegin()) {
                     aoList.push_back(conWaveData->getSignalName(i));
                     numNonAOEmpty++;
                 }
-                else {
+                else if ((i >= conWaveData->getP0Begin())&&(i < conWaveData->getP0InBegin())) {
                     doList.push_back(conWaveData->getSignalName(i));
                     numNonDOEmpty++;
                 }
@@ -2955,7 +2946,7 @@ void Imagine::readControlWaveform(QString fn)
     }
 }
 
-bool Imagine::loadConWavDataAndPlot(int leftEnd, int rightEnd, int wavIdx)
+bool Imagine::loadConWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx)
 {
     int retVal;
     int curveDataSampleNum = 1000;
@@ -2977,7 +2968,7 @@ bool Imagine::loadConWavDataAndPlot(int leftEnd, int rightEnd, int wavIdx)
     else
         curveDataSampleNum = sampleNum / factor;
 
-    switch (wavIdx)
+    switch (curveIdx)
     {
         case 0: // AO1
             sigName = ui.comboBoxAO1->currentText();
@@ -3031,9 +3022,15 @@ bool Imagine::loadConWavDataAndPlot(int leftEnd, int rightEnd, int wavIdx)
             break;
     }
 
+    if ((sigName == "")|| (sigName == "empty"))
+        return false;
+
     dest.clear();
     ctrlIdx = conWaveData->getChannelIdxFromSig(sigName);
-    retVal = conWaveData->readControlWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor);
+    if (conWaveData->getSignalName(ctrlIdx).right(5) == "piezo")
+        retVal = conWaveData->readControlWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor, PDT_Z_POSITION);
+    else
+        retVal = conWaveData->readControlWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor);
     if (retVal) {
         curveData = new CurveData(conWaveData->totalSampleNum); // parameter should not be xpoint.size()
         setCurveData(curveData, curve, dest, leftEnd, rightEnd, factor, amplitude, yoffset);
@@ -3082,7 +3079,7 @@ void Imagine::on_btnConWavOpen_clicked()
 
     ui.lineEditConWaveFile->setText(wavFilename);
 
-    readControlWaveform(wavFilename);
+    readControlWaveformFile(wavFilename);
 }
 
 void Imagine::on_btnReadAiWavOpen_clicked()

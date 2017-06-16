@@ -246,8 +246,6 @@ private:
     void updateIntenCurve(const Camera::PixelValue * frame,
         const int imageW, const int imageH, const int frameIdx);
     template<class Type> void setCurveData(CurveData *curveData, QwtPlotCurve *curve,
-        std::vector<Type> &wave, int start, int end, int yoffset);
-    template<class Type> void setCurveData(CurveData *curveData, QwtPlotCurve *curve,
         QVector<Type> &wave, int start, int end, int factor, int amplitude, int yoffset);
     bool checkRoi();
     bool loadPreset();
@@ -262,11 +260,11 @@ private:
     void readSettings(QString file);
     void writeComments(QString file);
     void readComments(QString file);
-    void readControlWaveform(QString fn);
+    void readControlWaveformFile(QString fn);
     void updateControlWaveform(int leftEnd, int rightEnd);
     void updataSpeedData(CurveData *curveData, int newValue, int start, int end);
     bool waveformValidityCheck(void);
-    bool loadConWavDataAndPlot(int leftEnd, int rightEnd, int wavIdx);
+    bool loadConWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx);
     void readImagineFile(QString file, ImagineData &img);
     bool readImagineAndCamFile(QString filename, ImagineData &img1);
     void blendImages();

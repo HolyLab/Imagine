@@ -292,7 +292,7 @@
           <item>
            <widget class="QLineEdit" name="lineEditFilename">
             <property name="text">
-             <string>d:/test/t.imagine</string>
+             <string>f:/test/t.imagine</string>
             </property>
            </widget>
           </item>
