@@ -221,7 +221,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>8</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -3155,7 +3155,7 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
-             <widget class="QCheckBox" name="cbPositionerWav">
+             <widget class="QCheckBox" name="cbWaveformEnable">
               <property name="text">
                <string>Enbale</string>
               </property>

@@ -389,6 +389,7 @@ private slots:
     void on_cbStimuliReadWav_clicked(bool checked);
     void on_cbCameraReadWav_clicked(bool checked);
     void on_cbHeartReadWav_clicked(bool checked);
+    void on_cbWaveformEnable_clicked(bool state);
     void on_cbAO1Wav_clicked(bool state);
     void on_cbAO2Wav_clicked(bool state);
     void on_cbDO2Wav_clicked(bool state);

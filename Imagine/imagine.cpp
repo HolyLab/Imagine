@@ -1497,7 +1497,7 @@ void Imagine::on_btnApply_clicked()
     Camera* camera = dataAcqThread->pCamera;
     QString acqTriggerModeStr = ui.comboBoxAcqTriggerMode->currentText();
     QString expTriggerModeStr = ui.comboBoxExpTriggerMode->currentText();
-    if (ui.cbPositionerWav->isChecked()) {
+    if (ui.cbWaveformEnable->isChecked()) {
         acqTriggerModeStr = "Internal";
         expTriggerModeStr = ui.comboBoxExpTriggerModeWav->currentText();
     }
@@ -1550,7 +1550,7 @@ void Imagine::on_btnApply_clicked()
     dataAcqThread->verShiftSpeed = ui.comboBoxVertShiftSpeed->currentText();
 
     if (masterImagine == NULL) { // Imagine (1)
-        if (ui.cbPositionerWav->isChecked()) { // waveform enabled
+        if (ui.cbWaveformEnable->isChecked()) { // waveform enabled
             if (!waveformValidityCheck())
                 return; // waveform is not valid
             dataAcqThread->sampleRate = conWaveData->sampleRate;
@@ -1582,7 +1582,7 @@ void Imagine::on_btnApply_clicked()
         }
     }
     else { // Imagine (2)
-        if (!masterImagine->ui.cbPositionerWav->isChecked()) { // waveform disabled
+        if (!masterImagine->ui.cbWaveformEnable->isChecked()) { // waveform disabled
             dataAcqThread->isUsingWav = false;
             dataAcqThread->pPositioner->setScanRateAo(10000); // Hard coded
         }
@@ -2413,7 +2413,7 @@ void Imagine::writeSettings(QString file)
 
     if (masterImagine == NULL) {
         prefs.beginGroup("Waveform");
-        WRITE_CHECKBOX_SETTING(prefs, cbPositionerWav);
+        WRITE_CHECKBOX_SETTING(prefs, cbWaveformEnable);
         WRITE_COMBO_SETTING(prefs, comboBoxExpTriggerModeWav);
         WRITE_SETTING(prefs, doubleSpinBoxExpTimeWav);
         WRITE_STRING_SETTING(prefs, lineEditConWaveFile);
@@ -2510,7 +2510,7 @@ void Imagine::readSettings(QString file)
 
     if (masterImagine == NULL) {
         prefs.beginGroup("Waveform");
-        READ_BOOL_SETTING(prefs, cbPositionerWav, false);
+        READ_BOOL_SETTING(prefs, cbWaveformEnable, false);
         READ_COMBO_SETTING(prefs, comboBoxExpTriggerModeWav, 0);
         READ_SETTING(prefs, doubleSpinBoxExpTimeWav, ok, d, 0.0107, Double);
         READ_STRING_SETTING(prefs, lineEditConWaveFile, "");
@@ -2868,7 +2868,8 @@ void Imagine::readControlWaveformFile(QString fn)
 
     if (err == NO_CF_ERROR) {
         // GUI metadata display
-        ui.cbPositionerWav->setChecked(true);
+        ui.cbWaveformEnable->setChecked(true);
+        on_cbWaveformEnable_clicked(true);
         ui.doubleSpinBoxExpTimeWav->setValue(conWaveData->exposureTime);
 
         ui.labelPiezoSampleRate->setText(QString("%1").arg(conWaveData->sampleRate));
@@ -2927,6 +2928,8 @@ void Imagine::readControlWaveformFile(QString fn)
         }
     }
     else {
+        ui.cbWaveformEnable->setChecked(false);
+        on_cbWaveformEnable_clicked(false);
         if (err & ERR_INVALID_VERSION) {
             QMessageBox::critical(this, "Imagine", "Invalid command file version. Please check the version.",
                                     QMessageBox::Ok, QMessageBox::NoButton);
@@ -3195,6 +3198,24 @@ void Imagine::on_cbHeartReadWav_clicked(bool checked)
         else
             conReadHeartbeatCurve->hide();
         conReadWavPlot->replot();
+    }
+}
+
+void Imagine::on_cbWaveformEnable_clicked(bool state)
+{
+    if (state) {
+        ui.tabPiezo->setEnabled(false);
+        ui.tabStim->setEnabled(false);
+        ui.tabCamera->setEnabled(false);
+        if(slaveImagine != NULL)
+            slaveImagine->ui.tabCamera->setEnabled(false);
+    }
+    else {
+        ui.tabPiezo->setEnabled(true);
+        ui.tabStim->setEnabled(true);
+        ui.tabCamera->setEnabled(true);
+        if (slaveImagine != NULL)
+            slaveImagine->ui.tabCamera->setEnabled(true);
     }
 }
 
