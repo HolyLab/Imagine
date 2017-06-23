@@ -15,5 +15,13 @@ moc_*.cpp
 qrc_imagine.cpp
 ui_imagine.h
 imagine.VC.db
+imagine.VC.VC.opendb
 Imagine/Imagine.vcxproj.user
 /x64/Debug
+Imagine/x64
+Imagine/scripts/*.bin
+Imagine/scripts/*.json
+Imagine/scripts/*.cam
+Imagine/scripts/*.imagine
+Imagine/scripts/*.stim
+Imagine/scripts/*.gif

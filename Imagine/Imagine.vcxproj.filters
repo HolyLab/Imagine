@@ -50,6 +50,18 @@
     <ClCompile Include="shutterctrl.cpp" />
     <ClCompile Include="spoolthread.cpp" />
     <ClCompile Include="workerthread.cpp" />
+    <ClCompile Include="GeneratedFiles\Debug\moc_cooke.cpp" />
+    <ClCompile Include="GeneratedFiles\Debug\moc_helpdialog.cpp" />
+    <ClCompile Include="GeneratedFiles\Debug\moc_waveform.cpp" />
+    <ClCompile Include="GeneratedFiles\qrc_helpdialog.cpp" />
+    <ClCompile Include="GeneratedFiles\Release\moc_cooke.cpp" />
+    <ClCompile Include="GeneratedFiles\Release\moc_helpdialog.cpp" />
+    <ClCompile Include="GeneratedFiles\Release\moc_waveform.cpp" />
+    <ClCompile Include="helpdialog.cpp" />
+    <ClCompile Include="waveform.cpp" />
+    <ClCompile Include="di_thread.cpp" />
+    <ClCompile Include="GeneratedFiles\Debug\moc_di_thread.cpp" />
+    <ClCompile Include="GeneratedFiles\Release\moc_di_thread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="actuators\dummy\dummypiezo.hpp" />
@@ -65,12 +77,15 @@
     <ClInclude Include="ArduinoSerial.h" />
     <ClInclude Include="camera_g.hpp" />
     <ClInclude Include="circbuf.hpp" />
-    <ClInclude Include="cooke.hpp" />
     <ClInclude Include="curvedata.h" />
     <ClInclude Include="daq.hpp" />
     <ClInclude Include="dummy_daq.hpp" />
     <ClInclude Include="fast_ofstream.hpp" />
     <ClInclude Include="GeneratedFiles\ui_imagine.h" />
+    <ClInclude Include="GeneratedFiles\ui_helpdialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="di_thread.hpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="imagine.h" />
@@ -90,6 +105,15 @@
     <CustomBuild Include="piezoctrl.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="waveform.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="helpdialog.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="cooke.hpp" />
+    <CustomBuild Include="helpdialog.ui" />
+    <CustomBuild Include="helpdialog.qrc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="scripts\bakewell.js" />
