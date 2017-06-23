@@ -274,7 +274,7 @@ public:
    bool cfgTimingBuffered(int scanRate, int nScans, string clkName = "") {
        this->scanRate = scanRate;
        this->nScans = nScans;
-       this->blockSize = scanRate*4;
+       this->blockSize = (nScans < scanRate * 8) ? nScans / 2 : scanRate * 4;
 
        errorCode = DAQmxCfgSampClkTiming(taskHandle, clkName.c_str(),
            scanRate,
@@ -381,9 +381,8 @@ public:
       if(isError()){
          throw EInitDevice("exception when call DAQmxCreateAIVoltageChan()");
       }
-
       //get the raw sample size:
-      errorCode=DAQmxGetAIRawSampSize(taskHandle, (dev+"0").c_str(), (uInt32*)&sampleSize);
+      errorCode=DAQmxGetAIRawSampSize(taskHandle, (dev+toString(channels[0])).c_str(), (uInt32*)&sampleSize);
       if(isError()){
          throw EInitDevice("exception when call DAQmxGetAIRawSampSize()");
       }
@@ -610,7 +609,7 @@ public:
    bool cfgTimingBuffered(int scanRate, int nScans, string clkName = "") {
        this->scanRate = scanRate;
        this->nScans = nScans;
-       this->blockSize = scanRate*4;
+       this->blockSize = (nScans < scanRate * 8) ? nScans / 2 : scanRate * 4;
        errorCode = DAQmxCfgSampClkTiming(taskHandle, clkName.c_str(),
            scanRate,
            DAQmx_Val_Rising,
@@ -681,6 +680,72 @@ public:
    int getBlockSize(void) { return blockSize; }
 
 };//class, NiDaqDo
+
+//unlike DO, user need supply read buffer for DI
+class NiDaqDi : public NiDaq, public DaqDi {
+    //uInt16 *    dataU16; //it is better that user supplies the read buf
+public:
+    int32 numScalingCoeffs = 0;
+    float64* scalingCoeffs;
+    //create DI channels and add the channels to the task
+    NiDaqDi(QString devstring, const vector<int> & chs) : Daq(chs), NiDaq(chs), DaqDi(chs) {
+        string dev = devstring.toStdString();
+        cout << "About to initialize DI device with " << dev << endl;
+        errorCode = DAQmxCreateDIChan(taskHandle,
+            dev.c_str(),  //channels to acquire
+            "",          //nameToAssignToChannel
+            DAQmx_Val_ChanForAllLines
+        );
+        if (isError()) {
+            throw EInitDevice("exception when call DAQmxCreateDIChan()");
+        }
+    }// NiDaqDi
+
+    virtual ~NiDaqDi() {
+    }// ~NiDaqDi
+
+     //set scan rate and driver's input buffer size in scans
+    bool cfgTiming(int scanRate, int bufSize, string clkName = "") {
+        this->scanRate = scanRate;
+        errorCode = DAQmxCfgSampClkTiming(taskHandle, clkName.c_str(),
+            scanRate,
+            DAQmx_Val_Rising,
+            DAQmx_Val_ContSamps,
+            bufSize //the unit is scan
+        );
+        //TODO: this doesn't seem to show a warning or an error when asking for an impossibly high scan rate.  should find a way to check that.
+        return isSuc();
+    }//cfgTiming(),
+
+    bool setTrigger(string trigName) {
+        errorCode = DAQmxCfgDigEdgeStartTrig(taskHandle, trigName.c_str(), DAQmx_Val_Rising);
+        return !isError();
+    }//setTrigger
+
+     //read input from driver
+    bool read(int nScans, uInt32 * buf) {
+        int32 nScansRead;
+        errorCode = DAQmxReadDigitalU32(taskHandle,
+            nScans,
+            5,// timeToWait 5sec,  or DAQmx_Val_WaitInfinitely
+            DAQmx_Val_GroupByChannel, //data layout, here save all data in scan by scan
+            buf,
+            nScans,
+            &nScansRead,
+            NULL //reserved
+        );
+
+#if defined(DEBUG_DI)
+        if (isError()) {
+            getErrorMsg();
+        }
+#endif
+
+        assert(nScans == nScansRead || isError());
+
+        return !isError();
+    }//readInput(),
+};//class, NiDaqDi
 
 //read one sample
 class NiDaqAiReadOne :public DaqAiReadOne {

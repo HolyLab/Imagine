@@ -34,6 +34,7 @@ private:
     PCO_Storage strStorage;
     PCO_Recording strRecording;
     PCO_Image strImage;
+    PCO_ImageTiming strImageTiming;
 
     long firstFrameCounter; //first first frame's counter value
     long long totalGap;

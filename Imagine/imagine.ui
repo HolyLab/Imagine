@@ -173,13 +173,13 @@
      <rect>
       <x>20</x>
       <y>130</y>
-      <width>551</width>
+      <width>587</width>
       <height>612</height>
      </rect>
     </property>
     <property name="minimumSize">
      <size>
-      <width>551</width>
+      <width>587</width>
       <height>532</height>
      </size>
     </property>
@@ -221,7 +221,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>8</number>
+         <number>5</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -292,7 +292,7 @@
           <item>
            <widget class="QLineEdit" name="lineEditFilename">
             <property name="text">
-             <string>d:/test/t.imagine</string>
+             <string>f:/test/t.imagine</string>
             </property>
            </widget>
           </item>
@@ -406,7 +406,7 @@
                 <number>999999999</number>
                </property>
                <property name="value">
-                <number>100</number>
+                <number>20</number>
                </property>
               </widget>
              </item>
@@ -435,7 +435,7 @@
                 <number>999999999</number>
                </property>
                <property name="value">
-                <number>3</number>
+                <number>5</number>
                </property>
               </widget>
              </item>
@@ -497,7 +497,7 @@
              <item row="4" column="1">
               <widget class="QComboBox" name="comboBoxAcqTriggerMode">
                <property name="currentIndex">
-                <number>0</number>
+                <number>1</number>
                </property>
                <item>
                 <property name="text">
@@ -1756,150 +1756,6 @@
           </property>
          </widget>
         </widget>
-        <widget class="QWidget" name="tabAI">
-         <property name="maximumSize">
-          <size>
-           <width>65536</width>
-           <height>65536</height>
-          </size>
-         </property>
-         <attribute name="title">
-          <string>AI</string>
-         </attribute>
-         <layout class="QVBoxLayout" name="verticalLayout_7">
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_5">
-            <item>
-             <widget class="QLabel" name="label_38">
-              <property name="text">
-               <string>File name</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="lineEditReadWaveformFile"/>
-            </item>
-            <item>
-             <widget class="QPushButton" name="btnReadAiWavOpen">
-              <property name="text">
-               <string>...</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_10">
-            <item>
-             <widget class="QLabel" name="label_52">
-              <property name="text">
-               <string>Read out waveform</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_11">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="cbPiezoReadWav">
-              <property name="text">
-               <string/>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_53">
-              <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#ff0000;&quot;&gt;- &lt;/span&gt;&lt;span style=&quot; color:#000000;&quot;&gt;Piezo&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="cbStimuliReadWav">
-              <property name="text">
-               <string/>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_54">
-              <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#00ff00;&quot;&gt;- &lt;/span&gt;&lt;span style=&quot; color:#000000;&quot;&gt;Stimuli&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="cbCameraReadWav">
-              <property name="text">
-               <string/>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_55">
-              <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#0000ff;&quot;&gt;- &lt;/span&gt;&lt;span style=&quot; color:#000000;&quot;&gt;Camera&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="cbHeartReadWav">
-              <property name="text">
-               <string/>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_56">
-              <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#000000;&quot;&gt;- &lt;/span&gt;&lt;span style=&quot; color:#000000;&quot;&gt;Heartbeat&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QWidget" name="widgetReadWav" native="true">
-            <layout class="QHBoxLayout" name="readWavLayout">
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-            </layout>
-           </widget>
-          </item>
-         </layout>
-        </widget>
         <widget class="QWidget" name="tabDisplay">
          <attribute name="title">
           <string>Display</string>
@@ -1957,7 +1813,7 @@
              </spacer>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="_2">
+             <layout class="QHBoxLayout" name="layoutDisplay2">
               <property name="spacing">
                <number>6</number>
               </property>
@@ -2037,7 +1893,7 @@
              </layout>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="_3">
+             <layout class="QHBoxLayout" name="layoutDisplay3">
               <property name="spacing">
                <number>6</number>
               </property>
@@ -2140,7 +1996,7 @@
               <property name="title">
                <string/>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_9">
+              <layout class="QVBoxLayout" name="layoutDisplay4">
                <item>
                 <layout class="QGridLayout" name="gridLayout_2">
                  <property name="sizeConstraint">
@@ -2453,7 +2309,7 @@
               <property name="title">
                <string/>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_8">
+              <layout class="QVBoxLayout" name="layoutDisplay5">
                <item>
                 <layout class="QHBoxLayout" name="layoutBlendingOption">
                  <item>
@@ -2592,7 +2448,7 @@
               <property name="title">
                <string/>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_10">
+              <layout class="QVBoxLayout" name="layoutDisplay6">
                <item>
                 <layout class="QHBoxLayout" name="layoutBlendingOption_2">
                  <property name="sizeConstraint">
@@ -2645,6 +2501,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="pbTestButton">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="maximumSize">
                <size>
                 <width>100</width>
@@ -3155,59 +3014,94 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
-             <widget class="QCheckBox" name="cbPositionerWav">
+             <widget class="QCheckBox" name="cbWaveformEnable">
               <property name="text">
                <string>Enbale</string>
               </property>
              </widget>
             </item>
             <item>
-             <spacer name="horizontalSpacer_3">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+             <widget class="QLabel" name="label_5_5">
+              <property name="toolTip">
+               <string>That is, msec/frame</string>
               </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>3</width>
-                <height>3</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_36">
               <property name="text">
-               <string>Sampling rate</string>
+               <string>Exposure trigger mode:</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="spinBoxPiezoSampleRate">
+             <widget class="QComboBox" name="comboBoxExpTriggerModeWav">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>40</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>150</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="editable">
+               <bool>false</bool>
+              </property>
+              <property name="currentText">
+               <string>External Start</string>
+              </property>
+              <property name="currentIndex">
+               <number>0</number>
+              </property>
+              <property name="maxVisibleItems">
+               <number>3</number>
+              </property>
+              <property name="maxCount">
+               <number>3</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>External Start</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>External Control</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Fast External Control</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_46">
+              <property name="text">
+               <string>Exposure time (sec)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
-              <property name="minimum">
-               <number>1</number>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDoubleSpinBox" name="doubleSpinBoxExpTimeWav">
+              <property name="decimals">
+               <number>4</number>
               </property>
-              <property name="maximum">
-               <number>100000</number>
+              <property name="singleStep">
+               <double>0.001000000000000</double>
               </property>
               <property name="value">
-               <number>2000</number>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_41">
-              <property name="text">
-               <string>Sample number</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="spinBoxSampleNumber">
-              <property name="maximum">
-               <number>1000000000</number>
+               <double>0.010700000000000</double>
               </property>
              </widget>
             </item>
@@ -3226,12 +3120,52 @@
              </widget>
             </item>
             <item>
+             <widget class="QLabel" name="label_36">
+              <property name="text">
+               <string>samples/sec :</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="labelPiezoSampleRate">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="text">
+               <string>0</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_41">
+              <property name="text">
+               <string>sample num :</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="labelSampleNumber">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="text">
+               <string>0</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QLabel" name="label_44">
               <property name="layoutDirection">
                <enum>Qt::LeftToRight</enum>
               </property>
               <property name="text">
-               <string>#stacks</string>
+               <string>#stacks :</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -3239,28 +3173,22 @@
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="spinBoxNumOfStacksWav">
-              <property name="enabled">
-               <bool>false</bool>
+             <widget class="QLabel" name="labelNumOfStacksWav">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="text">
+               <string>0</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-              <property name="maximum">
-               <number>1000000</number>
-              </property>
-              <property name="value">
-               <number>5</number>
-              </property>
-              <property name="displayIntegerBase">
-               <number>10</number>
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QLabel" name="label_45">
               <property name="text">
-               <string>#frames/stack</string>
+               <string>#frames/stack :</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -3268,44 +3196,15 @@
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="spinBoxFramesPerStackWav">
-              <property name="enabled">
-               <bool>false</bool>
+             <widget class="QLabel" name="labelFramesPerStackWav">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
               </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-              <property name="maximum">
-               <number>10000</number>
-              </property>
-              <property name="value">
-               <number>20</number>
-              </property>
-              <property name="displayIntegerBase">
-               <number>10</number>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_46">
               <property name="text">
-               <string>exposure</string>
+               <string>0</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="doubleSpinBoxExpTimeWav">
-              <property name="decimals">
-               <number>4</number>
-              </property>
-              <property name="singleStep">
-               <double>0.001000000000000</double>
-              </property>
-              <property name="value">
-               <double>0.010700000000000</double>
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
@@ -3336,6 +3235,18 @@
            <layout class="QGridLayout" name="gridLayout">
             <item row="0" column="2">
              <widget class="QLabel" name="label_37">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="text">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#000000;&quot;&gt;Piezo speed&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -3355,9 +3266,9 @@
              </widget>
             </item>
             <item row="0" column="3">
-             <widget class="QCheckBox" name="cbAO1Wav">
+             <widget class="QCheckBox" name="cbAO0Wav">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -3374,7 +3285,22 @@
              </widget>
             </item>
             <item row="0" column="5">
-             <widget class="QComboBox" name="comboBoxAO1">
+             <widget class="QComboBox" name="comboBoxAO0">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="editable">
+               <bool>false</bool>
+              </property>
               <item>
                <property name="text">
                 <string>Positioner 1</string>
@@ -3440,13 +3366,164 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="11">
-             <widget class="QComboBox" name="comboBoxDO1">
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="cbDO1Wav">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
+             <widget class="QCheckBox" name="cbDO2Wav">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="6">
+             <widget class="QCheckBox" name="cbAO1Wav">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="9">
+             <widget class="QCheckBox" name="cbDO0Wav">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="7">
+             <widget class="QLabel" name="label_42">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#00aa00;&quot;&gt;-&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="9">
+             <widget class="QCheckBox" name="cbDO4Wav">
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="6">
+             <widget class="QCheckBox" name="cbDO3Wav">
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="10">
+             <widget class="QLabel" name="label_43">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#c8c800;&quot;&gt;-&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="8">
+             <widget class="QComboBox" name="comboBoxAO1">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="currentIndex">
+               <number>1</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>Positioner 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Positioner 2</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="11">
+             <widget class="QComboBox" name="comboBoxDO4">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
               </property>
               <property name="currentIndex">
                <number>0</number>
@@ -3496,257 +3573,24 @@
                 <string>Stimulus 2</string>
                </property>
               </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 3</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 4</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 5</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 6</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 7</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 8</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="cbDO2Wav">
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="3">
-             <widget class="QCheckBox" name="cbDO3Wav">
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="6">
-             <widget class="QCheckBox" name="cbAO2Wav">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="9">
-             <widget class="QCheckBox" name="cbDO1Wav">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="7">
-             <widget class="QLabel" name="label_42">
-              <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#00aa00;&quot;&gt;-&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="9">
-             <widget class="QCheckBox" name="cbDO5Wav">
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="6">
-             <widget class="QCheckBox" name="cbDO4Wav">
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="10">
-             <widget class="QLabel" name="label_43">
-              <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#c8c800;&quot;&gt;-&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="8">
-             <widget class="QComboBox" name="comboBoxAO2">
-              <property name="currentIndex">
-               <number>1</number>
-              </property>
-              <item>
-               <property name="text">
-                <string>Positioner 1</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Positioner 2</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item row="1" column="11">
-             <widget class="QComboBox" name="comboBoxDO5">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="currentIndex">
-               <number>9</number>
-              </property>
-              <item>
-               <property name="text">
-                <string>Camera 1</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Camera 2</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Laser 1</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Laser 2</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Laser 3</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Laser 4</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Laser 5</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 1</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 2</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 3</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 4</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 5</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 6</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 7</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 8</string>
-               </property>
-              </item>
              </widget>
             </item>
             <item row="1" column="2">
-             <widget class="QComboBox" name="comboBoxDO2">
+             <widget class="QComboBox" name="comboBoxDO1">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="currentIndex">
-               <number>2</number>
+               <number>0</number>
               </property>
               <item>
                <property name="text">
@@ -3791,50 +3635,26 @@
               <item>
                <property name="text">
                 <string>Stimulus 2</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 3</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 4</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 5</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 6</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 7</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 8</string>
                </property>
               </item>
              </widget>
             </item>
             <item row="1" column="5">
-             <widget class="QComboBox" name="comboBoxDO3">
+             <widget class="QComboBox" name="comboBoxDO2">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="currentIndex">
-               <number>7</number>
+               <number>0</number>
               </property>
               <item>
                <property name="text">
@@ -3879,50 +3699,26 @@
               <item>
                <property name="text">
                 <string>Stimulus 2</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 3</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 4</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 5</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 6</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 7</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Stimulus 8</string>
                </property>
               </item>
              </widget>
             </item>
             <item row="1" column="8">
-             <widget class="QComboBox" name="comboBoxDO4">
+             <widget class="QComboBox" name="comboBoxDO3">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="currentIndex">
-               <number>8</number>
+               <number>0</number>
               </property>
               <item>
                <property name="text">
@@ -3969,34 +3765,68 @@
                 <string>Stimulus 2</string>
                </property>
               </item>
+             </widget>
+            </item>
+            <item row="0" column="11">
+             <widget class="QComboBox" name="comboBoxDO0">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="currentIndex">
+               <number>0</number>
+              </property>
               <item>
                <property name="text">
-                <string>Stimulus 3</string>
+                <string>Camera 1</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Stimulus 4</string>
+                <string>Camera 2</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Stimulus 5</string>
+                <string>Laser 1</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Stimulus 6</string>
+                <string>Laser 2</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Stimulus 7</string>
+                <string>Laser 3</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Stimulus 8</string>
+                <string>Laser 4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 5</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 2</string>
                </property>
               </item>
              </widget>
@@ -4148,6 +3978,902 @@
              </widget>
             </item>
            </layout>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tabAI">
+         <property name="maximumSize">
+          <size>
+           <width>65536</width>
+           <height>65536</height>
+          </size>
+         </property>
+         <attribute name="title">
+          <string>AI and DI</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_11">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <item>
+               <widget class="QLabel" name="label_38">
+                <property name="text">
+                 <string>Imagine file name</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="lineEditReadWaveformFile"/>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btnReadAiWavOpen">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QGridLayout" name="gridLayout_3">
+            <item row="0" column="7">
+             <widget class="QLabel" name="label_65">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#0000ff;&quot;&gt;-&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="10">
+             <widget class="QLabel" name="label_66">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#00ff00;&quot;&gt;-&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="4">
+             <widget class="QLabel" name="label_51">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#ff00ff;&quot;&gt;-&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLabel" name="label_67">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#000000;&quot;&gt;-&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="7">
+             <widget class="QLabel" name="label_68">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#00aa00;&quot;&gt;-&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="10">
+             <widget class="QLabel" name="label_70">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#c8c800;&quot;&gt;-&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QComboBox" name="comboBoxAI0">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="editable">
+               <bool>false</bool>
+              </property>
+              <item>
+               <property name="text">
+                <string>Positioner 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Positioner 2</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="label_62">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#ff0000;&quot;&gt;-&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="4">
+             <widget class="QLabel" name="label_50">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#00ffff;&quot;&gt;-&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="cbAI0Wav">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QCheckBox" name="cbAI1Wav">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="5">
+             <widget class="QComboBox" name="comboBoxAI1">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="currentIndex">
+               <number>1</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>Positioner 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Positioner 2</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="6">
+             <widget class="QCheckBox" name="cbDI0Wav">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="8">
+             <widget class="QComboBox" name="comboBoxDI0">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="currentIndex">
+               <number>0</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>Camera 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Camera 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 5</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 5</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 6</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 7</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 8</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="9">
+             <widget class="QCheckBox" name="cbDI1Wav">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="11">
+             <widget class="QComboBox" name="comboBoxDI1">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="currentIndex">
+               <number>2</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>Camera 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Camera 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 5</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 5</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 6</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 7</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 8</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="cbDI2Wav">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QComboBox" name="comboBoxDI2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="currentIndex">
+               <number>7</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>Camera 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Camera 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 5</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 5</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 6</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 7</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 8</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="3">
+             <widget class="QCheckBox" name="cbDI3Wav">
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="5">
+             <widget class="QComboBox" name="comboBoxDI3">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="currentIndex">
+               <number>8</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>Camera 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Camera 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 5</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 5</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 6</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 7</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 8</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="6">
+             <widget class="QCheckBox" name="cbDI4Wav">
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="8">
+             <widget class="QComboBox" name="comboBoxDI4">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="currentIndex">
+               <number>9</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>Camera 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Camera 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 5</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 5</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 6</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 7</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 8</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="9">
+             <widget class="QCheckBox" name="cbDI5Wav">
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="11">
+             <widget class="QComboBox" name="comboBoxDI5">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>82</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="currentIndex">
+               <number>9</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>Camera 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Camera 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Laser 5</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 5</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 6</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 7</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Stimulus 8</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QWidget" name="widgetReadWav" native="true">
+            <layout class="QHBoxLayout" name="readWavLayout">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+            </layout>
+           </widget>
           </item>
          </layout>
         </widget>

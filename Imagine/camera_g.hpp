@@ -46,8 +46,9 @@ public:
 		eAuto = 7,
 		eSoftwareTrigger = 8, //an exposure can only be started by a force trigger command
 		eExternalStart = 9,
-		eExternalControl = 10
-	};
+		eExternalControl = 10,
+        eFastExternalControl = 11
+    };
     enum GenericAcqMode{
         eLive,
         eAcqAndSave,

@@ -1,10 +1,14 @@
 if(rig=="dummy"){
 	var camera="dummy";
 	var positioner = "dummy";
-	var maxposition = "800"; // this value is for ocpi-2 positioner
+	var maxposition = "400"; // this value is for ocpi-2 positioner
 	var maxspeed = "2000"; // this value is for ocpi-2 positioner
 	var ctrlrsetup = "none" // no piezo controller setting
 	var daq = "dummy";
+	var doname = "Dev2/port0/line0:6";
+	var diname = "Dev2/port0/line7";
+	var aoname = "Dev2/ao";
+	var ainame = "Dev2/ai";
 	var maxlaserfreq = "25";
 }
 
@@ -45,7 +49,8 @@ if(rig=="ocpi-1"){
 	var maxspeed = "2000"; // this value is for ocpi-2 positioner
 	var ctrlrsetup = "none" // piezo controller set by offline setup
 	var daq = "ni";
-	var doname = "Dev2/port0/line0:7";
+	var doname = "Dev2/port0/line0:6";
+	var diname = "Dev2/port0/line7";
 	var aoname = "Dev2/ao";
 	var ainame = "Dev2/ai";
 	var maxlaserfreq = "25";
@@ -59,7 +64,8 @@ if(rig=="ocpi-2"){
 	var ctrlrsetup = "none" // no piezo controller setting
 //	var ctrlrsetup = "COM3" // piezo controller set by serial comm. through COM3
 	var daq = "ni";
-	var doname = "Dev2/port0/line0:7";
+	var doname = "Dev2/port0/line0:23";
+	var diname = "Dev2/port0/line24:31";
 	var aoname = "Dev2/ao";
 	var ainame = "Dev2/ai";
 	var maxlaserfreq = "1000"; // this shutter is fast but temporally set as 1000
@@ -77,8 +83,9 @@ if (rig == "ocpi-lsk") {
     var maxposition = "400"; // this value is for ocpi-2 positioner
     var maxspeed = "2000"; // this value is for ocpi-2 positioner
     var daq = "ni";
-    var doname = "Dev1/port0/line0:7";
-    var aoname = "Dev1/ao";
-    var ainame = "Dev1/ai";
+    var doname = "Dev2/port0/line0:23";
+    var diname = "Dev2/port0/line24:31";
+    var aoname = "Dev2/ao";
+    var ainame = "Dev2/ai";
     var maxlaserfreq = "1000"; // this shutter is fast but temporally set as 1000
 }

@@ -156,7 +156,7 @@ bool DataAcqThread::prepareDaqBuffered()
     // TODO: move positioner to the position of 1st element
     isOK = pPositioner->prepareCmdBuffered(conWaveData);
     if (isOK) {
-        digOut->prepareCmdBuffered(conWaveData, pPositioner->getClkOut());
+        isOK = digOut->prepareCmdBuffered(conWaveData, pPositioner->getClkOut());
         if (isOK)
             return true;
         else
@@ -598,29 +598,71 @@ void DataAcqThread::run_acq_and_save_wav()
     }
 
     if (hasPos && ownPos) pPositioner->setPCount();
+
+    bool isAiEnable = false;
+    bool isDiEnable = false;
+    ofstream *ofsAi, *ofsDi;
     if (ownPos) {
         prepareDaqBuffered(); //piezo, camera1 exp, camera2 exp, laser shutter, stimuli (waveform version of 'preparePositioner')
+        //prepare for AI:
+        QString ainame = se->globalObject().property("ainame").toString();
+        //TODO: make channel recording list depend on who owns the piezo
+        vector<int> aiChanList;
+        //chanList.push_back(0);
+        int aiBegin = conWaveData->getAIBegin();
+        int p0Begin = conWaveData->getP0Begin();
+        int p0InBegin = conWaveData->getP0InBegin();
+        int scanRate = conWaveData->sampleRate;
+        for (int i = aiBegin; i < p0Begin; i++) {
+            if (conWaveData->getSignalName(i) != "") {
+                aiChanList.push_back(i - aiBegin);
+            }
+        }
+        if (aiChanList.size() != 0) {
+            isAiEnable = true;
+            aiThread = new AiThread(ainame, 10000, 50000, scanRate, aiChanList, pPositioner->getClkOut()); // TODO: set scanRate as the Maximum rate of external clock
+            ofsAi = new ofstream(aiFilename.toStdString(), ios::binary | ios::out | ios::trunc);
+        }
+        else {
+            isAiEnable = false;
+            aiThread = nullptr;
+            ofsAi = nullptr;
+        }
+        //prepare for DI:
+        QString diname = se->globalObject().property("diname").toString();
+        vector<int> diChanList; // this list is not used for di channels
+        int diBegin = p0InBegin - p0Begin;
+        diThread = new DiThread(diname, 10000, 50000, scanRate, diChanList, diBegin, pPositioner->getClkOut()); // TODO: set scanRate as the Maximum rate of external clock
+        ofsDi = new ofstream(diFilename.toStdString(), ios::binary | ios::out | ios::trunc);
     }
-    //prepare for AI:
-    QString ainame = se->globalObject().property("ainame").toString();
-    //TODO: make channel recording list depend on who owns the piezo
-    vector<int> aiChanList;
-    //chanList.push_back(0);
-    for (int i = 0; i < 3; ++i) {
-        aiChanList.push_back(i);
+    else {
+        aiThread = nullptr;
+        ofsAi = nullptr;
+        diThread = nullptr;
+        ofsDi = nullptr;
     }
-    aiThread = new AiThread(ainame, 10000, 50000, 10000, aiChanList, pPositioner->getClkOut()); // TODO: set scanRate as the Maximum rate of external clock
     unique_ptr<AiThread> uniPtrAiThread(aiThread);
-    ofstream *ofsAi = new ofstream(aiFilename.toStdString(), ios::binary | ios::out | ios::trunc);
     unique_ptr<ofstream> uniPtrOfsAi(ofsAi);
-    aiThread->setOfstream(ofsAi);
-    //start AI
-    aiThread->startAcq();
-
-    //after all devices are prepared, now we can save the file header:
-    QString stackDir = replaceExtName(camFilename, "stacks");
-    saveHeader(headerFilename, aiThread->ai);
-
+    unique_ptr<DiThread> uniPtrDiThread(diThread);
+    unique_ptr<ofstream> uniPtrOfsDi(ofsDi);
+    if (ownPos) {
+        if (isAiEnable) {
+            aiThread->setOfstream(ofsAi);
+            //start AI
+            aiThread->startAcq();
+            //after all devices are prepared, now we can save the file header:
+            saveHeader(headerFilename, aiThread->ai, conWaveData);
+        }
+        else {
+            saveHeader(headerFilename, NULL, conWaveData);
+        }
+        diThread->setOfstream(ofsDi);
+        //start DI
+        diThread->startAcq();
+    }
+    else {
+        saveHeader(headerFilename, NULL);
+    }
     isUpdatingImage = false;
 
     Camera::PixelValue * frame = (Camera::PixelValue*)_aligned_malloc(sizeof(Camera::PixelValue*)*(camera->imageSizePixels), 4 * 1024);
@@ -713,20 +755,24 @@ nextStack:  //code below is repeated every stack
 
     ///save ai data:
     if (ownPos) {
-        aiThread->stopAcq();
-        ofsAi->flush();
+        if (isAiEnable) {
+            aiThread->stopAcq();
+            ofsAi->flush();
+        }
+        diThread->stopAcq();
+        ofsDi->flush();
         digOut->abortCmd();
     }
-    //fire post-seq stimulus:
-    if (applyStim) {
-        int postSeqStim = 0; //TODO: get this value from stim file header
-        fireStimulus(postSeqStim);
-    }
+
     ///reset the actuator to its exact starting pos
     if (hasPos && ownPos) {
-        aiThread->stopAcq();
-        aiThread->save(*ofsAi);
-        pPositioner->abortCmd(); //will wait on trigger pulse from camera
+        if (isAiEnable) {
+            aiThread->stopAcq();
+            aiThread->save(*ofsAi);
+        }
+        diThread->stopAcq();
+        diThread->save(*ofsDi);
+        pPositioner->abortCmd();
         emit newStatusMsgReady("Now resetting the actuator to its exact starting pos ...");
         emit resetActuatorPosReady();
     }
@@ -761,7 +807,7 @@ void DataAcqThread::fireStimulus(int valve)
 
 QString replaceExtName(QString filename, QString newExtname);
 
-bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
+bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, ControlWaveform *conWaveData)
 {
     Camera& camera = *pCamera;
 
@@ -784,6 +830,7 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
     header << "comment=" << linize(comment).toStdString() << endl; //TODO: may need encode into one line
 
     header << "ai data file=" << aiFilename.toStdString() << endl
+        << "di data file=" << diFilename.toStdString() << endl
         << "image data file=" << camFilename.toStdString() << endl;
 
     //TODO: output shutter params
@@ -795,16 +842,73 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai)
         << ";bidirection: " << isBiDirectionalImaging
         << endl << endl;
 
-    //ai related:
-    header << "[ai]" << endl
-        << "nscans=" << -1 << endl //TODO: output nscans at the end
-        << "channel list=0 1 2" << endl //TODO: this and label list shouldn't be hardcoded
-        << "label list=piezo$stimuli$camera frame TTL" << endl
-        << "scan rate=" << ai->scanRate << endl
-        << "min sample=" << ai->minDigitalValue << endl
-        << "max sample=" << ai->maxDigitalValue << endl
-        << "min input=" << ai->minPhyValue << endl
-        << "max input=" << ai->maxPhyValue << endl << endl;
+    //ai,di related:
+    if (ai != NULL) {
+        int aiBegin, p0Begin, p0InBegin, numChannel;
+        header << "[ai]" << endl
+            << "nscans=" << -1 << endl; //TODO: output nscans at the end
+        if (conWaveData == NULL) {
+            header << "channel list=0 1 2" << endl //TODO: this and label list shouldn't be hardcoded
+                << "label list=piezo$stimuli$camera frame TTL" << endl;
+        }
+        else {
+            aiBegin = conWaveData->getAIBegin();
+            p0Begin = conWaveData->getP0Begin();
+            p0InBegin = conWaveData->getP0InBegin();
+            numChannel = conWaveData->getNumChannel();
+            header << "channel list=";
+            for (int i = aiBegin; i < p0Begin; i++) {
+                if (conWaveData->getSignalName(i) != "") {
+                    header << i - aiBegin << " ";
+                }
+            }
+            header.seekp(-1, header.cur);
+            header << endl << "label list=";
+            for (int i = aiBegin; i < p0Begin; i++) {
+                if (conWaveData->getSignalName(i) != "") {
+                    header << conWaveData->getSignalName(i).toStdString() << "$";
+                }
+            }
+            header.seekp(-1, header.cur);
+            header << endl;
+        }
+        header << "scan rate=" << ai->scanRate << endl
+            << "min sample=" << ai->minDigitalValue << endl
+            << "max sample=" << ai->maxDigitalValue << endl
+            << "min input=" << ai->minPhyValue << endl
+            << "max input=" << ai->maxPhyValue << endl << endl;
+        if (conWaveData != NULL) {
+            header << "[di]" << endl
+                << "nscans=" << -1 << endl; //TODO: output nscans at the end
+            header << "channel list=";
+            for (int i = p0InBegin; i < numChannel; i++) {
+                if (conWaveData->getSignalName(i) != "") {
+                    header << i - p0InBegin  << " ";
+                }
+            }
+            header.seekp(-1, header.cur);
+            header << endl << "label list=";
+            for (int i = p0InBegin; i < numChannel; i++) {
+                if (conWaveData->getSignalName(i) != "") {
+                    header << conWaveData->getSignalName(i).toStdString() << "$";
+                }
+            }
+            header.seekp(-1, header.cur);
+            header << endl;
+            header << "scan rate=" << ai->scanRate << endl << endl;
+        }
+    }
+    else {
+        header << "[ai]" << endl
+            << "nscans=" << -1 << endl //TODO: output nscans at the end
+            << "channel list=0 1 2" << endl //TODO: this and label list shouldn't be hardcoded
+            << "label list=piezo$stimuli$camera frame TTL" << endl
+            << "scan rate=" << 0 << endl
+            << "min sample=" << 0 << endl
+            << "max sample=" << 0 << endl
+            << "min input=" << 0 << endl
+            << "max input=" << 0 << endl << endl;
+    }
 
     //camera related:
     header << "[camera]" << endl

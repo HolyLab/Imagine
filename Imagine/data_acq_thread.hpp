@@ -26,6 +26,7 @@
 //#include "cooke.hpp"
 #include "positioner.hpp"
 #include "ai_thread.hpp"
+#include "di_thread.hpp"
 #include "workerthread.h"
 #include "waveform.h"
 
@@ -71,6 +72,7 @@ public:
 
     //the analog input acquisition thread owned by this thread
     AiThread *aiThread = NULL;
+    DiThread *diThread = NULL;
 
     //intended camera params:
     int nStacks,
@@ -111,7 +113,7 @@ public:
     bool applyStim;
 
     //file saving params:
-    QString headerFilename, aiFilename, camFilename, sifFileBasename;
+    QString headerFilename, aiFilename, diFilename, camFilename, sifFileBasename;
 
     //comment:
     QString comment;
@@ -134,7 +136,7 @@ protected:
     void run_live();
 
 private:
-    bool saveHeader(QString filename, DaqAi* ai);
+    bool saveHeader(QString filename, DaqAi* ai, ControlWaveform *conWaveData = NULL);
     void fireStimulus(int valve);
     bool restart;
     bool abort;

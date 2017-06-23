@@ -49,9 +49,9 @@ public:
     virtual int getDim(){ return dim; }               //get cur dimension
     virtual bool setDim(int d){ dim = d; return true; } //this will affect the dimension next 5 methods work on.
 
-    virtual double minPos() = 0; // the min value of the position
-    virtual double maxPos() = 0; // the max value of the position. NOTE: the unit is macro
-	virtual double maxSpeed() = 0; // maximum speed to allow the piezo to travel, in um per second
+    virtual int minPos() = 0; // the min value of the position
+    virtual int maxPos() = 0; // the max value of the position. NOTE: the unit is macro
+    virtual int maxSpeed() = 0; // maximum speed to allow the piezo to travel, in um per second
     virtual QString getCtrlrSetupType() { return 0; }
     virtual bool curPos(double* pos) = 0; // current position in um
     virtual bool moveTo(double to) = 0; //move at maximum safe speed
@@ -69,7 +69,7 @@ public:
     virtual bool testCmd(){ return true; }  // check if the movement sequence is valid (e.g., the timing)
 
     virtual bool prepareCmd(bool useTrigger) = 0; // after prepare, runCmd() will move it in real
-    virtual bool prepareCmdBuffered(ControlWaveform *waveData) = 0;
+    virtual bool prepareCmdBuffered(ControlWaveform *conWaveData) = 0;
     virtual void optimizeCmd(){} // reduce the delay between runCmd() and the time when the positioner reaches the start position
     virtual bool runCmd() = 0;  //NOTE: this is repeatable (i.e. once prepared, you can run same cmd more than once)
     virtual bool waitCmd() = 0; // wait forever until the movement sequence finishes
@@ -91,7 +91,7 @@ public:
     virtual ~DigitalControls() {}
 
     virtual string getLastErrorMsg() { return lastErrorMsg; }
-    virtual bool prepareCmdBuffered(ControlWaveform *waveData, string clkName) = 0;
+    virtual bool prepareCmdBuffered(ControlWaveform *conWaveData, string clkName) = 0;
     virtual bool runCmd() = 0;
     virtual bool waitCmd() = 0;
     virtual bool abortCmd() = 0;

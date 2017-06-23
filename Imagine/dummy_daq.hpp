@@ -77,4 +77,36 @@ public:
    bool isDone() { return true; }
 
 };//class, DummyDaqAi
+
+class DummyDaqDi : public DaqDi {
+public:
+    DummyDaqDi(const vector<int>& chs) :Daq(chs), DaqDi(chs) {
+    }
+
+    bool read(int nScans, uInt32* buf) {
+        //do nothing
+        double time2wait = nScans / (double)scanRate;
+        Sleep(time2wait * 1000);
+
+        return true;
+    }
+
+    bool start() { return true; }
+    bool stop() { return true; }
+    bool isError() { return false; }
+    bool isSuc() { return true; }
+    string getErrorMsg() { return "no error"; }
+
+    bool cfgTiming(int scanRate, int size, string clkName = "") {
+        this->scanRate = 1000;
+        return true;
+    }
+    bool setTrigger(string clkName) { return true; }
+
+    bool wait(double timeToWait) { return true; }
+
+    bool isDone() { return true; }
+
+};//class, DummyDaqDi
+
 #endif //DUMMY_DAQ_HPP

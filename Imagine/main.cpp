@@ -289,7 +289,7 @@ int main(int argc, char *argv[])
     splash->deleteLater();
 
     // init and show the ui
-    a.initUI(cam1, pos, laser, cam2);
+    a.initUI(QString::fromStdString(rig), cam1, pos, laser, cam2);
     a.showUi();
 
     // go!

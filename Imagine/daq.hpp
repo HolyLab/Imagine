@@ -29,6 +29,7 @@ using std::cout;
 using std::endl;
 
 #include "misc.hpp"
+#include "NIDAQmx.h"
 
 class Daq {
 protected:
@@ -167,6 +168,16 @@ public:
    virtual bool write()=0;
 
 };//class, NiDaqDo
+
+//unlike DO, user need supply read buffer for DI
+class DaqDi : public virtual Daq {
+public:
+    DaqDi(const vector<int>& chs) :Daq(chs) {
+    }
+
+    //read input from driver
+    virtual bool read(int nScans, uInt32 *buf) = 0;
+};//class, DaqAi
 
 //read one sample
 class DaqAiReadOne {

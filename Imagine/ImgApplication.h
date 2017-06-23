@@ -26,7 +26,7 @@ public:
     ArduinoThread *ardThread = nullptr;
 
     // Initialize the main window(s)
-    void ImgApplication::initUI(Camera *cam1, Positioner *pos, Laser *laser = nullptr, Camera *cam2 = nullptr);
+    void ImgApplication::initUI(QString rig, Camera *cam1, Positioner *pos, Laser *laser = nullptr, Camera *cam2 = nullptr);
 
     // Show the main window(s).
     void ImgApplication::showUi();

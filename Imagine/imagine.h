@@ -151,12 +151,15 @@ class Imagine : public QMainWindow
     QThread piezoCtrlThread;
     QThread imagePlayThread;
 public:
-    Imagine(Camera *cam, Positioner *pos = NULL, Laser *laser = NULL, Imagine *mImagine = NULL,
-        QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    Imagine(QString rig, Camera *cam, Positioner *pos = NULL, Laser *laser = NULL,
+        Imagine *mImagine = NULL, QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~Imagine();
     DataAcqThread *dataAcqThread;
     
+    Ui::ImagineClass ui;
+    QString rig;
 	Imagine *masterImagine; //Positioner and stimulus control / interface is restricted to only the master instance
+    Imagine *slaveImagine = nullptr;
     Pixmapper *pixmapper = nullptr;
     ImagePlay *imagePlay = nullptr;
     bool isPixmapping = false;
@@ -195,9 +198,11 @@ public:
     int W;
     int H;
     int T;
+
+    void setSlaveWindow(Imagine *sImagine) { slaveImagine = sImagine;  };
+
 protected:
     void closeEvent(QCloseEvent *event);
-
 
 private:
     QScrollArea* scrollArea;
@@ -212,22 +217,18 @@ private:
     CurveData *intenCurveData;
     QwtPlot *conWavPlot;
     QwtPlotCurve *piezoSpeedCurve;
-    QwtPlotCurve *conAO1Curve;
-    QwtPlotCurve *conAO2Curve;
-    QwtPlotCurve *conDO1Curve;
-    QwtPlotCurve *conDO2Curve;
-    QwtPlotCurve *conDO3Curve;
-    QwtPlotCurve *conDO4Curve;
-    QwtPlotCurve *conDO5Curve;
     QwtPlot *conReadWavPlot;
-    QwtPlotCurve *conReadPiezoCurve;
-    QwtPlotCurve *conReadStimuliCurve;
-    QwtPlotCurve *conReadCameraCurve;
-    QwtPlotCurve *conReadHeartbeatCurve;
-    CurveData *conReadPiezoCurveData = NULL;
-    CurveData *conReadStimuliCurveData = NULL;
-    CurveData *conReadCameraCurveData = NULL;
-    CurveData *conReadHeartbeatCurveData = NULL;
+    int numAoCurve = 2, numDoCurve = 5;
+    QVector<QwtPlotCurve *> outCurve;
+    QVector<CurveData *> outCurveData;
+    QVector<QCheckBox*> cbAoDo;
+    QVector<QComboBox*> comboBoxAoDo;
+    int numAiCurve = 2, numDiCurve = 6;
+    QVector<QwtPlotCurve *> inCurve;
+    int numAiCurveData, numDiCurveData;
+    QVector<CurveData *> inCurveData;
+    QVector<QCheckBox*> cbAiDi;
+    QVector<QComboBox*> comboBoxAiDi;
     vector<PiezoUiParam> piezoUiParams;
     QString m_OpenDialogLastDirectory;
     ControlWaveform *conWaveData = NULL;
@@ -246,8 +247,6 @@ private:
     void updateIntenCurve(const Camera::PixelValue * frame,
         const int imageW, const int imageH, const int frameIdx);
     template<class Type> void setCurveData(CurveData *curveData, QwtPlotCurve *curve,
-        std::vector<Type> &wave, int start, int end, int yoffset);
-    template<class Type> void setCurveData(CurveData *curveData, QwtPlotCurve *curve,
         QVector<Type> &wave, int start, int end, int factor, int amplitude, int yoffset);
     bool checkRoi();
     bool loadPreset();
@@ -262,11 +261,11 @@ private:
     void readSettings(QString file);
     void writeComments(QString file);
     void readComments(QString file);
-    void readControlWaveform(QString fn);
+    void readControlWaveformFile(QString fn);
     void updateControlWaveform(int leftEnd, int rightEnd);
     void updataSpeedData(CurveData *curveData, int newValue, int start, int end);
     bool waveformValidityCheck(void);
-    bool loadConWavDataAndPlot(int leftEnd, int rightEnd, int wavIdx);
+    bool loadConWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx);
     void readImagineFile(QString file, ImagineData &img);
     bool readImagineAndCamFile(QString filename, ImagineData &img1);
     void blendImages();
@@ -279,6 +278,8 @@ private:
     void setFrameIndexSpeed(int speed1, int speed2);
     bool compareDimensions();
     void setupDimensions(int stacks, int frames, int width, int height);
+    void showOutCurve(int idx, bool checked);
+    void showInCurve(int idx, bool checked);
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();
@@ -380,32 +381,38 @@ private slots:
     void on_btnSendSerialCmd_clicked();
     void on_btnPzOpenPort_clicked();
     void on_btnPzClosePort_clicked();
-    // for piezo controller setup until this line
-    void on_btnConWavOpen_clicked();
+    // Ai, Di read waveform
     void on_btnReadAiWavOpen_clicked();
-    void on_cbPiezoReadWav_clicked(bool checked);
-    void on_cbStimuliReadWav_clicked(bool checked);
-    void on_cbCameraReadWav_clicked(bool checked);
-    void on_cbHeartReadWav_clicked(bool checked);
-    void on_cbAO1Wav_clicked(bool state);
-    void on_cbAO2Wav_clicked(bool state);
-    void on_cbDO2Wav_clicked(bool state);
-    void on_cbDO1Wav_clicked(bool state);
-    void on_cbDO3Wav_clicked(bool state);
-    void on_cbDO4Wav_clicked(bool state);
-    void on_cbDO5Wav_clicked(bool state);
-    void on_spinBoxPiezoSampleRate_valueChanged(int newValue);
+    void on_cbAI0Wav_clicked(bool checked);
+    void on_cbAI1Wav_clicked(bool checked);
+    void on_cbDI0Wav_clicked(bool checked);
+    void on_cbDI1Wav_clicked(bool checked);
+    void on_cbDI2Wav_clicked(bool checked);
+    void on_cbDI3Wav_clicked(bool checked);
+    void on_cbDI4Wav_clicked(bool checked);
+    void on_cbDI5Wav_clicked(bool checked);
+    // Waveform control
+    void on_btnConWavOpen_clicked();
+    void on_cbWaveformEnable_clicked(bool state);
+    void on_cbAO0Wav_clicked(bool checked);
+    void on_cbAO1Wav_clicked(bool checked);
+    void on_cbDO0Wav_clicked(bool checked);
+    void on_cbDO1Wav_clicked(bool checked);
+    void on_cbDO2Wav_clicked(bool checked);
+    void on_cbDO3Wav_clicked(bool checked);
+    void on_cbDO4Wav_clicked(bool checked);
     void on_sbWavDsplyRight_valueChanged(int value);
     void on_sbWavDsplyLeft_valueChanged(int value);
     void on_sbWavDsplyTop_valueChanged(int value);
     void on_btnWavDsplyReset_clicked();
+    void on_comboBoxAO0_currentIndexChanged(int index);
     void on_comboBoxAO1_currentIndexChanged(int index);
-    void on_comboBoxAO2_currentIndexChanged(int index);
+    void on_comboBoxDO0_currentIndexChanged(int index);
     void on_comboBoxDO1_currentIndexChanged(int index);
     void on_comboBoxDO2_currentIndexChanged(int index);
     void on_comboBoxDO3_currentIndexChanged(int index);
     void on_comboBoxDO4_currentIndexChanged(int index);
-    void on_comboBoxDO5_currentIndexChanged(int index);
+    void on_comboBoxExpTriggerModeWav_currentIndexChanged(int index);
 
     void on_btnImg1LoadFile_clicked();
     void on_btnImg2LoadFile_clicked();
@@ -433,10 +440,9 @@ private slots:
     void on_actionViewHelp_triggered();
 
     void on_pbTestButton_clicked();
+    void on_pbSaveImage_clicked();
     void on_pbGenerate_clicked();
     
-public:
-    Ui::ImagineClass ui;
 public slots:
     // handle pixmap of recently acquired frame
     void handlePixmap(const QPixmap &pxmp, const QImage &img);

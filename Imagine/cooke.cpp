@@ -37,6 +37,7 @@ CookeCamera::CookeCamera() : Camera()
     strStorage.wSize = sizeof(strStorage);
     strRecording.wSize = sizeof(strRecording);
     strImage.wSize = sizeof(strImage);
+    strImageTiming.wSize = sizeof(strImageTiming);
     strImage.strSegment[0].wSize = sizeof(strImage.strSegment[0]);
     strImage.strSegment[1].wSize = sizeof(strImage.strSegment[0]);
     strImage.strSegment[2].wSize = sizeof(strImage.strSegment[0]);
@@ -159,6 +160,9 @@ bool CookeCamera::setAcqParams(int emGain,
 {
     // failure of an safe_pco() call will raise an exception, so we can try/catch for cleanliness
     try {
+//        WORD wType, wLen = 4;
+//        DWORD dwSetup[4];
+//        safe_pco(PCO_GetCameraSetup(hCamera, &wType, dwSetup, &wLen), "failed to get camera setup");
         // get camera description
         PCO_Description pcDesc;
         pcDesc.wSize = (ushort)sizeof(PCO_Description);
@@ -353,12 +357,19 @@ bool CookeCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 													//Busy status at SMA #3 determines if new trigger will be accepted
 													//(HIGH signal means busy).  LOW is < 0.8V and HIGH is > 2.0V
 	}
-	else {
+	else if (expTriggerMode == eExternalControl) {
 		errorCode = PCO_SetTriggerMode(hCamera, 3); //3: external exposure control, pulse length dictates exposure
 													//HiGH means expose.  Busy status is available as above.
 													//10s is maximum exposure time
 	}
-	if (errorCode != PCO_NOERROR) {
+    else {
+        errorCode = PCO_SetTriggerMode(hCamera, 5); //5: fast external exposure control, pulse length dictates exposure
+                                                    //HiGH means expose.  A second image can be triggered, while the first
+                                                    //one is read out. This increases the frame rate, but leads to
+                                                    //destructive images, if the trigger timing is not accurate: internal
+                                                    //camera error correction is inactive in this mode
+    }
+    if (errorCode != PCO_NOERROR) {
 		errorMsg = "failed to set exposure trigger mode";
 		return false;
 	}
@@ -383,6 +394,8 @@ bool CookeCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
     }
 
     cout << "frame rate is: " << 1 / getCycleTime() << endl;
+
+    errorCode = PCO_GetImageTiming(hCamera, &strImageTiming);
 
     return true;
 }
