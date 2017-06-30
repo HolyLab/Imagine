@@ -414,6 +414,7 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     for (int i = 0; i < sizeof(cb2) / sizeof(QCheckBox*); i++) {
         cbAiDi.push_back(cb2[i]);
         comboBoxAiDi.push_back(combo2[i]);
+        combo2[i]->clear();
     }
 }
 
@@ -421,6 +422,10 @@ Imagine::~Imagine()
 {
     if (conWaveData)
         delete conWaveData;
+    if (aiWaveData)
+        delete aiWaveData;
+    if (diWaveData)
+        delete diWaveData;
 
     // clean up the pixmapper nonsense
     pixmapperThread.quit();
@@ -653,6 +658,7 @@ void Imagine::preparePlots()
                         Qt::darkGreen,  Qt::magenta,  Qt::darkYellow, Qt::cyan };
     QwtText xTitle("Sample index");
     QwtText yTitle("Position");
+    QwtText aiDiyTitle("Voltage(mV)");
     //the control waveform
     conWavPlot = new QwtPlot;// (ui.frameConWav);
     for (int i = 0; i < numAoCurve + numDoCurve; i++) {
@@ -667,7 +673,7 @@ void Imagine::preparePlots()
     conReadWavPlot = new QwtPlot;// (ui.frameConWav);
     for (int i = 0; i < numAiCurve + numDiCurve; i++) {
         inCurve.push_back(new QwtPlotCurve(QString("Signal in curve %1").arg(i)));
-        prepareCurve(inCurve[i], conReadWavPlot, xTitle, yTitle, curveColor[i]);
+        prepareCurve(inCurve[i], conReadWavPlot, xTitle, aiDiyTitle, curveColor[i]);
     }
     ui.readWavLayout->addWidget(conReadWavPlot);
 }
@@ -1663,6 +1669,7 @@ skip:
         dataAcqThread->aiFilename = replaceExtName(headerFilename, "ai");
         dataAcqThread->diFilename = replaceExtName(headerFilename, "di");
         dataAcqThread->camFilename = replaceExtName(headerFilename, "cam");
+        dataAcqThread->commandFilename = ui.lineEditConWaveFile->text();
         dataAcqThread->sifFileBasename = replaceExtName(headerFilename, "");
         if (!CheckFileExtention(headerFilename)) { // check file extention
             if (!QMessageBox::question(this, "File name error.",
@@ -2779,6 +2786,7 @@ void Imagine::on_btnPzClosePort_clicked()
 }
 
 /**************************** AI and DI read ***********************/
+#define MIN_Y   -200
 bool seekSection(QString section, QTextStream &stream)
 {
     bool found = false;
@@ -2811,7 +2819,6 @@ bool seekField(QString section, QString key, QTextStream &stream, QString &conta
     return found;
 }
 
-#define MAX_AI_DI_SAMPLE_NUM    1000000
 void Imagine::on_btnReadAiWavOpen_clicked()
 {
     QString imagineFilename = QFileDialog::getOpenFileName(
@@ -2842,7 +2849,8 @@ void Imagine::on_btnReadAiWavOpen_clicked()
     QString aiFilename, diFilename;
     QString container;
     QVector<QString> aiName, diName;
-    QVector<int> diPortNum;
+    QVector<int> diChNumList;
+    int diChBase;
     bool valid, preSection = false, aiSection = false, diSection = false;
     if (seekField("[misc params]", "ai data file", in, container)) {
         aiFilename = m_OpenDialogLastDirectory+'/'+container.section("/", -1, -1);
@@ -2855,12 +2863,15 @@ void Imagine::on_btnReadAiWavOpen_clicked()
         for (int i = 0; i < numAiCurveData; i++)
             aiName.push_back(container.section("$", i, i));
     }
-    if (seekField("[di]", "channel list", in, container)) {
+    if (seekField("[di]", "di channel list base", in, container)) {
+        diChBase = container.toInt();
+    }
+    if (seekField("[di]", "di channel list", in, container)) {
         numDiCurveData = container.count(" ") + 1;
         for (int i = 0; i < numDiCurveData; i++)
-            diPortNum.push_back(container.section(" ", i, i).toInt());
+            diChNumList.push_back(container.section(" ", i, i).toInt()-diChBase);
     }
-    if (seekField("[di]", "label list", in, container)) {
+    if (seekField("[di]", "di label list", in, container)) {
         numDiCurveData = container.count("$") + 1;
         for (int i = 0; i < numDiCurveData; i++)
             diName.push_back(container.section("$", i, i));
@@ -2879,26 +2890,9 @@ void Imagine::on_btnReadAiWavOpen_clicked()
 
     QByteArray data = file.readAll();
     file.close();
-    QDataStream aiStream(data);
-    aiStream.setByteOrder(QDataStream::LittleEndian);//BigEndian, LittleEndian
-    double maxy = 0, miny = INFINITY;
-    int perSampleSize = numAiCurveData * 2; // number of ai channel * 2 bytes
-    int perSignalSize = data.size() / perSampleSize;
-    perSignalSize = (perSignalSize > MAX_AI_DI_SAMPLE_NUM) ? MAX_AI_DI_SAMPLE_NUM : perSignalSize;
-    inCurveData.clear();
-    for (int i = 0; i < numAiCurveData; i++)
-        inCurveData.push_back(new CurveData(perSignalSize));
-    for (int i = 0; i < perSignalSize; i++)
-    {
-        short us;
-        for (int j = 0; j < numAiCurveData; j++) {
-            aiStream >> us;
-            double y = static_cast<double>(us) / 100;
-            if (y > maxy) maxy = y;
-            if (y < miny) miny = y;
-            inCurveData[j]->append(static_cast<double>(i), y);
-        }
-    }
+    if (aiWaveData)
+        delete aiWaveData;
+    aiWaveData = new AiWaveform(data, numAiCurveData); // load data to aiWaveData
 
     // read di file
     file.setFileName(diFilename);
@@ -2912,74 +2906,159 @@ void Imagine::on_btnReadAiWavOpen_clicked()
 
     data = file.readAll();
     file.close();
-    QDataStream diStream(data);
-    //diStream.setByteOrder(QDataStream::LittleEndian);//BigEndian, LittleEndian
-    perSampleSize = 1; // 1 bytes
-    perSignalSize = data.size() / perSampleSize;
-    perSignalSize = (perSignalSize > MAX_AI_DI_SAMPLE_NUM) ? MAX_AI_DI_SAMPLE_NUM : perSignalSize;
-    for (int i = 0; i < numDiCurveData; i++)
-        inCurveData.push_back(new CurveData(perSignalSize));
-    for (int i = 0; i < perSignalSize; i++)
-    {
-        uInt8 us;
-        diStream >> us;
-        for (int j = numAiCurveData; j < numAiCurveData + numDiCurveData; j++) {
-//            if (us != 0)
-//                int k = 0;
-            if (us &(1<< diPortNum[j- numAiCurveData]))
-                inCurveData[j]->append(static_cast<double>(i), 10);
+
+    if (diWaveData)
+        delete diWaveData;
+    diWaveData = new DiWaveform(data, diChNumList); // load data to diWaveData
+
+    int err = NO_CF_ERROR; // for later use
+    if (err == NO_CF_ERROR) {
+        ui.labelAiSampleNum->setText(QString("%1").arg(aiWaveData->totalSampleNum));
+
+        // GUI waveform y axis display value adjusting box setup
+        ui.sbAiDiDsplyTop->setValue(aiWaveData->getMaxyValue() + 50);
+        ui.sbAiDiDsplyTop->setMinimum(0);
+        ui.sbAiDiDsplyTop->setMaximum(aiWaveData->getMaxyValue() + 50);
+        if (aiWaveData->totalSampleNum>0)
+            ui.sbAiDiDsplyRight->setMaximum(aiWaveData->totalSampleNum - 1);
+
+        // Waveform selection combobox setup
+        QStringList aiList, diList;
+        aiList.push_back("empty");
+        for (int i = 0; i < numAiCurveData; i++) {
+            aiList.push_back(aiName[i]);
+        }
+        diList.push_back("empty");
+        for (int i = 0; i < numDiCurveData; i++) {
+            diList.push_back(diName[i]);
+        }
+        for (int i = 0; i < numAiCurve; i++) {
+            comboBoxAiDi[i]->clear();   // QT creator error: If this cause 'out of range'error,
+                                        // delete combox list using QT creater
+            comboBoxAiDi[i]->addItems(aiList);
+            if (numAiCurveData > i)
+                comboBoxAiDi[i]->setCurrentIndex(i + 1);
+        }
+        for (int i = 0; i < numDiCurve; i++) {
+            comboBoxAiDi[i + numAiCurve]->clear();
+            comboBoxAiDi[i + numAiCurve]->addItems(diList);
+            if (numDiCurveData > i)
+                comboBoxAiDi[i + numAiCurve]->setCurrentIndex(i + 1);
+        }
+        for (int i = 0; i < numAiCurve + numDiCurve; i++) {
+            if (comboBoxAiDi[i]->currentIndex())
+                cbAiDi[i]->setChecked(true);
             else
-                inCurveData[j]->append(static_cast<double>(i), 0);
+                cbAiDi[i]->setChecked(false);
+        }
+
+        // GUI waveform display
+        updateAiDiWaveform(0, aiWaveData->totalSampleNum - 1);
+
+        // Even though there is no error, if there are some warnings, we show them.
+        if (aiWaveData->getErrorMsg() != "") {
+            QMessageBox::critical(this, "Imagine", aiWaveData->getErrorMsg(),
+                QMessageBox::Ok, QMessageBox::NoButton);
+        }
+        if (diWaveData->getErrorMsg() != "") {
+            QMessageBox::critical(this, "Imagine", diWaveData->getErrorMsg(),
+                QMessageBox::Ok, QMessageBox::NoButton);
+        }
+    }
+    else {
+        if (err & ERR_READ_AI) {
+            QMessageBox::critical(this, "Imagine", aiWaveData->getErrorMsg(),
+                QMessageBox::Ok, QMessageBox::NoButton);
+        }
+        if (err & ERR_READ_DI) {
+            QMessageBox::critical(this, "Imagine", diWaveData->getErrorMsg(),
+                QMessageBox::Ok, QMessageBox::NoButton);
+        }
+    }
+}
+
+bool Imagine::loadAiDiWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx)
+{
+    int retVal;
+    int curveDataSampleNum = 1000;
+    int sampleNum = rightEnd - leftEnd + 1;
+    int factor = sampleNum / curveDataSampleNum;
+    int amplitude, yoffset;
+    QVector<int> dest;
+    int ctrlIdx;
+    CurveData *curveData = NULL;
+    QwtPlotCurve *curve;
+    QCheckBox *cBox;
+
+    if (factor == 0) {
+        curveDataSampleNum = sampleNum;
+        factor = 1;
+    }
+    else
+        curveDataSampleNum = sampleNum / factor;
+
+    int comboIdx = comboBoxAiDi[curveIdx]->currentIndex();
+    if (comboIdx == 0) // "empty"
+        return false;
+
+    ctrlIdx = comboIdx - 1;
+    curve = inCurve[curveIdx];
+    curve->setData(0);
+    cBox = cbAiDi[curveIdx];
+    dest.clear();
+    // set curve position in the plot area
+    if (curveIdx < numAiCurve) {
+        amplitude = 1;
+        yoffset = 0;
+        retVal = aiWaveData->readWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor);
+        if (retVal) {
+            curveData = new CurveData(aiWaveData->totalSampleNum); // parameter should not be xpoint.size()
+        }
+    }
+    else if (curveIdx < numAiCurve + numDiCurve) {
+        amplitude = 10;
+        yoffset = curveIdx * 15;
+        retVal = diWaveData->readWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor);
+        if (retVal) {
+            curveData = new CurveData(diWaveData->totalSampleNum); // parameter should not be xpoint.size()
         }
     }
 
-    // set axies
-    conReadWavPlot->setAxisScale(QwtPlot::yLeft, miny, maxy);
-    conReadWavPlot->setAxisScale(QwtPlot::xBottom, inCurveData[0]->left(), inCurveData[0]->right());
+    if (retVal) {
+        setCurveData(curveData, curve, dest, leftEnd, rightEnd, factor, amplitude, yoffset);
+        conReadWavPlot->setAxisScale(QwtPlot::xBottom, curveData->left(), curveData->right());
+        if (cBox->isChecked())
+            curve->show();
+        else
+            curve->hide();
+        return true;
+    }
+    else {
+        curve->setData(NULL);
+        cBox->setChecked(false);
+        curve->hide();
+        return false;
+    }
+}
 
-    // assign curve data to curve
-
-    for (int i = 0; i < numAiCurve + numDiCurve; i++) {
-        cbAiDi[i]->setChecked(false);
-    }
-    int numAiCurveOn = (numAiCurveData > numAiCurve) ? numAiCurve : numAiCurveData;
-    for (int i = 0; i < numAiCurveOn; i++) {
-        inCurve[i]->setData(inCurveData[i]);
-        inCurve[i]->show();
-        cbAiDi[i]->setChecked(true);
-    }
-    int numDiCurveOn = (numDiCurveData > numDiCurve) ? numDiCurve : numDiCurveData;
-    for (int i = numAiCurve; i < numAiCurve + numDiCurveOn; i++) {
-        inCurve[i]->setData(inCurveData[i + numAiCurveData - numAiCurve]);
-        inCurve[i]->show();
-        cbAiDi[i]->setChecked(true);
-    }
-
-    // Waveform selection combobox setup
-    QStringList aiList, diList;
-    aiList.push_back("empty");
-    for (int i = 0; i < numAiCurveData; i++) {
-        aiList.push_back(aiName[i]);
-    }
-    diList.push_back("empty");
-    for (int i = 0; i < numDiCurveData; i++) {
-        diList.push_back(diName[i]);
-    }
-    for (int i = 0; i < numAiCurve; i++) {
-        comboBoxAiDi[i]->clear();
-        comboBoxAiDi[i]->addItems(aiList);
-        if (numAiCurveData > i)
-            comboBoxAiDi[i]->setCurrentIndex(i + 1);
-    }
-    for (int i = 0; i < numDiCurve; i++) {
-        comboBoxAiDi[i + numAiCurve]->clear();
-        comboBoxAiDi[i + numAiCurve]->addItems(diList);
-        if (numDiCurveData > i)
-            comboBoxAiDi[i + numAiCurve]->setCurrentIndex(i + 1);
+// read jason data to waveform data
+void Imagine::updateAiDiWaveform(int leftEnd, int rightEnd)
+{
+    for (int i = 0; i < 8; i++) {
+//        if(cbAiDi[i]->isChecked())
+            loadAiDiWavDataAndPlot(leftEnd, rightEnd, i);
     }
 
-    // replot ai di waveform
+    // y axis setup and replot
+    conReadWavPlot->setAxisScale(QwtPlot::yLeft, MIN_Y, ui.sbAiDiDsplyTop->value());
     conReadWavPlot->replot();
+
+    // ui update
+    ui.sbAiDiDsplyLeft->setValue(leftEnd);
+    ui.sbAiDiDsplyRight->setValue(rightEnd);
+    ui.sbAiDiDsplyLeft->setMinimum(0);
+    ui.sbAiDiDsplyLeft->setMaximum(rightEnd);
+    ui.sbAiDiDsplyRight->setMinimum(leftEnd);
 }
 
 void Imagine::showInCurve(int idx, bool checked)
@@ -3033,6 +3112,92 @@ void Imagine::on_cbDI5Wav_clicked(bool checked)
     showInCurve(7, checked);
 }
 
+void Imagine::on_comboBoxAI0_currentIndexChanged(int index)
+{
+    loadAiDiWavDataAndPlot(ui.sbAiDiDsplyLeft->value(),
+        ui.sbAiDiDsplyRight->value(), 0);
+    on_cbAI0Wav_clicked(ui.cbAI0Wav->isChecked());
+}
+
+void Imagine::on_comboBoxAI1_currentIndexChanged(int index)
+{
+    loadAiDiWavDataAndPlot(ui.sbAiDiDsplyLeft->value(),
+        ui.sbAiDiDsplyRight->value(), 1);
+    on_cbAI1Wav_clicked(ui.cbAI1Wav->isChecked());
+}
+
+void Imagine::on_comboBoxDI0_currentIndexChanged(int index)
+{
+    loadAiDiWavDataAndPlot(ui.sbAiDiDsplyLeft->value(),
+        ui.sbAiDiDsplyRight->value(), 2);
+    on_cbDI0Wav_clicked(ui.cbDI0Wav->isChecked());
+}
+
+void Imagine::on_comboBoxDI1_currentIndexChanged(int index)
+{
+    loadAiDiWavDataAndPlot(ui.sbAiDiDsplyLeft->value(),
+        ui.sbAiDiDsplyRight->value(), 3);
+    on_cbDI1Wav_clicked(ui.cbDI1Wav->isChecked());
+}
+
+void Imagine::on_comboBoxDI2_currentIndexChanged(int index)
+{
+    loadAiDiWavDataAndPlot(ui.sbAiDiDsplyLeft->value(),
+        ui.sbAiDiDsplyRight->value(), 4);
+    on_cbDI2Wav_clicked(ui.cbDI2Wav->isChecked());
+}
+
+void Imagine::on_comboBoxDI3_currentIndexChanged(int index)
+{
+    loadAiDiWavDataAndPlot(ui.sbAiDiDsplyLeft->value(),
+        ui.sbAiDiDsplyRight->value(), 5);
+    on_cbDI3Wav_clicked(ui.cbDI3Wav->isChecked());
+}
+
+void Imagine::on_comboBoxDI4_currentIndexChanged(int index)
+{
+    loadAiDiWavDataAndPlot(ui.sbAiDiDsplyLeft->value(),
+        ui.sbAiDiDsplyRight->value(), 6);
+    on_cbDI4Wav_clicked(ui.cbDI4Wav->isChecked());
+}
+
+void Imagine::on_comboBoxDI5_currentIndexChanged(int index)
+{
+    loadAiDiWavDataAndPlot(ui.sbAiDiDsplyLeft->value(),
+        ui.sbAiDiDsplyRight->value(), 7);
+    on_cbDI5Wav_clicked(ui.cbDI5Wav->isChecked());
+}
+
+
+void Imagine::on_sbAiDiDsplyRight_valueChanged(int value)
+{
+    int left = ui.sbAiDiDsplyLeft->value();
+    ui.sbAiDiDsplyLeft->setMaximum(value);
+    updateAiDiWaveform(left, value);
+    conReadWavPlot->replot();
+}
+
+void Imagine::on_sbAiDiDsplyLeft_valueChanged(int value)
+{
+    int right = ui.sbAiDiDsplyRight->value();
+    ui.sbAiDiDsplyRight->setMinimum(value);
+    updateAiDiWaveform(value, right);
+    conReadWavPlot->replot();
+}
+
+void Imagine::on_sbAiDiDsplyTop_valueChanged(int value)
+{
+    conReadWavPlot->setAxisScale(QwtPlot::yLeft, MIN_Y, value);
+    conReadWavPlot->replot();
+}
+
+void Imagine::on_btnAiDiDsplyReset_clicked()
+{
+    ui.sbAiDiDsplyLeft->setValue(0);
+    ui.sbAiDiDsplyRight->setValue(aiWaveData->totalSampleNum - 1);
+    ui.sbAiDiDsplyTop->setValue(ui.sbAiDiDsplyTop->maximum());
+}
+
 /***************** Waveform control *************************/
 
 void Imagine::updataSpeedData(CurveData *curveData, int newValue, int start, int end)
@@ -3055,7 +3220,6 @@ template<class Type> void Imagine::setCurveData(CurveData *curveData, QwtPlotCur
     for (int i = start; i <= end; i += factor)
         curveData->append(static_cast<double>(i), wave[(i - start) / factor] * amplitude + yoffset);
     curve->setData(curveData);
-    conWavPlot->setAxisScale(QwtPlot::xBottom, curveData->left(), curveData->right());
 }
 
 void Imagine::readControlWaveformFile(QString fn)
@@ -3159,6 +3323,12 @@ void Imagine::readControlWaveformFile(QString fn)
             if (numNonDOEmpty > i)
                 comboBoxAoDo[i + numAoCurve]->setCurrentIndex(i + 1);
         }
+        for (int i = 0; i < numAoCurve + numDoCurve; i++) {
+            if (comboBoxAoDo[i]->currentIndex())
+                cbAoDo[i]->setChecked(true);
+            else
+                cbAoDo[i]->setChecked(false);
+        }
 
         // GUI waveform display
         updateControlWaveform(0, conWaveData->totalSampleNum - 1);
@@ -3214,7 +3384,6 @@ bool Imagine::loadConWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx)
     curve = outCurve[curveIdx];
     curve->setData(0);
     cBox = cbAoDo[curveIdx];
-    cBox->setChecked(false);
     // set curve position in the plot area
     if (curveIdx < numAoCurve) {
         amplitude = 1;
@@ -3236,8 +3405,11 @@ bool Imagine::loadConWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx)
     if (retVal) {
         curveData = new CurveData(conWaveData->totalSampleNum); // parameter should not be xpoint.size()
         setCurveData(curveData, curve, dest, leftEnd, rightEnd, factor, amplitude, yoffset);
-        cBox->setChecked(true);
-        curve->show();
+        conWavPlot->setAxisScale(QwtPlot::xBottom, curveData->left(), curveData->right());
+        if(cBox->isChecked())
+            curve->show();
+        else
+            curve->hide();
         return true;
     }
     else {
@@ -3251,8 +3423,10 @@ bool Imagine::loadConWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx)
 // read jason data to waveform data
 void Imagine::updateControlWaveform(int leftEnd, int rightEnd)
 {
-    for (int i = 0; i < 7; i++)
-        loadConWavDataAndPlot(leftEnd, rightEnd, i);
+    for (int i = 0; i < 7; i++) {
+//        if (cbAoDo[i]->isChecked())
+            loadConWavDataAndPlot(leftEnd, rightEnd, i);
+    }
 
     // graph data for piezo speed
     CurveData *curveData = NULL;

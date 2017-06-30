@@ -30,13 +30,15 @@ using namespace std;
 extern QString daq;
 
 AiThread::AiThread(QString ainame, int readBufSize, int driverBufSize, int scanrate,
-                vector<int> chanList, string clkName, QObject *parent)
+                vector<int> chanList, int num, string clkName, QObject *parent)
     : QThread(parent)
 {
     this->readBufSize = readBufSize;
     this->driverBufSize = driverBufSize;
 
     this->chanList = chanList;
+    totalSampleNum = num*chanList.size();
+    writeSampleNum = 0;
 
     ofs = nullptr;
 
@@ -112,8 +114,14 @@ bool AiThread::mSave(ofstream& ofsAi)
 {
     if (data.size() == 0) return true;
 
+    long long size;
+    if (totalSampleNum)
+        size = min((long long)data.size(), totalSampleNum - writeSampleNum);
+    else
+        size = (long long)data.size();
     ofsAi.write((const char*)&data[0],
-        sizeof(uInt16)*data.size());
+        sizeof(uInt16)*size);
+    writeSampleNum += size;
     data.clear();
     data.shrink_to_fit();
 

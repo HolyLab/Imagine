@@ -40,7 +40,7 @@ public:
 
     //NOTE: readBufSize is in scan.
     AiThread(QString ainame, int readBufSize, int driverBufSize, int scanrate,
-            vector<int> chanList, string clkName = "", QObject *parent = 0);
+            vector<int> chanList, int num, string clkName = "", QObject *parent = 0);
     ~AiThread();
 
     bool startAcq();
@@ -60,6 +60,8 @@ private:
     volatile bool stopRequested;
     vector<int> chanList;
     ofstream* ofs;
+    long long totalSampleNum;
+    long long writeSampleNum;
 
     QMutex mutex;
     QWaitCondition condition;

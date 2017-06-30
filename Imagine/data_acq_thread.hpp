@@ -113,7 +113,8 @@ public:
     bool applyStim;
 
     //file saving params:
-    QString headerFilename, aiFilename, diFilename, camFilename, sifFileBasename;
+    QString headerFilename, aiFilename, diFilename;
+    QString camFilename, commandFilename, sifFileBasename;
 
     //comment:
     QString comment;

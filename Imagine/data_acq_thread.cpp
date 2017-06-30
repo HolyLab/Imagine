@@ -332,7 +332,7 @@ void DataAcqThread::run_acq_and_save()
     for (int i = 0; i < 3; ++i) {
         aiChanList.push_back(i);
     }
-    aiThread = new AiThread(ainame, 10000, 50000, 10000, aiChanList);
+    aiThread = new AiThread(ainame, 10000, 50000, 10000, aiChanList, INFINITE_SAMPLE);
     unique_ptr<AiThread> uniPtrAiThread(aiThread);
 
     //after all devices are prepared, now we can save the file header:
@@ -618,9 +618,11 @@ void DataAcqThread::run_acq_and_save_wav()
                 aiChanList.push_back(i - aiBegin);
             }
         }
+        int sampleNum = conWaveData->totalSampleNum;
         if (aiChanList.size() != 0) {
             isAiEnable = true;
-            aiThread = new AiThread(ainame, 10000, 50000, scanRate, aiChanList, pPositioner->getClkOut()); // TODO: set scanRate as the Maximum rate of external clock
+            aiThread = new AiThread(ainame, 10000, 50000, scanRate, aiChanList,
+                    sampleNum, pPositioner->getClkOut()); // TODO: set scanRate as the Maximum rate of external clock
             ofsAi = new ofstream(aiFilename.toStdString(), ios::binary | ios::out | ios::trunc);
         }
         else {
@@ -632,7 +634,8 @@ void DataAcqThread::run_acq_and_save_wav()
         QString diname = se->globalObject().property("diname").toString();
         vector<int> diChanList; // this list is not used for di channels
         int diBegin = p0InBegin - p0Begin;
-        diThread = new DiThread(diname, 10000, 50000, scanRate, diChanList, diBegin, pPositioner->getClkOut()); // TODO: set scanRate as the Maximum rate of external clock
+        diThread = new DiThread(diname, 10000, 50000, scanRate, diChanList, diBegin,
+                    sampleNum, pPositioner->getClkOut()); // TODO: set scanRate as the Maximum rate of external clock
         ofsDi = new ofstream(diFilename.toStdString(), ios::binary | ios::out | ios::trunc);
     }
     else {
@@ -831,7 +834,8 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, ControlWaveform *con
 
     header << "ai data file=" << aiFilename.toStdString() << endl
         << "di data file=" << diFilename.toStdString() << endl
-        << "image data file=" << camFilename.toStdString() << endl;
+        << "image data file=" << camFilename.toStdString() << endl
+        << "command file=" << commandFilename.toStdString() << endl;
 
     //TODO: output shutter params
     //header<<"shutter=open time: ;"<<endl; 
@@ -879,15 +883,17 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, ControlWaveform *con
             << "max input=" << ai->maxPhyValue << endl << endl;
         if (conWaveData != NULL) {
             header << "[di]" << endl
-                << "nscans=" << -1 << endl; //TODO: output nscans at the end
-            header << "channel list=";
+                << "di nscans=" << -1 << endl; //TODO: output nscans at the end
+            header << "di channel list=";
             for (int i = p0InBegin; i < numChannel; i++) {
                 if (conWaveData->getSignalName(i) != "") {
-                    header << i - p0InBegin  << " ";
+                    header << i - p0Begin << " ";
                 }
             }
             header.seekp(-1, header.cur);
-            header << endl << "label list=";
+            header << endl << "di channel list base="
+                << conWaveData->getP0InBegin() - conWaveData->getP0Begin() << endl;
+            header << "di label list=";
             for (int i = p0InBegin; i < numChannel; i++) {
                 if (conWaveData->getSignalName(i) != "") {
                     header << conWaveData->getSignalName(i).toStdString() << "$";
@@ -895,7 +901,7 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, ControlWaveform *con
             }
             header.seekp(-1, header.cur);
             header << endl;
-            header << "scan rate=" << ai->scanRate << endl << endl;
+            header << "di scan rate=" << ai->scanRate << endl << endl;
         }
     }
     else {

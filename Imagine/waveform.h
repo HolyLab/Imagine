@@ -95,7 +95,8 @@
 
 using namespace std;
 
-#define MAX_NUM_WAVEFORM 100
+#define INFINITE_SAMPLE         0
+#define MAX_NUM_WAVEFORM        100
 #define PIEZO_10V_UINT16_VALUE  32767.   // max value of uint16 (double constant)
 
 #define CF_VERSION          "v1.0"
@@ -141,7 +142,7 @@ using namespace std;
 enum CFErrorCode : unsigned int
 {
     NO_CF_ERROR                 = 0,
-    // load file error
+    // load waveform data error
     ERR_INVALID_VERSION         = 1 << 0,
     ERR_RIG_MISMATCHED          = 1 << 1,
     ERR_INVALID_PORT_ASSIGNMENT = 1 << 2,
@@ -155,8 +156,11 @@ enum CFErrorCode : unsigned int
     ERR_PIEZO_INSTANT_CHANGE    = 1 << 9,
     ERR_LASER_SPEED_FAST        = 1 << 10,
     ERR_LASER_INSTANT_CHANGE    = 1 << 11,
-    ERR_SHORT_WAVEFORM          = 1 << 12
-}; // command file error code
+    ERR_SHORT_WAVEFORM          = 1 << 12,
+    // load ai di data error
+    ERR_READ_AI                 = 1 << 13,
+    ERR_READ_DI                 = 1 << 14
+}; // ai, di and command file error code
 
 enum PiezoDataType
 {
@@ -165,7 +169,24 @@ enum PiezoDataType
     PDT_Z_POSITION  = 2
 };
 
-class ControlWaveform : public QObject {
+class Waveform : public QObject {
+    Q_OBJECT
+protected:
+
+public:
+    QString errorMsg = "";
+    int sampleRate = 10000;
+    long long totalSampleNum = 0;
+
+    Waveform() {};
+    ~Waveform() {};
+
+    QString getErrorMsg(void) {
+        return errorMsg;
+    };
+};
+
+class ControlWaveform : public Waveform {
     Q_OBJECT
 
 private:
@@ -174,42 +195,40 @@ private:
     QString rig;
     int maxPiezoPos;
     int maxPiezoSpeed;
-    QVector<QVector<int> *> controlList;
-    QVector<QVector<int> *> portList;
-    QVector<QVector<int> *> waveList_Raw;       // positioner waveform (raw format) 
-                                                // + analog waveform +  digital waveform
-    QVector<QVector<int> *> waveList_Pos;       // analog waveform (piezo position format) 
+    QVector<QVector<int> *>     controlList;
+    QVector<QVector<int> *>     waveList_Raw;   // positioner waveform (raw format)
+                                                // analog waveform + digital waveform
+    QVector<QVector<int> *>     waveList_Pos;   // analog waveform (piezo position format)
     QVector<QVector<float64> *> waveList_Vol;   // analog waveform (voltage format) 
-    QString errorMsg = "";
 
     QVector<QVector<QString>> channelSignalList;
 
     QVector<QVector<QString>> ocpi1Secured = { // secured signal name for OCPI-1
-        // Analog output (AO0 ~ AO1)
-        { QString(STR_AOHEADER).append("0"), STR_axial_piezo },
+        // Analog output (AO0 ~ AO1)                                // ctrlIdx
+        { QString(STR_AOHEADER).append("0"), STR_axial_piezo },     // 0
         // Analog input (AI0 ~ AI15)
-        { QString(STR_AIHEADER).append("0"), STR_axial_piezo_mon },
+        { QString(STR_AIHEADER).append("0"), STR_axial_piezo_mon }, // 2
         // Digital output (P0.0 ~ P0.6)
-        { QString(STR_P0HEADER).append("4"), STR_all_lasers },
+        { QString(STR_P0HEADER).append("4"), STR_all_lasers },      // 18
         { QString(STR_P0HEADER).append("5"), STR_camera1 },
-        // Digital input (P0.7)
+        // Digital input (P0.7)                                     // 25
         { QString(STR_P0HEADER).append("7"), STR_camera1_mon }
     };
 
-    QVector<QVector<QString>> ocpilskSecured = { // secured signal name for OCPI-1
-                                               // Analog output (AO0 ~ AO1)
-        { QString(STR_AOHEADER).append("0"), STR_axial_piezo },
-        // Analog input (AI0 ~ AI15)
-        { QString(STR_AIHEADER).append("0"), STR_axial_piezo_mon },
-        // Digital output (P0.0 ~ P0.6)
-        { QString(STR_P0HEADER).append("4"), STR_all_lasers },
+    QVector<QVector<QString>> ocpilskSecured = { // secured signal name for OCPI-lsk
+        // Analog output (AO0 ~ AO3)                                // ctrlIdx
+        { QString(STR_AOHEADER).append("0"), STR_axial_piezo },     // 0
+        // Analog input (AI0 ~ AI31)
+        { QString(STR_AIHEADER).append("0"), STR_axial_piezo_mon }, // 4
+        // Digital output (P0.0 ~ P0.23)
+        { QString(STR_P0HEADER).append("4"), STR_all_lasers },      // 40
         { QString(STR_P0HEADER).append("5"), STR_camera1 },
-        // Digital input (P0.7)
-        { QString(STR_P0HEADER).append("24"), STR_camera1_mon }
+        // Digital input (P0.24 ~ P0.31)
+        { QString(STR_P0HEADER).append("24"), STR_camera1_mon }     // 68
     };
 
     QVector<QVector<QString>> ocpi2Secured = { // secured signal name for OCPI-2
-        // Analog output (AO0 ~ AO3)
+        // Analog output (AO0 ~ AO3)                                // ctrlIdx
         { QString(STR_AOHEADER).append("0"), STR_axial_piezo },     // 0
         { QString(STR_AOHEADER).append("1"), STR_hor_piezo },
         // Analog input (AI0 ~ AI31)
@@ -236,8 +255,6 @@ private:
             Typ &value, PiezoDataType dataType = PDT_RAW);
 
 public:
-    int sampleRate = 10000;
-    int totalSampleNum = 0;
     int nStacks = 0;
     int nFrames = 0;
     double exposureTime = 0;
@@ -247,8 +264,10 @@ public:
     ~ControlWaveform();
 
     CFErrorCode loadJsonDocument(QJsonDocument &loadDoc);
+    // Read block
     template<class Typ> bool readControlWaveform(QVector<Typ> &dest, int ctrlIdx,
             int begin, int end, int downSampleRate, PiezoDataType dataType = PDT_RAW);
+    // Read single value
     template<class Typ> bool getCtrlSampleValue(int ctrlIdx, int idx, Typ &value,
             PiezoDataType dataType = PDT_RAW);
     bool isEmpty(int ctrlIdx);
@@ -269,21 +288,62 @@ public:
     bool isPiezoWaveEmpty(void);
     bool isCameraPulseEmpty(void);
     bool isLaserPulseEmpty(void);
+    int raw2Zpos(int raw);
+    float64 raw2Voltage(int raw);
+    // Waveform validity check
     CFErrorCode positionerSpeedCheck(int maxPos, int maxSpeed, int ctrlIdx, int &dataSize);
     CFErrorCode laserSpeedCheck(double maxFreq, int ctrlIdx, int &dataSize);
     CFErrorCode waveformValidityCheck(int maxPos, int maxPiezoSpeed, int maxLaserFreq);
-    QString getErrorMsg(void);
+    // Generate control waveform and command file
     int genControlFileJSON(void);
     int genTriangle(bool bidir);
     int genSinusoidal(bool bidir);
-    int raw2Zpos(int raw);
-    float64 raw2Voltage(int raw);
 }; // ControlWaveform
+
+
+#define MAX_AI_DI_SAMPLE_NUM    180000000 // 5Hr whne sampleRate = 10000
+class AiWaveform : public Waveform {
+    Q_OBJECT
+
+private:
+    QVector<QVector<int>> aiData;
+    int numAiCurveData;
+    double maxy = 0, miny = INFINITY;
+
+public:
+    AiWaveform(QByteArray &data, int num);
+    ~AiWaveform() {};
+
+    // Read block
+    bool readWaveform(QVector<int> &dest, int ctrlIdx, int begin, int end, int downSampleRate);
+    // Read single value
+    bool getSampleValue(int ctrlIdx, int idx, int &value);
+    int getMaxyValue();
+    int getMinyValue();
+};
+
+
+class DiWaveform : public Waveform {
+    Q_OBJECT
+
+private:
+    QVector<QVector<int>> diData;
+    int numDiCurveData;
+
+public:
+    DiWaveform(QByteArray &data, QVector<int> diChNumList);
+    ~DiWaveform() {};
+
+    // Read block
+    bool readWaveform(QVector<int> &dest, int ctrlIdx, int begin, int end, int downSampleRate);
+    // Read single value
+    bool getSampleValue(int ctrlIdx, int idx, int &value);
+};
 
 
 /******* Template functions *********/
 // To use these template functions from the outside of this class
-// These funtion definitions should be located in this header file and shoud include this header file.
+// These funtion definitions should be located in this header file and the caller shoud include this header file.
 
 int findValue(QVector<int> *wav, int begin, int end, int sampleIdx);
 int findValuePos(QVector<int> *wav, QVector<int> *wav_p, int begin, int end, int sampleIdx);
@@ -354,4 +414,5 @@ bool ControlWaveform::getWaveSampleValue(int waveIdx, int sampleIdx, Typ &value,
         value = findValuePos(waveList_Raw[waveIdx], waveList_Pos[waveIdx], begin, end, sampleIdx);
     return true;
 }
+
 #endif //WAVEFORM_H

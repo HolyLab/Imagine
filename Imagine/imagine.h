@@ -223,6 +223,7 @@ private:
     QVector<CurveData *> outCurveData;
     QVector<QCheckBox*> cbAoDo;
     QVector<QComboBox*> comboBoxAoDo;
+    ControlWaveform *conWaveData = NULL;
     int numAiCurve = 2, numDiCurve = 6;
     QVector<QwtPlotCurve *> inCurve;
     int numAiCurveData, numDiCurveData;
@@ -230,8 +231,9 @@ private:
     QVector<QCheckBox*> cbAiDi;
     QVector<QComboBox*> comboBoxAiDi;
     vector<PiezoUiParam> piezoUiParams;
+    AiWaveform *aiWaveData = NULL;
+    DiWaveform *diWaveData = NULL;
     QString m_OpenDialogLastDirectory;
-    ControlWaveform *conWaveData = NULL;
 
     bool modified;
     bool paramOK;
@@ -263,9 +265,11 @@ private:
     void readComments(QString file);
     void readControlWaveformFile(QString fn);
     void updateControlWaveform(int leftEnd, int rightEnd);
+    void updateAiDiWaveform(int leftEnd, int rightEnd);
     void updataSpeedData(CurveData *curveData, int newValue, int start, int end);
     bool waveformValidityCheck(void);
     bool loadConWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx);
+    bool loadAiDiWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx);
     void readImagineFile(QString file, ImagineData &img);
     bool readImagineAndCamFile(QString filename, ImagineData &img1);
     void blendImages();
@@ -391,6 +395,14 @@ private slots:
     void on_cbDI3Wav_clicked(bool checked);
     void on_cbDI4Wav_clicked(bool checked);
     void on_cbDI5Wav_clicked(bool checked);
+    void on_comboBoxAI0_currentIndexChanged(int index);
+    void on_comboBoxAI1_currentIndexChanged(int index);
+    void on_comboBoxDI0_currentIndexChanged(int index);
+    void on_comboBoxDI1_currentIndexChanged(int index);
+    void on_comboBoxDI2_currentIndexChanged(int index);
+    void on_comboBoxDI3_currentIndexChanged(int index);
+    void on_comboBoxDI4_currentIndexChanged(int index);
+    void on_comboBoxDI5_currentIndexChanged(int index);
     // Waveform control
     void on_btnConWavOpen_clicked();
     void on_cbWaveformEnable_clicked(bool state);
@@ -405,6 +417,10 @@ private slots:
     void on_sbWavDsplyLeft_valueChanged(int value);
     void on_sbWavDsplyTop_valueChanged(int value);
     void on_btnWavDsplyReset_clicked();
+    void on_sbAiDiDsplyRight_valueChanged(int value);
+    void on_sbAiDiDsplyLeft_valueChanged(int value);
+    void on_sbAiDiDsplyTop_valueChanged(int value);
+    void on_btnAiDiDsplyReset_clicked();
     void on_comboBoxAO0_currentIndexChanged(int index);
     void on_comboBoxAO1_currentIndexChanged(int index);
     void on_comboBoxDO0_currentIndexChanged(int index);

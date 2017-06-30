@@ -23,6 +23,7 @@ CFErrorCode& operator&=(CFErrorCode& X, CFErrorCode Y) {
     X = X & Y; return X;
 }
 
+/***** ControlWaveform class : Read command file ****************************/
 ControlWaveform::ControlWaveform()
 {
     rig = se->globalObject().property("rig").toString();
@@ -93,6 +94,16 @@ ControlWaveform::~ControlWaveform()
     {
         if (waveList_Raw[i] != nullptr)
             delete waveList_Raw[i];
+    }
+    for (int i = 0; i < waveList_Pos.size(); i++)
+    {
+        if (waveList_Pos[i] != nullptr)
+            delete waveList_Pos[i];
+    }
+    for (int i = 0; i < waveList_Vol.size(); i++)
+    {
+        if (waveList_Vol[i] != nullptr)
+            delete waveList_Vol[i];
     }
     for (int i = 0; i < controlList.size(); i++)
     {
@@ -806,12 +817,7 @@ CFErrorCode ControlWaveform::waveformValidityCheck(int maxPos, int maxPiezoSpeed
     return errorCode;
 }
 
-QString ControlWaveform::getErrorMsg(void)
-{
-    return errorMsg;
-}
-
-/******* Generate waveform *******************************************/
+/******* ControlWaveform class : Generate waveform *********************/
 bool conRunLengthToWav(QVariantList rlbuf, QVariantList &buf)
 {
     buf.clear();
@@ -1555,4 +1561,117 @@ int ControlWaveform::genSinusoidal(bool bidir)
         ? saveDoc.toJson()
         : saveDoc.toBinaryData());
     return 0;
+}
+
+/***** AiWaveform class ******************************************************/
+#define MIN_VALUE (-PIEZO_10V_UINT16_VALUE + 8192.) // (-10+2.5V) = -7.5V
+AiWaveform::AiWaveform(QByteArray &data, int num)
+{
+    numAiCurveData = num;
+    QDataStream aiStream(data);
+    aiStream.setByteOrder(QDataStream::LittleEndian);//BigEndian, LittleEndian
+    int perSampleSize = numAiCurveData * 2; // number of ai channel * 2 bytes
+    int perSignalSize = data.size() / perSampleSize;
+    totalSampleNum = (perSignalSize > MAX_AI_DI_SAMPLE_NUM) ? MAX_AI_DI_SAMPLE_NUM : perSignalSize;
+    for (int i = 0; i < numAiCurveData; i++) {
+        aiData.push_back(QVector<int>()); // add empty vectors to rows
+    }
+    for (int i = 0; i < totalSampleNum; i++)
+    {
+        short us;
+        int wus; // warp arounded value
+        for (int j = 0; j < numAiCurveData; j++) {
+            aiStream >> us;
+            if (us < (int)MIN_VALUE) // if us is too negative value than wrap around
+                wus = -(int)us;
+            else
+                wus = (int)us;
+            double y = static_cast<double>(wus)*1000. / PIEZO_10V_UINT16_VALUE; // int value to double(mV)
+            if (y > maxy) maxy = y;
+            if (y < miny) miny = y;
+            aiData[j].push_back(y);
+        }
+    }
+}
+
+bool AiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, int begin, int end, int downSampleRate)
+{
+    if (end >= aiData[ctrlIdx].size())
+        return false;
+    for (int i = begin, j = 0; i <= end; i += downSampleRate) {
+        dest.push_back(aiData[ctrlIdx][i]);
+        if (i >= end - downSampleRate + 1)
+            return true;
+    }
+    return false;
+}
+
+bool AiWaveform::getSampleValue(int ctrlIdx, int idx, int &value)
+{
+    if (idx >= aiData[ctrlIdx].size())
+        return false;
+    else {
+
+        value = aiData[ctrlIdx][idx];
+        return true;
+    }
+}
+
+int AiWaveform::getMaxyValue()
+{
+    return maxy;
+}
+
+int AiWaveform::getMinyValue()
+{
+    return miny;
+}
+
+/***** DiWaveform class ******************************************************/
+DiWaveform::DiWaveform(QByteArray &data, QVector<int> diChNumList)
+{
+    numDiCurveData = diChNumList.size();
+    if (!numDiCurveData)
+        return;
+    QDataStream diStream(data);
+    int perSampleSize = 1; // 1 bytes
+    int perSignalSize = data.size() / perSampleSize;
+    totalSampleNum = (perSignalSize > MAX_AI_DI_SAMPLE_NUM) ? MAX_AI_DI_SAMPLE_NUM : perSignalSize;
+    for (int i = 0; i < numDiCurveData; i++) {
+        diData.push_back(QVector<int>()); // add empty vectors to rows
+    }
+    for (int i = 0; i < totalSampleNum; i++)
+    {
+        uInt8 us;
+        diStream >> us;
+        for (int j = 0; j < numDiCurveData; j++) {
+            if (us &(1 << diChNumList[j]))
+                diData[j].push_back(1);
+            else
+                diData[j].push_back(0);
+        }
+    }
+}
+
+bool DiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, int begin, int end, int downSampleRate)
+{
+    if (end >= diData[ctrlIdx].size())
+        return false;
+    for (int i = begin, j = 0; i <= end; i += downSampleRate) {
+        dest.push_back(diData[ctrlIdx][i]);
+        if (i >= end - downSampleRate + 1)
+            return true;
+    }
+    return false;
+}
+
+bool DiWaveform::getSampleValue(int ctrlIdx, int idx, int &value)
+{
+    if (idx >= diData[ctrlIdx].size())
+        return false;
+    else {
+
+        value = diData[ctrlIdx][idx];
+        return true;
+    }
 }

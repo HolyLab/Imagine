@@ -395,7 +395,11 @@ bool CookeCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
 
     cout << "frame rate is: " << 1 / getCycleTime() << endl;
 
-    errorCode = PCO_GetImageTiming(hCamera, &strImageTiming);
+//    errorCode = PCO_GetImageTiming(hCamera, &strImageTiming);
+//    WORD wNoiseFilterMode;
+//    errorCode = PCO_GetNoiseFilterMode(hCamera, &wNoiseFilterMode);
+//    WORD wHotPixelCorrectionMode;
+//    errorCode = PCO_GetHotPixelCorrectionMode(hCamera, &wHotPixelCorrectionMode);
 
     return true;
 }

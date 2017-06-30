@@ -30,7 +30,7 @@ using namespace std;
 extern QString daq;
 
 DiThread::DiThread(QString diname, int readBufSize, int driverBufSize, int scanrate,
-                vector<int> chanList, int diBegin, string clkName, QObject *parent)
+                vector<int> chanList, int diBegin, int num, string clkName, QObject *parent)
     : QThread(parent)
 {
     this->readBufSize = readBufSize;
@@ -38,6 +38,8 @@ DiThread::DiThread(QString diname, int readBufSize, int driverBufSize, int scanr
 
     this->chanList = chanList;
     this->diBegin = diBegin;
+    totalSampleNum = num;
+    writeSampleNum = 0;
 
     ofs = nullptr;
 
@@ -106,8 +108,14 @@ bool DiThread::mSave(ofstream& ofsDi)
 {
     if (data.size() == 0) return true;
 
+    long long size;
+    if (totalSampleNum)
+        size = min((long long)data.size(), totalSampleNum - writeSampleNum);
+    else
+        size = (long long)data.size();
     ofsDi.write((const char*)&data[0],
-        sizeof(uInt8)*data.size());
+        sizeof(uInt8)*size);
+    writeSampleNum += size;
     data.clear();
     data.shrink_to_fit();
 

@@ -40,7 +40,7 @@ public:
 
     //NOTE: readBufSize is in scan.
     DiThread(QString diname, int readBufSize, int driverBufSize, int scanrate,
-            vector<int> chanList, int diBegin, string clkName = "", QObject *parent = 0);
+            vector<int> chanList, int diBegin, int num, string clkName = "", QObject *parent = 0);
     ~DiThread();
 
     bool startAcq();
@@ -61,6 +61,8 @@ private:
     vector<int> chanList;
     ofstream* ofs;
     int diBegin;
+    long long totalSampleNum;
+    long long writeSampleNum;
 
     QMutex mutex;
     QWaitCondition condition;

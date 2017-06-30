@@ -372,7 +372,7 @@ public:
       errorCode=DAQmxCreateAIVoltageChan(taskHandle,
          chanList.c_str(),  //channels to acquire
          "",          //nameToAssignToChannel
-         DAQmx_Val_Diff, //RSE, //Diff, //NRSE , //terminalConfig. todo: should be DAQmx_Val_NRSE? 
+         DAQmx_Val_RSE, //RSE, //Diff, //NRSE, //terminalConfig. todo: should be DAQmx_Val_NRSE?
          -10.0,   //input range: minVal 
          10.0,    //input range: maxVal
          DAQmx_Val_Volts, //unit
