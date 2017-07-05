@@ -128,7 +128,8 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabStim));
     }
     else {  // Imagine(1)
-        conWaveData = new ControlWaveform();
+        conWaveData = new ControlWaveform(rig);
+        conWaveData->initControlWaveform(rig);
     }
     //adjust size
     QRect tRect = geometry();
@@ -1453,8 +1454,7 @@ void Imagine::on_spinBoxVend_valueChanged(int newValue)
 
 bool Imagine::waveformValidityCheck(void)
 {
-    Positioner *pos = dataAcqThread->pPositioner;
-    CFErrorCode err = conWaveData->waveformValidityCheck(pos->maxPos(), pos->maxSpeed(), maxLaserFreq);
+    CFErrorCode err = conWaveData->waveformValidityCheck();
     if (conWaveData->getErrorMsg() != "") {
         QMessageBox::critical(this, "Imagine", conWaveData->getErrorMsg(), QMessageBox::Ok, QMessageBox::NoButton);
     }
@@ -3244,7 +3244,7 @@ void Imagine::readControlWaveformFile(QString fn)
 
     if (conWaveData)
         delete conWaveData;
-    conWaveData = new ControlWaveform();
+    conWaveData = new ControlWaveform(rig);
     for (int i = 0; i < numAoCurve + numDoCurve; i++)
         outCurve[i]->setData(0);
     conWavPlot->replot();
@@ -3276,6 +3276,7 @@ void Imagine::readControlWaveformFile(QString fn)
 
     if (err == NO_CF_ERROR) {
         // GUI metadata display
+        ui.lableConWavRigname->setText(conWaveData->rig);
         ui.cbWaveformEnable->setChecked(true);
         on_cbWaveformEnable_clicked(true);
         ui.doubleSpinBoxExpTimeWav->setValue(conWaveData->exposureTime);
@@ -3290,7 +3291,7 @@ void Imagine::readControlWaveformFile(QString fn)
         Positioner *pos = dataAcqThread->pPositioner;
         ui.sbWavDsplyTop->setValue(pos->maxPos() + 50);
         ui.sbWavDsplyTop->setMinimum(0);
-        ui.sbWavDsplyTop->setMaximum(pos->maxPos() + 50);
+        ui.sbWavDsplyTop->setMaximum(33000); // more than 32768
         if (conWaveData->totalSampleNum>0)
             ui.sbWavDsplyRight->setMaximum(conWaveData->totalSampleNum - 1);
 
@@ -3612,6 +3613,19 @@ void Imagine::on_btnWavDsplyReset_clicked()
     ui.sbWavDsplyTop->setValue(ui.sbWavDsplyTop->maximum());
 }
 
+void Imagine::on_btnConWavList_clicked()
+{
+    QString msg = "";
+    for (int i = 0; i < conWaveData->getNumChannel(); i++) {
+        QString sigName = conWaveData->getSignalName(i);
+        if (sigName != "") {
+            msg.append(QString("%1 : %2\n")
+                .arg(conWaveData->getChannelName(i)).arg(sigName));
+        }
+    }
+    QMessageBox::information(this, "Control signal list", msg, QMessageBox::Ok);
+
+}
 /****** Image Display *****************************************************/
 #define IMAGINE_VALID_CHECK(container)\
         if(line.contains("IMAGINE", Qt::CaseSensitive)){\
@@ -4144,7 +4158,7 @@ void Imagine::on_cbEnableMismatch_clicked(bool checked)
 void Imagine::on_pbGenerate_clicked()
 {
     //To make test control data
-    ControlWaveform example;
+    ControlWaveform example(rig);
     if (example.genControlFileJSON())
         appendLog("exposureSamples > frameShutterCtrlSamples-50");
 }

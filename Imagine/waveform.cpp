@@ -24,14 +24,11 @@ CFErrorCode& operator&=(CFErrorCode& X, CFErrorCode Y) {
 }
 
 /***** ControlWaveform class : Read command file ****************************/
-ControlWaveform::ControlWaveform()
+void ControlWaveform::initControlWaveform(QString rig)
 {
-    rig = se->globalObject().property("rig").toString();
-    maxPiezoPos = se->globalObject().property("maxposition").toNumber();
-    maxPiezoSpeed = se->globalObject().property("maxspeed").toNumber();
-
     // Count all control channels
     if (rig != "dummy") {
+        /*
         char deviceName[100];
         char names[2000];
         strcpy(deviceName, "Dev2");
@@ -44,19 +41,29 @@ ControlWaveform::ControlWaveform()
         numAOChannel = nameAOChannel.count("ao");
         numAIChannel = nameAIChannel.count("ai");
         numP0Channel = nameDOChannel.count("port0");
+        */
+        if (rig == "ocpi-1") {
+            numAOChannel = 2;
+            numAIChannel = 16;
+            numP0Channel = 8;
+            numP0InChannel = 1;
+        }
+        else { // ocpi-2, ocpi-lsk
+            numAOChannel = 4;
+            numAIChannel = 32;
+            numP0Channel = 32;
+            numP0InChannel = 8;
+        }
     }
     else {
         numAOChannel = 4;
         numAIChannel = 32;
         numP0Channel = 32;
-    }
-    if (rig == "ocpi-1") {
-        numP0InChannel = 1;
-    }
-    else {
         numP0InChannel = 8;
     }
+
     // Setting secured channel name
+    channelSignalList.clear();
     QVector<QVector<QString>> *secured;
     if (rig == "ocpi-1") {
         secured = &ocpi1Secured;
@@ -153,6 +160,7 @@ CFErrorCode ControlWaveform::lookUpWave(QString wn, QVector <QString> &wavName,
         wav->push_back(jsonWave[j+1].toInt()); // This is a raw data format
         if (dataType == 1) {// For the piezo data type, we will keep another waveform data as a voltage
                             // format(max 10.0V) and position format(max maxPiezoPos) for later use.
+                            // This is just for display
 //            dwav->push_back(static_cast<float64>(sum));
             wav_p->push_back(raw2Zpos(jsonWave[j + 1].toInt()));
             wav_v->push_back(raw2Voltage(jsonWave[j + 1].toInt()));
@@ -196,7 +204,30 @@ CFErrorCode ControlWaveform::loadJsonDocument(QJsonDocument &loadDoc)
 
     metadata = alldata[STR_Metadata].toObject();
     QString rig = metadata[STR_Rig].toString();
-    if (rig != this->rig)
+    if (this->rig == "dummy") { // dummy ocpi can read .json for any rig
+        this->rig = rig;
+        QScriptEngine* seTmp = new QScriptEngine();
+        seTmp->globalObject().setProperty("rig", rig); // to read parameters of .json's rig
+        QFile file("imagine.js");
+        file.open(QFile::ReadOnly | QFile::Text);
+        QTextStream in(&file);
+        QString jscode = in.readAll();
+        QScriptProgram sp(jscode);
+        QScriptValue jsobj = seTmp->evaluate(sp);
+        maxPiezoPos = seTmp->globalObject().property("maxposition").toNumber();
+        maxPiezoSpeed = seTmp->globalObject().property("maxspeed").toNumber();
+        maxLaserFreq = seTmp->globalObject().property("maxlaserfreq").toNumber();
+        file.close();
+        delete seTmp;
+        initControlWaveform(rig);
+    }
+    else if (rig == this->rig) {
+        maxPiezoPos = se->globalObject().property("maxposition").toNumber();
+        maxPiezoSpeed = se->globalObject().property("maxspeed").toNumber();
+        maxLaserFreq = se->globalObject().property("maxlaserfreq").toNumber();
+        initControlWaveform(this->rig);
+    }
+    else
         return ERR_RIG_MISMATCHED;
     sampleRate = metadata[STR_SampleRate].toInt();
     totalSampleNum = metadata[STR_TotalSamples].toInt();
@@ -270,16 +301,17 @@ CFErrorCode ControlWaveform::loadJsonDocument(QJsonDocument &loadDoc)
             err |= ERR_INVALID_PORT_ASSIGNMENT;
         }
     }
-    // If a secured analog input is not specified in command file,
-    // we will not record that signal(erase the name from channelSignalList)
+    // If a secured analog signal is not specified in command file,
+    // we will not follow that signal(erase the name from channelSignalList)
     bool isAiSignal = false;
-    for (int i = getAIBegin(); i < getP0Begin(); i++)
+    for (int i = 0; i < getP0Begin(); i++)
     {
         bool found = false;
         for (int j = 0; j < analogKeys.size(); j++) {
             if (channelSignalList[i][1] == analogKeys[j]) {
                 found = true;
-                isAiSignal = true;
+                if(i >= getAIBegin())
+                    isAiSignal = true;
             }
         }
         if (!found)
@@ -325,9 +357,9 @@ CFErrorCode ControlWaveform::loadJsonDocument(QJsonDocument &loadDoc)
             err |= ERR_INVALID_PORT_ASSIGNMENT;
         }
     }
-    // If a secured digital input is not specified in command file,
-    // we will not record that signal(erase the name from channelSignalList)
-    for (int i = getP0InBegin(); i < getNumChannel(); i++)
+    // If a secured digital signal is not specified in command file,
+    // we will not follow that signal(erase the name from channelSignalList)
+    for (int i = getP0Begin(); i < getNumChannel(); i++)
     {
         bool found = false;
         for (int j = 0; j < digitalKeys.size(); j++) {
@@ -417,6 +449,11 @@ int ControlWaveform::getCtrlSampleNum(int ctrlIdx)
 QString ControlWaveform::getSignalName(int ctrlIdx)
 {
     return channelSignalList[ctrlIdx][1];
+}
+
+QString ControlWaveform::getChannelName(int ctrlIdx)
+{
+    return channelSignalList[ctrlIdx][0];
 }
 
 QString ControlWaveform::getSignalName(QString channelName)
@@ -633,15 +670,14 @@ bool ControlWaveform::isLaserPulseEmpty(void)
         empty &= isEmpty(STR_all_lasers);
     }
     else {
-        /*
         empty &= isEmpty(STR_488nm_laser);
         empty &= isEmpty(STR_561nm_laser);
         empty &= isEmpty(STR_405nm_laser);
         empty &= isEmpty(STR_445nm_laser);
         empty &= isEmpty(STR_514nm_laser);
-        empty |= isEmpty(STR_all_lasers);
-        */
-        empty &= isEmpty(STR_all_lasers); // For the time being, just check this channel
+        //empty |= isEmpty(STR_all_lasers); // should have this signal
+        empty &= isEmpty(STR_all_lasers); // can be empty this signal
+
     }
     return empty;
 }
@@ -758,7 +794,7 @@ CFErrorCode ControlWaveform::laserSpeedCheck(double maxFreq, int ctrlIdx, int &d
     return NO_CF_ERROR;
 }
 
-CFErrorCode ControlWaveform::waveformValidityCheck(int maxPos, int maxPiezoSpeed, int maxLaserFreq)
+CFErrorCode ControlWaveform::waveformValidityCheck()
 {
     int sampleNum;
     bool piezoWaveEmpty;
@@ -778,7 +814,7 @@ CFErrorCode ControlWaveform::waveformValidityCheck(int maxPos, int maxPiezoSpeed
         for (int i = 0; i < channelSignalList.size(); i++) {
             // piezo speed check
             if (channelSignalList[i][1].right(5) == STR_piezo) {
-                CFErrorCode err = positionerSpeedCheck(maxPos, maxPiezoSpeed, i, sampleNum);
+                CFErrorCode err = positionerSpeedCheck(maxPiezoPos, maxPiezoSpeed, i, sampleNum);
                 if (err & (ERR_PIEZO_SPEED_FAST | ERR_PIEZO_INSTANT_CHANGE)) {
                     errorMsg.append(QString("'%1' control is too fast\n").arg(channelSignalList[i][1]));
                 }

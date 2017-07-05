@@ -417,6 +417,7 @@ private slots:
     void on_sbWavDsplyLeft_valueChanged(int value);
     void on_sbWavDsplyTop_valueChanged(int value);
     void on_btnWavDsplyReset_clicked();
+    void on_btnConWavList_clicked();
     void on_sbAiDiDsplyRight_valueChanged(int value);
     void on_sbAiDiDsplyLeft_valueChanged(int value);
     void on_sbAiDiDsplyTop_valueChanged(int value);

@@ -3609,12 +3609,25 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_6">
             <item>
-             <widget class="QLabel" name="label_40">
+             <widget class="QLabel" name="lableConWavRigname">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Waveform&lt;/p&gt;&lt;p&gt;Display&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>Rig name</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignCenter</set>
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnConWavList">
+              <property name="text">
+               <string>Signal list</string>
               </property>
              </widget>
             </item>
@@ -3716,19 +3729,6 @@
               </property>
               <property name="text">
                <string>Reset</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="pbGenerate">
-              <property name="maximumSize">
-               <size>
-                <width>60</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Generate</string>
               </property>
              </widget>
             </item>

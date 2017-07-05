@@ -135,6 +135,7 @@ using namespace std;
 #define STR_405nm_laser     "405nm laser"
 #define STR_445nm_laser     "445nm laser"
 #define STR_514nm_laser     "514nm laser"
+#define STR_488nm_laser_str "488nm laser shutter"
 #define STR_camera1_mon     "camera1 frame monitor"
 #define STR_camera2_mon     "camera2 frame monitor"
 #define STR_camera_mon      "camera frame monitor"
@@ -192,9 +193,9 @@ class ControlWaveform : public Waveform {
 private:
     int numAOChannel, numAIChannel, numP0Channel, numP0InChannel, numChannel;
     double piezo10Vint16Value;
-    QString rig;
     int maxPiezoPos;
     int maxPiezoSpeed;
+    int maxLaserFreq;
     QVector<QVector<int> *>     controlList;
     QVector<QVector<int> *>     waveList_Raw;   // positioner waveform (raw format)
                                                 // analog waveform + digital waveform
@@ -209,7 +210,7 @@ private:
         // Analog input (AI0 ~ AI15)
         { QString(STR_AIHEADER).append("0"), STR_axial_piezo_mon }, // 2
         // Digital output (P0.0 ~ P0.6)
-        { QString(STR_P0HEADER).append("4"), STR_all_lasers },      // 18
+        { QString(STR_P0HEADER).append("4"), STR_488nm_laser_str }, // 18
         { QString(STR_P0HEADER).append("5"), STR_camera1 },
         // Digital input (P0.7)                                     // 25
         { QString(STR_P0HEADER).append("7"), STR_camera1_mon }
@@ -238,14 +239,14 @@ private:
         { QString(STR_P0HEADER).append("4"), STR_all_lasers },      // 40
         { QString(STR_P0HEADER).append("5"), STR_camera1 },
         { QString(STR_P0HEADER).append("6"), STR_camera2 },
-        { QString(STR_P0HEADER).append("8"), STR_488nm_laser },     // 44
-        { QString(STR_P0HEADER).append("9"), STR_561nm_laser },
-        { QString(STR_P0HEADER).append("10"),STR_405nm_laser },
-        { QString(STR_P0HEADER).append("11"),STR_445nm_laser },
-        { QString(STR_P0HEADER).append("12"),STR_514nm_laser },
+        { QString(STR_P0HEADER).append("8"), STR_405nm_laser },     // 44
+        { QString(STR_P0HEADER).append("9"), STR_445nm_laser },
+        { QString(STR_P0HEADER).append("10"), STR_488nm_laser },
+        { QString(STR_P0HEADER).append("11"), STR_514nm_laser },
+        { QString(STR_P0HEADER).append("12"), STR_561nm_laser },
         // Digital input (P0.24 ~ P0.31)
-        { QString(STR_P0HEADER).append("24"),STR_camera1_mon },     // 68
-        { QString(STR_P0HEADER).append("25"),STR_camera2_mon }
+        { QString(STR_P0HEADER).append("24"), STR_camera1_mon },     // 68
+        { QString(STR_P0HEADER).append("25"), STR_camera2_mon }
     };
 
     CFErrorCode lookUpWave(QString wn, QVector <QString> &wavName,
@@ -255,14 +256,16 @@ private:
             Typ &value, PiezoDataType dataType = PDT_RAW);
 
 public:
+    QString rig;
     int nStacks = 0;
     int nFrames = 0;
     double exposureTime = 0;
     bool bidirection = false;
 
-    ControlWaveform();
+    ControlWaveform(QString rig) { this->rig = rig; };
     ~ControlWaveform();
 
+    void initControlWaveform(QString rig);
     CFErrorCode loadJsonDocument(QJsonDocument &loadDoc);
     // Read block
     template<class Typ> bool readControlWaveform(QVector<Typ> &dest, int ctrlIdx,
@@ -274,6 +277,7 @@ public:
     bool isEmpty(QString signalName);
     int getCtrlSampleNum(int ctrlIdx);
     QString getSignalName(int ctrlIdx);
+    QString getChannelName(int ctrlIdx);
     QString getSignalName(QString channelName);
     int getChannelIdxFromSig(QString signalName);
     int getChannelIdxFromCh(QString channelName);
@@ -293,7 +297,7 @@ public:
     // Waveform validity check
     CFErrorCode positionerSpeedCheck(int maxPos, int maxSpeed, int ctrlIdx, int &dataSize);
     CFErrorCode laserSpeedCheck(double maxFreq, int ctrlIdx, int &dataSize);
-    CFErrorCode waveformValidityCheck(int maxPos, int maxPiezoSpeed, int maxLaserFreq);
+    CFErrorCode waveformValidityCheck();
     // Generate control waveform and command file
     int genControlFileJSON(void);
     int genTriangle(bool bidir);
