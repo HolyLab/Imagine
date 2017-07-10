@@ -73,6 +73,7 @@ bool loadScript(const QString &filename)
             .arg(QString("   ... error msg: %1").arg(se->uncaughtException().toString())));
         return false;
     }
+    file.close();
 
     return true;
 }

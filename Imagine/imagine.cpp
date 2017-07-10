@@ -79,6 +79,7 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
 {
     this->rig = rig;
     m_OpenDialogLastDirectory = QDir::homePath();
+    m_OpenConWaveDialogLastDirectory = QDir::homePath();
     masterImagine = mImagine;
     dataAcqThread = new DataAcqThread(QThread::NormalPriority, cam, pos, this, parent);
 
@@ -403,19 +404,18 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     QCheckBox* cb1[] = { ui.cbAO0Wav, ui.cbAO1Wav, ui.cbDO0Wav,
                         ui.cbDO1Wav, ui.cbDO2Wav, ui.cbDO3Wav, ui.cbDO4Wav };
     QComboBox* combo1[] = { ui.comboBoxAO0, ui.comboBoxAO1, ui.comboBoxDO0,
-                        ui.comboBoxDO1, ui.comboBoxDO2, ui.comboBoxDO3, ui.comboBoxDO4 };
+                            ui.comboBoxDO1, ui.comboBoxDO2, ui.comboBoxDO3, ui.comboBoxDO4 };
     for (int i = 0; i < sizeof(cb1)/sizeof(QCheckBox*); i++) {
         cbAoDo.push_back(cb1[i]);
         comboBoxAoDo.push_back(combo1[i]);
     }
     QCheckBox* cb2[] = { ui.cbAI0Wav, ui.cbAI1Wav, ui.cbDI0Wav, ui.cbDI1Wav,
                         ui.cbDI2Wav, ui.cbDI3Wav, ui.cbDI4Wav, ui.cbDI5Wav };
-    QComboBox* combo2[] = { ui.comboBoxAI0, ui.comboBoxAI1, ui.comboBoxDI0,
-                        ui.comboBoxDI1, ui.comboBoxDI2, ui.comboBoxDI3, ui.comboBoxDI4, ui.comboBoxDI5 };
+    QComboBox* combo2[] = { ui.comboBoxAI0, ui.comboBoxAI1, ui.comboBoxDI0, ui.comboBoxDI1,
+                            ui.comboBoxDI2, ui.comboBoxDI3, ui.comboBoxDI4, ui.comboBoxDI5 };
     for (int i = 0; i < sizeof(cb2) / sizeof(QCheckBox*); i++) {
         cbAiDi.push_back(cb2[i]);
         comboBoxAiDi.push_back(combo2[i]);
-        combo2[i]->clear();
     }
 }
 
@@ -1243,7 +1243,7 @@ void Imagine::on_actionOpenShutter_triggered()
     ui.actionCloseShutter->setEnabled(false);
 
     //open laser shutter
-    digOut->singleOut(4, true);
+    bool retVal = digOut->singleOut(4, true);
 /*
     QString portName;
     if (!(laserCtrlSerial->isPortOpen())) {
@@ -1254,7 +1254,11 @@ void Imagine::on_actionOpenShutter_triggered()
     for (int i = 1; i <= 4; i++)
         changeLaserTrans(true, i);
 */
-    QString str = QString("Open laser shutter");
+    QString str;
+    if(retVal == true)
+        str = QString("Open laser shutter");
+    else
+        str = QString("Open laser shutter error");
     appendLog(str);
 
     ui.actionOpenShutter->setEnabled(false);
@@ -1267,11 +1271,15 @@ void Imagine::on_actionCloseShutter_triggered()
     ui.actionCloseShutter->setEnabled(false);
 
     //open laser shutter
-    digOut->singleOut(4, false);
+    bool retVal = digOut->singleOut(4, false);
 /*
     emit setLaserShutters(0);
 */
-    QString str = QString("Close laser shutter");
+    QString str;
+    if (retVal == true)
+        str = QString("Close laser shutter");
+    else
+        str = QString("Close laser shutter error");
     appendLog(str);
     ui.actionOpenShutter->setEnabled(true);
     ui.actionCloseShutter->setEnabled(false);
@@ -2852,11 +2860,19 @@ void Imagine::on_btnReadAiWavOpen_clicked()
     QVector<int> diChNumList;
     int diChBase;
     bool valid, preSection = false, aiSection = false, diSection = false;
+    numAiCurveData = 0;
+    numDiCurveData = 0;
     if (seekField("[misc params]", "ai data file", in, container)) {
-        aiFilename = m_OpenDialogLastDirectory+'/'+container.section("/", -1, -1);
+        if (container != "NA")
+            aiFilename = m_OpenDialogLastDirectory + '/' + container.section("/", -1, -1);
+        else
+            aiFilename = "NA";
     }
     if (seekField("[misc params]", "di data file", in, container)) {
-        diFilename = m_OpenDialogLastDirectory + '/' + container.section("/", -1, -1);
+        if (container != "NA")
+            diFilename = m_OpenDialogLastDirectory + '/' + container.section("/", -1, -1);
+        else
+            diFilename = "NA";
     }
     if (seekField("[ai]", "label list", in, container)) {
         numAiCurveData = container.count("$")+1;
@@ -2866,15 +2882,24 @@ void Imagine::on_btnReadAiWavOpen_clicked()
     if (seekField("[di]", "di channel list base", in, container)) {
         diChBase = container.toInt();
     }
-    if (seekField("[di]", "di channel list", in, container)) {
-        numDiCurveData = container.count(" ") + 1;
-        for (int i = 0; i < numDiCurveData; i++)
-            diChNumList.push_back(container.section(" ", i, i).toInt()-diChBase);
-    }
+    QVector<QString> list;
     if (seekField("[di]", "di label list", in, container)) {
         numDiCurveData = container.count("$") + 1;
-        for (int i = 0; i < numDiCurveData; i++)
-            diName.push_back(container.section("$", i, i));
+        for (int i = 0; i < numDiCurveData; i++) {
+            list.push_back(container.section("$", i, i));
+        }
+    }
+    if (seekField("[di]", "di channel list", in, container)) {
+        numDiCurveData = container.count(" ") + 1;
+        for (int i = 0; i < numDiCurveData; i++) {
+            int chList = container.section(" ", i, i).toInt();
+            if (i == 0) diChBase = chList;
+            if (list[i] != "unused") {
+                diName.push_back(list[i]);
+                diChNumList.push_back(chList - diChBase);
+            }
+        }
+        numDiCurveData = diChNumList.size();
     }
     file.close();
     
@@ -2895,17 +2920,18 @@ void Imagine::on_btnReadAiWavOpen_clicked()
     aiWaveData = new AiWaveform(data, numAiCurveData); // load data to aiWaveData
 
     // read di file
-    file.setFileName(diFilename);
-    if (!file.open(QFile::ReadOnly)) {
-        QMessageBox::warning(this, tr("Imagine"),
-            tr("Cannot read file %1:\n%2.")
-            .arg(diFilename)
-            .arg(file.errorString()));
-        return;
+    if (diFilename != "NA") {
+        file.setFileName(diFilename);
+        if (!file.open(QFile::ReadOnly)) {
+            QMessageBox::warning(this, tr("Imagine"),
+                tr("Cannot read file %1:\n%2.")
+                .arg(diFilename)
+                .arg(file.errorString()));
+            return;
+        }
+        data = file.readAll();
+        file.close();
     }
-
-    data = file.readAll();
-    file.close();
 
     if (diWaveData)
         delete diWaveData;
@@ -2915,35 +2941,31 @@ void Imagine::on_btnReadAiWavOpen_clicked()
     if (err == NO_CF_ERROR) {
         ui.labelAiSampleNum->setText(QString("%1").arg(aiWaveData->totalSampleNum));
 
-        // GUI waveform y axis display value adjusting box setup
-        ui.sbAiDiDsplyTop->setValue(aiWaveData->getMaxyValue() + 50);
-        ui.sbAiDiDsplyTop->setMinimum(0);
-        ui.sbAiDiDsplyTop->setMaximum(aiWaveData->getMaxyValue() + 50);
-        if (aiWaveData->totalSampleNum>0)
-            ui.sbAiDiDsplyRight->setMaximum(aiWaveData->totalSampleNum - 1);
-
         // Waveform selection combobox setup
         QStringList aiList, diList;
         aiList.push_back("empty");
+        diList.push_back("empty");
         for (int i = 0; i < numAiCurveData; i++) {
             aiList.push_back(aiName[i]);
         }
-        diList.push_back("empty");
         for (int i = 0; i < numDiCurveData; i++) {
             diList.push_back(diName[i]);
         }
         for (int i = 0; i < numAiCurve; i++) {
-            comboBoxAiDi[i]->clear();   // QT creator error: If this cause 'out of range'error,
-                                        // delete combox list using QT creater
+            comboBoxAiDi[i]->blockSignals(true);
+            comboBoxAiDi[i]->clear();
             comboBoxAiDi[i]->addItems(aiList);
             if (numAiCurveData > i)
                 comboBoxAiDi[i]->setCurrentIndex(i + 1);
+            comboBoxAiDi[i]->blockSignals(false);
         }
         for (int i = 0; i < numDiCurve; i++) {
+            comboBoxAiDi[i + numAiCurve]->blockSignals(true);
             comboBoxAiDi[i + numAiCurve]->clear();
             comboBoxAiDi[i + numAiCurve]->addItems(diList);
             if (numDiCurveData > i)
                 comboBoxAiDi[i + numAiCurve]->setCurrentIndex(i + 1);
+            comboBoxAiDi[i + numAiCurve]->blockSignals(false);
         }
         for (int i = 0; i < numAiCurve + numDiCurve; i++) {
             if (comboBoxAiDi[i]->currentIndex())
@@ -2951,6 +2973,18 @@ void Imagine::on_btnReadAiWavOpen_clicked()
             else
                 cbAiDi[i]->setChecked(false);
         }
+
+        // GUI waveform y axis display value adjusting box setup
+        ui.sbAiDiDsplyTop->setValue(aiWaveData->getMaxyValue() + 50);
+        ui.sbAiDiDsplyTop->setMinimum(0);
+        ui.sbAiDiDsplyTop->setMaximum(aiWaveData->getMaxyValue() + 50);
+        // When current sbAiDiDsplyRight value is bigger than new maximum value
+        // QT change current value as the new maximum value and this activate
+        // sbAiDiDsplyRight_valueChanged signal. The slot of this signal calls
+        // updateAiDiWaveform. Therefore, we need to set comboBoxAiDi[]->currentIndex
+        // before calling the updateAiDiWaveform.
+        if (aiWaveData->totalSampleNum>0)
+            ui.sbAiDiDsplyRight->setMaximum(aiWaveData->totalSampleNum - 1);
 
         // GUI waveform display
         updateAiDiWaveform(0, aiWaveData->totalSampleNum - 1);
@@ -2964,6 +2998,12 @@ void Imagine::on_btnReadAiWavOpen_clicked()
             QMessageBox::critical(this, "Imagine", diWaveData->getErrorMsg(),
                 QMessageBox::Ok, QMessageBox::NoButton);
         }
+        //for (int i = 0; i < numAiCurve; i++) {
+        //    comboBoxAiDi[i]->blockSignals(false);
+        //}
+        //for (int i = 0; i < numDiCurve; i++) {
+        //    comboBoxAiDi[i + numAiCurve]->blockSignals(false);
+        //}
     }
     else {
         if (err & ERR_READ_AI) {
@@ -3249,7 +3289,7 @@ void Imagine::readControlWaveformFile(QString fn)
         outCurve[i]->setData(0);
     conWavPlot->replot();
 
-    m_OpenDialogLastDirectory = fi.absolutePath();
+    m_OpenConWaveDialogLastDirectory = fi.absolutePath();
     QString ext = fi.suffix();
     if (ext == "json")
         saveFormat = Json;
@@ -3287,14 +3327,6 @@ void Imagine::readControlWaveformFile(QString fn)
         ui.labelSampleNumber->setText(QString("%1").arg(conWaveData->totalSampleNum));
         ui.cbBidirection->setChecked(conWaveData->bidirection);
 
-        // GUI waveform y axis display value adjusting box setup
-        Positioner *pos = dataAcqThread->pPositioner;
-        ui.sbWavDsplyTop->setValue(pos->maxPos() + 50);
-        ui.sbWavDsplyTop->setMinimum(0);
-        ui.sbWavDsplyTop->setMaximum(33000); // more than 32768
-        if (conWaveData->totalSampleNum>0)
-            ui.sbWavDsplyRight->setMaximum(conWaveData->totalSampleNum - 1);
-
         // Waveform selection combobox setup
         QStringList aoList, doList;
         int numNonAOEmpty = 0, numNonDOEmpty = 0;
@@ -3313,16 +3345,20 @@ void Imagine::readControlWaveformFile(QString fn)
             }
         }
         for (int i = 0; i < numAoCurve; i++) {
+            comboBoxAoDo[i]->blockSignals(true);
             comboBoxAoDo[i]->clear();
             comboBoxAoDo[i]->addItems(aoList);
             if (numNonAOEmpty > i)
                 comboBoxAoDo[i]->setCurrentIndex(i + 1);
+            comboBoxAoDo[i]->blockSignals(false);
         }
         for (int i = 0; i < numDoCurve; i++) {
+            comboBoxAoDo[i + numAoCurve]->blockSignals(true);
             comboBoxAoDo[i + numAoCurve]->clear();
             comboBoxAoDo[i + numAoCurve]->addItems(doList);
             if (numNonDOEmpty > i)
                 comboBoxAoDo[i + numAoCurve]->setCurrentIndex(i + 1);
+            comboBoxAoDo[i + numAoCurve]->blockSignals(false);
         }
         for (int i = 0; i < numAoCurve + numDoCurve; i++) {
             if (comboBoxAoDo[i]->currentIndex())
@@ -3330,6 +3366,14 @@ void Imagine::readControlWaveformFile(QString fn)
             else
                 cbAoDo[i]->setChecked(false);
         }
+
+        // GUI waveform y axis display value adjusting box setup
+        Positioner *pos = dataAcqThread->pPositioner;
+        ui.sbWavDsplyTop->setValue(pos->maxPos() + 50);
+        ui.sbWavDsplyTop->setMinimum(0);
+        ui.sbWavDsplyTop->setMaximum(33000); // more than 32768
+        if (conWaveData->totalSampleNum>0)
+            ui.sbWavDsplyRight->setMaximum(conWaveData->totalSampleNum - 1);
 
         // GUI waveform display
         updateControlWaveform(0, conWaveData->totalSampleNum - 1);
@@ -3450,7 +3494,7 @@ void Imagine::on_btnConWavOpen_clicked()
     QString wavFilename = QFileDialog::getOpenFileName(
         this,
         "Choose a control waveform file to open",
-        m_OpenDialogLastDirectory,
+        m_OpenConWaveDialogLastDirectory,
         "Waveform files (*.json;*.bin);;All files(*.*)");
     if (wavFilename.isEmpty()) return;
 

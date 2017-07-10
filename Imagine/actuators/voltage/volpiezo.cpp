@@ -53,7 +53,7 @@ bool VolPiezo::moveTo(double to)
         return false;
     }
 	*/
-	addMovement(max(cur_pos,0), to, duration, -1);
+	addMovement(min(max(cur_pos,0),maxPos()), to, duration, -1);
 	prepareCmd(false);
 	runCmd();
 	Sleep(200); //otherwise it seems to be cleared before nidaq can use it.
@@ -285,6 +285,24 @@ void VolPiezo::cleanup()
 
 }
 
+bool VolPiezo::resetDAQ()
+{
+    int aoChannelForPiezo = 0; //TODO: put this configurable
+    vector<int> aoChannels;
+    aoChannels.push_back(aoChannelForPiezo);
+    int aoChannelForTrigger = 1;
+    aoChannels.push_back(aoChannelForTrigger);
+
+    if (ao)
+        cleanup();
+
+    ao = new NiDaqAo(aoname, aoChannels);
+    if (ao->isError())
+        return false;
+    else
+        return true;
+}
+
 string VolPiezo::getSyncOut()
 {
     return ao->getTrigOut();
@@ -384,11 +402,23 @@ void DigitalOut::cleanup()
     dout = nullptr;
 }
 
+bool DigitalOut::resetDAQ()
+{
+    if (dout)
+        cleanup();
+    dout = new NiDaqDo(doname);
+    if (dout->isError())
+        return false;
+    else
+        return true;
+}
+
 bool DigitalOut::singleOut(int lineIndex, bool newValue)
 {
     bool retVal;
     if (!dout->isDone())
-        dout->stop();
+        return false;
+    resetDAQ();
     retVal = dout->outputChannelOnce(lineIndex, newValue);
     return retVal;
 }

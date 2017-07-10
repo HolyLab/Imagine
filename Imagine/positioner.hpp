@@ -79,6 +79,7 @@ public:
     virtual void setPCount() {};
     virtual string getSyncOut() = 0;
     virtual string getClkOut() = 0;
+    virtual bool resetDAQ() = 0;
 };//class, Positioner
 
 class DigitalControls { // camera shutter, laser on/off, stimuli on/off
@@ -96,6 +97,7 @@ public:
     virtual bool waitCmd() = 0;
     virtual bool abortCmd() = 0;
     virtual bool singleOut(int lineIndex, bool newValue) = 0;
+    virtual bool resetDAQ() = 0;
 
 };//class, DigitalControls
 #endif //POSITIONER_HPP

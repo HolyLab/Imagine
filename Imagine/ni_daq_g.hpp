@@ -41,6 +41,7 @@ class NiDaq : public virtual Daq {
 protected:
    TaskHandle  taskHandle;
    int errorCode;  
+   char    errBuff[2048] = { '\0' };
 public:
    //ctor: create task
    NiDaq(const vector<int> & chs): Daq(chs){
@@ -485,6 +486,7 @@ public:
 class NiDaqDo: public NiDaq, public DaqDo {
     uInt32*    dataU32; // burst out buffer
     int blockSize;
+    uInt32 numP0Channel;
 
 public:
     static DAQ_CALLBACK_FP nSampleCallback;
@@ -498,8 +500,12 @@ public:
       if(isError()){
          throw EInitDevice("exception when call DAQmxCreateDOChan()");
       }
-
-//      if(!start()){
+      // count a number of DO channels
+      //DAQmxGetTaskAttribute(taskHandle, DAQmx_Task_NumChans, &numP0Channel);
+      char ch[256];
+      DAQmxGetTaskChannels(taskHandle, ch, sizeof(ch));
+      DAQmxGetDONumLines(taskHandle, ch, &numP0Channel);
+      //      if(!start()){
 //         throw EInitDevice(string("exception when call DAQmxCreateDOChan():\n")+getErrorMsg());
 //      }
    }//ctor, NiDaqDo()
@@ -512,16 +518,34 @@ public:
 
    // single output
    bool outputChannelOnce(int lineIndex, bool newValue) {
-       assert(lineIndex >= 0 && lineIndex <= 7);
+       assert(lineIndex >= 0 && lineIndex < numP0Channel);
+       //errorCode = DAQmxResetSampTimingType(taskHandle); // reset to DAQmx_Val_OnDemand
+       uInt32 readData;
+       int32 nScansRead, numBytesPerSamp;
+       errorCode = DAQmxReadDigitalLines(taskHandle,
+           1, //numSampsPerChan
+           10.0, //timeout: 10s
+           DAQmx_Val_GroupByChannel,//
+           data,
+           numP0Channel,
+           &nScansRead,
+           &numBytesPerSamp,
+           NULL); //reserved
+       if (errorCode != 0) {
+           DAQmxGetExtendedErrorInfo(errBuff, 2048);
+           return !isError();
+       }
        data[lineIndex] = newValue;
        errorCode = DAQmxWriteDigitalLines(taskHandle,
            1, //numSampsPerChan
-           1, //autoStart
+           true, //autoStart
            10.0, //timeout: 10s
            DAQmx_Val_GroupByChannel,//
            data,
            NULL, //sampsPerChanWritten
            NULL);//reserved
+       if(errorCode!=0)
+            DAQmxGetExtendedErrorInfo(errBuff, 2048);
 
        return !isError();
    }//write(),

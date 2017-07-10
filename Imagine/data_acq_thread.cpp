@@ -765,6 +765,8 @@ nextStack:  //code below is repeated every stack
         diThread->stopAcq();
         ofsDi->flush();
         digOut->abortCmd();
+        // reset for On Demend digital output
+        // digOut->resetDAQ(); // need to do this every time we output single value to dout
     }
 
     ///reset the actuator to its exact starting pos
@@ -776,6 +778,7 @@ nextStack:  //code below is repeated every stack
         diThread->stopAcq();
         diThread->save(*ofsDi);
         pPositioner->abortCmd();
+//        pPositioner->resetDAQ();
         emit newStatusMsgReady("Now resetting the actuator to its exact starting pos ...");
         emit resetActuatorPosReady();
     }
@@ -833,87 +836,93 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, ControlWaveform *con
     header << "comment=" << linize(comment).toStdString() << endl; //TODO: may need encode into one line
 
     header << "ai data file=" << aiFilename.toStdString() << endl
-        << "di data file=" << diFilename.toStdString() << endl
-        << "image data file=" << camFilename.toStdString() << endl
-        << "command file=" << commandFilename.toStdString() << endl;
-
-    //TODO: output shutter params
-    //header<<"shutter=open time: ;"<<endl; 
-
-    header << "piezo=start position: " << piezoStartPosUm << " um"
-        << ";stop position: " << piezoStopPosUm << " um"
-        << ";output scan rate: " << 10000 //todo: hard coded
-        << ";bidirection: " << isBiDirectionalImaging
-        << endl << endl;
+        << "image data file=" << camFilename.toStdString() << endl;
+    if (isUsingWav) {
+        if (conWaveData != NULL) {
+            header << "command file=" << commandFilename.toStdString() << endl
+                << "di data file=" << diFilename.toStdString() << endl;
+        }
+        else {
+            header << "command file=" << "NA" << endl
+                << "di data file=" << "NA" << endl;
+        }
+        header << "piezo=start position: " << "NA"
+            << ";stop position: " << "NA"
+            << ";output scan rate: " << conWaveData->sampleRate
+            << ";bidirection: " << conWaveData->bidirection
+            << endl << endl;
+    }
+    else {
+        header << "command file=" << "NA" << endl
+            << "di data file=" << "NA" << endl
+            << "piezo=start position: " << piezoStartPosUm << " um"
+            << ";stop position: " << piezoStopPosUm << " um"
+            << ";output scan rate: " << 10000 // TODO: hard coded
+            << ";bidirection: " << isBiDirectionalImaging
+            << endl << endl;
+    }
 
     //ai,di related:
     if (ai != NULL) {
         int aiBegin, p0Begin, p0InBegin, numChannel;
         header << "[ai]" << endl
             << "nscans=" << -1 << endl; //TODO: output nscans at the end
-        if (conWaveData == NULL) {
-            header << "channel list=0 1 2" << endl //TODO: this and label list shouldn't be hardcoded
-                << "label list=piezo$stimuli$camera frame TTL" << endl;
+        if (isUsingWav) {
+            if (conWaveData != NULL) {
+                aiBegin = conWaveData->getAIBegin();
+                p0Begin = conWaveData->getP0Begin();
+                p0InBegin = conWaveData->getP0InBegin();
+                numChannel = conWaveData->getNumChannel();
+                header << "channel list=";
+                for (int i = aiBegin; i < p0Begin; i++) {
+                    if (conWaveData->getSignalName(i) != "") {
+                        header << i - aiBegin << " ";
+                    }
+                }
+                header.seekp(-1, header.cur);
+                header << endl << "label list=";
+                for (int i = aiBegin; i < p0Begin; i++) {
+                    if (conWaveData->getSignalName(i) != "") {
+                        header << conWaveData->getSignalName(i).toStdString() << "$";
+                    }
+                }
+                header.seekp(-1, header.cur);
+                header << endl;
+            }
         }
         else {
-            aiBegin = conWaveData->getAIBegin();
-            p0Begin = conWaveData->getP0Begin();
-            p0InBegin = conWaveData->getP0InBegin();
-            numChannel = conWaveData->getNumChannel();
-            header << "channel list=";
-            for (int i = aiBegin; i < p0Begin; i++) {
-                if (conWaveData->getSignalName(i) != "") {
-                    header << i - aiBegin << " ";
-                }
-            }
-            header.seekp(-1, header.cur);
-            header << endl << "label list=";
-            for (int i = aiBegin; i < p0Begin; i++) {
-                if (conWaveData->getSignalName(i) != "") {
-                    header << conWaveData->getSignalName(i).toStdString() << "$";
-                }
-            }
-            header.seekp(-1, header.cur);
-            header << endl;
+            header << "channel list=0 1 2" << endl //TODO: this and label list shouldn't be hardcoded
+                << "label list=piezo$stimuli$camera frame TTL" << endl;
         }
         header << "scan rate=" << ai->scanRate << endl
             << "min sample=" << ai->minDigitalValue << endl
             << "max sample=" << ai->maxDigitalValue << endl
             << "min input=" << ai->minPhyValue << endl
             << "max input=" << ai->maxPhyValue << endl << endl;
-        if (conWaveData != NULL) {
-            header << "[di]" << endl
-                << "di nscans=" << -1 << endl; //TODO: output nscans at the end
-            header << "di channel list=";
-            for (int i = p0InBegin; i < numChannel; i++) {
-                if (conWaveData->getSignalName(i) != "") {
+        if (isUsingWav) {
+            if (conWaveData != NULL) {
+                header << "[di]" << endl
+                    << "di nscans=" << -1 << endl; //TODO: output nscans at the end
+                header << "di channel list=";
+                for (int i = p0InBegin; i < numChannel; i++) {
                     header << i - p0Begin << " ";
                 }
-            }
-            header.seekp(-1, header.cur);
-            header << endl << "di channel list base="
-                << conWaveData->getP0InBegin() - conWaveData->getP0Begin() << endl;
-            header << "di label list=";
-            for (int i = p0InBegin; i < numChannel; i++) {
-                if (conWaveData->getSignalName(i) != "") {
-                    header << conWaveData->getSignalName(i).toStdString() << "$";
+                header.seekp(-1, header.cur);
+//                header << endl << "di channel list base="
+//                    << conWaveData->getP0InBegin() - conWaveData->getP0Begin() << endl;
+                header << endl << "di label list=";
+                for (int i = p0InBegin; i < numChannel; i++) {
+                    if (conWaveData->getSignalName(i) != "") {
+                        header << conWaveData->getSignalName(i).toStdString() << "$";
+                    }
+                    else
+                        header << "unused" << "$";
                 }
+                header.seekp(-1, header.cur);
+                header << endl;
+                header << "di scan rate=" << ai->scanRate << endl << endl;
             }
-            header.seekp(-1, header.cur);
-            header << endl;
-            header << "di scan rate=" << ai->scanRate << endl << endl;
         }
-    }
-    else {
-        header << "[ai]" << endl
-            << "nscans=" << -1 << endl //TODO: output nscans at the end
-            << "channel list=0 1 2" << endl //TODO: this and label list shouldn't be hardcoded
-            << "label list=piezo$stimuli$camera frame TTL" << endl
-            << "scan rate=" << 0 << endl
-            << "min sample=" << 0 << endl
-            << "max sample=" << 0 << endl
-            << "min input=" << 0 << endl
-            << "max input=" << 0 << endl << endl;
     }
 
     //camera related:

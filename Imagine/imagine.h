@@ -234,7 +234,7 @@ private:
     AiWaveform *aiWaveData = NULL;
     DiWaveform *diWaveData = NULL;
     QString m_OpenDialogLastDirectory;
-
+    QString m_OpenConWaveDialogLastDirectory;
     bool modified;
     bool paramOK;
     int numLaserShutters = 0;

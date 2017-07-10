@@ -145,7 +145,7 @@ public:
 //dig-out 
 class DaqDo {
 protected:
-   unsigned char       data[8];
+   unsigned char       data[64];
 public:
    //create DO channel and start the task
    DaqDo(){

@@ -19,7 +19,7 @@ public:
    int maxSpeed() { return maxspd; }
    QString getCtrlrSetupType() { return setuptype; }
    bool curPos(double* pos){*pos=500; return true;}
-   bool moveTo(double to){ return true;}
+   bool moveTo(double to);// { return true; }
 
    bool addMovement(double from, double to, double duration, int trigger)
    {
@@ -41,11 +41,13 @@ public:
    bool abortCmd(){ return true;}
    string getSyncOut() { return "";};
    string getClkOut() { return ""; };
+   bool resetDAQ() { return true; }
 
 private:
     int maxpos = 0;
     int maxspd = 0;
     QString setuptype;
+    void cleanup() { return; }
 
 };//class, DummyPiezo
 
@@ -60,10 +62,31 @@ double DummyPiezo::zpos2voltage(double um)
     return um / this->maxPos() * 10; // *10: 0-10vol range for piezo
 }
 
+bool DummyPiezo::moveTo(double to)
+{
+    double cur_pos = 0;
+    double duration;
+    curPos(&cur_pos);
+    duration = (abs(to - cur_pos) / maxSpeed()) * 1e6;
+    vector<Movement* > orig_movements = movements;
+    vector<Movement* > empty_movements;
+    movements = empty_movements;  //a hack, shouldn't have to hide prepared movements
+
+    addMovement(max(cur_pos, 0), to, duration, -1);
+    prepareCmd(false);
+    runCmd();
+    Sleep(200); //otherwise it seems to be cleared before nidaq can use it.
+    clearCmd();
+    cleanup();
+    movements = orig_movements;
+    prepareCmd(false); //prepare again, leaving the movement command list as we found it.
+
+    return true;
+}//moveTo(),
 
 bool DummyPiezo::prepareCmd(bool useTrig)
 {
-    return true; // block the below code
+//    return true; // block the below code
 
     int aoChannelForPiezo = 0; //TODO: put this configurable
     vector<int> aoChannels;
@@ -151,8 +174,10 @@ public:
     bool waitCmd() { return true; }
     bool abortCmd() { return true; }
     bool singleOut(int lineIndex, bool newValue) { return true; }
+    bool resetDAQ() { return true; }
 
 private:
+    void cleanup() { return; }
 
 };//class, DummyDigitalOut
 

@@ -1619,7 +1619,7 @@ AiWaveform::AiWaveform(QByteArray &data, int num)
         for (int j = 0; j < numAiCurveData; j++) {
             aiStream >> us;
             if (us < (int)MIN_VALUE) // if us is too negative value than wrap around
-                wus = -(int)us;
+                wus = (int)us + 2*(PIEZO_10V_UINT16_VALUE+1);
             else
                 wus = (int)us;
             double y = static_cast<double>(wus)*1000. / PIEZO_10V_UINT16_VALUE; // int value to double(mV)
@@ -1691,6 +1691,8 @@ DiWaveform::DiWaveform(QByteArray &data, QVector<int> diChNumList)
 
 bool DiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, int begin, int end, int downSampleRate)
 {
+    if (!numDiCurveData)
+        return true;
     if (end >= diData[ctrlIdx].size())
         return false;
     for (int i = begin, j = 0; i <= end; i += downSampleRate) {
@@ -1703,10 +1705,11 @@ bool DiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, int begin, int en
 
 bool DiWaveform::getSampleValue(int ctrlIdx, int idx, int &value)
 {
+    if (!numDiCurveData)
+        return true;
     if (idx >= diData[ctrlIdx].size())
         return false;
     else {
-
         value = diData[ctrlIdx][idx];
         return true;
     }

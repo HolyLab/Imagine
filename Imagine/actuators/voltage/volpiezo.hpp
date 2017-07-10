@@ -41,6 +41,7 @@ public:
     string getClkOut();
     int readConWaveToBuffer(int num);
     void writeNextSamples(void);
+    bool resetDAQ();
     static void CallbackWrapper(void* context) {
         static_cast<VolPiezo*>(context)->writeNextSamples();
     }
@@ -99,6 +100,7 @@ public:
     bool singleOut(int lineIndex, bool newValue);
     int readConPulseToBuffer(int num);
     void writeNextSamples(void);
+    bool resetDAQ();
     static void CallbackWrapper(void* context) {
         static_cast<DigitalOut*>(context)->writeNextSamples();
     }
