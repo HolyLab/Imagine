@@ -9,7 +9,7 @@ if(rig=="dummy"){
       travelBackTime:0,
 
       ///camera's
-      numOfStacks:5,
+      numOfStacks:6,
       framesPerStack:20,
       exposureTime:0.03,
       idleTime:0.7,
@@ -27,7 +27,7 @@ if(rig=="hs-ocpi"){
       travelBackTime:0,
 
       ///camera's
-      numOfStacks:5,
+      numOfStacks:6,
       framesPerStack:89,
       exposureTime:0.0107,
       idleTime:0.7,
@@ -45,7 +45,7 @@ if(rig=="bakewell"){
       travelBackTime:0,
 
       ///camera's
-      numOfStacks:5,
+      numOfStacks:6,
       framesPerStack:100,
       exposureTime:0.02,
       idleTime:0.7,
@@ -68,7 +68,7 @@ if(rig=="ocpi-1"){
       travelBackTime:0,
 
       ///camera's
-      numOfStacks:5,
+      numOfStacks:6,
       framesPerStack:20,
       exposureTime:0.03,
       idleTime:0.7,
@@ -86,7 +86,7 @@ if(rig=="ocpi-2"){
       travelBackTime:0,
 
       ///camera's
-      numOfStacks:5,
+      numOfStacks:6,
       framesPerStack:20,
       exposureTime:0.03,
       idleTime:0.7,

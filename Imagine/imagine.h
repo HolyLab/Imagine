@@ -258,6 +258,7 @@ private:
     // for laser control from this line
     void changeLaserShutters(void);
     void changeLaserTrans(bool isAotf, int line);
+    void changeLaserShuttersTTL(int line, bool onOff);
     // for laser control until this line
     void writeSettings(QString file);
     void readSettings(QString file);
@@ -301,6 +302,7 @@ private slots:
     void on_btnSelectFile_clicked();
     void on_btnOpenStimFile_clicked();
     void on_btnApply_clicked();
+    void on_btnApply_clicked_old(); // will be deleted later
     void on_spinBoxHstart_editingFinished();
     void on_spinBoxHend_editingFinished();
     void on_spinBoxVstart_valueChanged(int newValue);
@@ -365,6 +367,16 @@ private slots:
     void on_aotfLine6_valueChanged();
     void on_aotfLine7_valueChanged();
     void on_aotfLine8_valueChanged();
+    void on_cbLineTTL1_clicked(bool checked);
+    void on_cbLineTTL2_clicked(bool checked);
+    void on_cbLineTTL3_clicked(bool checked);
+    void on_cbLineTTL4_clicked(bool checked);
+    void on_cbLineTTL5_clicked(bool checked);
+    void on_cbLineTTL6_clicked(bool checked);
+    void on_cbLineTTL7_clicked(bool checked);
+    void on_cbLineTTL8_clicked(bool checked);
+    void on_cbDualOutSW1_clicked(bool checked);
+    void on_cbDualOutSW2_clicked(bool checked);
     void displayShutterStatus(int status);
     void displayTransStatus(bool isaotf, int line, int status);
     void displayLaserGUI(int numLines, int *laserIndex, int *wavelength);

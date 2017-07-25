@@ -221,7 +221,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>8</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -349,7 +349,7 @@
              <property name="spacing">
               <number>6</number>
              </property>
-             <item row="7" column="0">
+             <item row="6" column="0">
               <widget class="QLabel" name="label_32">
                <property name="text">
                 <string>Angle from horizontal (deg):</string>
@@ -373,7 +373,7 @@
                </property>
               </widget>
              </item>
-             <item row="8" column="0">
+             <item row="7" column="0">
               <widget class="QLabel" name="label_33">
                <property name="text">
                 <string>um per pixle (xy plane):</string>
@@ -435,11 +435,11 @@
                 <number>999999999</number>
                </property>
                <property name="value">
-                <number>5</number>
+                <number>6</number>
                </property>
               </widget>
              </item>
-             <item row="7" column="1">
+             <item row="6" column="1">
               <widget class="QSpinBox" name="spinBoxAngle">
                <property name="toolTip">
                 <string>-1 means n/a</string>
@@ -455,7 +455,7 @@
                </property>
               </widget>
              </item>
-             <item row="8" column="1">
+             <item row="7" column="1">
               <widget class="QDoubleSpinBox" name="doubleSpinBoxUmPerPxlXy">
                <property name="toolTip">
                 <string>-1 means n/a</string>
@@ -484,34 +484,7 @@
                </property>
               </widget>
              </item>
-             <item row="4" column="0">
-              <widget class="QLabel" name="label_5_3">
-               <property name="toolTip">
-                <string>That is, msec/frame</string>
-               </property>
-               <property name="text">
-                <string>Acquisition trigger mode:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="1">
-              <widget class="QComboBox" name="comboBoxAcqTriggerMode">
-               <property name="currentIndex">
-                <number>1</number>
-               </property>
-               <item>
-                <property name="text">
-                 <string>External</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Internal</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item row="6" column="0">
+             <item row="5" column="0">
               <widget class="QLabel" name="label_5_4">
                <property name="toolTip">
                 <string>That is, msec/frame</string>
@@ -521,16 +494,11 @@
                </property>
               </widget>
              </item>
-             <item row="6" column="1">
+             <item row="5" column="1">
               <widget class="QComboBox" name="comboBoxExpTriggerMode">
                <property name="currentIndex">
                 <number>0</number>
                </property>
-               <item>
-                <property name="text">
-                 <string>Auto</string>
-                </property>
-               </item>
                <item>
                 <property name="text">
                  <string>External Start</string>
@@ -539,6 +507,11 @@
                <item>
                 <property name="text">
                  <string>External Control</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Fast External Control</string>
                 </property>
                </item>
               </widget>
@@ -2793,13 +2766,6 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="0">
-                <widget class="QCheckBox" name="cbLine3">
-                 <property name="text">
-                  <string>Line 3</string>
-                 </property>
-                </widget>
-               </item>
                <item row="7" column="0">
                 <widget class="QCheckBox" name="cbLine8">
                  <property name="text">
@@ -2947,6 +2913,13 @@
                  </property>
                 </widget>
                </item>
+               <item row="2" column="0">
+                <widget class="QCheckBox" name="cbLine3">
+                 <property name="text">
+                  <string>Line 3</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </item>
              <item>
@@ -2963,17 +2936,95 @@
               </spacer>
              </item>
              <item>
-              <spacer name="verticalSpacer_12">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
+              <widget class="QLabel" name="label_48">
+               <property name="text">
+                <string>Analog/TTL Control</string>
                </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_9">
+               <property name="topMargin">
+                <number>10</number>
                </property>
-              </spacer>
+               <item>
+                <widget class="QCheckBox" name="cbDualOutSW1">
+                 <property name="text">
+                  <string>SW 1</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="cbLineTTL1">
+                 <property name="text">
+                  <string>Line 1</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="cbLineTTL2">
+                 <property name="text">
+                  <string>Line 2</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="cbLineTTL3">
+                 <property name="text">
+                  <string>Line 3</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="cbLineTTL4">
+                 <property name="text">
+                  <string>Line 4</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_10">
+               <property name="topMargin">
+                <number>10</number>
+               </property>
+               <item>
+                <widget class="QCheckBox" name="cbDualOutSW2">
+                 <property name="text">
+                  <string>SW 2</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="cbLineTTL5">
+                 <property name="text">
+                  <string>Line 5</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="cbLineTTL6">
+                 <property name="text">
+                  <string>Line 6</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="cbLineTTL7">
+                 <property name="text">
+                  <string>Line 7</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="cbLineTTL8">
+                 <property name="text">
+                  <string>Line 8</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
              <item>
               <spacer name="verticalSpacer_11">
@@ -3110,12 +3161,22 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_8">
             <item>
-             <widget class="QCheckBox" name="cbBidirection">
-              <property name="enabled">
-               <bool>false</bool>
+             <widget class="QLabel" name="label_40">
+              <property name="text">
+               <string>Bi-direction :</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="labelBidirection">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
               </property>
               <property name="text">
-               <string>Bi-direction</string>
+               <string>off</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>

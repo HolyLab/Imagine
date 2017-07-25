@@ -96,7 +96,6 @@
 using namespace std;
 
 #define INFINITE_SAMPLE         0
-#define MAX_NUM_WAVEFORM        100
 #define PIEZO_10V_UINT16_VALUE  32767.   // max value of uint16 (double constant)
 
 #define CF_VERSION          "v1.0"
@@ -160,7 +159,11 @@ enum CFErrorCode : unsigned int
     ERR_SHORT_WAVEFORM          = 1 << 12,
     // load ai di data error
     ERR_READ_AI                 = 1 << 13,
-    ERR_READ_DI                 = 1 << 14
+    ERR_READ_DI                 = 1 << 14,
+    // waveform generation error
+    ERR_TRAVELBACKTIME_SHORT    = 1 << 15,
+    ERR_IDLETIME_SHORT          = 1 << 16,
+    ERR_FILE_OPEN               = 1 << 17
 }; // ai, di and command file error code
 
 enum PiezoDataType
@@ -193,9 +196,8 @@ class ControlWaveform : public Waveform {
 private:
     int numAOChannel, numAIChannel, numP0Channel, numP0InChannel, numChannel;
     double piezo10Vint16Value;
-    int maxPiezoPos;
-    int maxPiezoSpeed;
-    int maxLaserFreq;
+    QJsonObject alldata;
+
     QVector<QVector<int> *>     controlList;
     QVector<QVector<int> *>     waveList_Raw;   // positioner waveform (raw format)
                                                 // analog waveform + digital waveform
@@ -252,8 +254,9 @@ private:
     CFErrorCode lookUpWave(QString wn, QVector <QString> &wavName,
         QJsonObject wavelist, int &waveIdx, int dataType);
     int getWaveSampleNum(int waveIdx);
-    template<class Typ> bool getWaveSampleValue(int waveIdx, int sampleIdx,
+    template<class Typ> bool getWaveSampleValue(int waveIdx, long long sampleIdx,
             Typ &value, PiezoDataType dataType = PDT_RAW);
+    CFErrorCode parsing(void);
 
 public:
     QString rig;
@@ -261,17 +264,30 @@ public:
     int nFrames = 0;
     double exposureTime = 0;
     bool bidirection = false;
+    int maxPiezoPos;
+    int maxPiezoSpeed;
+    int maxLaserFreq;
 
-    ControlWaveform(QString rig) { this->rig = rig; };
+    // for default control
+    double cycleTime;
+    double piezoTravelBackTime;
+//    bool piezoTravelBackTimeAuto;
+    double idleTimeBwtnStacks;
+    double piezoStartPosUm;
+    double piezoStopPosUm;
+    bool applyStim;
+    vector<pair<int, int> > *stimuli;
+
+    ControlWaveform(QString rig);
     ~ControlWaveform();
 
     void initControlWaveform(QString rig);
     CFErrorCode loadJsonDocument(QJsonDocument &loadDoc);
     // Read block
     template<class Typ> bool readControlWaveform(QVector<Typ> &dest, int ctrlIdx,
-            int begin, int end, int downSampleRate, PiezoDataType dataType = PDT_RAW);
+        long long begin, long long end, int downSampleRate, PiezoDataType dataType = PDT_RAW);
     // Read single value
-    template<class Typ> bool getCtrlSampleValue(int ctrlIdx, int idx, Typ &value,
+    template<class Typ> bool getCtrlSampleValue(int ctrlIdx, long long idx, Typ &value,
             PiezoDataType dataType = PDT_RAW);
     bool isEmpty(int ctrlIdx);
     bool isEmpty(QString signalName);
@@ -293,19 +309,21 @@ public:
     bool isCameraPulseEmpty(void);
     bool isLaserPulseEmpty(void);
     int raw2Zpos(int raw);
+    int zpos2Raw(double pos);
     float64 raw2Voltage(int raw);
     // Waveform validity check
     CFErrorCode positionerSpeedCheck(int maxPos, int maxSpeed, int ctrlIdx, int &dataSize);
     CFErrorCode laserSpeedCheck(double maxFreq, int ctrlIdx, int &dataSize);
     CFErrorCode waveformValidityCheck();
     // Generate control waveform and command file
+    CFErrorCode genDefaultControl(QString filename = "");
     int genControlFileJSON(void);
     int genTriangle(bool bidir);
     int genSinusoidal(bool bidir);
 }; // ControlWaveform
 
 
-#define MAX_AI_DI_SAMPLE_NUM    180000000 // 5Hr whne sampleRate = 10000
+#define MAX_AI_DI_SAMPLE_NUM    4500000000 // 25Hr when sampleRate = 50000
 class AiWaveform : public Waveform {
     Q_OBJECT
 
@@ -319,9 +337,9 @@ public:
     ~AiWaveform() {};
 
     // Read block
-    bool readWaveform(QVector<int> &dest, int ctrlIdx, int begin, int end, int downSampleRate);
+    bool readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, long long end, int downSampleRate);
     // Read single value
-    bool getSampleValue(int ctrlIdx, int idx, int &value);
+    bool getSampleValue(int ctrlIdx, long long idx, int &value);
     int getMaxyValue();
     int getMinyValue();
 };
@@ -339,9 +357,9 @@ public:
     ~DiWaveform() {};
 
     // Read block
-    bool readWaveform(QVector<int> &dest, int ctrlIdx, int begin, int end, int downSampleRate);
+    bool readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, long long end, int downSampleRate);
     // Read single value
-    bool getSampleValue(int ctrlIdx, int idx, int &value);
+    bool getSampleValue(int ctrlIdx, long long idx, int &value);
 };
 
 
@@ -349,20 +367,20 @@ public:
 // To use these template functions from the outside of this class
 // These funtion definitions should be located in this header file and the caller shoud include this header file.
 
-int findValue(QVector<int> *wav, int begin, int end, int sampleIdx);
-int findValuePos(QVector<int> *wav, QVector<int> *wav_p, int begin, int end, int sampleIdx);
-float64 findValueVol(QVector<int> *wav, QVector<float64> *wav_v, int begin, int end, int sampleIdx);
+int findValue(QVector<int> *wav, long long begin, long long end, int sampleIdx);
+int findValuePos(QVector<int> *wav, QVector<int> *wav_p, long long begin, long long end, int sampleIdx);
+float64 findValueVol(QVector<int> *wav, QVector<float64> *wav_v, long long begin, long long end, int sampleIdx);
 
 // Read control signal data from index 'begin' to 'end' with downsample rate 'downSampleRate' to 'dest' vector
 template<class Typ>
 bool ControlWaveform::readControlWaveform(QVector<Typ> &dest, int ctrlIdx,
-    int begin, int end, int downSampleRate, PiezoDataType dataType)
+    long long begin, long long end, int downSampleRate, PiezoDataType dataType)
 {
     if (controlList.isEmpty())
         return false;
 
     int controlIdx = 0, repeat, waveIdx, repeatLeft;
-    int sampleIdx = begin, startSampleIdx = 0, prevStartSampleIdx, sampleIdxInWave;
+    long long sampleIdx = begin, startSampleIdx = 0, prevStartSampleIdx, sampleIdxInWave;
 
     while (1) {
         for (; controlIdx < controlList[ctrlIdx]->size(); controlIdx += 2) {
@@ -398,7 +416,7 @@ done:
 
 // Read wave signal data at index 'sampleIdx' to variable 'value'
 template<class Typ>
-bool ControlWaveform::getWaveSampleValue(int waveIdx, int sampleIdx, Typ &value, PiezoDataType dataType)
+bool ControlWaveform::getWaveSampleValue(int waveIdx, long long sampleIdx, Typ &value, PiezoDataType dataType)
 {
     if (waveList_Raw.isEmpty())
         return false;
@@ -408,14 +426,51 @@ bool ControlWaveform::getWaveSampleValue(int waveIdx, int sampleIdx, Typ &value,
     if (sampleIdx >= waveList_Raw[waveIdx]->last()) {
         return false;
     }
-    int begin = 0;
-    int end = waveList_Raw[waveIdx]->size() / 2;
+    long long begin = 0;
+    long long end = waveList_Raw[waveIdx]->size() / 2;
     if (dataType == PDT_RAW)
         value = findValue(waveList_Raw[waveIdx], begin, end, sampleIdx);
     else if (dataType == PDT_VOLTAGE)
         value = findValueVol(waveList_Raw[waveIdx], waveList_Vol[waveIdx], begin, end, sampleIdx);
     else if (dataType == PDT_Z_POSITION)
         value = findValuePos(waveList_Raw[waveIdx], waveList_Pos[waveIdx], begin, end, sampleIdx);
+    return true;
+}
+
+// Read control signal data at index 'idx' to variable 'value'
+template<class Typ>
+bool ControlWaveform::getCtrlSampleValue(int ctrlIdx, long long idx, Typ &value, PiezoDataType dataType)
+{
+    if (controlList.isEmpty())
+        return false;
+    int controlIdx, repeat, waveIdx;
+    long long sampleIdx = 0, prevSampleIdx, sampleIdxInWave;
+    bool found = false;
+    bool isValid;
+    // find beginning point
+    for (controlIdx = 0; controlIdx < controlList[ctrlIdx]->size(); controlIdx += 2)
+    {
+        repeat = controlList[ctrlIdx]->at(controlIdx);
+        waveIdx = controlList[ctrlIdx]->at(controlIdx + 1);
+        for (int j = 0; j < repeat; j++)
+        {
+            prevSampleIdx = sampleIdx;
+            sampleIdx += getWaveSampleNum(waveIdx);
+            if (idx < sampleIdx) {
+                found = true;
+                goto read_data;
+            }
+        }
+    }
+idx_error:
+    return false;
+
+read_data:
+    sampleIdxInWave = idx - prevSampleIdx;
+    isValid = getWaveSampleValue(waveIdx, sampleIdxInWave, value, dataType);
+    if (!isValid)
+        goto idx_error;
+done:
     return true;
 }
 

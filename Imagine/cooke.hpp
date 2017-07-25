@@ -161,6 +161,7 @@ private:
 
     int bufferIdx;
     DummyCameraThread *sudoCamera = nullptr;
+    float cycleTime;
 
 public:
     DummyCamera(QString filename) {
@@ -199,6 +200,7 @@ public:
         ExpTriggerMode expTriggerMode
     ) {
         this->genericAcqMode = genericAcqMode;
+        this->cycleTime = exposure;
         this->nFrames = anFrames;
         this->acqTriggerMode = acqTriggerMode;
         this->expTriggerMode = expTriggerMode;
@@ -208,7 +210,7 @@ public:
     bool prepCameraOnce();
     bool nextStack();
 
-    double getCycleTime() { return 0.03; }
+    double getCycleTime() { return cycleTime; }
 
     void printPcoError(int errCode) {} // should be reimplemented
 

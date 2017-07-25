@@ -664,7 +664,7 @@ void DataAcqThread::run_acq_and_save_wav()
         diThread->startAcq();
     }
     else {
-        saveHeader(headerFilename, NULL);
+        saveHeader(headerFilename, NULL, conWaveData);
     }
     isUpdatingImage = false;
 

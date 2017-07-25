@@ -233,26 +233,34 @@ bool VolPiezo::prepareCmdBuffered(ControlWaveform *conWaveData)
     ao = new NiDaqAo(aoname, aoChannels);
 
     ao->cfgTimingBuffered(conWaveData->sampleRate, totalSample);
-    if (ao->isError()) {
-        cleanup();
-        lastErrorMsg = "VolPiezo::prepareCmdBuffered: failed to configure timing";
-        return false;
-    }
-
+    if (ao->isError()) goto error;
     blockSize = ao->getBlockSize();
     ao->setNSampleCallback(CallbackWrapper, this);
+    if (ao->isError()) goto error;
     idx = 0;
     ao->updateOutputBuf(readConWaveToBuffer(2 * blockSize));
+    if (ao->isError()) goto error;
 
     return true;
+
+error:
+    cleanup();
+    lastErrorMsg = "VolPiezo::prepareCmdBuffered: failed to configure timing";
+    return false;
 }//prepareCmd(),
 
 bool VolPiezo::runCmd()
 {
     //start piezo movement (and may also trigger the camera):
     ao->start(); //todo: check error
+    if (ao->isError()) goto error;
 
     return true;
+
+error:
+    cleanup();
+    lastErrorMsg = "VolPiezo::prepareCmdBuffered: failed to configure timing";
+    return false;
 }
 
 
@@ -354,25 +362,34 @@ bool DigitalOut::prepareCmdBuffered(ControlWaveform *conWaveData, string clkName
     dout = new NiDaqDo(doname);
 
     dout->cfgTimingBuffered(conWaveData->sampleRate, totalSample, clkName);
-    if (dout->isError()) {
-        lastErrorMsg = "DigitalOut::prepareCmdBuffered: failed to configure timing";
-        return false;
-    }
-
+    if (dout->isError()) goto error;
     blockSize = dout->getBlockSize();
     dout->setNSampleCallback(CallbackWrapper, this);
+    if (dout->isError()) goto error;
     idx = 0;
     dout->updateOutputBuf(readConPulseToBuffer(2 * blockSize));
+    if (dout->isError()) goto error;
 
     return true;
+
+error:
+    cleanup();
+    lastErrorMsg = "DigitalOut::prepareCmdBuffered: failed to configure timing";
+    return false;
 }//prepareCmdBuffered(),
 
 bool DigitalOut::runCmd()
 {
     //start piezo movement (and may also trigger the camera):
     dout->start(); //todo: check error
+    if (dout->isError()) goto error;
 
     return true;
+
+error:
+    cleanup();
+    lastErrorMsg = "DigitalOut::prepareCmdBuffered: failed to configure timing";
+    return false;
 }
 
 bool DigitalOut::waitCmd()
