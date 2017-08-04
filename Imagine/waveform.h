@@ -104,6 +104,8 @@ using namespace std;
 #define STR_SampleRate      "samples per second"
 #define STR_TotalSamples    "sample num"
 #define STR_Exposure        "exposure time in seconds"
+#define STR_Exposure1       "exposure time in seconds for camera1"
+#define STR_Exposure2       "exposure time in seconds for camera2"
 #define STR_BiDir           "bi-direction"
 #define STR_Stacks          "stacks"
 #define STR_Frames          "frames per stack"
@@ -262,7 +264,8 @@ public:
     QString rig;
     int nStacks = 0;
     int nFrames = 0;
-    double exposureTime = 0;
+    double exposureTime1 = 0;
+    double exposureTime2 = 0;
     bool bidirection = false;
     int maxPiezoPos;
     int maxPiezoSpeed;

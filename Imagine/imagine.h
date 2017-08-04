@@ -158,7 +158,7 @@ public:
     
     Ui::ImagineClass ui;
     QString rig;
-	Imagine *masterImagine; //Positioner and stimulus control / interface is restricted to only the master instance
+    Imagine *masterImagine = nullptr; //Positioner and stimulus control / interface is restricted to only the master instance
     Imagine *slaveImagine = nullptr;
     Pixmapper *pixmapper = nullptr;
     ImagePlay *imagePlay = nullptr;
@@ -199,7 +199,7 @@ public:
     int H;
     int T;
 
-    void setSlaveWindow(Imagine *sImagine) { slaveImagine = sImagine;  };
+    void setSlaveWindow(Imagine *sImagine);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -240,6 +240,9 @@ private:
     int numLaserShutters = 0;
     int laserShutterIndex[8] = { 0, };
     QString file=""; // config file name
+    bool applyKeyPressed = false;
+    bool recordKeyPressed = false;
+
     void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
     void calcMinMaxValues(Camera::PixelValue * frame1, Camera::PixelValue * frame2, int imageW, int imageH);
     void updateStatus(ImagineStatus newStatus, ImagineAction newAction);
@@ -285,6 +288,8 @@ private:
     void setupDimensions(int stacks, int frames, int width, int height);
     void showOutCurve(int idx, bool checked);
     void showInCurve(int idx, bool checked);
+    void applySetting();
+    void startAcqAndSave();
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();
@@ -338,6 +343,7 @@ private slots:
     void on_cbAutoSetPiezoTravelBackTime_stateChanged(int state);
     void readPiezoCurPos();
     void onModified();
+    void on_doubleSpinBoxExpTime_valueChanged();
 
     void updateStatus(const QString &str);
     void appendLog(const QString& msg);

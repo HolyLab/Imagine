@@ -48,7 +48,7 @@ extern DigitalControls* digOut;
 extern QString daq;
 extern string rig;
 
-bool loadScript(const QString &filename)
+bool loadScript(const QString &filename, QScriptEngine* se)
 {
     if (!QFile::exists(filename)) {
         QMessageBox::critical(0, "Imagine", QString("couldn't find script %1.").arg(filename),
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
 
 
 
-    if (!loadScript(QString("imagine.js"))){
+    if (!loadScript(QString("imagine.js"),se)){
         return 1;
     }
     QString cameraVendor = se->globalObject().property("camera").toString();
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
 
     }
 
-    if (!loadScript(QString::fromStdString(rig) + ".js")){
+    if (!loadScript(QString::fromStdString(rig) + ".js",se)){
         return 1;
     }
 
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
         filename = string("preset.js");
     }
     cout << "preset file is: " << string(filename) << endl;
-    if (!loadScript(QString::fromStdString(filename))){
+    if (!loadScript(QString::fromStdString(filename),se)){
         return 1;
     }
 
@@ -240,6 +240,7 @@ int main(int argc, char *argv[])
     // pointer will be deleted in clean-up of its owning data_acq_thread.
     splash->showMessage(QString("Initializing (%1) camera 1 ...").arg(cameraVendor), align, col);
     Camera *cam1;
+    int cameraID;
 
 	if (cameraVendor == "cooke") cam1 = new CookeCamera;
 	else if (cameraVendor == "dummy") cam1 = new DummyCamera("t1.imagine");

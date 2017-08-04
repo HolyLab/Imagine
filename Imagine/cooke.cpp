@@ -133,6 +133,12 @@ bool CookeCamera::init()
 
     //model
     this->model = strCamType.strHardwareVersion.Board[0].szName;
+    // serial number -> camera ID
+    // ocpi-2(cam1:60100056, cam2:60100067), ocpi-1(813), ocpi-lsk(1128)
+    if(strCamType.dwSerialNumber == 60100067) // ocpi-2 camera2
+        this->cameraID = 2;
+    else
+        this->cameraID = 1;
 
     allocBlackImage();
     allocMemPool(-1);

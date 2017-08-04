@@ -70,6 +70,7 @@ public:
 protected:
     string model;
 
+    int cameraID;
     //camera specific error code and msg
     int	errorCode;    //these two are paired. For andor's, errorCode meanings are defined by 
     string errorMsg;   //   atmcd32d.h. 
@@ -194,6 +195,7 @@ public:
     virtual int getROIStepsHor(void) = 0;
 
     virtual pair<int, int> getGainRange() { return make_pair(0, 0); }//by default, no gain
+    virtual DWORD getCameraID() { return cameraID; }
 
 };//class, Camera
 

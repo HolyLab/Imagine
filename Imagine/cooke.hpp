@@ -166,6 +166,12 @@ private:
 public:
     DummyCamera(QString filename) {
         vendor = "dummy";
+        if (filename == "t1.imagine")
+            cameraID = 1;
+        else if (filename == "t2.imagine")
+            cameraID = 2;
+        else
+            cameraID = 1;
         sudoCamera = new DummyCameraThread(QThread::TimeCriticalPriority, filename);
     } // should be reimplemented? using CookCamera() and change vender name
 
@@ -200,7 +206,7 @@ public:
         ExpTriggerMode expTriggerMode
     ) {
         this->genericAcqMode = genericAcqMode;
-        this->cycleTime = exposure;
+        this->cycleTime = exposure+0.000123456789;
         this->nFrames = anFrames;
         this->acqTriggerMode = acqTriggerMode;
         this->expTriggerMode = expTriggerMode;

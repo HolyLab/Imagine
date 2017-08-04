@@ -232,7 +232,13 @@ CFErrorCode ControlWaveform::parsing(void)
         return ERR_RIG_MISMATCHED;
     sampleRate = metadata[STR_SampleRate].toInt();
     totalSampleNum = metadata[STR_TotalSamples].toInt();
-    exposureTime = metadata[STR_Exposure].toDouble();
+    if (rig == "ocpi-2") {
+        exposureTime1 = metadata[STR_Exposure1].toDouble();
+        exposureTime2 = metadata[STR_Exposure2].toDouble();
+    }
+    else {
+        exposureTime1 = metadata[STR_Exposure].toDouble();
+    }
     nStacks = metadata[STR_Stacks].toInt();
     nFrames = metadata[STR_Frames].toInt();
     analog = alldata[STR_Analog].toObject();
@@ -691,7 +697,7 @@ CFErrorCode ControlWaveform::positionerSpeedCheck(int maxPos, int maxSpeed, int 
                     getWaveSampleValue(waveIdx, (i + SPEED_CHECK_INTERVAL) % getWaveSampleNum(waveIdx), rawWave1, PDT_RAW);
                     distance = abs(rawWave1 - rawWave0); // original one was... abs(wave1 - wave0) - 1; Why '-1"?
                     if (distance > 1) {
-                        speed = raw2Zpos(distance / time + 0.5); // piezostep/sec
+                        speed = raw2Zpos((distance-1)/time + 0.5); // piezostep/sec
                         if (speed > maxSpeed) {
                             return ERR_PIEZO_SPEED_FAST;
                         }
@@ -716,7 +722,7 @@ CFErrorCode ControlWaveform::positionerSpeedCheck(int maxPos, int maxSpeed, int 
                 getWaveSampleValue(waveIdx, j, rawWave1, PDT_RAW);
                 distance = abs(rawWave1 - rawWave0); // original one was... abs(wave1 - wave0) - 1; Why '-1"?
                 if (distance > 1) {
-                    speed = raw2Zpos(distance / time + 0.5); // piezostep/sec
+                    speed = raw2Zpos((distance-1)/time + 0.5); // piezostep/sec
                     if (speed > maxSpeed) {
                         return ERR_PIEZO_SPEED_FAST;
                     }
@@ -1152,19 +1158,21 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
                                         // This value should be less than shutterControlMargin
     double valveDelay = 0.0;            // Initial delay
 
-    QVariantList buf1, buf2, buf3;
-    QVariantList buf11, buf22, buf33;
-    double frameTime = cycleTime + 0.001; // give a little more time to make fall down transition after exposure time
+    QVariantList buf1, buf2, buf3, buf4;
+    QVariantList buf11, buf22, buf33, buf44;
+    double frameTime = cycleTime + 0.001; // give a little more time to make fall down transition after exposure time (0.001)
+    int eachShutterCtrlSamples = (int)(frameTime*sampleRate + 0.5);
 
     int piezoDelaySamples = 0;
-    int piezoRisingSamples = (nFrames*frameTime + 2*shutterControlMargin)*sampleRate;
+    int piezoRisingSamples = nFrames*eachShutterCtrlSamples + 2*shutterControlMargin*sampleRate;
+    //int piezoRisingSamples = (nFrames*frameTime + 2 * shutterControlMargin)*sampleRate;
     double minPiezoTravelBackTime = (double)abs(piezoStopPosUm - piezoStartPosUm) / (double)maxPiezoSpeed;
     if (!bidirection&&(piezoTravelBackTime < minPiezoTravelBackTime)) {
         errorMsg.append(QString("Piezo travel back time is too short\n"));
         err |= ERR_TRAVELBACKTIME_SHORT;
         return err;
     }
-    int piezoFallingSamples = piezoTravelBackTime*sampleRate+100;
+    int piezoFallingSamples = piezoTravelBackTime*sampleRate;
     int idleTimeSamples = idleTimeBwtnStacks*sampleRate;
     int piezoWaitSamples = (idleTimeBwtnStacks - piezoTravelBackTime)*sampleRate;
     if (idleTimeBwtnStacks < piezoTravelBackTime)
@@ -1178,12 +1186,18 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
     int shutterControlMarginSamples = shutterControlMargin*sampleRate;
     // generating camera shutter pulse
     int stakShutterCtrlSamples = piezoRisingSamples - 2 * shutterControlMarginSamples; // full stack period sample number
-    int eachShutterCtrlSamples = (int)((double)stakShutterCtrlSamples / (double)nFrames + 0.5);     // one frame sample number
-    int exposureSamples = static_cast<int>(exposureTime*static_cast<double>(sampleRate));
+    //int eachShutterCtrlSamples = (int)((double)stakShutterCtrlSamples / (double)nFrames + 0.5);     // one frame sample number
+    // camera1 pulse
+    int exposureSamples1 = static_cast<int>(exposureTime1*static_cast<double>(sampleRate));
 //    if (exposureSamples > eachShutterCtrlSamples - 50 * (sampleRate / 10000))
 //        return ERR_EXPOSURE_TIME;
-    int eachShutterOnSamples = exposureSamples;
+    int eachShutterOnSamples = exposureSamples1;
     genPulse(buf2, piezoDelaySamples, piezoRisingSamples, piezoFallingSamples, perStackSamples,
+        shutterControlMarginSamples, eachShutterCtrlSamples, eachShutterOnSamples);
+    // camera2 pulse
+    int exposureSamples2 = static_cast<int>(exposureTime2*static_cast<double>(sampleRate));
+    eachShutterOnSamples = exposureSamples2;
+    genPulse(buf4, piezoDelaySamples, piezoRisingSamples, piezoFallingSamples, perStackSamples,
         shutterControlMarginSamples, eachShutterCtrlSamples, eachShutterOnSamples);
 
     /// laser shutter pulse ///
@@ -1198,23 +1212,28 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
 
     QJsonArray piezo1_001;
     QJsonArray camera1_001;
+    QJsonArray camera2_001;
     QJsonArray laser1_001;
 
     if (bidirection) {
         // bi-directional wave
         genWavBiDirection(buf11, buf1, piezoDelaySamples, piezoRisingSamples, idleTimeSamples);
-        eachShutterOnSamples = exposureSamples;
+        eachShutterOnSamples = exposureSamples1;
         genBiDirection(buf22, buf2, piezoDelaySamples, piezoRisingSamples, idleTimeSamples, eachShutterOnSamples);
+        eachShutterOnSamples = exposureSamples2;
+        genBiDirection(buf44, buf4, piezoDelaySamples, piezoRisingSamples, idleTimeSamples, eachShutterOnSamples);
         eachShutterOnSamples = stakShutterCtrlSamples;
         genBiDirection(buf33, buf3, piezoDelaySamples, piezoRisingSamples, idleTimeSamples, eachShutterOnSamples);
         piezo1_001 = QJsonArray::fromVariantList(buf11);
         camera1_001 = QJsonArray::fromVariantList(buf22);
+        camera2_001 = QJsonArray::fromVariantList(buf44);
         laser1_001 = QJsonArray::fromVariantList(buf33);
         perStackSamples = piezoRisingSamples + idleTimeSamples;
     }
     else {
         piezo1_001 = QJsonArray::fromVariantList(buf1);
         camera1_001 = QJsonArray::fromVariantList(buf2);
+        camera2_001 = QJsonArray::fromVariantList(buf4);
         laser1_001 = QJsonArray::fromVariantList(buf3);
     }
 
@@ -1222,6 +1241,8 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
     QJsonObject wavelist;
     wavelist["positioner1_001"] = piezo1_001;
     wavelist["camera1_001"] = camera1_001;
+    if (rig == "ocpi-2")
+        wavelist["camera2_001"] = camera2_001;
     wavelist["laser1_001"] = laser1_001;
 
     /// stimulus valve pulse ///
@@ -1340,7 +1361,7 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
 
         if (rig == "ocpi-2") {
             if (port == QString(STR_P0HEADER).append("6")) { // P0.6
-                camera2Seq = { repeat, "camera1_001" };
+                camera2Seq = { repeat, "camera2_001" };
                 camera2[STR_Channel] = port;
                 camera2[STR_Seq] = camera2Seq;
                 digital[sig] = camera2; // secured port for camera2
@@ -1438,7 +1459,13 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
 
     metadata[STR_SampleRate] = sampleRate;
     metadata[STR_TotalSamples] = totalSamples;
-    metadata[STR_Exposure] = exposureTime;
+    if (rig == "ocpi-2") {
+        metadata[STR_Exposure1] = exposureTime1;
+        metadata[STR_Exposure2] = exposureTime2;
+    }
+    else {
+        metadata[STR_Exposure] = exposureTime1;
+    }
     metadata[STR_BiDir] = bidirection;
     if(bidirection)
         metadata[STR_Stacks] = repeat*2;

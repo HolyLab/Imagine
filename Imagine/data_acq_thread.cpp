@@ -591,12 +591,6 @@ void DataAcqThread::run_acq_and_save_wav()
     cycleTime = camera->getCycleTime();
     double timePerStack = nFramesPerStack*cycleTime;
 
-    string wTitle = (*parentImagine).windowTitle().toStdString();
-    bool ownPos = false;
-    if (!wTitle.compare("Imagine")||!wTitle.compare("Imagine (1)")) { // one camera system ex) OCPI-1
-        ownPos = true;
-    }
-
     if (hasPos && ownPos) pPositioner->setPCount();
 
     bool isAiEnable = false;
@@ -792,6 +786,7 @@ nextStack:  //code below is repeated every stack
         ttMsg = QString("# of overrun stacks: %1").arg(nOverrunStacks);
     }
     emit newStatusMsgReady(ttMsg);
+    ownPos = false;
 }//run_acq_and_save2()
 
 #pragma endregion
@@ -932,7 +927,7 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, ControlWaveform *con
         << "image width=" << camera.getImageWidth() << endl
         << "image height=" << camera.getImageHeight() << endl
         << "number of frames requested=" << nStacks*nFramesPerStack << endl
-        << "nStacks=" << nStacks << endl
+        << "nStacks=" << nStacksUser << endl
         << "idle time between stacks=" << idleTimeBwtnStacks << " s" << endl;
     header << "pre amp gain=" << preAmpGain.toStdString() << endl
         << "gain=" << gain << endl
@@ -942,7 +937,7 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, ControlWaveform *con
         << "readout rate=" << horShiftSpeed.toStdString() << endl;
     header << "pixel order=x y z" << endl
         << "frame index offset=0" << endl
-        << "frames per stack=" << nFramesPerStack << endl
+        << "frames per stack=" << nFramesPerStackUser << endl
         << "pixel data type=uint16" << endl    //bits per pixel
         << "camera=" << camera.getModel() << endl
         << "um per pixel=" << umPerPxlXy << endl

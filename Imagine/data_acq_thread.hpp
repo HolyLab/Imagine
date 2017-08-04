@@ -75,6 +75,8 @@ public:
     DiThread *diThread = NULL;
 
     //intended camera params:
+    int nStacksUser,
+        nFramesPerStackUser;
     int nStacks,
         nFramesPerStack;
     double exposureTime, //in sec

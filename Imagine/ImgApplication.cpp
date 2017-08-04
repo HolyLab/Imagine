@@ -35,11 +35,24 @@ void ImgApplication::initUI(QString rig, Camera *cam1, Positioner *pos, Laser *l
     if (cam2 != NULL) {
         w2p = new Imagine(rig, cam2, pos, laser, w1p);
         imgTwo = w2p;
-        imgTwo->setWindowTitle("Imagine (2)");
-        imgOne->setWindowTitle("Imagine (1)");
         imgOne->setSlaveWindow(w2p);
-		//TODO: all synchronizing record buttons
+        imgTwo->setSlaveWindow(NULL);
     }
+    else
+        imgOne->setSlaveWindow(NULL);
+
+    if (rig == "ocpi-2") {
+        if (imgOne)
+            if (cam1->getCameraID() == 1)
+                imgOne->setWindowTitle("Imagine (1)");
+            else
+                imgOne->setWindowTitle("Imagine (2)");
+        if (imgTwo)
+            if (cam2->getCameraID() == 1)
+                imgTwo->setWindowTitle("Imagine (1)");
+            else
+                imgTwo->setWindowTitle("Imagine (2)");
+    } // else defaut name "Imagine"
     qDebug() << QString("finished initializing UI instance(s)");
 }
 
