@@ -127,6 +127,7 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabWaveform));
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabAI));
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabStim));
+        ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabScript));
     }
     else {  // Imagine(1)
         conWaveData = new ControlWaveform(rig);
@@ -452,7 +453,8 @@ Imagine::~Imagine()
         delete aiWaveData;
     if (diWaveData)
         delete diWaveData;
-
+    if (imagineScript)
+        delete imagineScript;
     // clean up the pixmapper nonsense
     pixmapperThread.quit();
     pixmapperThread.wait();
@@ -877,6 +879,11 @@ void Imagine::updateStatus(const QString &str)
 {
     if (str == "acq-thread-finish"){
         updateStatus(eIdle, eNoAction);
+        if (reqFromScript) {
+            reqFromScript = false;
+            imagineScript->retVal = true;
+            imagineScript->shouldWait = false;
+        }
         return;
     }
 
@@ -1544,15 +1551,8 @@ bool Imagine::waveformValidityCheck(void)
         return false;
 }
 
-void Imagine::on_btnApply_clicked()
+void Imagine::duplicateParameters(Ui_ImagineClass* destUi)
 {
-    Ui_ImagineClass* destUi = NULL;
-    if ((masterImagine == NULL) && (slaveImagine != NULL)) { // camera1
-        destUi = &slaveImagine->ui;
-    }
-    else if ((masterImagine != NULL) && (slaveImagine == NULL)) { // camera2
-        destUi = &masterImagine->ui;
-    }
     if (destUi != NULL) {
         if (ui.cbBothCamera->isChecked()) {
             destUi->cbBothCamera->setChecked(true);
@@ -1572,17 +1572,31 @@ void Imagine::on_btnApply_clicked()
             destUi->cbBothCamera->setChecked(false);
         }
     }
+}
+
+void Imagine::on_btnApply_clicked()
+{
+    Ui_ImagineClass* destUi = NULL;
+    if ((masterImagine == NULL) && (slaveImagine != NULL)) { // camera1
+        destUi = &slaveImagine->ui;
+    }
+    else if ((masterImagine != NULL) && (slaveImagine == NULL)) { // camera2
+        destUi = &masterImagine->ui;
+    }
+
+    duplicateParameters(destUi);
+
     applyKeyPressed = true;
     applySetting();
     applyKeyPressed = false;
 }
 
-void Imagine::applySetting()
+bool Imagine::applySetting()
 {
     if (curStatus != eIdle){
         QMessageBox::information(this, "Please wait --- Imagine",
             "Please click 'apply' when the camera is idle.");
-        return;
+        return false;
     }
 
     QString headerFilename;
@@ -1677,14 +1691,14 @@ void Imagine::applySetting()
         QMessageBox::critical(this, "Imagine", "ROI spec is wrong (#pixels per frame is not x times of 8)."
             , QMessageBox::Ok, QMessageBox::NoButton);
 
-        return;
+        goto skip;
     }
 
     if (!checkRoi()){
         QMessageBox::critical(this, "Imagine", "ROI spec is wrong."
             , QMessageBox::Ok, QMessageBox::NoButton);
 
-        return;
+        goto skip;
     }
 
     if (camera->vendor == "avt"){
@@ -1692,7 +1706,7 @@ void Imagine::applySetting()
             QMessageBox::critical(this, "Imagine", "exposure time is too small."
                 , QMessageBox::Ok, QMessageBox::NoButton);
 
-            return;
+            goto skip;
         }
     }
 
@@ -1816,9 +1830,9 @@ void Imagine::applySetting()
         }
         else {
             conWaveData = masterControlWav;
+            if (!waveformValidityCheck()) // waveform is not valid
+                goto skip;
         }
- //       if (!waveformValidityCheck()) // waveform is not valid
- //           goto skip;
         // move positioner to start position
         int chIdx = conWaveData->getChannelIdxFromSig(STR_axial_piezo);
         double um;
@@ -1839,9 +1853,10 @@ void Imagine::applySetting()
 
     modified = false;
     ui.btnApply->setEnabled(modified);
+    return true;
 
 skip:
-    return;
+    return false;
 }
 
 void Imagine::on_btnApply_clicked_old()
@@ -2124,10 +2139,17 @@ void Imagine::on_btnOpenStimFile_clicked()
         "Choose a stimulus file to open",
         "",
         "Stimulus files (*.stim);;All files(*.*)");
-    if (stimFilename.isEmpty()) return;
+    if (stimFilename.isEmpty()) {
+        clearStimulus();
+        return;
+    }
 
     ui.lineEditStimFile->setText(stimFilename);
+    readAndApplyStimulusFile(stimFilename);
+}
 
+void Imagine::readAndApplyStimulusFile(QString stimFilename)
+{
     QFile file(stimFilename);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
         QMessageBox::warning(this, tr("Imagine"),
@@ -2176,6 +2198,13 @@ void Imagine::on_btnOpenStimFile_clicked()
     tableHeader.clear();
     tableHeader << "valve";
     ui.tableWidgetStimDisplay->setVerticalHeaderLabels(tableHeader);
+}
+
+void Imagine::clearStimulus()
+{
+    ui.textEditStimFileContent->clear();
+    dataAcqThread->stimuli.clear();
+    ui.tableWidgetStimDisplay->clear();
 }
 
 void Imagine::on_actionStimuli_triggered()
@@ -2848,6 +2877,7 @@ void Imagine::writeSettings(QString file)
     prefs.endGroup();
 
     prefs.beginGroup("Camera");
+    WRITE_CHECKBOX_SETTING(prefs, cbBothCamera);
     WRITE_SETTING(prefs, spinBoxNumOfStacks);
     WRITE_SETTING(prefs, spinBoxFramesPerStack);
     WRITE_SETTING(prefs, doubleSpinBoxExpTime);
@@ -2861,9 +2891,6 @@ void Imagine::writeSettings(QString file)
     WRITE_SETTING(prefs, spinBoxGain);
     WRITE_COMBO_SETTING(prefs, comboBoxVertShiftSpeed);
     WRITE_COMBO_SETTING(prefs, comboBoxVertClockVolAmp);
-    prefs.endGroup();
-
-    prefs.beginGroup("Binning");
     WRITE_SETTING(prefs, spinBoxHstart);
     WRITE_SETTING(prefs, spinBoxHend);
     WRITE_SETTING(prefs, spinBoxVstart);
@@ -2943,13 +2970,6 @@ void Imagine::readSettings(QString file)
     READ_STRING_SETTING(prefs, lineEditFilename, "");
     prefs.endGroup();
 
-    prefs.beginGroup("Binning");
-    READ_SETTING(prefs, spinBoxHstart, ok, i, 1, Int);
-    READ_SETTING(prefs, spinBoxHend, ok, i, 2048, Int);
-    READ_SETTING(prefs, spinBoxVstart, ok, i, 1, Int);
-    READ_SETTING(prefs, spinBoxVend, ok, i, 2048, Int);
-    prefs.endGroup();
-
     if (masterImagine == NULL) {
         prefs.beginGroup("Positioner");
         READ_COMBO_SETTING(prefs, comboBoxAxis, 0);
@@ -2973,6 +2993,7 @@ void Imagine::readSettings(QString file)
     }
 
     prefs.beginGroup("Camera");
+    READ_BOOL_SETTING(prefs, cbBothCamera, false);
     READ_SETTING(prefs, spinBoxNumOfStacks, ok, i, 3, Int);
     READ_SETTING(prefs, spinBoxFramesPerStack, ok, i, 100, Int);
     READ_SETTING(prefs, doubleSpinBoxExpTime, ok, d, 0.0107, Double);
@@ -2986,6 +3007,10 @@ void Imagine::readSettings(QString file)
     READ_SETTING(prefs, spinBoxGain, ok, i, 0, Int);
     READ_COMBO_SETTING(prefs, comboBoxVertShiftSpeed, 0);
     READ_COMBO_SETTING(prefs, comboBoxVertClockVolAmp, 0);
+    READ_SETTING(prefs, spinBoxHstart, ok, i, 1, Int);
+    READ_SETTING(prefs, spinBoxHend, ok, i, 2048, Int);
+    READ_SETTING(prefs, spinBoxVstart, ok, i, 1, Int);
+    READ_SETTING(prefs, spinBoxVend, ok, i, 2048, Int);
     prefs.endGroup();
 
     prefs.beginGroup("Display");
@@ -3018,6 +3043,28 @@ void Imagine::readSettings(QString file)
         READ_BOOL_SETTING(prefs, cbLine8, false); // READ_CHECKBOX_SETTING
         READ_SETTING(prefs, doubleSpinBox_aotfLine8, ok, d, 50.0, Double);
         prefs.endGroup();
+    }
+
+    if (masterImagine == NULL) {
+        // stimulus file read
+        QString stimulusFile = ui.lineEditStimFile->text();
+        if (stimulusFile.isEmpty())
+            clearStimulus();
+        else
+            readAndApplyStimulusFile(stimulusFile);
+
+        // waveform file read
+        QString conFileName = ui.lineEditConWaveFile->text();
+        if (conFileName != "")
+            readControlWaveformFile(conFileName);
+        if (!ui.cbWaveformEnable->isChecked())
+            on_cbWaveformEnable_clicked(false);
+
+        // laser apply
+        ui.groupBoxLaser->setChecked(false);
+        on_actionCloseShutter_triggered();
+        for (int i = 1; i <= 8; i++) changeLaserTrans(true, i);
+        changeLaserShutters();
     }
 }
 
@@ -3096,17 +3143,6 @@ void Imagine::on_actionLoad_Configuration_triggered()
 
     readSettings(file);
     readComments(file);
-
-    if (masterImagine == NULL) {
-        QString conFileName = ui.lineEditConWaveFile->text();
-        if(conFileName != "")
-            readControlWaveformFile(conFileName);
-        ui.groupBoxLaser->setChecked(false);
-        on_actionCloseShutter_triggered();
-        for(int i=1;i<=8;i++) changeLaserTrans(true, i);
-        changeLaserShutters();
-    }
-
     on_btnApply_clicked();
 }
 
@@ -3802,8 +3838,7 @@ void Imagine::readControlWaveformFile(QString fn)
         ui.cbWaveformEnable->setChecked(true);
         on_cbWaveformEnable_clicked(true);
         ui.doubleSpinBoxExpTimeWav1->setValue(conWaveData->exposureTime1);
-        if(slaveImagine!=NULL)
-            slaveImagine->ui.doubleSpinBoxExpTimeWav2->setValue(conWaveData->exposureTime2);
+        ui.doubleSpinBoxExpTimeWav2->setValue(conWaveData->exposureTime2);
         ui.labelPiezoSampleRate->setText(QString("%1").arg(conWaveData->sampleRate));
         ui.labelNumOfStacksWav->setText(QString("%1").arg(conWaveData->nStacks));
         ui.labelFramesPerStackWav->setText(QString("%1").arg(conWaveData->nFrames));
@@ -3994,14 +4029,16 @@ void Imagine::on_cbWaveformEnable_clicked(bool state)
     if (state) {
         ui.tabPiezo->setEnabled(false);
         ui.tabStim->setEnabled(false);
-        ui.tabCamera->setEnabled(false);
+        ui.cbBothCamera->setEnabled(false);
+        ui.groupBoxTiming->setEnabled(false);
         if(slaveImagine != NULL)
             slaveImagine->ui.tabCamera->setEnabled(false);
     }
     else {
         ui.tabPiezo->setEnabled(true);
         ui.tabStim->setEnabled(true);
-        ui.tabCamera->setEnabled(true);
+        ui.cbBothCamera->setEnabled(true);
+        ui.groupBoxTiming->setEnabled(true);
         if (slaveImagine != NULL)
             slaveImagine->ui.tabCamera->setEnabled(true);
     }
@@ -4703,6 +4740,178 @@ void Imagine::on_pbGenerate_clicked()
     ControlWaveform example(rig);
     if (example.genControlFileJSON())
         appendLog("exposureSamples > frameShutterCtrlSamples-50");
+}
+
+/****** Script ************************************************************/
+void Imagine::on_btnOpenScriptFile_clicked()
+{
+    QString scriptFilename = QFileDialog::getOpenFileName(
+        this,
+        "Choose a script file to open",
+        "",
+        "Script files (*.js);;All files(*.*)");
+    if (scriptFilename.isEmpty()) return;
+
+    ui.lineEditReadScriptFle->setText(scriptFilename);
+
+    QFile file(scriptFilename);
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        QMessageBox::warning(this, tr("Imagine"),
+            tr("Cannot read file %1:\n%2.")
+            .arg(scriptFilename)
+            .arg(file.errorString()));
+        return;
+    }
+    QTextStream in(&file);
+    ui.textEditScriptFileContent->setPlainText(in.readAll());
+    file.close();
+}
+
+void Imagine::on_btnScriptExecute_clicked()
+{
+    if (imagineScript != NULL)
+        delete imagineScript;
+    imagineScript = new ImagineScript(rig);
+    imagineScript->moveToThread(&scriptThread);
+    connect(&scriptThread, &QThread::finished, imagineScript, &QObject::deleteLater);
+    connect(this, &Imagine::evaluateScript, imagineScript, &ImagineScript::scriptProgramEvaluate);
+    connect(imagineScript, &ImagineScript::newMsgReady, this, &Imagine::appendLog);
+    connect(imagineScript, &ImagineScript::requestValidityCheck, this, &Imagine::configValidityCheck);
+    connect(imagineScript, &ImagineScript::requestRecord, this, &Imagine::configRecord);
+    connect(imagineScript, &ImagineScript::requestLoadConfig, this, &Imagine::loadConfig);
+    connect(imagineScript, &ImagineScript::requestLoadWaveform, this, &Imagine::loadWaveform);
+    connect(imagineScript, &ImagineScript::requestSetFilename, this, &Imagine::setFilename);
+    scriptThread.start(QThread::IdlePriority);
+    
+    imagineScript->loadImagineScript(ui.textEditScriptFileContent->toPlainText());
+    evaluateScript();
+}
+
+void Imagine::scriptApplyAndReport(bool preRetVal)
+{
+    applyKeyPressed = true;
+    bool retVal = applySetting();
+    applyKeyPressed = false;
+
+    imagineScript->retVal = preRetVal&retVal;
+    imagineScript->shouldWait = false;
+}
+
+void Imagine::scriptJustReport(bool preRetVal)
+{
+    imagineScript->retVal = preRetVal;
+    imagineScript->shouldWait = false;
+}
+
+void Imagine::readConfigFiles(const QString &file1, const QString &file2)
+{
+    if (!file1.isEmpty()) {
+        readSettings(file1);
+        readComments(file1);
+    }
+    if (slaveImagine != NULL) {
+        if (!file2.isEmpty()) {
+            slaveImagine->readSettings(file2);
+            slaveImagine->readComments(file2);
+        }
+        duplicateParameters(&slaveImagine->ui);
+    }
+}
+
+bool Imagine::outputFileValidCheck()
+{
+    //warn user if overwrite file:
+    if (QFile::exists(ui.lineEditFilename->text())) {
+        if (QMessageBox::question( this,
+            tr("Overwrite File? -- Imagine"),
+            tr("The file called \n   %1\n already exists. "
+                "Do you want to overwrite it?").arg(dataAcqThread->headerFilename),
+            tr("&Yes"), tr("&No"),
+            QString(), 0, 1)) {
+            return false;
+        }
+        else { // want overwrite
+            QFile::remove(ui.lineEditFilename->text());
+        }
+    }
+    if (!CheckAndMakeFilePath(ui.lineEditFilename->text())) {
+        QMessageBox::information(this, "File creation error.",
+            "Unable to create the directory");
+        return false;
+    }
+    return true;
+}
+
+void Imagine::configValidityCheck(const QString &file1, const QString &file2)
+{
+    readConfigFiles(file1, file2);
+    bool retVal = outputFileValidCheck();
+    if(slaveImagine != NULL)
+        retVal &= slaveImagine->outputFileValidCheck();
+    scriptApplyAndReport(retVal);
+}
+
+void Imagine::loadConfig(const QString &file1, const QString &file2)
+{
+    readConfigFiles(file1, file2);
+    scriptJustReport(true);
+}
+
+void Imagine::loadWaveform(const QString &file)
+{
+    readControlWaveformFile(file);
+    scriptJustReport(true);
+}
+
+void Imagine::setFilename(const QString &filename)
+{
+    ui.lineEditFilename->setText(filename);
+    scriptJustReport(true);
+}
+
+void Imagine::configRecord()
+{
+    reqFromScript = true;
+    on_actionStartAcqAndSave_triggered();
+}
+
+void Imagine::on_textEditScriptFileContent_cursorPositionChanged()
+{
+    QTextCursor cursor = ui.textEditScriptFileContent->textCursor();
+    int block = cursor.blockNumber();// ui.textEditScriptFileContent->document()->blockCount();
+    ui.labelScriptLineNum->setText(QString("%1").arg(block+1));
+    ui.labelScriptColumnNum->setText(QString("%1").arg(cursor.columnNumber()+1));
+}
+
+void Imagine::on_btnScriptUndo_clicked()
+{
+    QTextCursor cursor = ui.textEditScriptFileContent->textCursor();
+    ui.textEditScriptFileContent->document()->undo(&cursor);
+}
+
+void Imagine::on_btnScriptRedo_clicked()
+{
+    QTextCursor cursor = ui.textEditScriptFileContent->textCursor();
+    ui.textEditScriptFileContent->document()->redo(&cursor);
+}
+
+void Imagine::on_btnScriptSave_clicked()
+{
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save OCPI Script file"),
+                                        ui.lineEditReadScriptFle->text(), "*.js");
+    if (true == filename.isEmpty()) { return; }
+    QFileInfo fi(filename);
+    m_OpenDialogLastDirectory = fi.absolutePath();
+    QFile file(filename);
+    if (!file.open(QIODevice::WriteOnly)) {
+        qDebug("File open error\n");
+    }
+    else {
+        QTextStream out(&file);
+        out << ui.textEditScriptFileContent->toPlainText();
+        out.flush();
+        file.close();
+    }
 }
 
 #pragma endregion

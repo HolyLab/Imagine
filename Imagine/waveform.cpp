@@ -1,3 +1,17 @@
+/*-------------------------------------------------------------------------
+** Copyright (C) 2017-2022 Dae Woo Kim
+**    All rights reserved.
+** Author: Dae Woo Kim
+** License: This file may be used under the terms of the GNU General Public
+**    License version 2.0 as published by the Free Software Foundation
+**    and appearing at http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+**
+**    If this license is not appropriate for your use, please
+**    contact kdw503@wustl.edu for other license(s).
+**
+** This file is provided WITHOUT ANY WARRANTY; without even the implied
+** warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+**-------------------------------------------------------------------------*/
 #include "waveform.h"
 #include "misc.hpp"
 #include <iostream>
@@ -1285,7 +1299,7 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
 
         int idx, value;
         bool found;
-        // For Haoyang 5bits {A0, A1, A2, A3, Mux en} are mapped to {P0.0, P0.1, P0.2, P0.3, P0.7}
+        // For Haoyang 5bits {A0, A1, A2, A3, Mux en} are mapped to {P0.0, P0.1, P0.2, P0.3, P0.18}
         QVector<int> valueConv = { 0,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31 };
         // For standard Imagine 4bits {stimulus1, stimulus2, stimulus3, stimulus4 } are mapped to
         // {P0.0, P0.1, P0.2, P0.3}
@@ -1298,7 +1312,7 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
             if(rig=="ocpi-1")
                 stimuliPortMap.append({ "P0.0", "P0.1", "P0.2", "P0.3", "P0.6" });
             else
-                stimuliPortMap.append({ "P0.0", "P0.1", "P0.2", "P0.3", "P0.7" });
+                stimuliPortMap.append({ "P0.0", "P0.1", "P0.2", "P0.3", "P0.18" });
             stimulusName.append({ "A0", "A1", "A2", "A3", "Mux en" });
         }
         for (int i = 0; i < nStacks; ++i) {

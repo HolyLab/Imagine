@@ -240,7 +240,6 @@ int main(int argc, char *argv[])
     // pointer will be deleted in clean-up of its owning data_acq_thread.
     splash->showMessage(QString("Initializing (%1) camera 1 ...").arg(cameraVendor), align, col);
     Camera *cam1;
-    int cameraID;
 
 	if (cameraVendor == "cooke") cam1 = new CookeCamera;
 	else if (cameraVendor == "dummy") cam1 = new DummyCamera("t1.imagine");

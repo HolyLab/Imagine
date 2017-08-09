@@ -40,6 +40,7 @@ class CurveData;
 #include "piezoctrl.h"
 #include "waveform.h"
 #include "helpdialog.h"
+#include "script.h"
 
 #define READ_STRING_SETTING(prefs, var, emptyValue)\
   ui.##var->setText( prefs.value(#var).toString() );\
@@ -150,12 +151,14 @@ class Imagine : public QMainWindow
     QThread laserCtrlThread;
     QThread piezoCtrlThread;
     QThread imagePlayThread;
+    QThread scriptThread;
 public:
     Imagine(QString rig, Camera *cam, Positioner *pos = NULL, Laser *laser = NULL,
         Imagine *mImagine = NULL, QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~Imagine();
     DataAcqThread *dataAcqThread;
-    
+    ImagineScript *imagineScript = nullptr;
+
     Ui::ImagineClass ui;
     QString rig;
     Imagine *masterImagine = nullptr; //Positioner and stimulus control / interface is restricted to only the master instance
@@ -242,6 +245,7 @@ private:
     QString file=""; // config file name
     bool applyKeyPressed = false;
     bool recordKeyPressed = false;
+    bool reqFromScript = false;
 
     void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
     void calcMinMaxValues(Camera::PixelValue * frame1, Camera::PixelValue * frame2, int imageW, int imageH);
@@ -288,8 +292,15 @@ private:
     void setupDimensions(int stacks, int frames, int width, int height);
     void showOutCurve(int idx, bool checked);
     void showInCurve(int idx, bool checked);
-    void applySetting();
+    bool applySetting();
     void startAcqAndSave();
+    void duplicateParameters(Ui_ImagineClass* destUi);
+    void scriptApplyAndReport(bool preRetVal);
+    void scriptJustReport(bool preRetVal);
+    void readConfigFiles(const QString &file1, const QString &file2);
+    bool outputFileValidCheck();
+    void clearStimulus();
+    void readAndApplyStimulusFile(QString stimFilename);
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();
@@ -477,12 +488,24 @@ private slots:
     void on_pbTestButton_clicked();
     void on_pbSaveImage_clicked();
     void on_pbGenerate_clicked();
-    
+    void on_btnOpenScriptFile_clicked();
+    void on_btnScriptExecute_clicked();
+    void on_textEditScriptFileContent_cursorPositionChanged();
+    void on_btnScriptUndo_clicked();
+    void on_btnScriptRedo_clicked();
+    void on_btnScriptSave_clicked();
+
 public slots:
     // handle pixmap of recently acquired frame
     void handlePixmap(const QPixmap &pxmp, const QImage &img);
     void handleColorPixmap(const QPixmap &pxmp, const QImage &img);
     void readNextCamImages(int stack1, int frameIdx1, int stack2, int frameIdx2);
+    void configValidityCheck(const QString &file1, const QString &file2);
+    void configRecord();
+    void loadWaveform(const QString &file);
+    void setFilename(const QString &filename);
+    void loadConfig(const QString &file1, const QString &file2);
+
 signals:
     void makePixmap(const QByteArray &ba, const int imageW, const int imageH,
         const double scaleFactor, const double dAreaSize,
@@ -498,6 +521,7 @@ signals:
         const int minPixVal2, const int maxPixVal2, bool colorizeSat);
     void startIndexRunning(int strtStackIdx1, int strtFrameIdx1, int nStacks1, int framesPerStack1,
         int strtStackIdx2, int strtFrameIdx2, int nStacks2, int framesPerStack2);
+    void evaluateScript(void);
 
     // for laser control from this line
     void openLaserSerialPort(QString portName);
