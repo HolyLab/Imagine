@@ -37,7 +37,7 @@ private:
     bool loadConfig(const QString &file1, const QString &file2);
     bool loadWaveform(const QString &file);
     bool sleep(long int time);
-    bool setFilename(const QString &filename);
+    bool setFilename(const QString &file1, const QString &file2);
 
 public:
     static void *instance;
@@ -57,7 +57,7 @@ public:
 
     // print("Hello world!")
     static QScriptValue printWrapper(QScriptContext *context, QScriptEngine *se);
-    // validityCheck("OCPI_cfg1.txt", "OCPI_cfg2.txt");
+    // validityCheck("OCPI_cfg1.txt", "OCPI_cfg2.txt");, applyConfiguration();
     static QScriptValue validityCheckWrapper(QScriptContext *context, QScriptEngine *se);
     // record("OCPI_cfg1.txt", "OCPI_cfg2.txt", timeout);
     static QScriptValue recordWrapper(QScriptContext *context, QScriptEngine *se);
@@ -67,7 +67,7 @@ public:
     static QScriptValue loadWaveformWrapper(QScriptContext *context, QScriptEngine *se);
     // sleep(1000); // sleep 1000msec
     static QScriptValue sleepWrapper(QScriptContext *context, QScriptEngine *se);
-    // setOutputFilename("t1.imagine");
+    // setOutputFilename("t1.imagine","t2.imagine");
     static QScriptValue setFilenameWrapper(QScriptContext *context, QScriptEngine *se);
 
 signals:
@@ -76,7 +76,7 @@ signals:
     void requestRecord();
     void requestLoadConfig(const QString &file1, const QString &file2);
     void requestLoadWaveform(const QString &file);
-    void requestSetFilename(const QString &file);
+    void requestSetFilename(const QString &file1, const QString &file2);
 };
 
 #endif // SCRIPT_H

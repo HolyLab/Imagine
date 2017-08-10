@@ -12,11 +12,12 @@
 *scc
 /qtgen
 moc_*.cpp
-qrc_imagine.cpp
-ui_imagine.h
+qrc_*.cpp
+ui_*.h
 imagine.VC.db
 imagine.VC.VC.opendb
 Imagine/Imagine.vcxproj.user
+Imagine/Imagine.vcxproj.filters
 /x64/Debug
 Imagine/x64
 Imagine/scripts/*.bin
@@ -24,4 +25,4 @@ Imagine/scripts/*.json
 Imagine/scripts/*.cam
 Imagine/scripts/*.imagine
 Imagine/scripts/*.stim
-Imagine/scripts/*.gif
+Imagine/Debug

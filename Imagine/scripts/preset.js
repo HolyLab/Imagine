@@ -96,3 +96,20 @@ if(rig=="ocpi-2"){
 }
 
 
+if (rig == "ocpi-lsk") {
+    var preset = {
+        ///positioner's
+        startPosition: 100,
+        stopPosition: 400,
+        initialPosition: 100, //the position when Imagine starts.
+        travelBackTime: 0,
+
+        ///camera's
+        numOfStacks: 6,
+        framesPerStack: 20,
+        exposureTime: 0.03,
+        idleTime: 0.7,
+        acqTriggerMode: "internal", //internal or external
+        gain: 0,
+    };
+}

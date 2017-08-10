@@ -226,7 +226,6 @@ private:
     QVector<CurveData *> outCurveData;
     QVector<QCheckBox*> cbAoDo;
     QVector<QComboBox*> comboBoxAoDo;
-    ControlWaveform *conWaveData = NULL;
     int numAiCurve = 2, numDiCurve = 6;
     QVector<QwtPlotCurve *> inCurve;
     int numAiCurveData, numDiCurveData;
@@ -238,13 +237,14 @@ private:
     DiWaveform *diWaveData = NULL;
     QString m_OpenDialogLastDirectory;
     QString m_OpenConWaveDialogLastDirectory;
+    QString wavFilename;
     bool modified;
     bool paramOK;
     int numLaserShutters = 0;
     int laserShutterIndex[8] = { 0, };
     QString file=""; // config file name
-    bool applyKeyPressed = false;
-    bool recordKeyPressed = false;
+    bool isApplyCommander = false;
+    bool isRecordCommander = false;
     bool reqFromScript = false;
 
     void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
@@ -301,6 +301,9 @@ private:
     bool outputFileValidCheck();
     void clearStimulus();
     void readAndApplyStimulusFile(QString stimFilename);
+    void clearConWavPlot();
+    void rearrangeTabWindow();
+    void displayConWaveData();
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();
@@ -503,7 +506,7 @@ public slots:
     void configValidityCheck(const QString &file1, const QString &file2);
     void configRecord();
     void loadWaveform(const QString &file);
-    void setFilename(const QString &filename);
+    void setFilename(const QString &file1, const QString &file2);
     void loadConfig(const QString &file1, const QString &file2);
 
 signals:

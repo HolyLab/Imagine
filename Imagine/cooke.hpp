@@ -206,7 +206,12 @@ public:
         ExpTriggerMode expTriggerMode
     ) {
         this->genericAcqMode = genericAcqMode;
-        this->cycleTime = exposure+0.000123456789;
+        if (expTriggerMode == eExternalControl) {
+            int lines = max(abs(vstart-chipHeight/2), abs(vend - chipHeight / 2))*2;
+            this->cycleTime = (4587.4*lines + 2476)/1000000000; // PCO.edge 4.2
+        }
+        else
+            this->cycleTime = exposure+0.000123456789;
         this->nFrames = anFrames;
         this->acqTriggerMode = acqTriggerMode;
         this->expTriggerMode = expTriggerMode;

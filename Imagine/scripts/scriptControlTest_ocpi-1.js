@@ -5,12 +5,12 @@ var paramCam1ConfigFile = "d:/test/OCPI_cfg1.txt";
 var paramCam2ConfigFile = "d:/test/OCPI_cfg1.txt"
 var waveCam1ConfigFile = "d:/test/OCPI_cfg1_wav.txt"
 var waveCam2ConfigFile = "d:/test/OCPI_cfg1_wav.txt"
-var test1Cam1File = "d:/test/test1_cam1.imagine";
-var test1Cam2File = "d:/test/test1_cam2.imagine";
-var test2Cam1File = "d:/test/test2_cam1.imagine";
-var test2Cam2File = "d:/test/test2_cam2.imagine";
-var test3Cam1File = "d:/test/test3_cam1.imagine";
-var test3Cam2File = "d:/test/test3_cam2.imagine";
+var test1Cam1File = "f:/test/test1_cam1.imagine";
+var test1Cam2File = "f:/test/test1_cam2.imagine";
+var test2Cam1File = "f:/test/test2_cam1.imagine";
+var test2Cam2File = "f:/test/test2_cam2.imagine";
+var test3Cam1File = "f:/test/test3_cam1.imagine";
+var test3Cam2File = "f:/test/test3_cam2.imagine";
 var test3WaveformFile = "d:/test/t_script_wav2.json";
 
 // setup recording timeout time

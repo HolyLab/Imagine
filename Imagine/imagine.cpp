@@ -70,6 +70,9 @@ extern DigitalControls* digOut;
 bool zoom_isMouseDown = false;
 QPoint zoom_downPos, zoom_curPos; //in the unit of displayed image
 int nUpdateImage;
+ControlWaveform *conWaveData = NULL;
+ControlWaveform *conWaveDataUser = NULL;
+ControlWaveform *conWaveDataParam = NULL;
 
 #pragma region LIFECYCLE
 
@@ -118,7 +121,6 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     tabifyDockWidget(ui.dwHist, ui.dwIntenCurve);
     setDockOptions(dockOptions() | QMainWindow::VerticalTabs);
 
-
     //ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabAI));
     //remove positioner tab from slave window
     //TODO: Give stimulus tab the same treatment (It's in position #3)
@@ -128,9 +130,14 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabAI));
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabStim));
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabScript));
+        ui.lineEditFilename->setText("d:/test/t2.imagine");
     }
     else {  // Imagine(1)
-        conWaveData = new ControlWaveform(rig);
+        conWaveDataParam = new ControlWaveform(rig);
+        conWaveDataUser = new ControlWaveform(rig);
+        conWaveData = conWaveDataParam;
+        ui.cbWaveformEnable->setEnabled(false);
+        ui.lineEditFilename->setText("f:/test/t1.imagine");
     }
     ui.doubleSpinBoxExpTimeWav1->setEnabled(false);
     ui.doubleSpinBoxExpTimeWav2->setEnabled(false);
@@ -223,9 +230,6 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     ui.spinBoxHstart->setSingleStep(roiStepsHor);
     updateStatus(eIdle, eNoAction);
 
-    //apply the camera setting:
-    on_btnApply_clicked();
-
     ///piezo stuff
     if (pos != NULL) {
         bool isActPos = pos->posType == ActuatorPositioner;
@@ -280,33 +284,60 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     //for detect param changes
     auto lineedits = ui.tabWidgetCfg->findChildren<QLineEdit*>();
     for (int i = 0; i < lineedits.size(); ++i){
-        connect(lineedits[i], SIGNAL(textChanged(const QString&)),
-            this, SLOT(onModified()));
+        if (lineedits[i]->accessibleDescription() != "no apply")
+            connect(lineedits[i], SIGNAL(textChanged(const QString&)),
+                this, SLOT(onModified()));
     }
 
     auto spinboxes = ui.tabWidgetCfg->findChildren<QSpinBox*>();
     for (int i = 0; i < spinboxes.size(); ++i){
-        connect(spinboxes[i], SIGNAL(valueChanged(const QString&)),
-            this, SLOT(onModified()));
+        if (spinboxes[i]->accessibleDescription() != "no apply")
+            connect(spinboxes[i], SIGNAL(valueChanged(const QString&)),
+                this, SLOT(onModified()));
     }
 
     auto doublespinboxes = ui.tabWidgetCfg->findChildren<QDoubleSpinBox*>();
     for (int i = 0; i < doublespinboxes.size(); ++i){
-        connect(doublespinboxes[i], SIGNAL(valueChanged(const QString&)),
-            this, SLOT(onModified()));
+        if (doublespinboxes[i]->accessibleDescription() != "no apply")
+            connect(doublespinboxes[i], SIGNAL(valueChanged(const QString&)),
+                this, SLOT(onModified()));
     }
 
     auto comboboxes = ui.tabWidgetCfg->findChildren<QComboBox*>();
     for (int i = 0; i < comboboxes.size(); ++i){
-        connect(comboboxes[i], SIGNAL(currentIndexChanged(const QString&)),
-            this, SLOT(onModified()));
+        if (comboboxes[i]->accessibleDescription() != "no apply")
+            connect(comboboxes[i], SIGNAL(currentIndexChanged(const QString&)),
+                this, SLOT(onModified()));
     }
 
     auto checkboxes = ui.tabWidgetCfg->findChildren<QCheckBox*>();
     for (auto cb : checkboxes){
-        connect(cb, SIGNAL(stateChanged(int)),
-            this, SLOT(onModified()));
+        if (cb->accessibleDescription() != "no apply")
+            connect(cb, SIGNAL(stateChanged(int)),
+                this, SLOT(onModified()));
     }
+
+    // monitoring input (Ai, Di) and control waveform (Ao, Do)
+    // checkBox list and comboBox list
+    QCheckBox* cb1[] = { ui.cbAO0Wav, ui.cbAO1Wav, ui.cbDO0Wav,
+        ui.cbDO1Wav, ui.cbDO2Wav, ui.cbDO3Wav, ui.cbDO4Wav };
+    QComboBox* combo1[] = { ui.comboBoxAO0, ui.comboBoxAO1, ui.comboBoxDO0,
+        ui.comboBoxDO1, ui.comboBoxDO2, ui.comboBoxDO3, ui.comboBoxDO4 };
+    for (int i = 0; i < sizeof(cb1) / sizeof(QCheckBox*); i++) {
+        cbAoDo.push_back(cb1[i]);
+        comboBoxAoDo.push_back(combo1[i]);
+    }
+    ui.lableConWavRigname->setText(rig);
+    QCheckBox* cb2[] = { ui.cbAI0Wav, ui.cbAI1Wav, ui.cbDI0Wav, ui.cbDI1Wav,
+        ui.cbDI2Wav, ui.cbDI3Wav, ui.cbDI4Wav, ui.cbDI5Wav };
+    QComboBox* combo2[] = { ui.comboBoxAI0, ui.comboBoxAI1, ui.comboBoxDI0, ui.comboBoxDI1,
+        ui.comboBoxDI2, ui.comboBoxDI3, ui.comboBoxDI4, ui.comboBoxDI5 };
+    for (int i = 0; i < sizeof(cb2) / sizeof(QCheckBox*); i++) {
+        cbAiDi.push_back(cb2[i]);
+        comboBoxAiDi.push_back(combo2[i]);
+    }
+    //apply the camera setting:
+    on_btnApply_clicked();
 
     on_spinBoxSpinboxSteps_valueChanged(ui.spinBoxSpinboxSteps->value());
 
@@ -413,26 +444,6 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     helpDialog = new HelpDialog;
     helpDialog->initHelp("helpmain.htm");
 
-    // monitoring input (Ai, Di) and control waveform (Ao, Do)
-    // checkBox list and comboBox list
-    QCheckBox* cb1[] = { ui.cbAO0Wav, ui.cbAO1Wav, ui.cbDO0Wav,
-                        ui.cbDO1Wav, ui.cbDO2Wav, ui.cbDO3Wav, ui.cbDO4Wav };
-    QComboBox* combo1[] = { ui.comboBoxAO0, ui.comboBoxAO1, ui.comboBoxDO0,
-                            ui.comboBoxDO1, ui.comboBoxDO2, ui.comboBoxDO3, ui.comboBoxDO4 };
-    for (int i = 0; i < sizeof(cb1)/sizeof(QCheckBox*); i++) {
-        cbAoDo.push_back(cb1[i]);
-        comboBoxAoDo.push_back(combo1[i]);
-    }
-    ui.lableConWavRigname->setText(rig);
-    QCheckBox* cb2[] = { ui.cbAI0Wav, ui.cbAI1Wav, ui.cbDI0Wav, ui.cbDI1Wav,
-                        ui.cbDI2Wav, ui.cbDI3Wav, ui.cbDI4Wav, ui.cbDI5Wav };
-    QComboBox* combo2[] = { ui.comboBoxAI0, ui.comboBoxAI1, ui.comboBoxDI0, ui.comboBoxDI1,
-                            ui.comboBoxDI2, ui.comboBoxDI3, ui.comboBoxDI4, ui.comboBoxDI5 };
-    for (int i = 0; i < sizeof(cb2) / sizeof(QCheckBox*); i++) {
-        cbAiDi.push_back(cb2[i]);
-        comboBoxAiDi.push_back(combo2[i]);
-    }
-
     ui.gbDontShow1->setVisible(false);
 }
 
@@ -447,14 +458,26 @@ void Imagine::setSlaveWindow(Imagine *sImagine)
 
 Imagine::~Imagine()
 {
-    if (conWaveData)
-        delete conWaveData;
-    if (aiWaveData)
+    if (conWaveDataParam) {
+        delete conWaveDataParam;
+        conWaveDataParam = NULL;
+    }
+    if (conWaveDataUser) {
+        delete conWaveDataUser;
+        conWaveDataUser = NULL;
+    }
+    if (aiWaveData) {
         delete aiWaveData;
-    if (diWaveData)
+        aiWaveData = NULL;
+    }
+    if (diWaveData) {
         delete diWaveData;
-    if (imagineScript)
+        diWaveData = NULL;
+    }
+    if (imagineScript) {
         delete imagineScript;
+        imagineScript = NULL;
+    }
     // clean up the pixmapper nonsense
     pixmapperThread.quit();
     pixmapperThread.wait();
@@ -1209,7 +1232,7 @@ void Imagine::startAcqAndSave()
 
     intenCurveData->clear();
 
-    if (recordKeyPressed)
+    if (isRecordCommander)
         dataAcqThread->ownPos = true;
     else
         dataAcqThread->ownPos = false;
@@ -1230,9 +1253,9 @@ void Imagine::on_actionStartAcqAndSave_triggered()
     if (otherImagine != NULL) {
         otherImagine->startAcqAndSave();
     }
-    recordKeyPressed = true;
+    isRecordCommander = true;
     startAcqAndSave();
-    recordKeyPressed = false;
+    isRecordCommander = false;
 }
 
 void Imagine::on_actionStartLive_triggered()
@@ -1586,9 +1609,9 @@ void Imagine::on_btnApply_clicked()
 
     duplicateParameters(destUi);
 
-    applyKeyPressed = true;
+    isApplyCommander = true;
     applySetting();
-    applyKeyPressed = false;
+    isApplyCommander = false;
 }
 
 bool Imagine::applySetting()
@@ -1620,7 +1643,8 @@ bool Imagine::applySetting()
     else {                       // Imagine (2)
         masterUi = &masterImagine->ui;
         masterDataAcqTh = masterImagine->dataAcqThread;
-        masterControlWav = masterImagine->conWaveData;
+// TMP        masterControlWav = masterImagine->conWaveData;
+        masterControlWav = conWaveData;
         otherImagine = masterImagine;
     }
 
@@ -1736,8 +1760,10 @@ bool Imagine::applySetting()
 
     //get the real params used by the camera:
     if ((dataAcqThread->expTriggerMode == Camera::eExternalControl) ||
-        (dataAcqThread->expTriggerMode == Camera::eFastExternalControl))
-        dataAcqThread->cycleTime = dataAcqThread->exposureTime + camera->getCycleTime();
+        (dataAcqThread->expTriggerMode == Camera::eFastExternalControl)) {
+        double readoutTime = camera->getCycleTime();
+        dataAcqThread->cycleTime = dataAcqThread->exposureTime + readoutTime;
+    }
     else
         dataAcqThread->cycleTime = camera->getCycleTime();
     cout << "cycle time is: " << dataAcqThread->cycleTime << endl;
@@ -1774,20 +1800,21 @@ bool Imagine::applySetting()
         if (img2.camFile.isOpen())
             img2.camFile.close();
 
-    if (applyKeyPressed) {
+    if (isApplyCommander) {
         if (otherImagine != NULL) {
             otherImagine->applySetting();
         }
         if (!(*masterUi).cbWaveformEnable->isChecked()) { // waveform disabled
-            if (conWaveData)
-                delete conWaveData;
-            conWaveData = new ControlWaveform(rig);
+            if (conWaveDataParam)
+                delete conWaveDataParam;
+            conWaveDataParam = new ControlWaveform(rig);
+            conWaveData = conWaveDataParam;
             conWaveData->sampleRate = dataAcqThread->sampleRate;
             conWaveData->nStacks = dataAcqThread->nStacksUser;
             conWaveData->nFrames = dataAcqThread->nFramesPerStackUser;
             if (ui.cbBothCamera->isChecked()) {
                 DataAcqThread *dataAcqThreadOther = otherImagine->dataAcqThread;
-                if (dataAcqThread->pCamera->getCameraID()==1)
+                if (dataAcqThread->pCamera->getCameraID() == 1)
                     conWaveData->exposureTime1 = dataAcqThread->exposureTime;
                 else
                     conWaveData->exposureTime2 = dataAcqThread->exposureTime;
@@ -1796,12 +1823,22 @@ bool Imagine::applySetting()
                 else
                     conWaveData->exposureTime2 = dataAcqThreadOther->exposureTime;
                 conWaveData->cycleTime = max(dataAcqThread->cycleTime, dataAcqThreadOther->cycleTime);
+                conWaveData->enableCam1 = true;
+                conWaveData->enableCam2 = true;
             }
             else {
-                if (dataAcqThread->pCamera->getCameraID() == 1)
+                if (dataAcqThread->pCamera->getCameraID() == 1) {
                     conWaveData->exposureTime1 = dataAcqThread->exposureTime;
-                else
+                    conWaveData->exposureTime2 = 0;
+                    conWaveData->enableCam1 = true;
+                    conWaveData->enableCam2 = false;
+                }
+                else {
+                    conWaveData->exposureTime1 = 0;
                     conWaveData->exposureTime2 = dataAcqThread->exposureTime;
+                    conWaveData->enableCam1 = false;
+                    conWaveData->enableCam2 = true;
+                }
                 conWaveData->cycleTime = dataAcqThread->cycleTime;
             }
             conWaveData->bidirection = dataAcqThread->isBiDirectionalImaging;
@@ -1822,6 +1859,10 @@ bool Imagine::applySetting()
             conWaveData->applyStim = masterUi->cbStim->isChecked();
             conWaveData->stimuli = &(masterDataAcqTh->stimuli);
             conWaveData->genDefaultControl(headerFilename);
+            if(masterImagine != NULL)
+                masterImagine->displayConWaveData();
+            else
+                displayConWaveData();
             dataAcqThread->conWaveData = conWaveData;
             if (conWaveData->getErrorMsg() != "") {
                 QMessageBox::critical(this, "Imagine", conWaveData->getErrorMsg(),
@@ -3066,6 +3107,8 @@ void Imagine::readSettings(QString file)
         for (int i = 1; i <= 8; i++) changeLaserTrans(true, i);
         changeLaserShutters();
     }
+//    if ((rig == "ocpi-1") || (rig == "ocpi-lsk"))
+//        ui.cbBothCamera->setChecked(false);
 }
 
 void Imagine::writeComments(QString file)
@@ -3800,12 +3843,10 @@ void Imagine::readControlWaveformFile(QString fn)
     int nFrames;
     QFileInfo fi(fn);
 
-    if (conWaveData)
-        delete conWaveData;
-    conWaveData = new ControlWaveform(rig);
-    for (int i = 0; i < numAoCurve + numDoCurve; i++)
-        outCurve[i]->setData(0);
-    conWavPlot->replot();
+    if (conWaveDataUser)
+        delete conWaveDataUser;
+    conWaveDataUser = new ControlWaveform(rig);
+    conWaveData = conWaveDataUser;
 
     m_OpenConWaveDialogLastDirectory = fi.absolutePath();
     QString ext = fi.suffix();
@@ -3833,80 +3874,16 @@ void Imagine::readControlWaveformFile(QString fn)
     CFErrorCode err = conWaveData->loadJsonDocument(loadDoc);
 
     if (err == NO_CF_ERROR) {
-        // GUI metadata display
-        ui.lableConWavRigname->setText(conWaveData->rig);
         ui.cbWaveformEnable->setChecked(true);
-        on_cbWaveformEnable_clicked(true);
-        ui.doubleSpinBoxExpTimeWav1->setValue(conWaveData->exposureTime1);
-        ui.doubleSpinBoxExpTimeWav2->setValue(conWaveData->exposureTime2);
-        ui.labelPiezoSampleRate->setText(QString("%1").arg(conWaveData->sampleRate));
-        ui.labelNumOfStacksWav->setText(QString("%1").arg(conWaveData->nStacks));
-        ui.labelFramesPerStackWav->setText(QString("%1").arg(conWaveData->nFrames));
-        ui.labelSampleNumber->setText(QString("%1").arg(conWaveData->totalSampleNum));
-        if (conWaveData->bidirection)
-            ui.labelBidirection->setText("on");
-        else
-            ui.labelBidirection->setText("off");
-
-        // Waveform selection combobox setup
-        QStringList aoList, doList;
-        int numNonAOEmpty = 0, numNonDOEmpty = 0;
-        aoList.push_back("empty");
-        doList.push_back("empty");
-        for (int i = 0; i < conWaveData->getNumChannel(); i++) {
-            if (!conWaveData->isEmpty(i)) {
-                if (i < conWaveData->getAIBegin()) {
-                    aoList.push_back(conWaveData->getSignalName(i));
-                    numNonAOEmpty++;
-                }
-                else if ((i >= conWaveData->getP0Begin()) && (i < conWaveData->getP0InBegin())) {
-                    doList.push_back(conWaveData->getSignalName(i));
-                    numNonDOEmpty++;
-                }
-            }
-        }
-        for (int i = 0; i < numAoCurve; i++) {
-            comboBoxAoDo[i]->blockSignals(true);
-            comboBoxAoDo[i]->clear();
-            comboBoxAoDo[i]->addItems(aoList);
-            if (numNonAOEmpty > i)
-                comboBoxAoDo[i]->setCurrentIndex(i + 1);
-            comboBoxAoDo[i]->blockSignals(false);
-        }
-        for (int i = 0; i < numDoCurve; i++) {
-            comboBoxAoDo[i + numAoCurve]->blockSignals(true);
-            comboBoxAoDo[i + numAoCurve]->clear();
-            comboBoxAoDo[i + numAoCurve]->addItems(doList);
-            if (numNonDOEmpty > i)
-                comboBoxAoDo[i + numAoCurve]->setCurrentIndex(i + 1);
-            comboBoxAoDo[i + numAoCurve]->blockSignals(false);
-        }
-        for (int i = 0; i < numAoCurve + numDoCurve; i++) {
-            if (comboBoxAoDo[i]->currentIndex())
-                cbAoDo[i]->setChecked(true);
-            else
-                cbAoDo[i]->setChecked(false);
-        }
-
-        // GUI waveform y axis display value adjusting box setup
-        Positioner *pos = dataAcqThread->pPositioner;
-        ui.sbWavDsplyTop->setValue(pos->maxPos() + 50);
-        ui.sbWavDsplyTop->setMinimum(0);
-        ui.sbWavDsplyTop->setMaximum(33000); // more than 32768
-        if (conWaveData->totalSampleNum>0)
-            ui.sbWavDsplyRight->setMaximum(conWaveData->totalSampleNum - 1);
-
-        // GUI waveform display
-        updateControlWaveform(0, conWaveData->totalSampleNum - 1);
-        // Even though there is no error, if there are some warnings, we show them.
-        if (conWaveData->getErrorMsg() != "") {
-            QMessageBox::critical(this, "Imagine", conWaveData->getErrorMsg(),
-                QMessageBox::Ok, QMessageBox::NoButton);
-        }
+        ui.cbWaveformEnable->setEnabled(true);
+        rearrangeTabWindow();
+        displayConWaveData();
     }
     else {
         ui.cbWaveformEnable->setChecked(false);
-        on_cbWaveformEnable_clicked(false);
+        ui.cbWaveformEnable->setEnabled(false);
+        rearrangeTabWindow();
+        clearConWavPlot();
         if (err & ERR_INVALID_VERSION) {
             QMessageBox::critical(this, "Imagine", "Invalid command file version. Please check the version.",
                 QMessageBox::Ok, QMessageBox::NoButton);
@@ -3921,6 +3898,86 @@ void Imagine::readControlWaveformFile(QString fn)
                     QMessageBox::Ok, QMessageBox::NoButton);
             }
         }
+    }
+}
+
+void Imagine::clearConWavPlot()
+{
+    // clear the previous plot
+    for (int i = 0; i < numAoCurve + numDoCurve; i++)
+        outCurve[i]->setData(0);
+    conWavPlot->replot();
+}
+
+void Imagine::displayConWaveData()
+{
+    // GUI metadata display
+    ui.lableConWavRigname->setText(conWaveData->rig);
+    ui.doubleSpinBoxExpTimeWav1->setValue(conWaveData->exposureTime1);
+    ui.doubleSpinBoxExpTimeWav2->setValue(conWaveData->exposureTime2);
+    ui.labelPiezoSampleRate->setText(QString("%1").arg(conWaveData->sampleRate));
+    ui.labelNumOfStacksWav->setText(QString("%1").arg(conWaveData->nStacks));
+    ui.labelFramesPerStackWav->setText(QString("%1").arg(conWaveData->nFrames));
+    ui.labelSampleNumber->setText(QString("%1").arg(conWaveData->totalSampleNum));
+    if (conWaveData->bidirection)
+        ui.labelBidirection->setText("on");
+    else
+        ui.labelBidirection->setText("off");
+
+    // Waveform selection combobox setup
+    QStringList aoList, doList;
+    int numNonAOEmpty = 0, numNonDOEmpty = 0;
+    aoList.push_back("empty");
+    doList.push_back("empty");
+    for (int i = 0; i < conWaveData->getNumChannel(); i++) {
+        if (!conWaveData->isEmpty(i)) {
+            if (i < conWaveData->getAIBegin()) {
+                aoList.push_back(conWaveData->getSignalName(i));
+                numNonAOEmpty++;
+            }
+            else if ((i >= conWaveData->getP0Begin()) && (i < conWaveData->getP0InBegin())) {
+                doList.push_back(conWaveData->getSignalName(i));
+                numNonDOEmpty++;
+            }
+        }
+    }
+    for (int i = 0; i < numAoCurve; i++) {
+        comboBoxAoDo[i]->blockSignals(true);
+        comboBoxAoDo[i]->clear();
+        comboBoxAoDo[i]->addItems(aoList);
+        if (numNonAOEmpty > i)
+            comboBoxAoDo[i]->setCurrentIndex(i + 1);
+        comboBoxAoDo[i]->blockSignals(false);
+    }
+    for (int i = 0; i < numDoCurve; i++) {
+        comboBoxAoDo[i + numAoCurve]->blockSignals(true);
+        comboBoxAoDo[i + numAoCurve]->clear();
+        comboBoxAoDo[i + numAoCurve]->addItems(doList);
+        if (numNonDOEmpty > i)
+            comboBoxAoDo[i + numAoCurve]->setCurrentIndex(i + 1);
+        comboBoxAoDo[i + numAoCurve]->blockSignals(false);
+    }
+    for (int i = 0; i < numAoCurve + numDoCurve; i++) {
+        if (comboBoxAoDo[i]->currentIndex())
+            cbAoDo[i]->setChecked(true);
+        else
+            cbAoDo[i]->setChecked(false);
+    }
+
+    // GUI waveform y axis display value adjusting box setup
+    Positioner *pos = dataAcqThread->pPositioner;
+    ui.sbWavDsplyTop->setValue(pos->maxPos() + 50);
+    ui.sbWavDsplyTop->setMinimum(0);
+    ui.sbWavDsplyTop->setMaximum(33000); // more than 32768
+    if (conWaveData->totalSampleNum>0)
+        ui.sbWavDsplyRight->setMaximum(conWaveData->totalSampleNum - 1);
+
+    // GUI waveform display
+    updateControlWaveform(0, conWaveData->totalSampleNum - 1);
+    // Even though there is no error, if there are some warnings, we show them.
+    if (conWaveData->getErrorMsg() != "") {
+        QMessageBox::critical(this, "Imagine", conWaveData->getErrorMsg(),
+            QMessageBox::Ok, QMessageBox::NoButton);
     }
 }
 
@@ -4012,7 +4069,7 @@ void Imagine::updateControlWaveform(int leftEnd, int rightEnd)
 
 void Imagine::on_btnConWavOpen_clicked()
 {
-    QString wavFilename = QFileDialog::getOpenFileName(
+    wavFilename = QFileDialog::getOpenFileName(
         this,
         "Choose a control waveform file to open",
         m_OpenConWaveDialogLastDirectory,
@@ -4024,17 +4081,20 @@ void Imagine::on_btnConWavOpen_clicked()
     readControlWaveformFile(wavFilename);
 }
 
-void Imagine::on_cbWaveformEnable_clicked(bool state)
+void Imagine::rearrangeTabWindow()
 {
-    if (state) {
+    if (ui.cbWaveformEnable->isChecked()) {
+        ui.lineEditConWaveFile->setText(wavFilename);
         ui.tabPiezo->setEnabled(false);
         ui.tabStim->setEnabled(false);
         ui.cbBothCamera->setEnabled(false);
         ui.groupBoxTiming->setEnabled(false);
-        if(slaveImagine != NULL)
+        if (slaveImagine != NULL)
             slaveImagine->ui.tabCamera->setEnabled(false);
     }
     else {
+        ui.lineEditConWaveFile->setText("");
+        on_btnWavDsplyReset_clicked();
         ui.tabPiezo->setEnabled(true);
         ui.tabStim->setEnabled(true);
         ui.cbBothCamera->setEnabled(true);
@@ -4042,6 +4102,16 @@ void Imagine::on_cbWaveformEnable_clicked(bool state)
         if (slaveImagine != NULL)
             slaveImagine->ui.tabCamera->setEnabled(true);
     }
+}
+
+void Imagine::on_cbWaveformEnable_clicked(bool state)
+{
+    if (state)
+        conWaveData = conWaveDataUser;
+    else
+        conWaveData = conWaveDataParam;
+    rearrangeTabWindow();
+    displayConWaveData();
 }
 
 void Imagine::showOutCurve(int idx, bool checked)
@@ -4782,16 +4852,16 @@ void Imagine::on_btnScriptExecute_clicked()
     connect(imagineScript, &ImagineScript::requestLoadWaveform, this, &Imagine::loadWaveform);
     connect(imagineScript, &ImagineScript::requestSetFilename, this, &Imagine::setFilename);
     scriptThread.start(QThread::IdlePriority);
-    
+
     imagineScript->loadImagineScript(ui.textEditScriptFileContent->toPlainText());
     evaluateScript();
 }
 
 void Imagine::scriptApplyAndReport(bool preRetVal)
 {
-    applyKeyPressed = true;
+    isApplyCommander = true;
     bool retVal = applySetting();
-    applyKeyPressed = false;
+    isApplyCommander = false;
 
     imagineScript->retVal = preRetVal&retVal;
     imagineScript->shouldWait = false;
@@ -4815,6 +4885,10 @@ void Imagine::readConfigFiles(const QString &file1, const QString &file2)
             slaveImagine->readComments(file2);
         }
         duplicateParameters(&slaveImagine->ui);
+    }
+    else {
+        if (ui.cbBothCamera->isChecked())
+            ui.cbBothCamera->setChecked(false);
     }
 }
 
@@ -4863,9 +4937,11 @@ void Imagine::loadWaveform(const QString &file)
     scriptJustReport(true);
 }
 
-void Imagine::setFilename(const QString &filename)
+void Imagine::setFilename(const QString &file1, const QString &file2)
 {
-    ui.lineEditFilename->setText(filename);
+    ui.lineEditFilename->setText(file1);
+    if(slaveImagine != NULL)
+        slaveImagine->ui.lineEditFilename->setText(file2);
     scriptJustReport(true);
 }
 
@@ -4911,6 +4987,7 @@ void Imagine::on_btnScriptSave_clicked()
         out << ui.textEditScriptFileContent->toPlainText();
         out.flush();
         file.close();
+        ui.lineEditReadScriptFle->setText(filename);
     }
 }
 

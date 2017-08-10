@@ -102,12 +102,12 @@ bool ImagineScript::sleep(long int time)
     return true;
 }
 
-bool ImagineScript::setFilename(const QString &filename)
+bool ImagineScript::setFilename(const QString &file1, const QString &file2)
 {
     int sleepTime = 100;
 
     shouldWait = true;
-    requestSetFilename(filename);
+    requestSetFilename(file1, file2);
 
     while (shouldWait) {
         Sleep(sleepTime);
@@ -123,9 +123,8 @@ QScriptValue ImagineScript::printWrapper(QScriptContext *context, QScriptEngine 
         return QScriptValue(se, static_cast<ImagineScript*>(instance)->print(x));
 }
 
-QScriptValue ImagineScript::validityCheckWrapper(QScriptContext *context, QScriptEngine *se)
+void readFilenames(QScriptContext *context, QString &file1, QString &file2)
 {
-    QString file1 = "", file2 = "";
     int numArg = context->argumentCount();
 
     if (numArg != 0) {
@@ -134,15 +133,10 @@ QScriptValue ImagineScript::validityCheckWrapper(QScriptContext *context, QScrip
             file2 = context->argument(1).toString();
         }
     }
-
-    if (instance)
-        return QScriptValue(se, static_cast<ImagineScript*>(instance)->validityCheck(file1, file2));
 }
 
-QScriptValue ImagineScript::recordWrapper(QScriptContext *context, QScriptEngine *se)
+void readFilenamesNTimeout(QScriptContext *context, QString &file1, QString &file2, long int &timeout)
 {
-    QString file1 = "", file2 = "";
-    long int timeout;
     int numArg = context->argumentCount();
 
     if (numArg > 1) { // 2,3
@@ -158,7 +152,23 @@ QScriptValue ImagineScript::recordWrapper(QScriptContext *context, QScriptEngine
     else {
         timeout = context->argument(0).toUInt32();
     }
+}
 
+QScriptValue ImagineScript::validityCheckWrapper(QScriptContext *context, QScriptEngine *se)
+{
+    QString file1 = "", file2 = "";
+
+    readFilenames(context, file1, file2);
+    if (instance)
+        return QScriptValue(se, static_cast<ImagineScript*>(instance)->validityCheck(file1, file2));
+}
+
+QScriptValue ImagineScript::recordWrapper(QScriptContext *context, QScriptEngine *se)
+{
+    QString file1 = "", file2 = "";
+    long int timeout;
+
+    readFilenamesNTimeout(context, file1, file2, timeout);
     if (instance)
         return QScriptValue(se, static_cast<ImagineScript*>(instance)->record(file1, file2, timeout));
 }
@@ -168,12 +178,7 @@ QScriptValue ImagineScript::loadConfigWrapper(QScriptContext *context, QScriptEn
     QString file1, file2;
     int numArg = context->argumentCount();
 
-    file1 = context->argument(0).toString();
-    if (numArg > 1)
-        file2 = context->argument(1).toString();
-    else
-        file2 = "";
-
+    readFilenames(context, file1, file2);
     if (instance)
         return QScriptValue(se, static_cast<ImagineScript*>(instance)->loadConfig(file1, file2));
 }
@@ -204,14 +209,11 @@ QScriptValue ImagineScript::sleepWrapper(QScriptContext *context, QScriptEngine 
 
 QScriptValue ImagineScript::setFilenameWrapper(QScriptContext *context, QScriptEngine *se)
 {
-    QString filename;
-    int numArg = context->argumentCount();
+    QString file1 = "", file2 = "";
 
-    if (numArg)
-        filename = context->argument(0).toString();
-
+    readFilenames(context, file1, file2);
     if (instance)
-        return QScriptValue(se, static_cast<ImagineScript*>(instance)->setFilename(filename));
+        return QScriptValue(se, static_cast<ImagineScript*>(instance)->setFilename(file1, file2));
 }
 
 ImagineScript::ImagineScript(QString rig)
@@ -223,6 +225,7 @@ ImagineScript::ImagineScript(QString rig)
     se->globalObject().setProperty("print", svPrint);
     QScriptValue svValid = se->newFunction(validityCheckWrapper);
     se->globalObject().setProperty("validityCheck", svValid);
+    se->globalObject().setProperty("applyConfiguration", svValid);
     QScriptValue svRecord = se->newFunction(recordWrapper);
     se->globalObject().setProperty("record", svRecord);
     QScriptValue svLoadCon = se->newFunction(loadConfigWrapper);

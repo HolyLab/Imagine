@@ -187,6 +187,12 @@ public:
     Waveform() {};
     ~Waveform() {};
 
+    bool isEmpty()
+    {
+        if (totalSampleNum) return false;
+        else return true;
+    };
+
     QString getErrorMsg(void) {
         return errorMsg;
     };
@@ -272,6 +278,7 @@ public:
     int maxLaserFreq;
 
     // for default control
+    bool enableCam1, enableCam2;
     double cycleTime;
     double piezoTravelBackTime;
 //    bool piezoTravelBackTimeAuto;

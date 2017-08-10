@@ -1254,8 +1254,9 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
     ///  Register subsequences to waveform list  ///
     QJsonObject wavelist;
     wavelist["positioner1_001"] = piezo1_001;
-    wavelist["camera1_001"] = camera1_001;
-    if (rig == "ocpi-2")
+    if (enableCam1)
+        wavelist["camera1_001"] = camera1_001;
+    if (enableCam2)
         wavelist["camera2_001"] = camera2_001;
     wavelist["laser1_001"] = laser1_001;
 
@@ -1366,14 +1367,16 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
             analog[sig] = piezo1Mon; // secured port for piezo monitor
         }
 
-        if (port == QString(STR_P0HEADER).append("5")) { // P0.5
-            camera1Seq = { repeat, "camera1_001" };
-            camera1[STR_Channel] = port;
-            camera1[STR_Seq] = camera1Seq;
-            digital[sig] = camera1; // secured port for camera1
+        if (enableCam1) {
+            if (port == QString(STR_P0HEADER).append("5")) { // P0.5
+                camera1Seq = { repeat, "camera1_001" };
+                camera1[STR_Channel] = port;
+                camera1[STR_Seq] = camera1Seq;
+                digital[sig] = camera1; // secured port for camera1
+            }
         }
 
-        if (rig == "ocpi-2") {
+        if (enableCam2) {
             if (port == QString(STR_P0HEADER).append("6")) { // P0.6
                 camera2Seq = { repeat, "camera2_001" };
                 camera2[STR_Channel] = port;
