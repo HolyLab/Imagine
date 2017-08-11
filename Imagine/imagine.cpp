@@ -121,6 +121,26 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     tabifyDockWidget(ui.dwHist, ui.dwIntenCurve);
     setDockOptions(dockOptions() | QMainWindow::VerticalTabs);
 
+    // monitoring input (Ai, Di) and control waveform (Ao, Do)
+    // checkBox list and comboBox list
+    QCheckBox* cb1[] = { ui.cbAO0Wav, ui.cbAO1Wav, ui.cbDO0Wav,
+        ui.cbDO1Wav, ui.cbDO2Wav, ui.cbDO3Wav, ui.cbDO4Wav, ui.cbDO5Wav };
+    QComboBox* combo1[] = { ui.comboBoxAO0, ui.comboBoxAO1, ui.comboBoxDO0,
+        ui.comboBoxDO1, ui.comboBoxDO2, ui.comboBoxDO3, ui.comboBoxDO4, ui.comboBoxDO5 };
+    for (int i = 0; i < sizeof(cb1) / sizeof(QCheckBox*); i++) {
+        cbAoDo.push_back(cb1[i]);
+        comboBoxAoDo.push_back(combo1[i]);
+    }
+    ui.lableConWavRigname->setText(rig);
+    QCheckBox* cb2[] = { ui.cbAI0Wav, ui.cbAI1Wav, ui.cbDI0Wav, ui.cbDI1Wav,
+        ui.cbDI2Wav, ui.cbDI3Wav, ui.cbDI4Wav, ui.cbDI5Wav, ui.cbDI6Wav };
+    QComboBox* combo2[] = { ui.comboBoxAI0, ui.comboBoxAI1, ui.comboBoxDI0, ui.comboBoxDI1,
+        ui.comboBoxDI2, ui.comboBoxDI3, ui.comboBoxDI4, ui.comboBoxDI5, ui.comboBoxDI6 };
+    for (int i = 0; i < sizeof(cb2) / sizeof(QCheckBox*); i++) {
+        cbAiDi.push_back(cb2[i]);
+        comboBoxAiDi.push_back(combo2[i]);
+    }
+
     //ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabAI));
     //remove positioner tab from slave window
     //TODO: Give stimulus tab the same treatment (It's in position #3)
@@ -230,6 +250,9 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     ui.spinBoxHstart->setSingleStep(roiStepsHor);
     updateStatus(eIdle, eNoAction);
 
+    //apply the camera setting:
+    on_btnApply_clicked();
+
     ///piezo stuff
     if (pos != NULL) {
         bool isActPos = pos->posType == ActuatorPositioner;
@@ -316,28 +339,6 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
             connect(cb, SIGNAL(stateChanged(int)),
                 this, SLOT(onModified()));
     }
-
-    // monitoring input (Ai, Di) and control waveform (Ao, Do)
-    // checkBox list and comboBox list
-    QCheckBox* cb1[] = { ui.cbAO0Wav, ui.cbAO1Wav, ui.cbDO0Wav,
-        ui.cbDO1Wav, ui.cbDO2Wav, ui.cbDO3Wav, ui.cbDO4Wav };
-    QComboBox* combo1[] = { ui.comboBoxAO0, ui.comboBoxAO1, ui.comboBoxDO0,
-        ui.comboBoxDO1, ui.comboBoxDO2, ui.comboBoxDO3, ui.comboBoxDO4 };
-    for (int i = 0; i < sizeof(cb1) / sizeof(QCheckBox*); i++) {
-        cbAoDo.push_back(cb1[i]);
-        comboBoxAoDo.push_back(combo1[i]);
-    }
-    ui.lableConWavRigname->setText(rig);
-    QCheckBox* cb2[] = { ui.cbAI0Wav, ui.cbAI1Wav, ui.cbDI0Wav, ui.cbDI1Wav,
-        ui.cbDI2Wav, ui.cbDI3Wav, ui.cbDI4Wav, ui.cbDI5Wav };
-    QComboBox* combo2[] = { ui.comboBoxAI0, ui.comboBoxAI1, ui.comboBoxDI0, ui.comboBoxDI1,
-        ui.comboBoxDI2, ui.comboBoxDI3, ui.comboBoxDI4, ui.comboBoxDI5 };
-    for (int i = 0; i < sizeof(cb2) / sizeof(QCheckBox*); i++) {
-        cbAiDi.push_back(cb2[i]);
-        comboBoxAiDi.push_back(combo2[i]);
-    }
-    //apply the camera setting:
-    on_btnApply_clicked();
 
     on_spinBoxSpinboxSteps_valueChanged(ui.spinBoxSpinboxSteps->value());
 
@@ -711,8 +712,8 @@ void Imagine::preparePlots()
     intenCurve->setData(intenCurveData);
 
     // control waveform and ai and di waveform
-    QColor curveColor[8] = { Qt::red,  Qt::green,  Qt::blue,  Qt::black,
-                        Qt::darkGreen,  Qt::magenta,  Qt::darkYellow, Qt::cyan };
+    QColor curveColor[9] = { Qt::red,  Qt::green,  Qt::blue,  Qt::black,
+                Qt::darkGreen,  Qt::magenta,  Qt::darkYellow, Qt::darkMagenta, Qt::cyan };
     QwtText xTitle("Sample index");
     QwtText yTitle("Position");
     QwtText aiDiyTitle("Voltage(mV)");
@@ -3355,7 +3356,7 @@ void Imagine::on_btnPzClosePort_clicked()
 }
 
 /**************************** AI and DI read ***********************/
-#define MIN_Y   -200
+#define MIN_Y   -50
 bool seekSection(QString section, QTextStream &stream)
 {
     bool found = false;
@@ -3618,7 +3619,7 @@ bool Imagine::loadAiDiWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx)
     }
     else if (curveIdx < numAiCurve + numDiCurve) {
         amplitude = 10;
-        yoffset = curveIdx * 15;
+        yoffset = (curveIdx- numAiCurve) * 15;
         retVal = diWaveData->readWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor);
         if (retVal) {
             curveData = new CurveData(diWaveData->totalSampleNum); // parameter should not be xpoint.size()
@@ -3645,7 +3646,7 @@ bool Imagine::loadAiDiWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx)
 // read jason data to waveform data
 void Imagine::updateAiDiWaveform(int leftEnd, int rightEnd)
 {
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < cbAiDi.size(); i++) {
 //        if(cbAiDi[i]->isChecked())
             loadAiDiWavDataAndPlot(leftEnd, rightEnd, i);
     }
@@ -3713,6 +3714,11 @@ void Imagine::on_cbDI5Wav_clicked(bool checked)
     showInCurve(7, checked);
 }
 
+void Imagine::on_cbDI6Wav_clicked(bool checked)
+{
+    showInCurve(8, checked);
+}
+
 void Imagine::on_comboBoxAI0_currentIndexChanged(int index)
 {
     loadAiDiWavDataAndPlot(ui.sbAiDiDsplyLeft->value(),
@@ -3769,6 +3775,12 @@ void Imagine::on_comboBoxDI5_currentIndexChanged(int index)
     on_cbDI5Wav_clicked(ui.cbDI5Wav->isChecked());
 }
 
+void Imagine::on_comboBoxDI6_currentIndexChanged(int index)
+{
+    loadAiDiWavDataAndPlot(ui.sbAiDiDsplyLeft->value(),
+        ui.sbAiDiDsplyRight->value(), 8);
+    on_cbDI6Wav_clicked(ui.cbDI5Wav->isChecked());
+}
 
 void Imagine::on_sbAiDiDsplyRight_valueChanged(int value)
 {
@@ -4014,7 +4026,7 @@ bool Imagine::loadConWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx)
     }
     else if (curveIdx < numAoCurve + numDoCurve) {
         amplitude = 10;
-        yoffset = curveIdx * 15;
+        yoffset = (curveIdx - numAoCurve) * 15;
     }
     if ((sigName == "") || (sigName == "empty"))
         return false;
@@ -4046,7 +4058,7 @@ bool Imagine::loadConWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx)
 // read jason data to waveform data
 void Imagine::updateControlWaveform(int leftEnd, int rightEnd)
 {
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < cbAoDo.size(); i++) {
 //        if (cbAoDo[i]->isChecked())
             loadConWavDataAndPlot(leftEnd, rightEnd, i);
     }
@@ -4160,6 +4172,11 @@ void Imagine::on_cbDO4Wav_clicked(bool checked)
     showOutCurve(6, checked);
 }
 
+void Imagine::on_cbDO5Wav_clicked(bool checked)
+{
+    showOutCurve(7, checked);
+}
+
 void Imagine::on_comboBoxAO0_currentIndexChanged(int index)
 {
     loadConWavDataAndPlot(ui.sbWavDsplyLeft->value(),
@@ -4207,6 +4224,13 @@ void Imagine::on_comboBoxDO4_currentIndexChanged(int index)
     loadConWavDataAndPlot(ui.sbWavDsplyLeft->value(),
         ui.sbWavDsplyRight->value(), 6);
     on_cbDO4Wav_clicked(ui.cbDO4Wav->isChecked());
+}
+
+void Imagine::on_comboBoxDO5_currentIndexChanged(int index)
+{
+    loadConWavDataAndPlot(ui.sbWavDsplyLeft->value(),
+        ui.sbWavDsplyRight->value(), 7);
+    on_cbDO5Wav_clicked(ui.cbDO4Wav->isChecked());
 }
 
 void Imagine::on_comboBoxExpTriggerModeWav_currentIndexChanged(int index)

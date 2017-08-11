@@ -221,12 +221,12 @@ private:
     QwtPlot *conWavPlot;
     QwtPlotCurve *piezoSpeedCurve;
     QwtPlot *conReadWavPlot;
-    int numAoCurve = 2, numDoCurve = 5;
+    int numAoCurve = 2, numDoCurve = 6;
     QVector<QwtPlotCurve *> outCurve;
     QVector<CurveData *> outCurveData;
     QVector<QCheckBox*> cbAoDo;
     QVector<QComboBox*> comboBoxAoDo;
-    int numAiCurve = 2, numDiCurve = 6;
+    int numAiCurve = 2, numDiCurve = 7;
     QVector<QwtPlotCurve *> inCurve;
     int numAiCurveData, numDiCurveData;
     QVector<CurveData *> inCurveData;
@@ -427,6 +427,7 @@ private slots:
     void on_cbDI3Wav_clicked(bool checked);
     void on_cbDI4Wav_clicked(bool checked);
     void on_cbDI5Wav_clicked(bool checked);
+    void on_cbDI6Wav_clicked(bool checked);
     void on_comboBoxAI0_currentIndexChanged(int index);
     void on_comboBoxAI1_currentIndexChanged(int index);
     void on_comboBoxDI0_currentIndexChanged(int index);
@@ -435,6 +436,7 @@ private slots:
     void on_comboBoxDI3_currentIndexChanged(int index);
     void on_comboBoxDI4_currentIndexChanged(int index);
     void on_comboBoxDI5_currentIndexChanged(int index);
+    void on_comboBoxDI6_currentIndexChanged(int index);
     // Waveform control
     void on_btnConWavOpen_clicked();
     void on_cbWaveformEnable_clicked(bool state);
@@ -445,6 +447,7 @@ private slots:
     void on_cbDO2Wav_clicked(bool checked);
     void on_cbDO3Wav_clicked(bool checked);
     void on_cbDO4Wav_clicked(bool checked);
+    void on_cbDO5Wav_clicked(bool checked);
     void on_sbWavDsplyRight_valueChanged(int value);
     void on_sbWavDsplyLeft_valueChanged(int value);
     void on_sbWavDsplyTop_valueChanged(int value);
@@ -461,6 +464,7 @@ private slots:
     void on_comboBoxDO2_currentIndexChanged(int index);
     void on_comboBoxDO3_currentIndexChanged(int index);
     void on_comboBoxDO4_currentIndexChanged(int index);
+    void on_comboBoxDO5_currentIndexChanged(int index);
     void on_comboBoxExpTriggerModeWav_currentIndexChanged(int index);
 
     void on_btnImg1LoadFile_clicked();
