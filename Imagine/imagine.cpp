@@ -237,17 +237,10 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
         maxROIVSize = 2048;
         roiStepsHor = 160;
     }
+    setROIMinMaxSize();
     ui.spinBoxHend->setValue(maxROIHSize);
     ui.spinBoxVend->setValue(maxROIVSize);
-    ui.spinBoxHstart->setMaximum(maxROIHSize);
-    ui.spinBoxVstart->setMaximum(maxROIVSize/2);
-    ui.spinBoxVend->setMinimum(maxROIVSize/2 + 1);
-    ui.spinBoxHend->setMaximum(maxROIHSize);
-    ui.spinBoxVend->setMaximum(maxROIVSize);
-    ui.spinBoxHend->setValue(maxROIHSize);
-    ui.spinBoxVend->setValue(maxROIVSize);
-    ui.spinBoxHend->setSingleStep(roiStepsHor);
-    ui.spinBoxHstart->setSingleStep(roiStepsHor);
+
     updateStatus(eIdle, eNoAction);
 
     //apply the camera setting:
@@ -448,15 +441,6 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     ui.gbDontShow1->setVisible(false);
 }
 
-void Imagine::setSlaveWindow(Imagine *sImagine)
-{
-    slaveImagine = sImagine;
-    if ((masterImagine == NULL) && (slaveImagine == NULL)) { // single Imagine window system
-        ui.cbBothCamera->setChecked(false);
-        ui.cbBothCamera->setVisible(false);
-    }
-}
-
 Imagine::~Imagine()
 {
     if (conWaveDataParam) {
@@ -497,6 +481,36 @@ Imagine::~Imagine()
     stopDisplayCamFile();
 }
 
+void Imagine::setSlaveWindow(Imagine *sImagine)
+{
+    slaveImagine = sImagine;
+    if ((masterImagine == NULL) && (slaveImagine == NULL)) { // single Imagine window system
+        ui.cbBothCamera->setChecked(false);
+        ui.cbBothCamera->setVisible(false);
+    }
+}
+
+void Imagine::setROIMinMaxSize()
+{
+    if (isUsingSoftROI) {
+        ui.spinBoxHstart->setMaximum(maxROIHSize);
+        ui.spinBoxVstart->setMaximum(maxROIVSize);
+        ui.spinBoxHend->setMaximum(maxROIHSize);
+        ui.spinBoxVend->setMinimum(1);
+        ui.spinBoxVend->setMaximum(maxROIVSize);
+        ui.spinBoxHend->setSingleStep(1);
+        ui.spinBoxHstart->setSingleStep(1);
+    }
+    else {
+        ui.spinBoxHstart->setMaximum(maxROIHSize);
+        ui.spinBoxVstart->setMaximum(maxROIVSize / 2);
+        ui.spinBoxHend->setMaximum(maxROIHSize);
+        ui.spinBoxVend->setMinimum(maxROIVSize / 2 + 1);
+        ui.spinBoxVend->setMaximum(maxROIVSize);
+        ui.spinBoxHend->setSingleStep(roiStepsHor);
+        ui.spinBoxHstart->setSingleStep(roiStepsHor);
+    }
+}
 #pragma endregion
 
 
@@ -1422,6 +1436,8 @@ void Imagine::closeEvent(QCloseEvent *event)
 
 void Imagine::on_btnFullChipSize_clicked()
 {
+    isUsingSoftROI = false;
+    setROIMinMaxSize();
     ui.spinBoxHstart->setValue(1);
     ui.spinBoxHend->setValue(maxROIHSize);
     ui.spinBoxVstart->setValue(1);
@@ -1448,6 +1464,7 @@ void Imagine::on_btnUseZoomWindow_clicked()
     }//if, full image
     else {
         isUsingSoftROI = true;
+        setROIMinMaxSize();
         ui.spinBoxHstart->setValue(L + 1);  //NOTE: hstart is 1-based
         ui.spinBoxHend->setValue(L + W);
         ui.spinBoxVstart->setValue(T + 1);
@@ -1630,14 +1647,12 @@ bool Imagine::applySetting()
     Camera::AcqTriggerMode acqTriggerMode;
 	Camera::ExpTriggerMode expTriggerMode;
     DataAcqThread *masterDataAcqTh;
-    ControlWaveform *masterControlWav;
     Positioner *pos = dataAcqThread->pPositioner;
     Imagine *otherImagine = NULL;
 
     if (masterImagine == NULL) { // Imagine (1)
         masterUi = &ui;
         masterDataAcqTh = dataAcqThread;
-        masterControlWav = conWaveData;
         if (slaveImagine != NULL)
             otherImagine = slaveImagine;
     }
@@ -1645,7 +1660,6 @@ bool Imagine::applySetting()
         masterUi = &masterImagine->ui;
         masterDataAcqTh = masterImagine->dataAcqThread;
 // TMP        masterControlWav = masterImagine->conWaveData;
-        masterControlWav = conWaveData;
         otherImagine = masterImagine;
     }
 
@@ -1661,14 +1675,14 @@ bool Imagine::applySetting()
     dataAcqThread->horShiftSpeed = ui.comboBoxHorReadoutRate->currentText();
     dataAcqThread->verShiftSpeed = ui.comboBoxVertShiftSpeed->currentText();
     dataAcqThread->angle = ui.spinBoxAngle->value();
-    dataAcqThread->conWaveData = masterControlWav;
 
     if ((*masterUi).cbWaveformEnable->isChecked()) { // waveform enabled
         expTriggerModeStr = (*masterUi).comboBoxExpTriggerModeWav->currentText();
-        dataAcqThread->sampleRate = masterControlWav->sampleRate;
-        dataAcqThread->nStacksUser = masterControlWav->nStacks;
-        dataAcqThread->nFramesPerStackUser = masterControlWav->nFrames;
-        dataAcqThread->isBiDirectionalImaging = masterControlWav->bidirection;
+        dataAcqThread->sampleRate = conWaveDataUser->sampleRate;
+        dataAcqThread->nStacksUser = conWaveDataUser->nStacks;
+        dataAcqThread->nFramesPerStackUser = conWaveDataUser->nFrames;
+        dataAcqThread->isBiDirectionalImaging = conWaveDataUser->bidirection;
+        dataAcqThread->conWaveData = conWaveDataUser;
         if(camera->getCameraID() == 1)
             dataAcqThread->exposureTime = (*masterUi).doubleSpinBoxExpTimeWav1->value();
         else
@@ -1706,24 +1720,25 @@ bool Imagine::applySetting()
     dataAcqThread->hend = camera->hend = ui.spinBoxHend->value();
     dataAcqThread->vstart = camera->vstart = ui.spinBoxVstart->value();
     dataAcqThread->vend = camera->vend = ui.spinBoxVend->value();
-
     dataAcqThread->umPerPxlXy = ui.doubleSpinBoxUmPerPxlXy->value();
 
     camera->updateImageParams(dataAcqThread->nStacks, dataAcqThread->nFramesPerStack); //transfer image params to camera object
 
-    //enforce #imageSizeBytes is x times of 16
-    if (camera->imageSizeBytes % 16) {
-        QMessageBox::critical(this, "Imagine", "ROI spec is wrong (#pixels per frame is not x times of 8)."
-            , QMessageBox::Ok, QMessageBox::NoButton);
+    if (!isUsingSoftROI) {
+        //enforce #imageSizeBytes is x times of 16
+        if (camera->imageSizeBytes % 16) {
+            QMessageBox::critical(this, "Imagine", "ROI spec is wrong (#pixels per frame is not x times of 8)."
+                , QMessageBox::Ok, QMessageBox::NoButton);
 
-        goto skip;
-    }
+            goto skip;
+        }
 
-    if (!checkRoi()){
-        QMessageBox::critical(this, "Imagine", "ROI spec is wrong."
-            , QMessageBox::Ok, QMessageBox::NoButton);
+        if (!checkRoi()) {
+            QMessageBox::critical(this, "Imagine", "ROI spec is wrong."
+                , QMessageBox::Ok, QMessageBox::NoButton);
 
-        goto skip;
+            goto skip;
+        }
     }
 
     if (camera->vendor == "avt"){
@@ -1809,72 +1824,72 @@ bool Imagine::applySetting()
             if (conWaveDataParam)
                 delete conWaveDataParam;
             conWaveDataParam = new ControlWaveform(rig);
-            conWaveData = conWaveDataParam;
-            conWaveData->sampleRate = dataAcqThread->sampleRate;
-            conWaveData->nStacks = dataAcqThread->nStacksUser;
-            conWaveData->nFrames = dataAcqThread->nFramesPerStackUser;
+            conWaveDataParam->sampleRate = dataAcqThread->sampleRate;
+            conWaveDataParam->nStacks = dataAcqThread->nStacksUser;
+            conWaveDataParam->nFrames = dataAcqThread->nFramesPerStackUser;
             if (ui.cbBothCamera->isChecked()) {
                 DataAcqThread *dataAcqThreadOther = otherImagine->dataAcqThread;
                 if (dataAcqThread->pCamera->getCameraID() == 1)
-                    conWaveData->exposureTime1 = dataAcqThread->exposureTime;
+                    conWaveDataParam->exposureTime1 = dataAcqThread->exposureTime;
                 else
-                    conWaveData->exposureTime2 = dataAcqThread->exposureTime;
+                    conWaveDataParam->exposureTime2 = dataAcqThread->exposureTime;
                 if (dataAcqThreadOther->pCamera->getCameraID() == 1)
-                    conWaveData->exposureTime1 = dataAcqThreadOther->exposureTime;
+                    conWaveDataParam->exposureTime1 = dataAcqThreadOther->exposureTime;
                 else
-                    conWaveData->exposureTime2 = dataAcqThreadOther->exposureTime;
-                conWaveData->cycleTime = max(dataAcqThread->cycleTime, dataAcqThreadOther->cycleTime);
-                conWaveData->enableCam1 = true;
-                conWaveData->enableCam2 = true;
+                    conWaveDataParam->exposureTime2 = dataAcqThreadOther->exposureTime;
+                conWaveDataParam->cycleTime = max(dataAcqThread->cycleTime, dataAcqThreadOther->cycleTime);
+                conWaveDataParam->enableCam1 = true;
+                conWaveDataParam->enableCam2 = true;
             }
             else {
                 if (dataAcqThread->pCamera->getCameraID() == 1) {
-                    conWaveData->exposureTime1 = dataAcqThread->exposureTime;
-                    conWaveData->exposureTime2 = 0;
-                    conWaveData->enableCam1 = true;
-                    conWaveData->enableCam2 = false;
+                    conWaveDataParam->exposureTime1 = dataAcqThread->exposureTime;
+                    conWaveDataParam->exposureTime2 = 0;
+                    conWaveDataParam->enableCam1 = true;
+                    conWaveDataParam->enableCam2 = false;
                 }
                 else {
-                    conWaveData->exposureTime1 = 0;
-                    conWaveData->exposureTime2 = dataAcqThread->exposureTime;
-                    conWaveData->enableCam1 = false;
-                    conWaveData->enableCam2 = true;
+                    conWaveDataParam->exposureTime1 = 0;
+                    conWaveDataParam->exposureTime2 = dataAcqThread->exposureTime;
+                    conWaveDataParam->enableCam1 = false;
+                    conWaveDataParam->enableCam2 = true;
                 }
-                conWaveData->cycleTime = dataAcqThread->cycleTime;
+                conWaveDataParam->cycleTime = dataAcqThread->cycleTime;
             }
-            conWaveData->bidirection = dataAcqThread->isBiDirectionalImaging;
-            if (conWaveData->bidirection && (conWaveData->nStacks % 2)) {
+            conWaveDataParam->bidirection = dataAcqThread->isBiDirectionalImaging;
+            if (conWaveDataParam->bidirection && (conWaveDataParam->nStacks % 2)) {
                 QMessageBox::critical(this, "Imagine", "Stack number should be even number in bi-dirctional acquisition mode"
                     , QMessageBox::Ok, QMessageBox::NoButton);
                 goto skip;
             }
-            conWaveData->idleTimeBwtnStacks = dataAcqThread->idleTimeBwtnStacks;
-            conWaveData->piezoStartPosUm = dataAcqThread->piezoStartPosUm;
-            conWaveData->piezoStopPosUm = dataAcqThread->piezoStopPosUm;
+            conWaveDataParam->idleTimeBwtnStacks = dataAcqThread->idleTimeBwtnStacks;
+            conWaveDataParam->piezoStartPosUm = dataAcqThread->piezoStartPosUm;
+            conWaveDataParam->piezoStopPosUm = dataAcqThread->piezoStopPosUm;
 //            if (masterImagine->ui.cbAutoSetPiezoTravelBackTime->isChecked())
 //                conWaveData->piezoTravelBackTime = abs(conWaveData->piezoStartPosUm - conWaveData->piezoStopPosUm)/
 //                                                    conWaveData->maxPiezoSpeed; // + 0.005sec
 //            else
-                conWaveData->piezoTravelBackTime = dataAcqThread->piezoTravelBackTime;
+                conWaveDataParam->piezoTravelBackTime = dataAcqThread->piezoTravelBackTime;
 //            dataAcqThread->applyStim = masterImagine->ui.cbStim->isChecked();
-            conWaveData->applyStim = masterUi->cbStim->isChecked();
-            conWaveData->stimuli = &(masterDataAcqTh->stimuli);
-            conWaveData->genDefaultControl(headerFilename);
+            conWaveDataParam->applyStim = masterUi->cbStim->isChecked();
+            conWaveDataParam->stimuli = &(masterDataAcqTh->stimuli);
+            conWaveDataParam->genDefaultControl(headerFilename);
             if(masterImagine != NULL)
                 masterImagine->displayConWaveData();
             else
                 displayConWaveData();
-            dataAcqThread->conWaveData = conWaveData;
+            dataAcqThread->conWaveData = conWaveDataParam;
+            conWaveData = conWaveDataParam;
             if (conWaveData->getErrorMsg() != "") {
                 QMessageBox::critical(this, "Imagine", conWaveData->getErrorMsg(),
                     QMessageBox::Ok, QMessageBox::NoButton);
             }
         }
         else {
-            conWaveData = masterControlWav;
-            if (!waveformValidityCheck()) // waveform is not valid
-                goto skip;
+            conWaveData = conWaveDataUser;
         }
+        if (!waveformValidityCheck()) // waveform is not valid
+            goto skip;
         // move positioner to start position
         int chIdx = conWaveData->getChannelIdxFromSig(STR_axial_piezo);
         double um;
@@ -2323,6 +2338,7 @@ void Imagine::on_spinBoxNumOfDecimalDigits_valueChanged(int newValue)
         box->setDecimals(newValue); });
 }
 
+#define MIN_IDLETIME_BIDIRECTION 0 // 0.04
 void Imagine::set_safe_piezo_params()
 {
     //check whether settings are within the speed limits of the piezo
@@ -2358,7 +2374,7 @@ void Imagine::set_safe_piezo_params()
         ui.doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(safe_idle_time);
     }
     else {
-        double safe_idle_time = max(0.04, cur_idle_time);
+        double safe_idle_time = max(MIN_IDLETIME_BIDIRECTION, cur_idle_time);
         ui.doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(safe_idle_time);
     }
 }

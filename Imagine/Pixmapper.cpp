@@ -213,7 +213,7 @@ void ImagePlay::indexRun(int strtStackIdx1, int strtFrameIdx1, int nStacks1, int
             frameIdx2 = framesPerStack1 - 2;
         else if (frameIdx2 >= framesPerStack2)
             frameIdx2 = 0;
-        QThread::msleep(500);
+        QThread::msleep(100);//500
         emit nextIndexIsReady(stackIdx1, frameIdx1, stackIdx2, frameIdx2);
     }
     isRunning = false;

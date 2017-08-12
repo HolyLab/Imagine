@@ -203,6 +203,7 @@ public:
     int T;
 
     void setSlaveWindow(Imagine *sImagine);
+    void setROIMinMaxSize();
 
 protected:
     void closeEvent(QCloseEvent *event);

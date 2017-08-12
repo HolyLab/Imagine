@@ -60,6 +60,10 @@ bool ImagineScript::record(const QString &file1, const QString &file2, long int 
 
         if (shouldWait) {
             shouldWait = false;
+            // This can detect only masterImagine acq. error
+            // TODO: Even when masterImagine acq. is ok, we need to detect
+            // slaveImagine acq. and if stucks we need to send stop recording signal to
+            // slaveImagine or acq_and_save itself has to have timeout stop routine
             return false;
         }
         return true;
