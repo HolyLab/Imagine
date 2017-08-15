@@ -58,6 +58,9 @@ class CurveData;
   if (false == ok) {temp = default;}\
   ui.##var = temp;
 
+#define WRITE_VARIABLE_SETTING(prefs, var)\
+  prefs.setValue(#var, var);
+
 #define WRITE_STRING_SETTING(prefs, var)\
   prefs.setValue(#var , ui.##var->text());
 
@@ -73,14 +76,20 @@ class CurveData;
     bool ok = false; int bb = prefs.value(#var).toInt(&ok);\
   ui.##var->setCurrentIndex(bb); } else { ui.##var->setCurrentIndex(emptyValue); } }
 
-#define READ_BOOL_SETTING(prefs, var, emptyValue)\
+#define READ_CHECKBOX_SETTING(prefs, var, emptyValue)\
   { QString s = prefs.value(#var).toString();\
   if (s.isEmpty() == false) {\
     bool bb = prefs.value(#var).toBool();\
   ui.##var->setChecked(bb); } else { ui.##var->setChecked(emptyValue); } }
 
-#define WRITE_BOOL_SETTING(prefs, var, b)\
-    prefs.setValue(#var, (b) );
+#define READ_BOOL_SETTING(prefs, var, emptyValue)\
+  { QString s = prefs.value(#var).toString();\
+  if (s.isEmpty() == false) {\
+    ##var = prefs.value(#var).toBool();}\
+  else { ##var = emptyValue; }}
+
+#define WRITE_BOOL_SETTING(prefs, var)\
+    prefs.setValue(#var, (var) );
 
 #define WRITE_CHECKBOX_SETTING(prefs, var)\
     prefs.setValue(#var, ui.##var->isChecked() );

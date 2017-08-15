@@ -2951,6 +2951,7 @@ void Imagine::writeSettings(QString file)
     WRITE_SETTING(prefs, spinBoxGain);
     WRITE_COMBO_SETTING(prefs, comboBoxVertShiftSpeed);
     WRITE_COMBO_SETTING(prefs, comboBoxVertClockVolAmp);
+    WRITE_BOOL_SETTING(prefs, isUsingSoftROI);
     WRITE_SETTING(prefs, spinBoxHstart);
     WRITE_SETTING(prefs, spinBoxHend);
     WRITE_SETTING(prefs, spinBoxVstart);
@@ -3041,19 +3042,19 @@ void Imagine::readSettings(QString file)
         READ_SETTING(prefs, spinBoxSpinboxSteps, ok, i, 10, Int);
         READ_SETTING(prefs, spinBoxNumOfDecimalDigits, ok, i, 0, Int);
         READ_SETTING(prefs, doubleSpinBoxPiezoTravelBackTime, ok, d, 0., Double);
-        READ_BOOL_SETTING(prefs, cbAutoSetPiezoTravelBackTime, false); // READ_CHECKBOX_SETTING
-        READ_BOOL_SETTING(prefs, cbBidirectionalImaging, false); // READ_CHECKBOX_SETTING
+        READ_CHECKBOX_SETTING(prefs, cbAutoSetPiezoTravelBackTime, false); // READ_CHECKBOX_SETTING
+        READ_CHECKBOX_SETTING(prefs, cbBidirectionalImaging, false); // READ_CHECKBOX_SETTING
         READ_COMBO_SETTING(prefs, comboBoxPositionerOwner, 0);
         prefs.endGroup();
 
         prefs.beginGroup("Stimuli");
-        READ_BOOL_SETTING(prefs, cbStim, false); // READ_CHECKBOX_SETTING
+        READ_CHECKBOX_SETTING(prefs, cbStim, false); // READ_CHECKBOX_SETTING
         READ_STRING_SETTING(prefs, lineEditStimFile, "");
         prefs.endGroup();
     }
 
     prefs.beginGroup("Camera");
-    READ_BOOL_SETTING(prefs, cbBothCamera, false);
+    READ_CHECKBOX_SETTING(prefs, cbBothCamera, false);
     READ_SETTING(prefs, spinBoxNumOfStacks, ok, i, 3, Int);
     READ_SETTING(prefs, spinBoxFramesPerStack, ok, i, 100, Int);
     READ_SETTING(prefs, doubleSpinBoxExpTime, ok, d, 0.0107, Double);
@@ -3067,10 +3068,11 @@ void Imagine::readSettings(QString file)
     READ_SETTING(prefs, spinBoxGain, ok, i, 0, Int);
     READ_COMBO_SETTING(prefs, comboBoxVertShiftSpeed, 0);
     READ_COMBO_SETTING(prefs, comboBoxVertClockVolAmp, 0);
+    READ_BOOL_SETTING(prefs, isUsingSoftROI, false);
     READ_SETTING(prefs, spinBoxHstart, ok, i, 1, Int);
-    READ_SETTING(prefs, spinBoxHend, ok, i, 2048, Int);
+    READ_SETTING(prefs, spinBoxHend, ok, i, maxROIHSize, Int);
     READ_SETTING(prefs, spinBoxVstart, ok, i, 1, Int);
-    READ_SETTING(prefs, spinBoxVend, ok, i, 2048, Int);
+    READ_SETTING(prefs, spinBoxVend, ok, i, maxROIVSize, Int);
     prefs.endGroup();
 
     prefs.beginGroup("Display");
@@ -3079,28 +3081,28 @@ void Imagine::readSettings(QString file)
 
     if (masterImagine == NULL) {
         prefs.beginGroup("Waveform");
-        READ_BOOL_SETTING(prefs, cbWaveformEnable, false);
+        READ_CHECKBOX_SETTING(prefs, cbWaveformEnable, false);
         READ_COMBO_SETTING(prefs, comboBoxExpTriggerModeWav, 0);
 //        READ_SETTING(prefs, doubleSpinBoxExpTimeWav, ok, d, 0.0107, Double);
         READ_STRING_SETTING(prefs, lineEditConWaveFile, "");
         prefs.endGroup();
 
         prefs.beginGroup("Laser");
-        READ_BOOL_SETTING(prefs, cbLine1, true); // READ_CHECKBOX_SETTING
+        READ_CHECKBOX_SETTING(prefs, cbLine1, true); // READ_CHECKBOX_SETTING
         READ_SETTING(prefs, doubleSpinBox_aotfLine1, ok, d, 50.0, Double);
-        READ_BOOL_SETTING(prefs, cbLine2, true); // READ_CHECKBOX_SETTING
+        READ_CHECKBOX_SETTING(prefs, cbLine2, true); // READ_CHECKBOX_SETTING
         READ_SETTING(prefs, doubleSpinBox_aotfLine2, ok, d, 50.0, Double);
-        READ_BOOL_SETTING(prefs, cbLine3, false); // READ_CHECKBOX_SETTING
+        READ_CHECKBOX_SETTING(prefs, cbLine3, false); // READ_CHECKBOX_SETTING
         READ_SETTING(prefs, doubleSpinBox_aotfLine3, ok, d, 50.0, Double);
-        READ_BOOL_SETTING(prefs, cbLine4, false); // READ_CHECKBOX_SETTING
+        READ_CHECKBOX_SETTING(prefs, cbLine4, false); // READ_CHECKBOX_SETTING
         READ_SETTING(prefs, doubleSpinBox_aotfLine4, ok, d, 50.0, Double);
-        READ_BOOL_SETTING(prefs, cbLine5, false); // READ_CHECKBOX_SETTING
+        READ_CHECKBOX_SETTING(prefs, cbLine5, false); // READ_CHECKBOX_SETTING
         READ_SETTING(prefs, doubleSpinBox_aotfLine5, ok, d, 50.0, Double);
-        READ_BOOL_SETTING(prefs, cbLine6, false); // READ_CHECKBOX_SETTING
+        READ_CHECKBOX_SETTING(prefs, cbLine6, false); // READ_CHECKBOX_SETTING
         READ_SETTING(prefs, doubleSpinBox_aotfLine6, ok, d, 50.0, Double);
-        READ_BOOL_SETTING(prefs, cbLine7, false); // READ_CHECKBOX_SETTING
+        READ_CHECKBOX_SETTING(prefs, cbLine7, false); // READ_CHECKBOX_SETTING
         READ_SETTING(prefs, doubleSpinBox_aotfLine7, ok, d, 50.0, Double);
-        READ_BOOL_SETTING(prefs, cbLine8, false); // READ_CHECKBOX_SETTING
+        READ_CHECKBOX_SETTING(prefs, cbLine8, false); // READ_CHECKBOX_SETTING
         READ_SETTING(prefs, doubleSpinBox_aotfLine8, ok, d, 50.0, Double);
         prefs.endGroup();
     }
