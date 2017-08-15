@@ -518,10 +518,12 @@ void Imagine::setROIMinMaxSize()
 
 void Imagine::updateImage(bool isColor)
 {
-    if (isColor)
+    if (isColor) {
         if (lastRawImg.isNull()|| lastRawImg2.isNull() || isPixmapping) return;
-    else
+    }
+    else {
         if (lastRawImg.isNull() || isPixmapping) return;
+    }
     isPixmapping = true;
 
     // making the pixmap is expensive - push it to another thread
