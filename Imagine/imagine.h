@@ -495,6 +495,8 @@ private slots:
     void on_pbStackPause_clicked();
     void on_sbFrameIdx_valueChanged(int newValue);
     void on_sbStackIdx_valueChanged(int newValue);
+    void on_hsFrameIdx_valueChanged(int newValue);
+    void on_hsStackIdx_valueChanged(int newValue);
     void on_pbImg1Color_clicked();
     void on_pbImg2Color_clicked();
     void on_hsBlending_valueChanged();

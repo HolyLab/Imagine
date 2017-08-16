@@ -161,7 +161,6 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     }
     ui.doubleSpinBoxExpTimeWav1->setEnabled(false);
     ui.doubleSpinBoxExpTimeWav2->setEnabled(false);
-    ui.cbEnableMismatch->setVisible(false);
 
     //adjust size
     QRect tRect = geometry();
@@ -438,7 +437,10 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     helpDialog = new HelpDialog;
     helpDialog->initHelp("helpmain.htm");
 
-    ui.gbDontShow1->setVisible(false);
+    ui.gbDontShowMe1->setVisible(false);
+    ui.gbDontShowMe2->setVisible(false);
+    ui.cbEnableMismatch->setVisible(false);
+    ui.pbTestButton->setVisible(false);
 }
 
 Imagine::~Imagine()
@@ -4490,6 +4492,8 @@ bool Imagine::readImagineAndCamFile(QString filename, ImagineData &img)
     }
     ui.sbStackIdx->setMaximum(imgNStacks-1);
     ui.sbFrameIdx->setMaximum(imgFramesPerStack-1);
+    ui.hsStackIdx->setMaximum(imgNStacks - 1);
+    ui.hsFrameIdx->setMaximum(imgFramesPerStack - 1);
     ui.labelNumverOfStack->setText(QString("%1").arg(imgNStacks));
     ui.labelFramesPerStack->setText(QString("%1").arg(imgFramesPerStack));
 
@@ -4692,13 +4696,27 @@ void Imagine::on_pbStackPause_clicked()
 void Imagine::on_sbFrameIdx_valueChanged(int newValue)
 {
     imgFrameIdx = newValue;
-    readCamImages();
+    ui.hsFrameIdx->setValue(newValue);
+    if(!isPixmapping)
+        readCamImages();
 }
 
 void Imagine::on_sbStackIdx_valueChanged(int newValue)
 {
     imgStackIdx = newValue;
-    readCamImages();
+    ui.hsStackIdx->setValue(newValue);
+    if (!isPixmapping)
+        readCamImages();
+}
+
+void Imagine::on_hsFrameIdx_valueChanged(int newValue)
+{
+    ui.sbFrameIdx->setValue(newValue);
+}
+
+void Imagine::on_hsStackIdx_valueChanged(int newValue)
+{
+    ui.sbStackIdx->setValue(newValue);
 }
 
 void Imagine::cbImgEnable_clicked()
