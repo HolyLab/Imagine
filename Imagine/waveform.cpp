@@ -815,6 +815,10 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
                     err |= ERR_SAMPLE_NUM_MISMATCHED;
                     errorMsg.append(QString("'%1' sample number is different from total sample number\n").arg(channelSignalList[i][1]));
                 }
+                if (err & (ERR_SHORT_WAVEFORM)) {
+                    errorMsg.append(QString("'%1' control includes too short waveform\nWaveform should be at least %2 samples")
+                        .arg(channelSignalList[i][1]).arg(SPEED_CHECK_INTERVAL));
+                }
                 errorCode |= err;
             }
             // laser speed check
