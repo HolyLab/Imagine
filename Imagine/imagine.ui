@@ -173,7 +173,7 @@
      <rect>
       <x>10</x>
       <y>120</y>
-      <width>379</width>
+      <width>394</width>
       <height>532</height>
      </rect>
     </property>
@@ -185,7 +185,7 @@
     </property>
     <property name="minimumSize">
      <size>
-      <width>379</width>
+      <width>394</width>
       <height>532</height>
      </size>
     </property>
@@ -233,7 +233,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>5</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -3010,22 +3010,12 @@
                 <number>10</number>
                </property>
                <item>
-                <widget class="QCheckBox" name="cbDualOutSW1">
-                 <property name="accessibleDescription">
-                  <string notr="true">no apply</string>
-                 </property>
-                 <property name="text">
-                  <string>SW 1</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <widget class="QCheckBox" name="cbLineTTL1">
                  <property name="accessibleDescription">
                   <string notr="true">no apply</string>
                  </property>
                  <property name="text">
-                  <string>Line 1</string>
+                  <string>488nm</string>
                  </property>
                 </widget>
                </item>
@@ -3035,7 +3025,7 @@
                   <string notr="true">no apply</string>
                  </property>
                  <property name="text">
-                  <string>Line 2</string>
+                  <string>561nm</string>
                  </property>
                 </widget>
                </item>
@@ -3045,7 +3035,7 @@
                   <string notr="true">no apply</string>
                  </property>
                  <property name="text">
-                  <string>Line 3</string>
+                  <string>405nm</string>
                  </property>
                 </widget>
                </item>
@@ -3055,7 +3045,17 @@
                   <string notr="true">no apply</string>
                  </property>
                  <property name="text">
-                  <string>Line 4</string>
+                  <string>445nm</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="cbLineTTL5">
+                 <property name="accessibleDescription">
+                  <string notr="true">no apply</string>
+                 </property>
+                 <property name="text">
+                  <string>514nm</string>
                  </property>
                 </widget>
                </item>
@@ -3066,26 +3066,6 @@
                <property name="topMargin">
                 <number>10</number>
                </property>
-               <item>
-                <widget class="QCheckBox" name="cbDualOutSW2">
-                 <property name="accessibleDescription">
-                  <string notr="true">no apply</string>
-                 </property>
-                 <property name="text">
-                  <string>SW 2</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="cbLineTTL5">
-                 <property name="accessibleDescription">
-                  <string notr="true">no apply</string>
-                 </property>
-                 <property name="text">
-                  <string>Line 5</string>
-                 </property>
-                </widget>
-               </item>
                <item>
                 <widget class="QCheckBox" name="cbLineTTL6">
                  <property name="accessibleDescription">
@@ -3113,6 +3093,26 @@
                  </property>
                  <property name="text">
                   <string>Line 8</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="cbDualOutSW2">
+                 <property name="accessibleDescription">
+                  <string notr="true">no apply</string>
+                 </property>
+                 <property name="text">
+                  <string>SW 2</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="cbDualOutSW1">
+                 <property name="accessibleDescription">
+                  <string notr="true">no apply</string>
+                 </property>
+                 <property name="text">
+                  <string>SW 1</string>
                  </property>
                 </widget>
                </item>

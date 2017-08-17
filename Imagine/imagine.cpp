@@ -364,16 +364,16 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
             emit getLaserLineSetupStatus();
             emit setLaserShutters(0);
         }
-        ui.cbLineTTL1->setEnabled(false);
-        ui.cbLineTTL2->setEnabled(false);
-        ui.cbLineTTL3->setEnabled(false);
-        ui.cbLineTTL4->setEnabled(false);
-        ui.cbLineTTL5->setEnabled(false);
-        ui.cbLineTTL6->setEnabled(false);
-        ui.cbLineTTL7->setEnabled(false);
-        ui.cbLineTTL8->setEnabled(false);
-        ui.cbDualOutSW1->setEnabled(false);
-        ui.cbDualOutSW2->setEnabled(false);
+        //ui.cbLineTTL1->setEnabled(false);
+        //ui.cbLineTTL2->setEnabled(false);
+        //ui.cbLineTTL3->setEnabled(false);
+        //ui.cbLineTTL4->setEnabled(false);
+        //ui.cbLineTTL5->setEnabled(false);
+        ui.cbLineTTL6->setVisible(false);
+        ui.cbLineTTL7->setVisible(false);
+        ui.cbLineTTL8->setVisible(false);
+        ui.cbDualOutSW1->setVisible(false);
+        ui.cbDualOutSW2->setVisible(false);
     }
     else {
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabLaser));
@@ -2876,28 +2876,28 @@ void Imagine::changeLaserShuttersTTL(int line, bool onOff)
 
 void Imagine::on_cbLineTTL1_clicked(bool checked)
 {
-    changeLaserShuttersTTL(1, checked);
+    changeLaserShuttersTTL(3, checked);
 }
 
 void Imagine::on_cbLineTTL2_clicked(bool checked)
 {
-    changeLaserShuttersTTL(2, checked);
+    changeLaserShuttersTTL(5, checked);
 //    bool returnVal = digOut->singleOut(14, checked); // P0.8~P0.12
 }
 
 void Imagine::on_cbLineTTL3_clicked(bool checked)
 {
-    changeLaserShuttersTTL(3, checked);
+    changeLaserShuttersTTL(1, checked);
 }
 
 void Imagine::on_cbLineTTL4_clicked(bool checked)
 {
-    changeLaserShuttersTTL(4, checked);
+    changeLaserShuttersTTL(2, checked);
 }
 
 void Imagine::on_cbLineTTL5_clicked(bool checked)
 {
-    changeLaserShuttersTTL(5, checked);
+    changeLaserShuttersTTL(4, checked);
 }
 
 void Imagine::on_cbLineTTL6_clicked(bool checked)
@@ -3438,7 +3438,7 @@ void Imagine::on_btnReadAiWavOpen_clicked()
     // read ai filename and di filename
     // read channel number and signal names
     QTextStream in(&file);
-    QString aiFilename, diFilename;
+    QString aiFilename, diFilename="NA";
     QString container;
     QVector<QString> aiName, diName;
     QVector<int> diChNumList;
