@@ -233,7 +233,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>5</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -1868,7 +1868,7 @@
                  <property name="sizeConstraint">
                   <enum>QLayout::SetMinimumSize</enum>
                  </property>
-                 <item row="1" column="4">
+                 <item row="1" column="5">
                   <widget class="QSpinBox" name="sbFrameIdx">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1937,7 +1937,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="4">
+                 <item row="0" column="5">
                   <widget class="QSpinBox" name="sbStackIdx">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1974,7 +1974,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="6">
+                 <item row="1" column="7">
                   <widget class="QLabel" name="labelFramesPerStack">
                    <property name="maximumSize">
                     <size>
@@ -1993,7 +1993,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="2">
+                 <item row="1" column="3">
                   <widget class="QSlider" name="hsFrameIdx">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -2018,7 +2018,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="2">
+                 <item row="0" column="3">
                   <widget class="QSlider" name="hsStackIdx">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -2043,7 +2043,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="6">
+                 <item row="0" column="7">
                   <widget class="QLabel" name="labelNumverOfStack">
                    <property name="maximumSize">
                     <size>
@@ -2062,7 +2062,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="5">
+                 <item row="0" column="6">
                   <widget class="QLabel" name="label_75">
                    <property name="maximumSize">
                     <size>
@@ -2078,7 +2078,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="5">
+                 <item row="1" column="6">
                   <widget class="QLabel" name="label_76">
                    <property name="maximumSize">
                     <size>
@@ -2091,6 +2091,82 @@
                    </property>
                    <property name="text">
                     <string> Frame/stack</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QPushButton" name="pbStackPlay">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="imagine.qrc">
+                     <normaloff>:/icons/Resources/playG.bmp</normaloff>
+                     <disabledoff>:/icons/Resources/playD.bmp</disabledoff>
+                     <disabledon>:/icons/Resources/playD.bmp</disabledon>:/icons/Resources/playG.bmp</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QPushButton" name="pbStackPause">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="imagine.qrc">
+                     <normaloff>:/icons/Resources/pauseG.bmp</normaloff>
+                     <disabledoff>:/icons/Resources/pauseD.bmp</disabledoff>
+                     <disabledon>:/icons/Resources/pauseD.bmp</disabledon>:/icons/Resources/pauseG.bmp</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QPushButton" name="pbFramePlay">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="imagine.qrc">
+                     <normaloff>:/icons/Resources/playG.bmp</normaloff>
+                     <disabledoff>:/icons/Resources/playD.bmp</disabledoff>
+                     <disabledon>:/icons/Resources/playD.bmp</disabledon>:/icons/Resources/playG.bmp</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="2">
+                  <widget class="QPushButton" name="pbFramePause">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="imagine.qrc">
+                     <normaloff>:/icons/Resources/pauseG.bmp</normaloff>
+                     <disabledoff>:/icons/Resources/pauseD.bmp</disabledoff>
+                     <disabledon>:/icons/Resources/pauseD.bmp</disabledon>:/icons/Resources/pauseG.bmp</iconset>
                    </property>
                   </widget>
                  </item>
@@ -2342,44 +2418,6 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pbStackPause">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="imagine.qrc">
-                     <normaloff>:/icons/Resources/pauseG.bmp</normaloff>
-                     <disabledoff>:/icons/Resources/pauseD.bmp</disabledoff>
-                     <disabledon>:/icons/Resources/pauseD.bmp</disabledon>:/icons/Resources/pauseG.bmp</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pbStackPlay">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="imagine.qrc">
-                     <normaloff>:/icons/Resources/playG.bmp</normaloff>
-                     <disabledoff>:/icons/Resources/playD.bmp</disabledoff>
-                     <disabledon>:/icons/Resources/playD.bmp</disabledon>:/icons/Resources/playG.bmp</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
                   <widget class="QPushButton" name="pbStackFastForward">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -2433,44 +2471,6 @@
                      <normaloff>:/icons/Resources/playbackG.bmp</normaloff>
                      <disabledoff>:/icons/Resources/playbackD.bmp</disabledoff>
                      <disabledon>:/icons/Resources/playbackD.bmp</disabledon>:/icons/Resources/playbackG.bmp</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pbFramePause">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="imagine.qrc">
-                     <normaloff>:/icons/Resources/pauseG.bmp</normaloff>
-                     <disabledoff>:/icons/Resources/pauseD.bmp</disabledoff>
-                     <disabledon>:/icons/Resources/pauseD.bmp</disabledon>:/icons/Resources/pauseG.bmp</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pbFramePlay">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="imagine.qrc">
-                     <normaloff>:/icons/Resources/playG.bmp</normaloff>
-                     <disabledoff>:/icons/Resources/playD.bmp</disabledoff>
-                     <disabledon>:/icons/Resources/playD.bmp</disabledon>:/icons/Resources/playG.bmp</iconset>
                    </property>
                   </widget>
                  </item>
