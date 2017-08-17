@@ -1,0 +1,311 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="actuators\voltage\volpiezo.cpp" />
+    <ClCompile Include="ai_thread.cpp" />
+    <ClCompile Include="ArduinoSerial.cpp" />
+    <ClCompile Include="ArduinoThread.cpp" />
+    <ClCompile Include="cameraworkerthread.cpp" />
+    <ClCompile Include="camera_g.cpp" />
+    <ClCompile Include="cooke.cpp" />
+    <ClCompile Include="cookeworkerthread.cpp" />
+    <ClCompile Include="data_acq_thread.cpp" />
+    <ClCompile Include="fast_ofstream.cpp" />
+    <ClCompile Include="imagelabel.cpp" />
+    <ClCompile Include="imagine.cpp" />
+    <ClCompile Include="ImgApplication.cpp" />
+    <ClCompile Include="laserctrl.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="misc.cpp" />
+    <ClCompile Include="piezoctrl.cpp" />
+    <ClCompile Include="Pixmapper.cpp" />
+    <ClCompile Include="positioner.cpp" />
+    <ClCompile Include="shutterctrl.cpp" />
+    <ClCompile Include="spoolthread.cpp" />
+    <ClCompile Include="workerthread.cpp" />
+    <ClCompile Include="helpdialog.cpp" />
+    <ClCompile Include="waveform.cpp" />
+    <ClCompile Include="di_thread.cpp" />
+    <ClCompile Include="script.cpp" />
+    <ClCompile Include="GeneratedFiles\Release\moc_ai_thread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ai_thread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ArduinoThread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ArduinoThread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_cameraworkerthread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_cameraworkerthread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_cooke.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_cooke.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_cookeworkerthread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_cookeworkerthread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_data_acq_thread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_data_acq_thread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_di_thread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_di_thread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_helpdialog.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_helpdialog.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_imagelabel.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_imagelabel.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_imagine.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_imagine.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ImgApplication.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ImgApplication.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_laserctrl.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_laserctrl.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_piezoctrl.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_piezoctrl.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_Pixmapper.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_Pixmapper.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_script.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_script.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_spoolthread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_spoolthread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_waveform.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_waveform.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_workerthread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_workerthread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_helpdialog.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_imagine.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GeneratedFiles\ui_imagine.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_helpdialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ArduinoSerial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="circbuf.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="curvedata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="daq.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dummy_daq.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="actuators\dummy\dummypiezo.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fast_ofstream.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageLib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lockguard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="memcpy_g.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="misc.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ni_daq_g.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="positioner.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shutterctrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="timer_g.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="actuators\voltage\volpiezo.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="camera_g.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="piezoctrl.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="waveform.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="helpdialog.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="script.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="helpdialog.qrc">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="imagine.qrc">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="cameraworkerthread.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ai_thread.hpp">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ArduinoThread.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="cooke.hpp">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="cookeworkerthread.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="di_thread.hpp">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data_acq_thread.hpp">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="imagelabel.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ImgApplication.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="laserctrl.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Pixmapper.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="spoolthread.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="workerthread.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="imagine.ui">
+      <Filter>GUI Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="helpdialog.ui">
+      <Filter>GUI Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="imagine.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="scripts\bakewell.js">
+      <Filter>Etc</Filter>
+    </None>
+    <None Include="scripts\hs-ocpi.js">
+      <Filter>Etc</Filter>
+    </None>
+    <None Include="scripts\imagine.js">
+      <Filter>Etc</Filter>
+    </None>
+    <None Include="scripts\ocpi-1.js">
+      <Filter>Etc</Filter>
+    </None>
+    <None Include="scripts\ocpi-2.js">
+      <Filter>Etc</Filter>
+    </None>
+    <None Include="scripts\ocpi-1bidi.js">
+      <Filter>Etc</Filter>
+    </None>
+    <None Include="scripts\preset.js">
+      <Filter>Etc</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+      <ParseFiles>true</ParseFiles>
+    </Filter>
+    <Filter Include="GUI Files">
+      <UniqueIdentifier>{0198d815-ff70-4926-92f1-2962a51898a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{e1f06af8-fbb4-4d55-8bde-8051e5b52bba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Etc">
+      <UniqueIdentifier>{cc0aa455-b2be-45b3-88dc-685ca1741bcb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

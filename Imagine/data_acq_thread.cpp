@@ -674,10 +674,10 @@ void DataAcqThread::run_acq_and_save_wav()
 
     gt.start(); //seq's start time is 0, the new ref pt
 
+    camera->nextStack();
     double curTime;
     double lastTime;
     double stackStartTime;
-
     bool isPiezo = hasPos && pPositioner->posType == PiezoControlPositioner;
     if (hasPos && ownPos) {
         digOut->runCmd();
@@ -688,7 +688,6 @@ nextStack:  //code below is repeated every stack
 
     //raise priority here to ensure that the camera and piezo begin (nearly) simultaneously
     setPriority(QThread::TimeCriticalPriority);
-    camera->nextStack();
     //lower priority back to default
     setPriority(getDefaultPriority());
 
