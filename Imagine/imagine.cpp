@@ -150,6 +150,9 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabAI));
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabStim));
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabScript));
+        ui.gbDisplaySourceSelect->hide();
+        ui.groupBoxPlayCamImage->hide();
+        ui.groupBoxBlendingOption->hide();
         ui.lineEditFilename->setText("d:/test/t2.imagine");
     }
     else {  // Imagine(1)
@@ -1427,6 +1430,9 @@ void Imagine::closeEvent(QCloseEvent *event)
         }
         (*slaveUi).cbBothCamera->setChecked(false);
         (*slaveUi).cbBothCamera->setVisible(false);
+        (*slaveUi).gbDisplaySourceSelect->show();
+        (*slaveUi).groupBoxPlayCamImage->show();
+        (*slaveUi).groupBoxBlendingOption->show();
         slaveImagine->masterImagine == NULL;
     }
     if (masterImagine != NULL) {
