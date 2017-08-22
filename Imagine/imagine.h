@@ -288,11 +288,14 @@ private:
     bool waveformValidityCheck(void);
     bool loadConWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx);
     bool loadAiDiWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx);
-    void readImagineFile(QString file, ImagineData &img);
-    bool readImagineAndCamFile(QString filename, ImagineData &img1);
-    void blendImages();
-    void readCamImages();
-    void cbImgEnable_clicked();
+    bool readImagineFile(QString file, ImagineData &img);
+    bool openAndReadCamFile(QString filename, ImagineData &img);
+    bool setupPlayCamParam(ImagineData &img);
+    bool readCamFileImages();
+    void readCamFileImagesAndUpdate();
+    void readCameraImagesAndUpdate();
+    void reconfigDisplayTab();
+    void cbCameraEnable_clicked();
     void holdDisplayCamFile();
     void stopDisplayCamFile();
     void applyImgColor(QWidget *widget, QColor color);
@@ -371,6 +374,7 @@ private slots:
 
     void updateStatus(const QString &str);
     void appendLog(const QString& msg);
+    void updateLiveImagePlay(const QByteArray &data16, long idx, int imageW, int imageH);
     void updateDisplay(const QByteArray &data16, long idx, int imageW, int imageH);
     void updateDisplayColor(const QByteArray &data1, const QByteArray &data2, long idx, int imageW, int imageH);
     void zoom_onMousePressed(QMouseEvent*);
@@ -479,9 +483,11 @@ private slots:
 
     void on_btnImg1LoadFile_clicked();
     void on_btnImg2LoadFile_clicked();
+    void on_cbCam1Enable_clicked(bool checked);
+    void on_cbCam2Enable_clicked(bool checked);
+    void on_rbImgCameraEnable_toggled(bool checked);
     void on_cbImg1Enable_clicked(bool checked);
     void on_cbImg2Enable_clicked(bool checked);
-    void on_rbImgCameraEnable_toggled(bool checked);
     void on_rbImgFileEnable_toggled(bool checked);
     void on_pbFramePlayback_clicked();
     void on_pbFramePlay_clicked();

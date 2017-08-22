@@ -153,6 +153,9 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
         ui.gbDisplaySourceSelect->hide();
         ui.groupBoxPlayCamImage->hide();
         ui.groupBoxBlendingOption->hide();
+        ui.cbCam1Enable->setChecked(false);
+        ui.cbCam2Enable->setChecked(true);
+        ui.rbImgCameraEnable->setChecked(true);
         ui.lineEditFilename->setText("d:/test/t2.imagine");
     }
     else {  // Imagine(1)
@@ -160,6 +163,9 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
         conWaveDataUser = new ControlWaveform(rig);
         conWaveData = conWaveDataParam;
         ui.cbWaveformEnable->setEnabled(false);
+        ui.cbCam1Enable->setChecked(true);
+        ui.cbCam2Enable->setChecked(false);
+        ui.rbImgCameraEnable->setChecked(true);
         ui.lineEditFilename->setText("f:/test/t1.imagine");
     }
     ui.doubleSpinBoxExpTimeWav1->setEnabled(false);
@@ -285,7 +291,8 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     connect(dataAcqThread, SIGNAL(newLogMsgReady(const QString &)),
         this, SLOT(appendLog(const QString &)));
     connect(dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
-        this, SLOT(updateDisplay(const QByteArray &, long, int, int)));
+        this, SLOT(updateLiveImagePlay(const QByteArray &, long, int, int)));
+        // this, SLOT(updateDisplay(const QByteArray &, long, int, int)));
     connect(dataAcqThread, SIGNAL(resetActuatorPosReady()),
         this, SLOT(on_btnMoveToStartPos_clicked()));
 
@@ -492,6 +499,10 @@ void Imagine::setSlaveWindow(Imagine *sImagine)
     if ((masterImagine == NULL) && (slaveImagine == NULL)) { // single Imagine window system
         ui.cbBothCamera->setChecked(false);
         ui.cbBothCamera->setVisible(false);
+        if (slaveImagine == NULL) {
+            ui.cbCam2Enable->setChecked(false);
+            ui.cbCam2Enable->setVisible(false);
+        }
     }
 }
 
@@ -932,12 +943,16 @@ void Imagine::updateStatus(const QString &str)
         return;
     }
 
-    this->statusBar()->showMessage(str);
-    appendLog(str);
-
     if (str.startsWith("valve", Qt::CaseInsensitive)){
         ui.tableWidgetStimDisplay->setCurrentCell(0, dataAcqThread->curStimIndex);
     }//if, update stimulus display
+
+    if (ui.rbImgFileEnable->isChecked())
+        return;
+
+    this->statusBar()->showMessage(str);
+    appendLog(str);
+
 }
 
 //TODO: move this func to misc.cpp
@@ -1433,6 +1448,8 @@ void Imagine::closeEvent(QCloseEvent *event)
         (*slaveUi).gbDisplaySourceSelect->show();
         (*slaveUi).groupBoxPlayCamImage->show();
         (*slaveUi).groupBoxBlendingOption->show();
+        (*slaveUi).cbCam2Enable->setChecked(false);
+        (*slaveUi).cbCam2Enable->setVisible(false);
         slaveImagine->masterImagine == NULL;
     }
     if (masterImagine != NULL) {
@@ -4341,7 +4358,7 @@ void Imagine::on_btnConWavList_clicked()
         else if (line.contains(QString(key).append("="), Qt::CaseSensitive)){\
             bool ok; container = line.remove(0, QString(key).size()+1);}
 
-void Imagine::readImagineFile(QString filename, ImagineData &img)
+bool Imagine::readImagineFile(QString filename, ImagineData &img)
 {
     QFile file(filename);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
@@ -4349,7 +4366,7 @@ void Imagine::readImagineFile(QString filename, ImagineData &img)
             tr("Cannot read file %1:\n%2.")
             .arg(filename)
             .arg(file.errorString()));
-        return;
+        return false;
     }
 
     QTextStream in(&file);
@@ -4380,16 +4397,24 @@ void Imagine::readImagineFile(QString filename, ImagineData &img)
     img.imageSizeBytes = img.imageSizePixels * img.bytesPerPixel;
 
     file.close();
+
+    if (!img.valid) {
+        QMessageBox::warning(this, tr("Imagine"),
+            tr("%1 file is not valid\n")
+            .arg(filename));
+        return false;
+    }
+    else
+        return true;
 }
 
 void Imagine::holdDisplayCamFile()
 {
     ui.rbImgCameraEnable->setChecked(true);
     ui.cbImg1Enable->setChecked(true);
-//    ui.cbImg2Enable->setChecked(false);
     img1.enable = false;
     img2.enable = false;
-    cbImgEnable_clicked();
+    reconfigDisplayTab();
 }
 
 void Imagine::stopDisplayCamFile()
@@ -4419,19 +4444,27 @@ void Imagine::on_btnImg1LoadFile_clicked()
     if (true == filename.isEmpty()) { return; }
     QFileInfo fi(filename);
     m_OpenDialogLastDirectory = fi.absolutePath();
-    ui.lineEditImg1Filename->setText(filename);
-    ui.cbImg1Enable->setChecked(true);
     ui.rbImgFileEnable->setChecked(true);
-    img1.enable = true;
 
-    bool succeed = readImagineAndCamFile(filename, img1);
+    bool succeed = readImagineFile(filename, img1);
     if (succeed == false) {
         ui.cbImg1Enable->setChecked(false);
         ui.lineEditImg1Filename->setText("");
         img1.enable = false;
+        return;
     }
+    else {
+        ui.cbImg1Enable->setChecked(true);
+        ui.lineEditImg1Filename->setText(filename);
+        img1.enable = true;
+    }
+    setupPlayCamParam(img1);
+    QString camFilename = replaceExtName(filename, "cam");
+    openAndReadCamFile(camFilename, img1);
+    ui.sbFrameIdx->setValue(imgFrameIdx);
+    ui.sbStackIdx->setValue(imgStackIdx);
 
-    cbImgEnable_clicked();
+    reconfigDisplayTab();
 }
 
 void Imagine::on_btnImg2LoadFile_clicked()
@@ -4443,19 +4476,27 @@ void Imagine::on_btnImg2LoadFile_clicked()
     if (true == filename.isEmpty()) { return; }
     QFileInfo fi(filename);
     m_OpenDialogLastDirectory = fi.absolutePath();
-    ui.lineEditImg2Filename->setText(filename);
-    ui.cbImg2Enable->setChecked(true);
     ui.rbImgFileEnable->setChecked(true);
-    img2.enable = true;
 
-    bool succeed = readImagineAndCamFile(filename, img2);
+    bool succeed = readImagineFile(filename, img2);
     if (succeed == false) {
         ui.cbImg2Enable->setChecked(false);
-        ui.lineEditImg1Filename->setText("");
+        ui.lineEditImg2Filename->setText("");
         img2.enable = false;
+        return;
     }
+    else {
+        ui.cbImg2Enable->setChecked(true);
+        ui.lineEditImg2Filename->setText(filename);
+        img2.enable = true;
+    }
+    setupPlayCamParam(img2);
+    QString camFilename = replaceExtName(filename, "cam");
+    openAndReadCamFile(camFilename, img2);
+    ui.sbFrameIdx->setValue(imgFrameIdx);
+    ui.sbStackIdx->setValue(imgStackIdx);
 
-    cbImgEnable_clicked();
+    reconfigDisplayTab();
 }
 
 bool Imagine::compareDimensions()
@@ -4470,18 +4511,9 @@ bool Imagine::compareDimensions()
         return true;
 }
 
-void Imagine::setupDimensions(int stacks, int frames, int width, int height)
+bool Imagine::setupPlayCamParam(ImagineData &img)
 {
-    imgNStacks = stacks;
-    imgFramesPerStack = frames;
-    imgWidth = width;
-    imgHeight = height;
-}
-
-bool Imagine::readImagineAndCamFile(QString filename, ImagineData &img)
-{
-    bool retVal = true;
-    readImagineFile(filename, img);
+    // setup palyback parameter
     if (img1.valid && img1.enable && img2.valid && img2.enable) {
         if (!compareDimensions()) {
             img.valid = false;
@@ -4490,37 +4522,48 @@ bool Imagine::readImagineAndCamFile(QString filename, ImagineData &img)
         else
             setupDimensions(img.nStacks, img.framesPerStack, img.imgWidth, img.imgHeight);
     }
-    else if(img.valid){
+    else if (img.valid) {
         setupDimensions(img.nStacks, img.framesPerStack, img.imgWidth, img.imgHeight);
     }
     else {
         setupDimensions(0, 0, 0, 0);
     }
-    ui.sbStackIdx->setMaximum(imgNStacks-1);
-    ui.sbFrameIdx->setMaximum(imgFramesPerStack-1);
+    ui.sbStackIdx->setMaximum(imgNStacks - 1);
+    ui.sbFrameIdx->setMaximum(imgFramesPerStack - 1);
     ui.hsStackIdx->setMaximum(imgNStacks - 1);
     ui.hsFrameIdx->setMaximum(imgFramesPerStack - 1);
     ui.labelNumverOfStack->setText(QString("%1").arg(imgNStacks));
     ui.labelFramesPerStack->setText(QString("%1").arg(imgFramesPerStack));
 
-    // read .cam file
-    QString camFilename = replaceExtName(filename, "cam");
-    img.camFile.setFileName(camFilename);
-    if (!img.camFile.open(QFile::ReadOnly)) {
-        QMessageBox::warning(this, tr("Imagine"),
-            tr("Cannot read file %1:\n%2.")
-            .arg(camFilename)
-            .arg(img.camFile.errorString()));
-    }
-
+    // Reset stack index, frame index and zoom
     imgFrameIdx = 0; // 0-based
     imgStackIdx = 0; // 0-based
     L = -1;
+    return true;
+}
 
-    readCamImages();
+void Imagine::setupDimensions(int stacks, int frames, int width, int height)
+{
+    imgNStacks = stacks;
+    imgFramesPerStack = frames;
+    imgWidth = width;
+    imgHeight = height;
+}
 
-    ui.sbFrameIdx->setValue(imgFrameIdx);
-    ui.sbStackIdx->setValue(imgStackIdx);
+bool Imagine::openAndReadCamFile(QString filename, ImagineData &img)
+{
+    img.camFile.setFileName(filename);
+    if (!img.camFile.open(QFile::ReadOnly)) {
+        QMessageBox::warning(this, tr("Imagine"),
+            tr("Cannot read file %1:\n%2.")
+            .arg(filename)
+            .arg(img.camFile.errorString()));
+        return false;
+    }
+
+    // read camfile and update with current index and zoom setting
+    readCamFileImagesAndUpdate();
+
     return true;
 }
 
@@ -4536,20 +4579,22 @@ void Imagine::on_pbImg1Color_clicked()
 {
     img1Color = QColorDialog::getColor(img1Color, this);
     applyImgColor(ui.widgetImg1Color, img1Color);
-    readCamImages();
+    readCamFileImagesAndUpdate();
 }
 
 void Imagine::on_pbImg2Color_clicked()
 {
     img2Color = QColorDialog::getColor(img2Color, this);
     applyImgColor(ui.widgetImg2Color, img2Color);
-    readCamImages();
+    readCamFileImagesAndUpdate();
 }
 
-void Imagine::blendImages()
+// read camfile with current imgStackIdx and imgFrameIdx
+bool Imagine::readCamFileImages()
 {
     bool found;
     qint64 totalImgIdx;
+    // TODO: merge below two blocks
     if (img1.valid&&img1.enable) {
         img1.currentFrameIdx = imgFrameIdx;
         img1.currentStackIdx = imgStackIdx;
@@ -4558,8 +4603,10 @@ void Imagine::blendImages()
         if (img1.camValid) {
             img1.camImage = img1.camFile.read(img1.imageSizeBytes);
         }
-        else
+        else {
             appendLog("Image 1 : invalid stack and frame numbers");
+            return false;
+        }
     }
     if (img2.valid&&img2.enable) {
         img2.currentFrameIdx = imgFrameIdx;
@@ -4569,24 +4616,89 @@ void Imagine::blendImages()
         if (img2.camValid) {
             img2.camImage = img2.camFile.read(img2.imageSizeBytes);
         }
-        else
+        else {
             appendLog("Image 2 : invalid stack and frame numbers");
+            return false;
+        }
+    }
+    return true;
+}
+
+void Imagine::readCamFileImagesAndUpdate()
+{
+    bool succeed = readCamFileImages();
+
+    if (succeed) {
+        // update images with current zoom setting
+        nUpdateImage = 0;
+        minPixelValue = maxPixelValue = -1;
+        minPixelValue2 = maxPixelValue2 = -1;
+        if (img1.enable && img1.camValid && img2.enable && img2.camValid)
+            updateDisplayColor(img1.camImage, img2.camImage, imgFrameIdx, imgWidth, imgHeight);
+        else if (img1.enable && img1.camValid)
+            updateDisplay(img1.camImage, imgFrameIdx, img1.imgWidth, img1.imgHeight);
+        else if (img2.enable && img2.valid)
+            updateDisplay(img2.camImage, imgFrameIdx, img2.imgWidth, img2.imgHeight);
     }
 }
 
-void Imagine::readCamImages()
+void Imagine::updateLiveImagePlay(const QByteArray &data16, long idx, int imageW, int imageH)
 {
-    blendImages();
+    if (ui.rbImgCameraEnable->isChecked())
+        readCameraImagesAndUpdate();
+    else if (masterImagine != NULL)
+        readCameraImagesAndUpdate();
+}
 
-    nUpdateImage = 0;
-    minPixelValue = maxPixelValue = -1;
-    minPixelValue2 = maxPixelValue2 = -1;
-    if (img1.enable && img1.camValid && img2.enable && img2.camValid)
-        updateDisplayColor(img1.camImage, img2.camImage, imgFrameIdx, imgWidth, imgHeight);
-    else if (img1.enable && img1.camValid)
-        updateDisplay(img1.camImage, imgFrameIdx, img1.imgWidth, img1.imgHeight);
-    else if (img2.enable && img2.valid)
-        updateDisplay(img2.camImage, imgFrameIdx, img2.imgWidth, img2.imgHeight);
+void Imagine::readCameraImagesAndUpdate()
+{
+    QByteArray live1, live2;
+    int width1, height1, width2, height2;
+    int updateMethod = 0;
+    if (masterImagine != NULL)
+    {
+        live1 = dataAcqThread->pCamera->getLiveImage();
+        width1 = dataAcqThread->pCamera->getImageWidth();
+        height1 = dataAcqThread->pCamera->getImageHeight();
+        if (live1.size() != 0) updateMethod += 1;
+    }
+    else {
+        if (ui.cbCam1Enable->isChecked()) {
+            live1 = dataAcqThread->pCamera->getLiveImage();
+            width1 = dataAcqThread->pCamera->getImageWidth();
+            height1 = dataAcqThread->pCamera->getImageHeight();
+            if (live1.size() != 0) updateMethod += 1;
+        }
+        if ((ui.cbCam2Enable->isChecked()) && (slaveImagine)) {
+            live2 = slaveImagine->dataAcqThread->pCamera->getLiveImage();
+            width2 = slaveImagine->dataAcqThread->pCamera->getImageWidth();
+            height2 = slaveImagine->dataAcqThread->pCamera->getImageHeight();
+            if (live2.size() != 0) updateMethod += 2;
+        }
+    }
+    if (updateMethod) {
+        maxPixelValue = -1;
+        if (updateMethod == 1)
+            updateDisplay(live1, 0, width1, height1);
+        else if (updateMethod == 2)
+            updateDisplay(live2, 0, width2, height2);
+        else {// updateMethod == 4
+            if ((width1 != width2) || (height1 != height2)) {
+                QMessageBox::warning(this, tr("Imagine"),
+                    tr("Image size is different betwen camera 1 and camera 2"));
+                ui.cbCam2Enable->setChecked(false);
+                updateDisplay(live1, 0, width1, height1);
+            }
+            updateDisplayColor(live1, live2, 0, width1, height1);
+        }
+    }
+    else {// show logo
+        QImage tImage(":/images/Resources/logo.jpg"); //todo: put logo here
+        if (!tImage.isNull()) {
+            ui.labelImage->setPixmap(QPixmap::fromImage(tImage));
+            ui.labelImage->adjustSize();
+        }
+    }
 }
 
 void Imagine::readNextCamImages(int stack1, int frameIdx1, int stack2, int frameIdx2)
@@ -4704,7 +4816,7 @@ void Imagine::on_sbFrameIdx_valueChanged(int newValue)
     imgFrameIdx = newValue;
     ui.hsFrameIdx->setValue(newValue);
     if(!isPixmapping)
-        readCamImages();
+        readCamFileImagesAndUpdate();
 }
 
 void Imagine::on_sbStackIdx_valueChanged(int newValue)
@@ -4712,7 +4824,7 @@ void Imagine::on_sbStackIdx_valueChanged(int newValue)
     imgStackIdx = newValue;
     ui.hsStackIdx->setValue(newValue);
     if (!isPixmapping)
-        readCamImages();
+        readCamFileImagesAndUpdate();
 }
 
 void Imagine::on_hsFrameIdx_valueChanged(int newValue)
@@ -4725,40 +4837,10 @@ void Imagine::on_hsStackIdx_valueChanged(int newValue)
     ui.sbStackIdx->setValue(newValue);
 }
 
-void Imagine::cbImgEnable_clicked()
+void Imagine::reconfigDisplayTab()
 {
-    if ((img1.enable && img1.camValid) || (img2.enable && img2.camValid))
-        ui.groupBoxPlayCamImage->setEnabled(true);
-    else
-        ui.groupBoxPlayCamImage->setEnabled(false);
-    if ((img1.enable && img1.camValid) && (img2.enable && img2.camValid))
-        ui.groupBoxBlendingOption->setEnabled(true);
-    else
-        ui.groupBoxBlendingOption->setEnabled(false);
-}
-
-void Imagine::on_cbImg1Enable_clicked(bool checked)
-{
-    if (ui.rbImgFileEnable->isChecked()) {
-        img1.enable = checked;
-        cbImgEnable_clicked();
-        readCamImages();
-    }
-}
-
-void Imagine::on_cbImg2Enable_clicked(bool checked)
-{
-    if (ui.rbImgFileEnable->isChecked()) {
-        img2.enable = checked;
-        cbImgEnable_clicked();
-        readCamImages();
-    }
-}
-
-void Imagine::on_rbImgCameraEnable_toggled(bool checked)
-{
-    L = -1; // full image
-    if (checked) { // camera
+    if (ui.rbImgCameraEnable->isChecked()) {
+        // stop playing cam file images
         img1.stackPlaySpeed = 0;
         img2.stackPlaySpeed = 0;
         imagePlay->stackPlaySpeed1 = 0;
@@ -4767,34 +4849,108 @@ void Imagine::on_rbImgCameraEnable_toggled(bool checked)
         img2.framePlaySpeed = 0;
         imagePlay->framePlaySpeed1 = 0;
         imagePlay->framePlaySpeed2 = 0;
-        // TODO: need to clear signals for ImagePlay and Pixmapper
+        // reconfigurate some GUI items
         ui.groupBoxPlayCamImage->setEnabled(false);
-        if(ui.cbImg1Enable->isChecked()&& ui.cbImg2Enable->isChecked())
+        if (ui.cbCam1Enable->isChecked() && ui.cbCam2Enable->isChecked())
             ui.groupBoxBlendingOption->setEnabled(true);
         else
             ui.groupBoxBlendingOption->setEnabled(false);
-        //show logo
-        QByteArray live1 = dataAcqThread->pCamera->getLiveImage();
-        int width = dataAcqThread->pCamera->getImageWidth();
-        int height = dataAcqThread->pCamera->getImageHeight();
-        // check camera 2 image : QByteArray live2 = dataAcqThread->pCamera->getLiveImage();
-        if (live1.size() != 0) { //&& (live2 != 0) then blending
-            maxPixelValue = -1;
-            updateDisplay(live1, 0, width, height);
+        if (slaveImagine) {
+            if (ui.cbCam2Enable->isChecked())
+                connect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
+                    this, SLOT(updateLiveImagePlay(const QByteArray &, long, int, int)));
+            else
+                disconnect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
+                    this, SLOT(updateLiveImagePlay(const QByteArray &, long, int, int)));
         }
-        else {
-            QImage tImage(":/images/Resources/logo.jpg"); //todo: put logo here
-            if (!tImage.isNull()) {
-                ui.labelImage->setPixmap(QPixmap::fromImage(tImage));
-                ui.labelImage->adjustSize();
-            }
-        }
+    }
+    else {
+        disconnect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
+            this, SLOT(updateLiveImagePlay(const QByteArray &, long, int, int)));
+        if ((img1.enable && img1.camValid) || (img2.enable && img2.camValid))
+            ui.groupBoxPlayCamImage->setEnabled(true);
+        else
+            ui.groupBoxPlayCamImage->setEnabled(false);
+        if ((img1.enable && img1.camValid) && (img2.enable && img2.camValid))
+            ui.groupBoxBlendingOption->setEnabled(true);
+        else
+            ui.groupBoxBlendingOption->setEnabled(false);
+    }
+}
+
+void Imagine::on_cbImg1Enable_clicked(bool checked)
+{
+    if (ui.rbImgFileEnable->isChecked()) {
+        img1.enable = checked;
+        reconfigDisplayTab();
+        readCamFileImagesAndUpdate();
+    }
+}
+
+void Imagine::on_cbImg2Enable_clicked(bool checked)
+{
+    if (ui.rbImgFileEnable->isChecked()) {
+        img2.enable = checked;
+        reconfigDisplayTab();
+        readCamFileImagesAndUpdate();
+    }
+}
+
+void Imagine::cbCameraEnable_clicked()
+{
+    // stop playing cam file images
+    img1.stackPlaySpeed = 0;
+    img2.stackPlaySpeed = 0;
+    imagePlay->stackPlaySpeed1 = 0;
+    imagePlay->stackPlaySpeed2 = 0;
+    img1.framePlaySpeed = 0;
+    img2.framePlaySpeed = 0;
+    imagePlay->framePlaySpeed1 = 0;
+    imagePlay->framePlaySpeed2 = 0;
+    // reconfigurate some GUI items
+    ui.groupBoxPlayCamImage->setEnabled(false);
+    if (ui.cbImg1Enable->isChecked() && ui.cbImg2Enable->isChecked())
+        ui.groupBoxBlendingOption->setEnabled(true);
+    else
+        ui.groupBoxBlendingOption->setEnabled(false);
+    if (slaveImagine) {
+        if (ui.cbCam2Enable->isChecked())
+            connect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
+                this, SLOT(updateLiveImagePlay(const QByteArray &, long, int, int)));
+        if (ui.cbCam2Enable->isChecked())
+            disconnect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
+                this, SLOT(updateLiveImagePlay(const QByteArray &, long, int, int)));
+    }
+}
+
+void Imagine::on_cbCam1Enable_clicked(bool checked)
+{
+    if (ui.rbImgCameraEnable->isChecked()) {
+        reconfigDisplayTab();
+        readCameraImagesAndUpdate();
+    }
+}
+
+void Imagine::on_cbCam2Enable_clicked(bool checked)
+{
+    if (ui.rbImgCameraEnable->isChecked()) {
+        reconfigDisplayTab();
+        readCameraImagesAndUpdate();
+    }
+}
+
+void Imagine::on_rbImgCameraEnable_toggled(bool checked)
+{
+    L = -1; // full image
+    if (checked) { // camera
+        reconfigDisplayTab();
+        readCameraImagesAndUpdate();
     }
     else { // imagine file
         img1.enable = ui.cbImg1Enable->isChecked();
         img2.enable = ui.cbImg2Enable->isChecked();
-        cbImgEnable_clicked();
-        readCamImages();
+        reconfigDisplayTab();
+        readCamFileImagesAndUpdate();
     }
 }
 
@@ -4806,7 +4962,7 @@ void Imagine::on_rbImgFileEnable_toggled(bool checked)
 void Imagine::on_hsBlending_valueChanged()
 {
     alpha = ui.hsBlending->value();
-    readCamImages();
+    readCamFileImagesAndUpdate();
 }
 
 void transform(QByteArray &img1, QByteArray &img2, int width, int height, TransformParam param)
@@ -4850,8 +5006,8 @@ void Imagine::on_pbTestButton_clicked()
                 transform(img1.camImage, img2.camImage, img1.imgWidth, img1.imgHeight, img2.param);
                 img2.camValid = true;
                 if (ui.rbImgFileEnable->isChecked() && true) {
-                    cbImgEnable_clicked();
-                    readCamImages();
+                    reconfigDisplayTab();
+                    readCamFileImagesAndUpdate();
                 }
             }
         }
