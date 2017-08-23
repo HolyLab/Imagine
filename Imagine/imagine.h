@@ -107,11 +107,6 @@ struct PiezoUiParam {
     PiezoUiParam(){ valid = false; }
 };
 
-typedef struct {
-    double alpha, beta, gamma;
-    double shiftX, shiftY, shiftZ;
-} TransformParam;
-
 class ImagineData
 {
 public:
@@ -137,12 +132,10 @@ public:
     // data for display control
     bool camValid = false;
     bool enable = false;
-    bool correctMismatch = false;
     int currentFrameIdx;
     int currentStackIdx;
     int stackPlaySpeed = 0;
     int framePlaySpeed = 0;
-    TransformParam param;
     QFile camFile;
     QByteArray camImage;
 };
@@ -191,7 +184,6 @@ public:
     int roiStepsHor;
     bool isUsingSoftROI = false;
     ImagineData img1, img2;
-    QByteArray camImage;
     int imgWidth, imgHeight;
     int imgFramesPerStack, imgNStacks;
     int imgFrameIdx, imgStackIdx;
@@ -317,6 +309,7 @@ private:
     void clearConWavPlot();
     void rearrangeTabWindow();
     void displayConWaveData();
+    void findMismatch(QByteArray &img1, QByteArray &img2, int width, int height);
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();
@@ -510,9 +503,7 @@ private slots:
 
     void on_actionViewHelp_triggered();
 
-    void on_pbTestButton_clicked();
     void on_pbSaveImage_clicked();
-    void on_pbGenerate_clicked();
     void on_btnOpenScriptFile_clicked();
     void on_btnScriptExecute_clicked();
     void on_textEditScriptFileContent_cursorPositionChanged();
@@ -537,13 +528,13 @@ signals:
         const int dLeft, const int dTop, const int dWidth, const int dHeight,
         const int xDown, const int xCur, const int yDown, const int yCur,
         const int minPixVal, const int maxPixVal, bool colorizeSat);
-    void makeColorPixmap(const QByteArray &ba1, const QByteArray &ba2, QColor color1,
-        QColor color2, int alpha, const int imageW, const int imageH,
+    void makeColorPixmap(const QByteArray &ba1, const QByteArray &ba2,
+        QColor color1, QColor color2, int alpha, const int imageW, const int imageH,
         const double scaleFactor1, const double scaleFactor2, const double dAreaSize,
         const int dLeft, const int dTop, const int dWidth, const int dHeight,
         const int xDown, const int xCur, const int yDown, const int yCur,
-        const int minPixVal1, const int maxPixVal1,
-        const int minPixVal2, const int maxPixVal2, bool colorizeSat);
+        const int minPixVal1, const int maxPixVal1, const int minPixVal2,
+        const int maxPixVal2, bool colorizeSatx);
     void startIndexRunning(int strtStackIdx1, int strtFrameIdx1, int nStacks1, int framesPerStack1,
         int strtStackIdx2, int strtFrameIdx2, int nStacks2, int framesPerStack2);
     void evaluateScript(void);

@@ -449,7 +449,7 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
 
     ui.gbDontShowMe1->setVisible(false);
     ui.gbDontShowMe2->setVisible(false);
-    ui.cbEnableMismatch->setVisible(false);
+//    ui.cbEnableMismatch->setVisible(false);
     ui.pbTestButton->setVisible(false);
 }
 
@@ -4896,33 +4896,6 @@ void Imagine::on_cbImg2Enable_clicked(bool checked)
     }
 }
 
-void Imagine::cbCameraEnable_clicked()
-{
-    // stop playing cam file images
-    img1.stackPlaySpeed = 0;
-    img2.stackPlaySpeed = 0;
-    imagePlay->stackPlaySpeed1 = 0;
-    imagePlay->stackPlaySpeed2 = 0;
-    img1.framePlaySpeed = 0;
-    img2.framePlaySpeed = 0;
-    imagePlay->framePlaySpeed1 = 0;
-    imagePlay->framePlaySpeed2 = 0;
-    // reconfigurate some GUI items
-    ui.groupBoxPlayCamImage->setEnabled(false);
-    if (ui.cbImg1Enable->isChecked() && ui.cbImg2Enable->isChecked())
-        ui.groupBoxBlendingOption->setEnabled(true);
-    else
-        ui.groupBoxBlendingOption->setEnabled(false);
-    if (slaveImagine) {
-        if (ui.cbCam2Enable->isChecked())
-            connect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
-                this, SLOT(updateLiveImagePlay(const QByteArray &, long, int, int)));
-        if (ui.cbCam2Enable->isChecked())
-            disconnect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
-                this, SLOT(updateLiveImagePlay(const QByteArray &, long, int, int)));
-    }
-}
-
 void Imagine::on_cbCam1Enable_clicked(bool checked)
 {
     if (ui.rbImgCameraEnable->isChecked()) {
@@ -4965,52 +4938,25 @@ void Imagine::on_hsBlending_valueChanged()
     readCamFileImagesAndUpdate();
 }
 
-void transform(QByteArray &img1, QByteArray &img2, int width, int height, TransformParam param)
+void Imagine::findMismatch(QByteArray &img1, QByteArray &img2, int width, int height)
 {
-    img2.clear();
-    width *= 2;   //2bytes per pixel
-    int size = width * height;
-    img2.append(img1, size);
-    /*
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j+=2) {
-            img2.append(img1[i*width + j],2);
+    if (pixmapper != NULL) {
+        pixmapper->param.alpha = 0.01; // 0.01rad -> 0.573degree
+        pixmapper->param.beta = 0.01;
+        pixmapper->param.gamma = 0.01;
+        pixmapper->param.shiftX = 100;
+        pixmapper->param.shiftY = 100;
+        pixmapper->param.shiftZ = 2;
+        pixmapper->param.isOk = true;
+
+        if (!pixmapper->param.isOk) {
+            // TODO: parameter finding error warning message
+            ui.cbEnableMismatch->setChecked(false);
         }
     }
-    */
-}
-
-void Imagine::on_pbTestButton_clicked()
-{
-    img2.param.alpha = 0.01; // radian
-    img2.param.beta = 0.01;
-    img2.param.gamma = 0.05;
-    img2.param.shiftX = 20; // pixels
-    img2.param.shiftY = 15;
-    img2.param.shiftZ = 10;
-
-    if (img1.valid&&img1.enable && (ui.lineEditImg2Filename->text() == "")) {
-        int transNStacks = 1;// img1.nStacks;
-        int transFramesPerStack = 1;// img1.framesPerStack;
-        for (int i = 0; i < transNStacks; i++) {
-            for (int j = 0; j < transFramesPerStack; j++) {
-                /*
-                int totalImgIdx = i*img1.framesPerStack + j;
-                img1.camValid = img1.camFile.seek(totalImgIdx*img1.imageSizeBytes);
-                if (img1.camValid) {
-                    img1.camImage = img1.camFile.read(img1.imageSizeBytes);
-                }
-                else
-                    appendLog("Image 1 : invalid stack and frame numbers");
-                    */
-                transform(img1.camImage, img2.camImage, img1.imgWidth, img1.imgHeight, img2.param);
-                img2.camValid = true;
-                if (ui.rbImgFileEnable->isChecked() && true) {
-                    reconfigDisplayTab();
-                    readCamFileImagesAndUpdate();
-                }
-            }
-        }
+    else {
+        // TODO: no pixmapper error warning message
+        ui.cbEnableMismatch->setChecked(false);
     }
 }
 
@@ -5020,20 +4966,23 @@ void Imagine::on_pbSaveImage_clicked()
     result = pixmap.save("f:/test/test.jpg", "JPG", 80);
 }
 
-
 void Imagine::on_cbEnableMismatch_clicked(bool checked)
 {
-//    findMismatch(img1.camImage, img2.camImage, img1.imgWidth, img1.imgHeight, param);
-    img2.correctMismatch = true;
-//    transform(img1.camImage, img2.camImage, img1.imgWidth, img1.imgHeight, img2.param);
-}
-
-void Imagine::on_pbGenerate_clicked()
-{
-    //To make test control data
-    ControlWaveform example(rig);
-    if (example.genControlFileJSON())
-        appendLog("exposureSamples > frameShutterCtrlSamples-50");
+    if (checked) {
+        if (ui.rbImgCameraEnable->isChecked()) {
+            findMismatch(dataAcqThread->pCamera->getLiveImage(),
+                        slaveImagine->dataAcqThread->pCamera->getLiveImage(),
+                        dataAcqThread->pCamera->getImageWidth(),
+                        dataAcqThread->pCamera->getImageHeight());
+        }
+        else
+            findMismatch(img1.camImage, img2.camImage, img1.imgWidth, img1.imgHeight);
+    }
+    else {
+        if (pixmapper != NULL) pixmapper->param.isOk = false;
+    }
+    if (!dataAcqThread->isUpdatingImage)
+        readCameraImagesAndUpdate();
 }
 
 /****** Script ************************************************************/

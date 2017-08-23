@@ -7,7 +7,7 @@
 #pragma region Lifecycle
 
 Pixmapper::Pixmapper(QObject *parent) : QObject(parent) {
-
+    param.isOk = false;
 }
 
 
@@ -110,6 +110,12 @@ void Pixmapper::handleColorImg(const QByteArray &ba1, const QByteArray &ba2,
     */
     Camera::PixelValue * tp1 = (Camera::PixelValue *)ba1.constData();
     Camera::PixelValue * tp2 = (Camera::PixelValue *)ba2.constData();
+    QByteArray transformedImage;
+    if (param.isOk) {
+        transform(ba2, transformedImage, imageW, imageH, dLeft, dTop, dWidth, dHeight);
+        tp2 = (Camera::PixelValue *)transformedImage.constData();
+    }
+
     for (int row = 0; row < imageH; ++row) {
         QRgb* rowData = (QRgb*)image.scanLine(row);
         for (int col = 0; col<imageW; ++col) {
@@ -169,6 +175,35 @@ void Pixmapper::handleColorImg(const QByteArray &ba1, const QByteArray &ba2,
     emit pixmapColorReady(pixmap, image);
 }
 
+void Pixmapper::transform(const QByteArray &srcImg, QByteArray &destImg, int imageW, int imageH,
+                        int dLeft, int dTop, int dWidth, int dHeight)
+{
+    Camera::PixelValue * tp1 = (Camera::PixelValue *)srcImg.constData();
+    Camera::PixelValue * tp2 = (Camera::PixelValue *)destImg.constData();
+    // full transform(imageW X imageH) or cropped one(dLeft, dTop, dWidth, dHeight)?
+    for (int row = 0; row < imageH; ++row) {
+        for (int col = 0; col < imageW; ++col) {
+            Camera::PixelValue inten;
+            if ((row >= dTop) && (row < dTop + dHeight) &&
+                (col >= dLeft) && (col < dLeft + dWidth)) {
+                // calculate transform
+                int i, j;
+                i = row + param.shiftX;
+                j = col + param.shiftY;
+                if ((i >= 0) && (i < imageH) &&
+                    (j >= 0) && (j < imageW)) {
+                    inten = tp1[i*imageW + j];// *tp1++;
+                }
+                else
+                    inten = 0;
+            }
+            else {
+                inten = 0;
+            }
+            destImg.append((const char *)&inten, sizeof(Camera::PixelValue));
+        }
+    }
+}
 #pragma endregion
 
 

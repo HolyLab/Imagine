@@ -4,14 +4,24 @@
 #include "qpixmap.h"
 #include "qpen.h"
 
+typedef struct{
+    double alpha, beta, gamma;
+    double shiftX, shiftY, shiftZ;
+    bool isOk;
+} TransformParam;
+
 class Pixmapper : public QObject {
     Q_OBJECT
 public:
     Pixmapper(QObject *parent = 0);
     ~Pixmapper();
+    TransformParam param;
+
 private:
     // checked in handleImg to see if we're ready for another img
     QPen pen;
+    void transform(const QByteArray &srcImg, QByteArray &destImg, int imageW, int imageH,
+                        int dLeft, int dTop, int dWidth, int dHeight);
 public slots:
     // null execution if an img is already being processed
     void handleImg(const QByteArray &ba, const int imageW, const int imageH,
