@@ -757,11 +757,13 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(FullPath);%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
     <None Include="scripts\bakewell.js" />
+    <None Include="scripts\dummy.js" />
     <None Include="scripts\hs-ocpi.js" />
     <None Include="scripts\imagine.js" />
     <None Include="scripts\ocpi-1.js" />
     <None Include="scripts\ocpi-1bidi.js" />
     <None Include="scripts\ocpi-2.js" />
+    <None Include="scripts\ocpi-lsk.js" />
     <None Include="scripts\preset.js" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

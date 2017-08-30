@@ -276,6 +276,7 @@ public:
     int maxPiezoPos;
     int maxPiezoSpeed;
     int maxLaserFreq;
+    uInt32 laserTTLSig;
 
     // for default control
     bool enableCam1, enableCam2;
@@ -330,6 +331,8 @@ public:
     int genControlFileJSON(void);
     int genTriangle(bool bidir);
     int genSinusoidal(bool bidir);
+    // Laser default output
+    void setDefaultLaserTTLSig(uInt32 data);
 }; // ControlWaveform
 
 

@@ -536,6 +536,11 @@ int ControlWaveform::getNumChannel(void)
     return numChannel;
 }
 
+void ControlWaveform::setDefaultLaserTTLSig(uInt32 data)
+{
+    laserTTLSig = data;
+}
+
 // binary search recursive function
 int findValue(QVector<int> *wav, long long begin, long long end, int sampleIdx)
 {
@@ -1305,10 +1310,10 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
         int idx, value;
         bool found;
         // For Haoyang 5bits {A0, A1, A2, A3, Mux en} are mapped to {P0.0, P0.1, P0.2, P0.3, P0.18}
-        QVector<int> valueConv = { 0,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31 };
+        //QVector<int> valueConv = { 0,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31 };
         // For standard Imagine 4bits {stimulus1, stimulus2, stimulus3, stimulus4 } are mapped to
         // {P0.0, P0.1, P0.2, P0.3}
-        //QVector<int> valueConv = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+        QVector<int> valueConv = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
         if (valueConv.size() == 16) {// 4bits
             stimuliPortMap.append({ "P0.0", "P0.1", "P0.2", "P0.3" });
             stimulusName.append({ "stimulus1", "stimulus2", "stimulus3", "stimulus4" });
@@ -2021,6 +2026,8 @@ int ControlWaveform::genSinusoidal(bool bidir)
 AiWaveform::AiWaveform(QByteArray &data, int num)
 {
     numAiCurveData = num;
+    if (num <= 0)
+        return;
     QDataStream aiStream(data);
     aiStream.setByteOrder(QDataStream::LittleEndian);//BigEndian, LittleEndian
     int perSampleSize = numAiCurveData * 2; // number of ai channel * 2 bytes

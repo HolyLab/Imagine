@@ -233,7 +233,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>5</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -2667,36 +2667,6 @@
                  </property>
                 </widget>
                </item>
-               <item row="0" column="0">
-                <widget class="QCheckBox" name="cbLine1">
-                 <property name="accessibleDescription">
-                  <string notr="true">no apply</string>
-                 </property>
-                 <property name="text">
-                  <string>Line 1</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QCheckBox" name="cbLine2">
-                 <property name="accessibleDescription">
-                  <string notr="true">no apply</string>
-                 </property>
-                 <property name="text">
-                  <string>Line 2</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QCheckBox" name="cbLine5">
-                 <property name="accessibleDescription">
-                  <string notr="true">no apply</string>
-                 </property>
-                 <property name="text">
-                  <string>Line 5</string>
-                 </property>
-                </widget>
-               </item>
                <item row="3" column="1">
                 <widget class="QSlider" name="aotfLine4">
                  <property name="maximum">
@@ -2732,16 +2702,6 @@
                  </property>
                  <property name="value">
                   <double>50.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QCheckBox" name="cbLine4">
-                 <property name="accessibleDescription">
-                  <string notr="true">no apply</string>
-                 </property>
-                 <property name="text">
-                  <string>Line 4</string>
                  </property>
                 </widget>
                </item>
@@ -2993,13 +2953,53 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="0">
-                <widget class="QCheckBox" name="cbLine3">
+               <item row="0" column="0">
+                <widget class="QCheckBox" name="cbLineTTL1">
                  <property name="accessibleDescription">
-                  <string notr="true">no apply</string>
+                  <string notr="true"/>
                  </property>
                  <property name="text">
-                  <string>Line 3</string>
+                  <string>488nm</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QCheckBox" name="cbLineTTL2">
+                 <property name="accessibleDescription">
+                  <string notr="true"/>
+                 </property>
+                 <property name="text">
+                  <string>561nm</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QCheckBox" name="cbLineTTL3">
+                 <property name="accessibleDescription">
+                  <string notr="true"/>
+                 </property>
+                 <property name="text">
+                  <string>405nm</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QCheckBox" name="cbLineTTL4">
+                 <property name="accessibleDescription">
+                  <string notr="true"/>
+                 </property>
+                 <property name="text">
+                  <string>445nm</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QCheckBox" name="cbLineTTL5">
+                 <property name="accessibleDescription">
+                  <string notr="true"/>
+                 </property>
+                 <property name="text">
+                  <string>514nm</string>
                  </property>
                 </widget>
                </item>
@@ -3019,7 +3019,7 @@
               </spacer>
              </item>
              <item>
-              <widget class="QLabel" name="label_48">
+              <widget class="QLabel" name="labelAnalogTTL">
                <property name="text">
                 <string>Analog/TTL Control</string>
                </property>
@@ -3031,52 +3031,52 @@
                 <number>10</number>
                </property>
                <item>
-                <widget class="QCheckBox" name="cbLineTTL1">
+                <widget class="QCheckBox" name="cbLine1">
                  <property name="accessibleDescription">
                   <string notr="true">no apply</string>
                  </property>
                  <property name="text">
-                  <string>488nm</string>
+                  <string>Line 1</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QCheckBox" name="cbLineTTL2">
+                <widget class="QCheckBox" name="cbLine2">
                  <property name="accessibleDescription">
                   <string notr="true">no apply</string>
                  </property>
                  <property name="text">
-                  <string>561nm</string>
+                  <string>Line 2</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QCheckBox" name="cbLineTTL3">
+                <widget class="QCheckBox" name="cbLine3">
                  <property name="accessibleDescription">
                   <string notr="true">no apply</string>
                  </property>
                  <property name="text">
-                  <string>405nm</string>
+                  <string>Line 3</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QCheckBox" name="cbLineTTL4">
+                <widget class="QCheckBox" name="cbLine4">
                  <property name="accessibleDescription">
                   <string notr="true">no apply</string>
                  </property>
                  <property name="text">
-                  <string>445nm</string>
+                  <string>Line 4</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QCheckBox" name="cbLineTTL5">
+                <widget class="QCheckBox" name="cbLine5">
                  <property name="accessibleDescription">
                   <string notr="true">no apply</string>
                  </property>
                  <property name="text">
-                  <string>514nm</string>
+                  <string>Line 5</string>
                  </property>
                 </widget>
                </item>
@@ -5010,6 +5010,25 @@
               </property>
               <property name="text">
                <string>Execute</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnScriptStop">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>35</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Stop</string>
               </property>
              </widget>
             </item>

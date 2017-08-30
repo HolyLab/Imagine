@@ -319,6 +319,9 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
         if (spinboxes[i]->accessibleDescription() != "no apply")
             connect(spinboxes[i], SIGNAL(valueChanged(const QString&)),
                 this, SLOT(onModified()));
+//        else
+//            disconnect(((QAbstractSpinBox*)(spinboxes[i]))->lineEdit(), SIGNAL(textChanged(const QString&)),
+//                this, SLOT(onModified()));
     }
 
     auto doublespinboxes = ui.tabWidgetCfg->findChildren<QDoubleSpinBox*>();
@@ -374,11 +377,12 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
             emit getLaserLineSetupStatus();
             emit setLaserShutters(0);
         }
-        //ui.cbLineTTL1->setEnabled(false);
-        //ui.cbLineTTL2->setEnabled(false);
-        //ui.cbLineTTL3->setEnabled(false);
-        //ui.cbLineTTL4->setEnabled(false);
-        //ui.cbLineTTL5->setEnabled(false);
+        ui.labelAnalogTTL->setVisible(false);
+        ui.cbLine1->setVisible(false);
+        ui.cbLine2->setVisible(false);
+        ui.cbLine3->setVisible(false);
+        ui.cbLine4->setVisible(false);
+        ui.cbLine5->setVisible(false);
         ui.cbLineTTL6->setVisible(false);
         ui.cbLineTTL7->setVisible(false);
         ui.cbLineTTL8->setVisible(false);
@@ -1917,6 +1921,8 @@ bool Imagine::applySetting()
         }
         if (!waveformValidityCheck()) // waveform is not valid
             goto skip;
+        // setup default laser TTL output value
+        conWaveData->laserTTLSig = laserTTLSig;
         // move positioner to start position
         int chIdx = conWaveData->getChannelIdxFromSig(STR_axial_piezo);
         double um;
@@ -2889,7 +2895,13 @@ void Imagine::on_doubleSpinBox_aotfLine8_valueChanged()
 void Imagine::changeLaserShuttersTTL(int line, bool onOff)
 {
     QString str;
-    bool returnVal = digOut->singleOut(line + 7, onOff); // P0.8~P0.12
+    int lineNum = line + 7;
+    bool returnVal = digOut->singleOut(lineNum, onOff); // P0.8~P0.12
+    if (onOff)
+        laserTTLSig |= (0x01 << lineNum);
+    else
+        laserTTLSig &= ~(0x01 << lineNum);
+
     if (onOff)
         str = QString("Open laser shutter 1 with TTL pulse");
     else
@@ -2925,27 +2937,27 @@ void Imagine::on_cbLineTTL5_clicked(bool checked)
 
 void Imagine::on_cbLineTTL6_clicked(bool checked)
 {
-    changeLaserShuttersTTL(6, checked);
+    changeLaserShuttersTTL(8, checked);
 }
 
 void Imagine::on_cbLineTTL7_clicked(bool checked)
 {
-    changeLaserShuttersTTL(7, checked);
+    changeLaserShuttersTTL(9, checked);
 }
 
 void Imagine::on_cbLineTTL8_clicked(bool checked)
 {
-    changeLaserShuttersTTL(8, checked);
+    changeLaserShuttersTTL(10, checked);
 }
 
 void Imagine::on_cbDualOutSW1_clicked(bool checked)
 {
-    changeLaserShuttersTTL(9, checked);
+    changeLaserShuttersTTL(6, checked);
 }
 
 void Imagine::on_cbDualOutSW2_clicked(bool checked)
 {
-    changeLaserShuttersTTL(10, checked);
+    changeLaserShuttersTTL(7, checked);
 }
 
 
@@ -3017,22 +3029,16 @@ void Imagine::writeSettings(QString file)
         prefs.endGroup();
 
         prefs.beginGroup("Laser");
-        WRITE_CHECKBOX_SETTING(prefs, cbLine1);
+        WRITE_CHECKBOX_SETTING(prefs, cbLineTTL1);
         WRITE_SETTING(prefs, doubleSpinBox_aotfLine1);
-        WRITE_CHECKBOX_SETTING(prefs, cbLine2);
+        WRITE_CHECKBOX_SETTING(prefs, cbLineTTL2);
         WRITE_SETTING(prefs, doubleSpinBox_aotfLine2);
-        WRITE_CHECKBOX_SETTING(prefs, cbLine3);
+        WRITE_CHECKBOX_SETTING(prefs, cbLineTTL3);
         WRITE_SETTING(prefs, doubleSpinBox_aotfLine3);
-        WRITE_CHECKBOX_SETTING(prefs, cbLine4);
+        WRITE_CHECKBOX_SETTING(prefs, cbLineTTL4);
         WRITE_SETTING(prefs, doubleSpinBox_aotfLine4);
-        WRITE_CHECKBOX_SETTING(prefs, cbLine5);
+        WRITE_CHECKBOX_SETTING(prefs, cbLineTTL5);
         WRITE_SETTING(prefs, doubleSpinBox_aotfLine5);
-        WRITE_CHECKBOX_SETTING(prefs, cbLine6);
-        WRITE_SETTING(prefs, doubleSpinBox_aotfLine6);
-        WRITE_CHECKBOX_SETTING(prefs, cbLine7);
-        WRITE_SETTING(prefs, doubleSpinBox_aotfLine7);
-        WRITE_CHECKBOX_SETTING(prefs, cbLine8);
-        WRITE_SETTING(prefs, doubleSpinBox_aotfLine8);
         prefs.endGroup();
     }
 }
@@ -3113,22 +3119,16 @@ void Imagine::readSettings(QString file)
         prefs.endGroup();
 
         prefs.beginGroup("Laser");
-        READ_CHECKBOX_SETTING(prefs, cbLine1, true); // READ_CHECKBOX_SETTING
+        READ_CHECKBOX_SETTING(prefs, cbLineTTL1, true); // READ_CHECKBOX_SETTING
         READ_SETTING(prefs, doubleSpinBox_aotfLine1, ok, d, 50.0, Double);
-        READ_CHECKBOX_SETTING(prefs, cbLine2, true); // READ_CHECKBOX_SETTING
+        READ_CHECKBOX_SETTING(prefs, cbLineTTL2, true); // READ_CHECKBOX_SETTING
         READ_SETTING(prefs, doubleSpinBox_aotfLine2, ok, d, 50.0, Double);
-        READ_CHECKBOX_SETTING(prefs, cbLine3, false); // READ_CHECKBOX_SETTING
+        READ_CHECKBOX_SETTING(prefs, cbLineTTL3, false); // READ_CHECKBOX_SETTING
         READ_SETTING(prefs, doubleSpinBox_aotfLine3, ok, d, 50.0, Double);
-        READ_CHECKBOX_SETTING(prefs, cbLine4, false); // READ_CHECKBOX_SETTING
+        READ_CHECKBOX_SETTING(prefs, cbLineTTL4, false); // READ_CHECKBOX_SETTING
         READ_SETTING(prefs, doubleSpinBox_aotfLine4, ok, d, 50.0, Double);
-        READ_CHECKBOX_SETTING(prefs, cbLine5, false); // READ_CHECKBOX_SETTING
+        READ_CHECKBOX_SETTING(prefs, cbLineTTL5, false); // READ_CHECKBOX_SETTING
         READ_SETTING(prefs, doubleSpinBox_aotfLine5, ok, d, 50.0, Double);
-        READ_CHECKBOX_SETTING(prefs, cbLine6, false); // READ_CHECKBOX_SETTING
-        READ_SETTING(prefs, doubleSpinBox_aotfLine6, ok, d, 50.0, Double);
-        READ_CHECKBOX_SETTING(prefs, cbLine7, false); // READ_CHECKBOX_SETTING
-        READ_SETTING(prefs, doubleSpinBox_aotfLine7, ok, d, 50.0, Double);
-        READ_CHECKBOX_SETTING(prefs, cbLine8, false); // READ_CHECKBOX_SETTING
-        READ_SETTING(prefs, doubleSpinBox_aotfLine8, ok, d, 50.0, Double);
         prefs.endGroup();
     }
 
@@ -3151,7 +3151,12 @@ void Imagine::readSettings(QString file)
         ui.groupBoxLaser->setChecked(false);
         on_actionCloseShutter_triggered();
         for (int i = 1; i <= 8; i++) changeLaserTrans(true, i);
-        changeLaserShutters();
+        //changeLaserShutters();
+        on_cbLineTTL1_clicked(ui.cbLineTTL1->isChecked());
+        on_cbLineTTL2_clicked(ui.cbLineTTL2->isChecked());
+        on_cbLineTTL3_clicked(ui.cbLineTTL3->isChecked());
+        on_cbLineTTL4_clicked(ui.cbLineTTL4->isChecked());
+        on_cbLineTTL5_clicked(ui.cbLineTTL5->isChecked());
     }
 //    if ((rig == "ocpi-1") || (rig == "ocpi-lsk"))
 //        ui.cbBothCamera->setChecked(false);
@@ -3510,18 +3515,22 @@ void Imagine::on_btnReadAiWavOpen_clicked()
     }
     file.close();
     
+    QByteArray data;
     // read ai file
-    file.setFileName(aiFilename);
-    if (!file.open(QFile::ReadOnly)) {
-        QMessageBox::warning(this, tr("Imagine"),
-            tr("Cannot read file %1:\n%2.")
-            .arg(aiFilename)
-            .arg(file.errorString()));
-        return;
+    if (aiFilename != "NA") {
+        file.setFileName(aiFilename);
+        if (!file.open(QFile::ReadOnly)) {
+            QMessageBox::warning(this, tr("Imagine"),
+                tr("Cannot read file %1:\n%2.")
+                .arg(aiFilename)
+                .arg(file.errorString()));
+            numAiCurveData = 0;
+        }
+        else {
+            data = file.readAll();
+            file.close();
+        }
     }
-
-    QByteArray data = file.readAll();
-    file.close();
     if (aiWaveData)
         delete aiWaveData;
     aiWaveData = new AiWaveform(data, numAiCurveData); // load data to aiWaveData
@@ -3539,14 +3548,21 @@ void Imagine::on_btnReadAiWavOpen_clicked()
         data = file.readAll();
         file.close();
     }
-
     if (diWaveData)
         delete diWaveData;
     diWaveData = new DiWaveform(data, diChNumList); // load data to diWaveData
 
     int err = NO_CF_ERROR; // for later use
     if (err == NO_CF_ERROR) {
-        ui.labelAiSampleNum->setText(QString("%1").arg(aiWaveData->totalSampleNum));
+        int aiSampleNum = aiWaveData->totalSampleNum;
+        int diSampleNum = diWaveData->totalSampleNum;
+        if (aiSampleNum && diSampleNum)
+            dsplyTotalSampleNum = min(aiSampleNum, diSampleNum);
+        else if (aiSampleNum)
+            dsplyTotalSampleNum = aiSampleNum;
+        else
+            dsplyTotalSampleNum = diSampleNum;
+        ui.labelAiSampleNum->setText(QString("%1").arg(dsplyTotalSampleNum));
 
         // Waveform selection combobox setup
         QStringList aiList, diList;
@@ -3582,19 +3598,25 @@ void Imagine::on_btnReadAiWavOpen_clicked()
         }
 
         // GUI waveform y axis display value adjusting box setup
-        ui.sbAiDiDsplyTop->setValue(aiWaveData->getMaxyValue() + 50);
-        ui.sbAiDiDsplyTop->setMinimum(0);
-        ui.sbAiDiDsplyTop->setMaximum(aiWaveData->getMaxyValue() + 50);
+        if (numAiCurveData) {
+            ui.sbAiDiDsplyTop->setValue(aiWaveData->getMaxyValue() + 50);
+            ui.sbAiDiDsplyTop->setMinimum(0);
+        }
+        else {
+            ui.sbAiDiDsplyTop->setValue(200);
+            ui.sbAiDiDsplyTop->setMinimum(0);
+        }
+        ui.sbAiDiDsplyTop->setMaximum(1000);
         // When current sbAiDiDsplyRight value is bigger than new maximum value
         // QT change current value as the new maximum value and this activate
         // sbAiDiDsplyRight_valueChanged signal. The slot of this signal calls
         // updateAiDiWaveform. Therefore, we need to set comboBoxAiDi[]->currentIndex
         // before calling the updateAiDiWaveform.
-        if (aiWaveData->totalSampleNum>0)
-            ui.sbAiDiDsplyRight->setMaximum(aiWaveData->totalSampleNum - 1);
+        if (dsplyTotalSampleNum > 0)
+            ui.sbAiDiDsplyRight->setMaximum(dsplyTotalSampleNum - 1);
 
         // GUI waveform display
-        updateAiDiWaveform(0, aiWaveData->totalSampleNum - 1);
+        updateAiDiWaveform(0, dsplyTotalSampleNum - 1);
 
         // Even though there is no error, if there are some warnings, we show them.
         if (aiWaveData->getErrorMsg() != "") {
@@ -3852,7 +3874,7 @@ void Imagine::on_sbAiDiDsplyTop_valueChanged(int value)
 void Imagine::on_btnAiDiDsplyReset_clicked()
 {
     ui.sbAiDiDsplyLeft->setValue(0);
-    ui.sbAiDiDsplyRight->setValue(aiWaveData->totalSampleNum - 1);
+    ui.sbAiDiDsplyRight->setValue(dsplyTotalSampleNum - 1);
     ui.sbAiDiDsplyTop->setValue(ui.sbAiDiDsplyTop->maximum());
 }
 
@@ -4865,8 +4887,10 @@ void Imagine::reconfigDisplayTab()
         }
     }
     else {
-        disconnect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
-            this, SLOT(updateLiveImagePlay(const QByteArray &, long, int, int)));
+        if (slaveImagine) {
+            disconnect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
+                this, SLOT(updateLiveImagePlay(const QByteArray &, long, int, int)));
+        }
         if ((img1.enable && img1.camValid) || (img2.enable && img2.camValid))
             ui.groupBoxPlayCamImage->setEnabled(true);
         else
@@ -5018,16 +5042,77 @@ void Imagine::on_btnScriptExecute_clicked()
     imagineScript->moveToThread(&scriptThread);
     connect(&scriptThread, &QThread::finished, imagineScript, &QObject::deleteLater);
     connect(this, &Imagine::evaluateScript, imagineScript, &ImagineScript::scriptProgramEvaluate);
+//    connect(this, &Imagine::stopEvaluating, imagineScript, &ImagineScript::scriptAbortEvaluation);
     connect(imagineScript, &ImagineScript::newMsgReady, this, &Imagine::appendLog);
     connect(imagineScript, &ImagineScript::requestValidityCheck, this, &Imagine::configValidityCheck);
     connect(imagineScript, &ImagineScript::requestRecord, this, &Imagine::configRecord);
     connect(imagineScript, &ImagineScript::requestLoadConfig, this, &Imagine::loadConfig);
     connect(imagineScript, &ImagineScript::requestLoadWaveform, this, &Imagine::loadWaveform);
     connect(imagineScript, &ImagineScript::requestSetFilename, this, &Imagine::setFilename);
+    connect(imagineScript, &ImagineScript::requestStopRecord, this, &Imagine::scriptStopRecord);
     scriptThread.start(QThread::IdlePriority);
 
     imagineScript->loadImagineScript(ui.textEditScriptFileContent->toPlainText());
-    evaluateScript();
+    emit evaluateScript();
+}
+
+void Imagine::on_btnScriptStop_clicked()
+{
+    if (imagineScript != NULL)
+        imagineScript->scriptAbortEvaluation();
+}
+
+void Imagine::on_textEditScriptFileContent_cursorPositionChanged()
+{
+    QTextCursor cursor = ui.textEditScriptFileContent->textCursor();
+    int block = cursor.blockNumber();// ui.textEditScriptFileContent->document()->blockCount();
+    ui.labelScriptLineNum->setText(QString("%1").arg(block + 1));
+    ui.labelScriptColumnNum->setText(QString("%1").arg(cursor.columnNumber() + 1));
+}
+
+void Imagine::on_btnScriptUndo_clicked()
+{
+    QTextCursor cursor = ui.textEditScriptFileContent->textCursor();
+    ui.textEditScriptFileContent->document()->undo(&cursor);
+}
+
+void Imagine::on_btnScriptRedo_clicked()
+{
+    QTextCursor cursor = ui.textEditScriptFileContent->textCursor();
+    ui.textEditScriptFileContent->document()->redo(&cursor);
+}
+
+void Imagine::on_btnScriptSave_clicked()
+{
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save OCPI Script file"),
+        ui.lineEditReadScriptFle->text(), "*.js");
+    if (true == filename.isEmpty()) { return; }
+    QFileInfo fi(filename);
+    m_OpenDialogLastDirectory = fi.absolutePath();
+    QFile file(filename);
+    if (!file.open(QIODevice::WriteOnly)) {
+        qDebug("File open error\n");
+    }
+    else {
+        QTextStream out(&file);
+        out << ui.textEditScriptFileContent->toPlainText();
+        out.flush();
+        file.close();
+        ui.lineEditReadScriptFle->setText(filename);
+    }
+}
+
+void Imagine::scriptStopRecord()
+{
+    if (curStatus == eRunning) {
+        dataAcqThread->stopAcq();
+        if (slaveImagine) slaveImagine->dataAcqThread->stopAcq();
+        updateStatus(eStopping, curAction);
+    }
+    else {
+        imagineScript->shouldWait = false;
+        imagineScript->retVal = true;
+    }
 }
 
 void Imagine::scriptApplyAndReport(bool preRetVal)
@@ -5035,7 +5120,7 @@ void Imagine::scriptApplyAndReport(bool preRetVal)
     isApplyCommander = true;
     bool retVal = applySetting();
     isApplyCommander = false;
-
+    imagineScript->estimatedTime = conWaveData->totalSampleNum / conWaveData->sampleRate;
     imagineScript->retVal = preRetVal&retVal;
     imagineScript->shouldWait = false;
 }
@@ -5123,45 +5208,4 @@ void Imagine::configRecord()
     reqFromScript = true;
     on_actionStartAcqAndSave_triggered();
 }
-
-void Imagine::on_textEditScriptFileContent_cursorPositionChanged()
-{
-    QTextCursor cursor = ui.textEditScriptFileContent->textCursor();
-    int block = cursor.blockNumber();// ui.textEditScriptFileContent->document()->blockCount();
-    ui.labelScriptLineNum->setText(QString("%1").arg(block+1));
-    ui.labelScriptColumnNum->setText(QString("%1").arg(cursor.columnNumber()+1));
-}
-
-void Imagine::on_btnScriptUndo_clicked()
-{
-    QTextCursor cursor = ui.textEditScriptFileContent->textCursor();
-    ui.textEditScriptFileContent->document()->undo(&cursor);
-}
-
-void Imagine::on_btnScriptRedo_clicked()
-{
-    QTextCursor cursor = ui.textEditScriptFileContent->textCursor();
-    ui.textEditScriptFileContent->document()->redo(&cursor);
-}
-
-void Imagine::on_btnScriptSave_clicked()
-{
-    QString filename = QFileDialog::getSaveFileName(this, tr("Save OCPI Script file"),
-                                        ui.lineEditReadScriptFle->text(), "*.js");
-    if (true == filename.isEmpty()) { return; }
-    QFileInfo fi(filename);
-    m_OpenDialogLastDirectory = fi.absolutePath();
-    QFile file(filename);
-    if (!file.open(QIODevice::WriteOnly)) {
-        qDebug("File open error\n");
-    }
-    else {
-        QTextStream out(&file);
-        out << ui.textEditScriptFileContent->toPlainText();
-        out.flush();
-        file.close();
-        ui.lineEditReadScriptFle->setText(filename);
-    }
-}
-
 #pragma endregion

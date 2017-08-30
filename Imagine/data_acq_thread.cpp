@@ -857,16 +857,21 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, ControlWaveform *con
     }
 
     //ai,di related:
+    int aiBegin, p0Begin, p0InBegin, numChannel;
+    if (isUsingWav) {
+        if (conWaveData != NULL) {
+            aiBegin = conWaveData->getAIBegin();
+            p0Begin = conWaveData->getP0Begin();
+            p0InBegin = conWaveData->getP0InBegin();
+            numChannel = conWaveData->getNumChannel();
+        }
+    }
+
     if (ai != NULL) {
-        int aiBegin, p0Begin, p0InBegin, numChannel;
         header << "[ai]" << endl
             << "nscans=" << -1 << endl; //TODO: output nscans at the end
         if (isUsingWav) {
             if (conWaveData != NULL) {
-                aiBegin = conWaveData->getAIBegin();
-                p0Begin = conWaveData->getP0Begin();
-                p0InBegin = conWaveData->getP0InBegin();
-                numChannel = conWaveData->getNumChannel();
                 header << "channel list=";
                 for (int i = aiBegin; i < p0Begin; i++) {
                     if (conWaveData->getSignalName(i) != "") {
@@ -893,6 +898,8 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, ControlWaveform *con
             << "max sample=" << ai->maxDigitalValue << endl
             << "min input=" << ai->minPhyValue << endl
             << "max input=" << ai->maxPhyValue << endl << endl;
+    }
+    //if (di != NULL) {
         if (isUsingWav) {
             if (conWaveData != NULL) {
                 header << "[di]" << endl
@@ -917,7 +924,7 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, ControlWaveform *con
                 header << "di scan rate=" << ai->scanRate << endl << endl;
             }
         }
-    }
+    //}
 
     //camera related:
     header << "[camera]" << endl

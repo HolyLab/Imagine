@@ -26,3 +26,4 @@ Imagine/scripts/*.imagine
 Imagine/scripts/*.stim
 Imagine/Debug
 *.ui.*
+/Imagine/helpdoc

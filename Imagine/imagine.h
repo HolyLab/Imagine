@@ -237,6 +237,7 @@ private:
     vector<PiezoUiParam> piezoUiParams;
     AiWaveform *aiWaveData = NULL;
     DiWaveform *diWaveData = NULL;
+    int dsplyTotalSampleNum;
     QString m_OpenDialogLastDirectory;
     QString m_OpenConWaveDialogLastDirectory;
     QString wavFilename;
@@ -248,6 +249,7 @@ private:
     bool isApplyCommander = false;
     bool isRecordCommander = false;
     bool reqFromScript = false;
+    uInt32 laserTTLSig = 0;
 
     void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
     void calcMinMaxValues(Camera::PixelValue * frame1, Camera::PixelValue * frame2, int imageW, int imageH);
@@ -287,7 +289,6 @@ private:
     void readCamFileImagesAndUpdate();
     void readCameraImagesAndUpdate();
     void reconfigDisplayTab();
-    void cbCameraEnable_clicked();
     void holdDisplayCamFile();
     void stopDisplayCamFile();
     void applyImgColor(QWidget *widget, QColor color);
@@ -300,6 +301,7 @@ private:
     bool applySetting();
     void startAcqAndSave();
     void duplicateParameters(Ui_ImagineClass* destUi);
+    void scriptStopRecord();
     void scriptApplyAndReport(bool preRetVal);
     void scriptJustReport(bool preRetVal);
     void readConfigFiles(const QString &file1, const QString &file2);
@@ -506,6 +508,7 @@ private slots:
     void on_pbSaveImage_clicked();
     void on_btnOpenScriptFile_clicked();
     void on_btnScriptExecute_clicked();
+    void on_btnScriptStop_clicked();
     void on_textEditScriptFileContent_cursorPositionChanged();
     void on_btnScriptUndo_clicked();
     void on_btnScriptRedo_clicked();
@@ -538,6 +541,7 @@ signals:
     void startIndexRunning(int strtStackIdx1, int strtFrameIdx1, int nStacks1, int framesPerStack1,
         int strtStackIdx2, int strtFrameIdx2, int nStacks2, int framesPerStack2);
     void evaluateScript(void);
+    void stopEvaluating(void);
 
     // for laser control from this line
     void openLaserSerialPort(QString portName);

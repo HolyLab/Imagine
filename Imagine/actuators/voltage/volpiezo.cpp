@@ -335,10 +335,14 @@ int DigitalOut::readConPulseToBuffer(int num)
         conWaveData->readControlWaveform(waveData[i], i + p0Begin, idx, end - 1, 1);
     }
     for (unsigned i = 0; i < readNum; ++i) {
-        uInt32 data = 0; // If there is no specific signal on that channel, default value is 0;
+        uInt32 data = 0; // If there is no specific signal on that channel,
+                         // default value is 0 except individual laser TTL control;
+        if(idx + i < totalSample - 1) // we want to make all laser TTL output zero in last sample
+            data |= laserTTLSig;
         for (int j = 0; j < numP0Channel; j++) {
             if (!waveData[j].isEmpty())
                 if (waveData[j][i]) data |= (0x01 << j);
+                else data &= ~(0x01 << j);
         }
         *++buf = data;
     }
@@ -357,6 +361,7 @@ bool DigitalOut::prepareCmdBuffered(ControlWaveform *conWaveData, string clkName
 {
     this->conWaveData = conWaveData;
     totalSample = conWaveData->totalSampleNum;
+    laserTTLSig = conWaveData->laserTTLSig;
 
     if (dout) delete dout;
     dout = new NiDaqDo(doname);

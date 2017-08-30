@@ -112,6 +112,7 @@ private:
     int blockSize;
     int totalSample;
     ControlWaveform *conWaveData = NULL;
+    uInt32 laserTTLSig;
 };//class, DigitalBurstOut
 
 #endif

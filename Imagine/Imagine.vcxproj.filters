@@ -291,6 +291,12 @@
     <None Include="scripts\preset.js">
       <Filter>Etc</Filter>
     </None>
+    <None Include="scripts\ocpi-lsk.js">
+      <Filter>Etc</Filter>
+    </None>
+    <None Include="scripts\dummy.js">
+      <Filter>Etc</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

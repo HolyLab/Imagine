@@ -30,14 +30,16 @@ class ImagineScript : public QObject
     Q_OBJECT
 private:
     QString rig;
-    QScriptEngine *se;
+    QScriptEngine *sEngine;
     bool print(const QString &str);
     bool validityCheck(const QString &file1, const QString &file2);
     bool record(const QString &file1, const QString &file2, long int timeout);
+    bool stopRecord();
     bool loadConfig(const QString &file1, const QString &file2);
     bool loadWaveform(const QString &file);
     bool sleep(long int time);
     bool setFilename(const QString &file1, const QString &file2);
+    long int getEstimatedRunTime();
 
 public:
     static void *instance;
@@ -45,6 +47,7 @@ public:
     QScriptProgram *scriptProgram = NULL;
     bool shouldWait = false;    // wait until Imagine function is done
     bool retVal;                // return value of Imagine function
+    long int estimatedTime;
 
     ImagineScript(QString rig);
     ~ImagineScript();
@@ -53,22 +56,29 @@ public:
     };
 
     void loadImagineScript(QString code);
-    bool scriptProgramEvaluate();
 
     // print("Hello world!")
-    static QScriptValue printWrapper(QScriptContext *context, QScriptEngine *se);
+    static QScriptValue printWrapper(QScriptContext *context, QScriptEngine *engine);
     // validityCheck("OCPI_cfg1.txt", "OCPI_cfg2.txt");, applyConfiguration();
-    static QScriptValue validityCheckWrapper(QScriptContext *context, QScriptEngine *se);
+    static QScriptValue validityCheckWrapper(QScriptContext *context, QScriptEngine *engine);
     // record("OCPI_cfg1.txt", "OCPI_cfg2.txt", timeout);
-    static QScriptValue recordWrapper(QScriptContext *context, QScriptEngine *se);
+    static QScriptValue recordWrapper(QScriptContext *context, QScriptEngine *engine);
     // loadConfig("OCPI_cfg1.txt", "OCPI_cfg2.txt");
-    static QScriptValue loadConfigWrapper(QScriptContext *context, QScriptEngine *se);
+    static QScriptValue loadConfigWrapper(QScriptContext *context, QScriptEngine *engine);
     // loadWaveform("OCPI_waveform.json");
-    static QScriptValue loadWaveformWrapper(QScriptContext *context, QScriptEngine *se);
+    static QScriptValue loadWaveformWrapper(QScriptContext *context, QScriptEngine *engine);
     // sleep(1000); // sleep 1000msec
-    static QScriptValue sleepWrapper(QScriptContext *context, QScriptEngine *se);
+    static QScriptValue sleepWrapper(QScriptContext *context, QScriptEngine *engine);
     // setOutputFilename("t1.imagine","t2.imagine");
-    static QScriptValue setFilenameWrapper(QScriptContext *context, QScriptEngine *se);
+    static QScriptValue setFilenameWrapper(QScriptContext *context, QScriptEngine *engine);
+    // getEstimatedRunTime();
+    static QScriptValue getEstimatedRunTimeWrapper(QScriptContext *context, QScriptEngine *engine);
+    // stopRecord();
+    static QScriptValue stopRecordWrapper(QScriptContext *context, QScriptEngine *engine);
+
+public slots:
+    bool scriptProgramEvaluate(void);
+    bool scriptAbortEvaluation(void);
 
 signals:
     void newMsgReady(const QString &str);
@@ -77,6 +87,7 @@ signals:
     void requestLoadConfig(const QString &file1, const QString &file2);
     void requestLoadWaveform(const QString &file);
     void requestSetFilename(const QString &file1, const QString &file2);
+    void requestStopRecord();
 };
 
 #endif // SCRIPT_H
