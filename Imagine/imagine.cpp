@@ -391,7 +391,7 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     }
     else {
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabLaser));
-        ui.actionOpenShutter->setEnabled(false);
+        ui.actionOpenShutter->setEnabled(true);
         ui.actionCloseShutter->setEnabled(false);
     }
     /* for laser control until this line */
@@ -785,8 +785,6 @@ QPoint Imagine::calcPos(const QPoint& pos)
 //note: idx is 0-based
 void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int imageH)
 {
-    dataAcqThread->isUpdatingImage = true;
-
     // If something breaks... probably these units are wrong.
     lastRawImg = data16;
     lastImgH = imageH;
@@ -859,14 +857,11 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
         + "-th updated frame(0-based)=" + QString().setNum(idx));
 
 done:
-    dataAcqThread->isUpdatingImage = false;
+    return;
 }//updateDisplay(),
 
 void Imagine::updateDisplayColor(const QByteArray &data1, const QByteArray &data2, long idx, int imageW, int imageH)
 {
-    dataAcqThread->isUpdatingImage = true;
-
-    // If something breaks... probably these units are wrong.
     lastRawImg = data1;
     lastRawImg2 = data2;
     lastImgH = imageH;
@@ -932,7 +927,7 @@ void Imagine::updateDisplayColor(const QByteArray &data1, const QByteArray &data
         + "-th updated frame(0-based)=" + QString().setNum(idx));
 
 done:
-    dataAcqThread->isUpdatingImage = false;
+    return;
 }//updateDisplayColor(),
 
 void Imagine::updateStatus(const QString &str)
@@ -3474,6 +3469,9 @@ void Imagine::on_btnReadAiWavOpen_clicked()
     bool valid, preSection = false, aiSection = false, diSection = false;
     numAiCurveData = 0;
     numDiCurveData = 0;
+    if (seekField("[general]", "rig", in, container)) {
+        ui.lableAiDiWavRigname->setText(container);
+    }
     if (seekField("[misc params]", "ai data file", in, container)) {
         if (container != "NA")
             aiFilename = m_OpenDialogLastDirectory + '/' + container.section("/", -1, -1);
@@ -3514,7 +3512,6 @@ void Imagine::on_btnReadAiWavOpen_clicked()
         numDiCurveData = diChNumList.size();
     }
     file.close();
-    
     QByteArray data;
     // read ai file
     if (aiFilename != "NA") {
@@ -4648,6 +4645,7 @@ bool Imagine::readCamFileImages()
 
 void Imagine::readCamFileImagesAndUpdate()
 {
+    isUpdatingImage = true; // updating cam file image
     bool succeed = readCamFileImages();
 
     if (succeed) {
@@ -4662,14 +4660,35 @@ void Imagine::readCamFileImagesAndUpdate()
         else if (img2.enable && img2.valid)
             updateDisplay(img2.camImage, imgFrameIdx, img2.imgWidth, img2.imgHeight);
     }
+    isUpdatingImage = false;
 }
 
 void Imagine::updateLiveImagePlay(const QByteArray &data16, long idx, int imageW, int imageH)
 {
-    if (ui.rbImgCameraEnable->isChecked())
+    if (masterImagine != NULL) {
+        if (masterImagine->ui.rbImgCameraEnable->isChecked()) {
+            if (masterImagine->ui.cbCam2Enable->isChecked()) {
+                masterImageReady = false;
+                return;
+            }
+            masterImageReady = true;
+            readCameraImagesAndUpdate();
+        }
+    }
+    else {
+        if (ui.rbImgCameraEnable->isChecked()) {
+            masterImageReady = true;
+            readCameraImagesAndUpdate();
+        }
+    }
+}
+
+void Imagine::updateSlaveLiveImagePlay(const QByteArray &data16, long idx, int imageW, int imageH)
+{
+    if (ui.rbImgCameraEnable->isChecked()) {
+        slaveImageReady = true;
         readCameraImagesAndUpdate();
-    else if (masterImagine != NULL)
-        readCameraImagesAndUpdate();
+    }
 }
 
 void Imagine::readCameraImagesAndUpdate()
@@ -4677,12 +4696,13 @@ void Imagine::readCameraImagesAndUpdate()
     QByteArray live1, live2;
     int width1, height1, width2, height2;
     int updateMethod = 0;
-    if (masterImagine != NULL)
+    if ((masterImagine != NULL) && masterImageReady) // slave Imagine
     {
+        dataAcqThread->isUpdatingImage = true;
         live1 = dataAcqThread->pCamera->getLiveImage();
         width1 = dataAcqThread->pCamera->getImageWidth();
         height1 = dataAcqThread->pCamera->getImageHeight();
-        if (live1.size() != 0) updateMethod += 1;
+        if (live1.size() != 0) updateMethod = 1;
     }
     else {
         if (ui.cbCam1Enable->isChecked()) {
@@ -4691,27 +4711,54 @@ void Imagine::readCameraImagesAndUpdate()
             height1 = dataAcqThread->pCamera->getImageHeight();
             if (live1.size() != 0) updateMethod += 1;
         }
-        if ((ui.cbCam2Enable->isChecked()) && (slaveImagine)) {
+        if (ui.cbCam2Enable->isChecked() && slaveImagine) {
             live2 = slaveImagine->dataAcqThread->pCamera->getLiveImage();
             width2 = slaveImagine->dataAcqThread->pCamera->getImageWidth();
             height2 = slaveImagine->dataAcqThread->pCamera->getImageHeight();
             if (live2.size() != 0) updateMethod += 2;
         }
-    }
-    if (updateMethod) {
-        maxPixelValue = -1;
-        if (updateMethod == 1)
-            updateDisplay(live1, 0, width1, height1);
-        else if (updateMethod == 2)
-            updateDisplay(live2, 0, width2, height2);
-        else {// updateMethod == 4
+        if (updateMethod == 3) {
             if ((width1 != width2) || (height1 != height2)) {
                 QMessageBox::warning(this, tr("Imagine"),
                     tr("Image size is different betwen camera 1 and camera 2"));
                 ui.cbCam2Enable->setChecked(false);
-                updateDisplay(live1, 0, width1, height1);
+                updateMethod = 1;
             }
-            updateDisplayColor(live1, live2, 0, width1, height1);
+        }
+    }
+
+    if (updateMethod) {
+        maxPixelValue = -1;
+        if (updateMethod == 1) {
+            dataAcqThread->isUpdatingImage = true;
+            updateDisplay(live1, 0, width1, height1);
+            masterImageReady = false;
+            slaveImageReady = false;
+            dataAcqThread->isUpdatingImage = false;
+        }
+        else if (updateMethod == 2) {
+            slaveImagine->dataAcqThread->isUpdatingImage = true;
+            updateDisplay(live2, 0, width2, height2);
+            masterImageReady = false;
+            slaveImageReady = false;
+            slaveImagine->dataAcqThread->isUpdatingImage = false;
+        }
+        else {// updateMethod == 3
+            if (masterImageReady && slaveImageReady) { // ignore until both images are ready
+                updateDisplayColor(live1, live2, 0, width1, height1);
+                masterImageReady = false;
+                slaveImageReady = false;
+                dataAcqThread->isUpdatingImage = false;
+                slaveImagine->dataAcqThread->isUpdatingImage = false;
+            }
+            else if (masterImageReady)
+            {
+                dataAcqThread->isUpdatingImage = true;
+            }
+            else if (slaveImageReady)
+            {
+                slaveImagine->dataAcqThread->isUpdatingImage = true;
+            }
         }
     }
     else {// show logo
@@ -4837,7 +4884,7 @@ void Imagine::on_sbFrameIdx_valueChanged(int newValue)
 {
     imgFrameIdx = newValue;
     ui.hsFrameIdx->setValue(newValue);
-    if(!isPixmapping)
+    if(!isUpdatingImage)
         readCamFileImagesAndUpdate();
 }
 
@@ -4845,7 +4892,7 @@ void Imagine::on_sbStackIdx_valueChanged(int newValue)
 {
     imgStackIdx = newValue;
     ui.hsStackIdx->setValue(newValue);
-    if (!isPixmapping)
+    if (!isUpdatingImage)
         readCamFileImagesAndUpdate();
 }
 
@@ -4878,19 +4925,22 @@ void Imagine::reconfigDisplayTab()
         else
             ui.groupBoxBlendingOption->setEnabled(false);
         if (slaveImagine) {
-            if (ui.cbCam2Enable->isChecked())
+            if (ui.cbCam2Enable->isChecked()) {
                 connect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
-                    this, SLOT(updateLiveImagePlay(const QByteArray &, long, int, int)));
-            else
+                    this, SLOT(updateSlaveLiveImagePlay(const QByteArray &, long, int, int)));
+                if (ui.cbCam1Enable->isChecked()) {
+                    dataAcqThread->isUpdatingImage = false;
+                    slaveImagine->dataAcqThread->isUpdatingImage = false;
+                }
+            }
+            else {
                 disconnect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
-                    this, SLOT(updateLiveImagePlay(const QByteArray &, long, int, int)));
+                    this, SLOT(updateSlaveLiveImagePlay(const QByteArray &, long, int, int)));
+                slaveImagine->dataAcqThread->isUpdatingImage = false;
+            }
         }
     }
     else {
-        if (slaveImagine) {
-            disconnect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
-                this, SLOT(updateLiveImagePlay(const QByteArray &, long, int, int)));
-        }
         if ((img1.enable && img1.camValid) || (img2.enable && img2.camValid))
             ui.groupBoxPlayCamImage->setEnabled(true);
         else
@@ -4899,6 +4949,10 @@ void Imagine::reconfigDisplayTab()
             ui.groupBoxBlendingOption->setEnabled(true);
         else
             ui.groupBoxBlendingOption->setEnabled(false);
+        if (slaveImagine) {
+            disconnect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
+                this, SLOT(updateSlaveLiveImagePlay(const QByteArray &, long, int, int)));
+        }
     }
 }
 
@@ -4959,19 +5013,23 @@ void Imagine::on_rbImgFileEnable_toggled(bool checked)
 void Imagine::on_hsBlending_valueChanged()
 {
     alpha = ui.hsBlending->value();
-    readCamFileImagesAndUpdate();
+    if(!isUpdatingImage)
+        readCamFileImagesAndUpdate();
 }
+
+#define MAXSHIFT 100
 
 void Imagine::findMismatch(QByteArray &img1, QByteArray &img2, int width, int height)
 {
     if (pixmapper != NULL) {
-        pixmapper->param.alpha = 0.01; // 0.01rad -> 0.573degree
-        pixmapper->param.beta = 0.01;
-        pixmapper->param.gamma = 0.01;
+        pixmapper->param.alpha = 0.0; // 0.01rad -> 0.573degree
+        pixmapper->param.beta = 0.0;
+        pixmapper->param.gamma = 0.0;
         pixmapper->param.shiftX = 100;
         pixmapper->param.shiftY = 100;
-        pixmapper->param.shiftZ = 2;
+        pixmapper->param.shiftZ = 0;
         pixmapper->param.isOk = true;
+        Camera::PixelValue * tp = (Camera::PixelValue *)img1.constData();
 
         if (!pixmapper->param.isOk) {
             // TODO: parameter finding error warning message

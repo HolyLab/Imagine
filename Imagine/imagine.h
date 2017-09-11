@@ -168,6 +168,9 @@ public:
     Pixmapper *pixmapper = nullptr;
     ImagePlay *imagePlay = nullptr;
     bool isPixmapping = false;
+    bool isUpdatingImage = false;
+    bool masterImageReady = false;
+    bool slaveImageReady = false;
     QPixmap pixmap;
     QPixmap pixmapColor;
     QImage image;
@@ -370,6 +373,7 @@ private slots:
     void updateStatus(const QString &str);
     void appendLog(const QString& msg);
     void updateLiveImagePlay(const QByteArray &data16, long idx, int imageW, int imageH);
+    void updateSlaveLiveImagePlay(const QByteArray &data16, long idx, int imageW, int imageH);
     void updateDisplay(const QByteArray &data16, long idx, int imageW, int imageH);
     void updateDisplayColor(const QByteArray &data1, const QByteArray &data2, long idx, int imageW, int imageH);
     void zoom_onMousePressed(QMouseEvent*);

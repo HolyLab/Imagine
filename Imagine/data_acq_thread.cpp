@@ -643,22 +643,22 @@ void DataAcqThread::run_acq_and_save_wav()
     unique_ptr<DiThread> uniPtrDiThread(diThread);
     unique_ptr<ofstream> uniPtrOfsDi(ofsDi);
     if (ownPos) {
+        diThread->setOfstream(ofsDi);
+        //start DI
+        diThread->startAcq();
         if (isAiEnable) {
             aiThread->setOfstream(ofsAi);
             //start AI
             aiThread->startAcq();
             //after all devices are prepared, now we can save the file header:
-            saveHeader(headerFilename, aiThread->ai, conWaveData);
+            saveHeader(headerFilename, aiThread->ai, diThread->di, conWaveData);
         }
         else {
-            saveHeader(headerFilename, NULL, conWaveData);
+            saveHeader(headerFilename, NULL, diThread->di, conWaveData);
         }
-        diThread->setOfstream(ofsDi);
-        //start DI
-        diThread->startAcq();
     }
     else {
-        saveHeader(headerFilename, NULL, conWaveData);
+        saveHeader(headerFilename, NULL, NULL, conWaveData);
     }
     isUpdatingImage = false;
 
@@ -807,7 +807,7 @@ void DataAcqThread::fireStimulus(int valve)
 
 QString replaceExtName(QString filename, QString newExtname);
 
-bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, ControlWaveform *conWaveData)
+bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, DaqDi* di, ControlWaveform *conWaveData)
 {
     Camera& camera = *pCamera;
 
@@ -840,8 +840,8 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, ControlWaveform *con
             header << "command file=" << "NA" << endl
                 << "di data file=" << "NA" << endl;
         }
-        header << "piezo=start position: " << "NA"
-            << ";stop position: " << "NA"
+        header << "piezo=start position: " << conWaveData->piezoStartPosUm
+            << ";stop position: " << conWaveData->piezoStopPosUm
             << ";output scan rate: " << conWaveData->sampleRate
             << ";bidirection: " << conWaveData->bidirection
             << endl << endl;
@@ -899,7 +899,7 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, ControlWaveform *con
             << "min input=" << ai->minPhyValue << endl
             << "max input=" << ai->maxPhyValue << endl << endl;
     }
-    //if (di != NULL) {
+    if (di != NULL) {
         if (isUsingWav) {
             if (conWaveData != NULL) {
                 header << "[di]" << endl
@@ -921,10 +921,10 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, ControlWaveform *con
                 }
                 header.seekp(-1, header.cur);
                 header << endl;
-                header << "di scan rate=" << ai->scanRate << endl << endl;
+                header << "di scan rate=" << di->scanRate << endl << endl;
             }
         }
-    //}
+    }
 
     //camera related:
     header << "[camera]" << endl

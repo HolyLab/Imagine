@@ -139,7 +139,7 @@ protected:
     void run_live();
 
 private:
-    bool saveHeader(QString filename, DaqAi* ai, ControlWaveform *conWaveData = NULL);
+    bool saveHeader(QString filename, DaqAi* ai, DaqDi* di = NULL, ControlWaveform *conWaveData = NULL);
     void fireStimulus(int valve);
     bool restart;
     bool abort;

@@ -426,6 +426,18 @@ CFErrorCode ControlWaveform::parsing(void)
         }
         controlList.push_back(cwf);
     }
+    //caluclate min max piezo value
+    piezoStartPosUm = 1000000;
+    piezoStopPosUm = -1000000;
+    for (int controlIdx = 0; controlIdx < controlList[0]->size(); controlIdx += 2) {
+        int waveIdx = controlList[0]->at(controlIdx + 1);
+        for (int sampleIdx = 0; sampleIdx < waveList_Pos[waveIdx]->size(); sampleIdx++) {
+            int piezoPos = waveList_Pos[waveIdx]->at(sampleIdx);
+            if (piezoStartPosUm > piezoPos) piezoStartPosUm = piezoPos;
+            if (piezoStopPosUm < piezoPos) piezoStopPosUm = piezoPos;
+        }
+    }
+
     return err;
 }
 
@@ -1354,7 +1366,7 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
     QJsonArray piezo1Seq, camera1Seq, camera2Seq, laser1Seq;
     QJsonObject piezo1, camera1, camera2, laser1;
     QJsonObject stimulus1, stimulus2, stimulus3, stimulus4;
-    QJsonObject piezo1Mon, piezo2Mon, camera1Mon, camera2Mon;
+    QJsonObject piezo1Mon, piezo2Mon, ai1Mon, ai4Mon, camera1Mon, camera2Mon;
     QJsonObject laser1Mon, stimulus1Mon, stimulus2Mon;
     int repeat;
     if (bidirection)
@@ -1374,6 +1386,23 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
         if (port == QString(STR_AIHEADER).append("0")) { // AI0
             piezo1Mon[STR_Channel] = port;
             analog[sig] = piezo1Mon; // secured port for piezo monitor
+        }
+
+        if ((rig != "dummy")&&(rig != "ocpi-2")) {
+            if (port == QString(STR_AIHEADER).append("1")) { // AI1
+                ai1Mon[STR_Channel] = port;
+                analog["stimuli"] = ai1Mon; // for compatibility with old Imainge HW configuration
+            }
+        }
+        else {
+            if (port == QString(STR_AIHEADER).append("1")) { // AI1
+                piezo2Mon[STR_Channel] = port;
+                analog[sig] = piezo2Mon; // horizontal piezo monitor
+            }
+        }
+        if (port == QString(STR_AIHEADER).append("4")) { // AI4
+            ai4Mon[STR_Channel] = port;
+            analog["AI4"] = ai4Mon; // for compatibility with old Imainge HW configuration
         }
 
         if (enableCam1) {

@@ -233,7 +233,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>5</number>
+         <number>7</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -4159,7 +4159,7 @@
           </item>
           <item>
            <layout class="QGridLayout" name="gridLayout_8">
-            <item row="0" column="0">
+            <item row="0" column="3">
              <widget class="QLabel" name="label_54">
               <property name="maximumSize">
                <size>
@@ -4175,7 +4175,7 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
+            <item row="0" column="4">
              <widget class="QLabel" name="labelAiSampleNum">
               <property name="maximumSize">
                <size>
@@ -4191,8 +4191,44 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="2">
+            <item row="0" column="5">
              <spacer name="horizontalSpacer_13">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>3</width>
+                <height>3</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_77">
+              <property name="text">
+               <string>Rig :</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="lableAiDiWavRigname">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Rig</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <spacer name="horizontalSpacer_16">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>

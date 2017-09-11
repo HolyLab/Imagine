@@ -182,26 +182,36 @@ void Pixmapper::transform(const QByteArray &srcImg, QByteArray &destImg, int ima
     Camera::PixelValue * tp2 = (Camera::PixelValue *)destImg.constData();
     // full transform(imageW X imageH) or cropped one(dLeft, dTop, dWidth, dHeight)?
     for (int row = 0; row < imageH; ++row) {
-        for (int col = 0; col < imageW; ++col) {
-            Camera::PixelValue inten;
-            if ((row >= dTop) && (row < dTop + dHeight) &&
-                (col >= dLeft) && (col < dLeft + dWidth)) {
-                // calculate transform
-                int i, j;
-                i = row + param.shiftX;
-                j = col + param.shiftY;
-                if ((i >= 0) && (i < imageH) &&
-                    (j >= 0) && (j < imageW)) {
-                    inten = tp1[i*imageW + j];// *tp1++;
+        Camera::PixelValue inten;
+        if ((row >= dTop) && (row < dTop + dHeight)) {
+            for (int col = 0; col < imageW; ++col) {
+                if ((col >= dLeft) && (col < dLeft + dWidth)) {
+                    // calculate transform
+                    int i, j, k;
+                    i = 1.01*row + 0.01*col + 0.01;
+                    j = 0.01*row + 1.01*col + 0.01;
+                    k = 0.01*row + 0.01*col + 1.01;
+                    i = i + param.shiftX;
+                    j = j + param.shiftY;
+
+                    if ((i >= 0) && (i < imageH) &&
+                        (j >= 0) && (j < imageW)) {
+                        inten = tp1[i*imageW + j];// *tp1++;
+                    }
+                    else {
+                        inten = 0;
+                    }
                 }
-                else
+                else {
                     inten = 0;
+                }
+                destImg.append((const char *)&inten, sizeof(Camera::PixelValue));
             }
-            else {
-                inten = 0;
-            }
-            destImg.append((const char *)&inten, sizeof(Camera::PixelValue));
         }
+        else {
+            inten = 0;
+        }
+        destImg.append((const char *)&inten, sizeof(Camera::PixelValue));
     }
 }
 #pragma endregion

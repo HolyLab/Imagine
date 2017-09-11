@@ -206,13 +206,13 @@ private:
     double piezo10Vint16Value;
     QJsonObject alldata;
 
-    QVector<QVector<int> *>     controlList;
+    QVector<QVector<int> *>     controlList;    // [ctlIdx][0]:repeat,[ctlIdx][1]:wave,[ctlIdx][2]:repeat,,,
     QVector<QVector<int> *>     waveList_Raw;   // positioner waveform (raw format)
                                                 // analog waveform + digital waveform
     QVector<QVector<int> *>     waveList_Pos;   // analog waveform (piezo position format)
     QVector<QVector<float64> *> waveList_Vol;   // analog waveform (voltage format) 
 
-    QVector<QVector<QString>> channelSignalList;
+    QVector<QVector<QString>> channelSignalList; // [ctrlIdx][0]:port ID, [ctrlIdx][1]:signal name
 
     QVector<QVector<QString>> ocpi1Secured = { // secured signal name for OCPI-1
         // Analog output (AO0 ~ AO1)                                // ctrlIdx
