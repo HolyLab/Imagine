@@ -20,7 +20,11 @@
 #include <QTimer>
 #include <QThread>
 #include <QSettings>
-
+#include <QHelpEngine>
+#include <QHelpContentWidget>
+#include <QHelpIndexWidget>
+#include <QHelpSearchQueryWidget>
+#include <QSplitter>
 
 class QScrollArea;
 class QString;
@@ -39,8 +43,8 @@ class CurveData;
 #include "laserctrl.h"
 #include "piezoctrl.h"
 #include "waveform.h"
-#include "helpdialog.h"
 #include "script.h"
+#include "helpbrowser.h"
 
 #define READ_STRING_SETTING(prefs, var, emptyValue)\
   ui.##var->setText( prefs.value(#var).toString() );\
@@ -192,7 +196,6 @@ public:
     int imgFrameIdx, imgStackIdx;
     QColor img1Color, img2Color;
     int alpha;
-    HelpDialog *helpDialog;
 
     // for laser control
     LaserCtrlSerial *laserCtrlSerial = nullptr;
@@ -253,6 +256,7 @@ private:
     bool isRecordCommander = false;
     bool reqFromScript = false;
     uInt32 laserTTLSig = 0;
+    QDialog* helpWindow;;
 
     void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
     void calcMinMaxValues(Camera::PixelValue * frame1, Camera::PixelValue * frame2, int imageW, int imageH);
@@ -315,6 +319,7 @@ private:
     void rearrangeTabWindow();
     void displayConWaveData();
     void findMismatch(QByteArray &img1, QByteArray &img2, int width, int height);
+    void createHelpWindow();
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();

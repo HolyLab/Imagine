@@ -448,8 +448,7 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     ui.hsBlending->setValue(alpha);
 
     // This is help window
-    helpDialog = new HelpDialog;
-    helpDialog->initHelp("helpmain.htm");
+    createHelpWindow();
 
     ui.gbDontShowMe1->setVisible(false);
     ui.gbDontShowMe2->setVisible(false);
@@ -1350,9 +1349,68 @@ void Imagine::on_actionStop_triggered()
     updateStatus(eStopping, curAction);
 }
 
+void Imagine::createHelpWindow()
+{
+    QString docFile = "./documentation/imagineHelp.qhc";
+    QHelpEngine* helpEngine = new QHelpEngine(docFile);
+    helpEngine->setupData();
+
+    QTabWidget* tWidget = new QTabWidget;
+    tWidget->setMaximumWidth(200);
+    tWidget->addTab(helpEngine->contentWidget(), "Contents");
+    tWidget->addTab(helpEngine->indexWidget(), "Index");
+
+    HelpBrowser *textViewer = new HelpBrowser(helpEngine);
+    textViewer->setSource(
+        QUrl("qthelp://imagineHelp/doc/index.html"));
+    connect(helpEngine->contentWidget(),
+        SIGNAL(linkActivated(QUrl)),
+        textViewer, SLOT(setSource(QUrl)));
+
+    connect(helpEngine->indexWidget(),
+        SIGNAL(linkActivated(QUrl, QString)),
+        textViewer, SLOT(setSource(QUrl)));
+
+    QSplitter *horizSplitter = new QSplitter(Qt::Horizontal);
+    horizSplitter->insertWidget(0, tWidget);
+    horizSplitter->insertWidget(1, textViewer);
+//    horizSplitter->show();
+
+    helpWindow = new QDialog(this);
+    QVBoxLayout *verticalLayout = new QVBoxLayout(helpWindow);
+    QHBoxLayout *horizontalLayout = new QHBoxLayout();
+
+    QPushButton *pbHelpPrevious = new QPushButton(helpWindow);
+    pbHelpPrevious->setText("Previous");
+    horizontalLayout->addWidget(pbHelpPrevious);
+
+    QPushButton *pbHelpNext = new QPushButton(helpWindow);
+    pbHelpNext->setText("Next");
+    horizontalLayout->addWidget(pbHelpNext);
+
+    QSpacerItem *horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    horizontalLayout->addItem(horizontalSpacer);
+
+//    QLineEdit *leHelpSearchText = new QLineEdit(helpWindow);
+//    horizontalLayout->addWidget(leHelpSearchText);
+
+//    QPushButton *pbHelpSearch = new QPushButton(helpWindow);
+//    pbHelpSearch->setText("Search");
+//    horizontalLayout->addWidget(pbHelpSearch);
+
+    verticalLayout->addLayout(horizontalLayout);
+    verticalLayout->addWidget(horizSplitter);
+    helpWindow->hide();
+
+    connect(pbHelpPrevious, SIGNAL(clicked(void)), textViewer, SLOT(backward()));
+    connect(pbHelpNext, SIGNAL(clicked(void)), textViewer, SLOT(forward()));
+//    connect(pbHelpSearch, SIGNAL(clicked(void)), leHelpSearchText, SLOT(search(const QString &)));
+//    connect(leHelpSearchText, SIGNAL(textEdited(const QString &)), helpEngine->searchEngine(), SLOT(search(const QString &)));
+}
+
 void Imagine::on_actionViewHelp_triggered()
 {
-    helpDialog->show();
+    helpWindow->show();
 }
 
 void Imagine::on_actionOpenShutter_triggered()

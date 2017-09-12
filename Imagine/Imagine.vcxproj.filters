@@ -23,7 +23,6 @@
     <ClCompile Include="shutterctrl.cpp" />
     <ClCompile Include="spoolthread.cpp" />
     <ClCompile Include="workerthread.cpp" />
-    <ClCompile Include="helpdialog.cpp" />
     <ClCompile Include="waveform.cpp" />
     <ClCompile Include="di_thread.cpp" />
     <ClCompile Include="script.cpp" />
@@ -67,12 +66,6 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_di_thread.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_helpdialog.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_helpdialog.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_imagelabel.cpp">
@@ -135,18 +128,13 @@
     <ClCompile Include="GeneratedFiles\Release\moc_workerthread.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\qrc_helpdialog.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\qrc_imagine.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="helpbrowser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_imagine.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_helpdialog.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="ArduinoSerial.h">
@@ -200,6 +188,9 @@
     <ClInclude Include="camera_g.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="helpbrowser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="piezoctrl.h">
@@ -208,14 +199,8 @@
     <CustomBuild Include="waveform.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="helpdialog.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="script.h">
       <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="helpdialog.qrc">
-      <Filter>Generated Files</Filter>
     </CustomBuild>
     <CustomBuild Include="imagine.qrc">
       <Filter>Generated Files</Filter>
@@ -260,9 +245,6 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="imagine.ui">
-      <Filter>GUI Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="helpdialog.ui">
       <Filter>GUI Files</Filter>
     </CustomBuild>
     <CustomBuild Include="imagine.h">

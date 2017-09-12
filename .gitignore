@@ -26,4 +26,8 @@ Imagine/scripts/*.imagine
 Imagine/scripts/*.stim
 Imagine/Debug
 *.ui.*
-/Imagine/helpdoc
+Imagine/scripts/documentation/*.html
+Imagine/scripts/documentation/*.qhcp
+Imagine/scripts/documentation/*.qhp
+Imagine/scripts/documentation/images
+Imagine/scripts/documentation/old
