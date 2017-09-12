@@ -20,10 +20,6 @@
 #include <QTimer>
 #include <QThread>
 #include <QSettings>
-#include <QHelpEngine>
-#include <QHelpContentWidget>
-#include <QHelpIndexWidget>
-#include <QHelpSearchQueryWidget>
 #include <QSplitter>
 
 class QScrollArea;
@@ -44,7 +40,6 @@ class CurveData;
 #include "piezoctrl.h"
 #include "waveform.h"
 #include "script.h"
-#include "helpbrowser.h"
 
 #define READ_STRING_SETTING(prefs, var, emptyValue)\
   ui.##var->setText( prefs.value(#var).toString() );\
@@ -149,6 +144,8 @@ typedef struct {
     unsigned short green;
     unsigned short blue;
 } ColorPixelValue;
+
+class QProcess;
 
 class Imagine : public QMainWindow
 {
@@ -256,7 +253,7 @@ private:
     bool isRecordCommander = false;
     bool reqFromScript = false;
     uInt32 laserTTLSig = 0;
-    QDialog* helpWindow;;
+    QProcess *proc = NULL;
 
     void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
     void calcMinMaxValues(Camera::PixelValue * frame1, Camera::PixelValue * frame2, int imageW, int imageH);
@@ -319,7 +316,6 @@ private:
     void rearrangeTabWindow();
     void displayConWaveData();
     void findMismatch(QByteArray &img1, QByteArray &img2, int width, int height);
-    void createHelpWindow();
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();

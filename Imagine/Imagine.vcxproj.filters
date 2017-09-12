@@ -131,7 +131,6 @@
     <ClCompile Include="GeneratedFiles\qrc_imagine.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="helpbrowser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_imagine.h">
@@ -186,9 +185,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="camera_g.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="helpbrowser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -447,9 +447,6 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     alpha = 50;
     ui.hsBlending->setValue(alpha);
 
-    // This is help window
-    createHelpWindow();
-
     ui.gbDontShowMe1->setVisible(false);
     ui.gbDontShowMe2->setVisible(false);
 //    ui.cbEnableMismatch->setVisible(false);
@@ -1349,68 +1346,29 @@ void Imagine::on_actionStop_triggered()
     updateStatus(eStopping, curAction);
 }
 
-void Imagine::createHelpWindow()
-{
-    QString docFile = "./documentation/imagineHelp.qhc";
-    QHelpEngine* helpEngine = new QHelpEngine(docFile);
-    helpEngine->setupData();
-
-    QTabWidget* tWidget = new QTabWidget;
-    tWidget->setMaximumWidth(200);
-    tWidget->addTab(helpEngine->contentWidget(), "Contents");
-    tWidget->addTab(helpEngine->indexWidget(), "Index");
-
-    HelpBrowser *textViewer = new HelpBrowser(helpEngine);
-    textViewer->setSource(
-        QUrl("qthelp://imagineHelp/doc/index.html"));
-    connect(helpEngine->contentWidget(),
-        SIGNAL(linkActivated(QUrl)),
-        textViewer, SLOT(setSource(QUrl)));
-
-    connect(helpEngine->indexWidget(),
-        SIGNAL(linkActivated(QUrl, QString)),
-        textViewer, SLOT(setSource(QUrl)));
-
-    QSplitter *horizSplitter = new QSplitter(Qt::Horizontal);
-    horizSplitter->insertWidget(0, tWidget);
-    horizSplitter->insertWidget(1, textViewer);
-//    horizSplitter->show();
-
-    helpWindow = new QDialog(this);
-    QVBoxLayout *verticalLayout = new QVBoxLayout(helpWindow);
-    QHBoxLayout *horizontalLayout = new QHBoxLayout();
-
-    QPushButton *pbHelpPrevious = new QPushButton(helpWindow);
-    pbHelpPrevious->setText("Previous");
-    horizontalLayout->addWidget(pbHelpPrevious);
-
-    QPushButton *pbHelpNext = new QPushButton(helpWindow);
-    pbHelpNext->setText("Next");
-    horizontalLayout->addWidget(pbHelpNext);
-
-    QSpacerItem *horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-    horizontalLayout->addItem(horizontalSpacer);
-
-//    QLineEdit *leHelpSearchText = new QLineEdit(helpWindow);
-//    horizontalLayout->addWidget(leHelpSearchText);
-
-//    QPushButton *pbHelpSearch = new QPushButton(helpWindow);
-//    pbHelpSearch->setText("Search");
-//    horizontalLayout->addWidget(pbHelpSearch);
-
-    verticalLayout->addLayout(horizontalLayout);
-    verticalLayout->addWidget(horizSplitter);
-    helpWindow->hide();
-
-    connect(pbHelpPrevious, SIGNAL(clicked(void)), textViewer, SLOT(backward()));
-    connect(pbHelpNext, SIGNAL(clicked(void)), textViewer, SLOT(forward()));
-//    connect(pbHelpSearch, SIGNAL(clicked(void)), leHelpSearchText, SLOT(search(const QString &)));
-//    connect(leHelpSearchText, SIGNAL(textEdited(const QString &)), helpEngine->searchEngine(), SLOT(search(const QString &)));
-}
-
 void Imagine::on_actionViewHelp_triggered()
 {
-    helpWindow->show();
+    if (!proc)
+        proc = new QProcess();
+
+    if (proc->state() != QProcess::Running) {
+        QString app = QLibraryInfo::location(QLibraryInfo::BinariesPath) + QDir::separator();
+        app += QLatin1String("assistant");
+
+        QStringList args;
+        args << QLatin1String("-collectionFile")
+            << QLatin1String("./documentation/imagineHelp.qhc")
+            << QLatin1String("-enableRemoteControl");
+
+        proc->start(app, args);
+
+        if (!proc->waitForStarted()) {
+            QMessageBox::critical(0, QObject::tr("Simple Text Viewer"),
+                QObject::tr("Unable to launch Qt Assistant (%1)").arg(app));
+            return;
+        }
+    }
+    return;
 }
 
 void Imagine::on_actionOpenShutter_triggered()
@@ -5083,8 +5041,8 @@ void Imagine::findMismatch(QByteArray &img1, QByteArray &img2, int width, int he
         pixmapper->param.alpha = 0.0; // 0.01rad -> 0.573degree
         pixmapper->param.beta = 0.0;
         pixmapper->param.gamma = 0.0;
-        pixmapper->param.shiftX = 100;
-        pixmapper->param.shiftY = 100;
+        pixmapper->param.shiftX = 42;
+        pixmapper->param.shiftY = height-362;
         pixmapper->param.shiftZ = 0;
         pixmapper->param.isOk = true;
         Camera::PixelValue * tp = (Camera::PixelValue *)img1.constData();

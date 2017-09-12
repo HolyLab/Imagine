@@ -179,7 +179,7 @@ void Pixmapper::transform(const QByteArray &srcImg, QByteArray &destImg, int ima
                         int dLeft, int dTop, int dWidth, int dHeight)
 {
     Camera::PixelValue * tp1 = (Camera::PixelValue *)srcImg.constData();
-    Camera::PixelValue * tp2 = (Camera::PixelValue *)destImg.constData();
+//    Camera::PixelValue * tp2 = (Camera::PixelValue *)destImg.constData();
     // full transform(imageW X imageH) or cropped one(dLeft, dTop, dWidth, dHeight)?
     for (int row = 0; row < imageH; ++row) {
         Camera::PixelValue inten;
@@ -188,11 +188,11 @@ void Pixmapper::transform(const QByteArray &srcImg, QByteArray &destImg, int ima
                 if ((col >= dLeft) && (col < dLeft + dWidth)) {
                     // calculate transform
                     int i, j, k;
-                    i = 1.01*row + 0.01*col + 0.01;
-                    j = 0.01*row + 1.01*col + 0.01;
-                    k = 0.01*row + 0.01*col + 1.01;
-                    i = i + param.shiftX;
-                    j = j + param.shiftY;
+                    i = -1.0*row + 0.0*col + 0.0;
+                    j = 0.0*row + 1.0*col + 0.0;
+                    k = 0.0*row + 0.0*col + 1.0;
+                    i = i + param.shiftY;
+                    j = j + param.shiftX;
 
                     if ((i >= 0) && (i < imageH) &&
                         (j >= 0) && (j < imageW)) {
@@ -209,9 +209,11 @@ void Pixmapper::transform(const QByteArray &srcImg, QByteArray &destImg, int ima
             }
         }
         else {
-            inten = 0;
+            for (int col = 0; col < imageW; ++col) {
+                inten = 0;
+                destImg.append((const char *)&inten, sizeof(Camera::PixelValue));
+            }
         }
-        destImg.append((const char *)&inten, sizeof(Camera::PixelValue));
     }
 }
 #pragma endregion
