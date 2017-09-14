@@ -318,7 +318,7 @@ private:
     void enableMismatchCorrection(QByteArray &img1, QByteArray &img2, int width, int height);
     bool autoFindMismatchParameters(QByteArray &img1, QByteArray &img2, int width, int height);
     void displayImageUpdate(void);
-    void calHomogeneousTramsformMatrix(TransformParam &param, int width, int height);
+    void calHomogeneousTramsformMatrix();
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();

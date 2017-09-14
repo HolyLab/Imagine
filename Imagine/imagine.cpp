@@ -112,6 +112,12 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     ui.setupUi(this);
     //load user's preference/preset from js
     loadPreset();
+    pixmapper->param.isAuto = false;
+    pixmapper->param.isOk = false;
+    pixmapper->param.theta = ui.dsbRotationAngle->value();
+    pixmapper->param.tx = ui.sbXTranslation->value();
+    pixmapper->param.ty = ui.sbYTranslation->value();
+
     //to overcome qt designer's incapability
     addDockWidget(Qt::TopDockWidgetArea, ui.dwStim);
     addDockWidget(Qt::LeftDockWidgetArea, ui.dwCfg);
@@ -5144,8 +5150,18 @@ bool Imagine::autoFindMismatchParameters(QByteArray &img1, QByteArray &img2, int
     return true;
 }
 
-void Imagine::calHomogeneousTramsformMatrix(TransformParam &param, int width, int height)
+void Imagine::calHomogeneousTramsformMatrix()
 {
+    int width, height;
+    TransformParam &param = (pixmapper->param);
+    if (ui.rbImgCameraEnable->isChecked()) {
+        width = dataAcqThread->pCamera->getImageWidth();
+        height = dataAcqThread->pCamera->getImageHeight();
+    }
+    else {
+        width = img1.imgWidth;
+        height = img1.imgHeight;
+    }
     double cx = (double)width / 2.;
     double cy = (double)height / 2.;
     double radian = param.theta / 180.*M_PI;
@@ -5180,7 +5196,7 @@ void Imagine::enableMismatchCorrection(QByteArray &img1, QByteArray &img2, int w
             pixmapper->param.tx = (double)ui.sbXTranslation->value();
             pixmapper->param.ty = (double)ui.sbYTranslation->value();
             pixmapper->param.theta = ui.dsbRotationAngle->value();
-            calHomogeneousTramsformMatrix(pixmapper->param, width, height);
+            calHomogeneousTramsformMatrix();
             pixmapper->param.isOk = true;
         }
 
@@ -5247,7 +5263,7 @@ void Imagine::displayImageUpdate()
 void Imagine::on_sbXTranslation_valueChanged(int newValue)
 {
     pixmapper->param.tx = newValue;
-    calHomogeneousTramsformMatrix(pixmapper->param, img1.imgWidth, img1.imgHeight);
+    calHomogeneousTramsformMatrix();
     displayImageUpdate();
 }
 
@@ -5259,7 +5275,7 @@ void Imagine::on_sbXTranslation_editingFinished()
 void Imagine::on_sbYTranslation_valueChanged(int newValue)
 {
     pixmapper->param.ty = newValue;
-    calHomogeneousTramsformMatrix(pixmapper->param, img1.imgWidth, img1.imgHeight);
+    calHomogeneousTramsformMatrix();
     displayImageUpdate();
 }
 
@@ -5271,7 +5287,7 @@ void Imagine::on_sbYTranslation_editingFinished()
 void Imagine::on_dsbRotationAngle_valueChanged(double newValue)
 {
     pixmapper->param.theta = newValue;
-    calHomogeneousTramsformMatrix(pixmapper->param, img1.imgWidth, img1.imgHeight);
+    calHomogeneousTramsformMatrix();
     displayImageUpdate();
 }
 
