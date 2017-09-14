@@ -169,13 +169,11 @@ public:
     Pixmapper *pixmapper = nullptr;
     ImagePlay *imagePlay = nullptr;
     bool isPixmapping = false;
-    bool isUpdatingImage = false;
+    bool isUpdatingDisplay = false;
     bool masterImageReady = false;
     bool slaveImageReady = false;
     QPixmap pixmap;
-    QPixmap pixmapColor;
     QImage image;
-    QImage imageClor;
     QByteArray lastRawImg;
     QByteArray lastRawImg2;
     bool isUpdateImgColor;
@@ -217,9 +215,10 @@ private:
     int minPixelValue, maxPixelValue;
     int minPixelValue2, maxPixelValue2;
     int minPixelValueByUser, maxPixelValueByUser;
+    int minPixelValueByUser2, maxPixelValueByUser2;
     int nContinousBlackFrames;
     QwtPlot *histPlot;
-    QwtPlotHistogram *histogram;
+    QwtPlotHistogram *histogram, *histogram2;
     QwtPlot *intenPlot;
     QwtPlotCurve *intenCurve;
     CurveData *intenCurveData;
@@ -249,6 +248,7 @@ private:
     int numLaserShutters = 0;
     int laserShutterIndex[8] = { 0, };
     QString file=""; // config file name
+    QString imageFilename = "";
     bool isApplyCommander = false;
     bool isRecordCommander = false;
     bool reqFromScript = false;
@@ -258,9 +258,9 @@ private:
     void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
     void calcMinMaxValues(Camera::PixelValue * frame1, Camera::PixelValue * frame2, int imageW, int imageH);
     void updateStatus(ImagineStatus newStatus, ImagineAction newAction);
-    void updateImage(bool color);
-	void updateHist(const Camera::PixelValue * frame,
-        const int imageW, const int imageH);
+    void updateImage(bool isColor, bool isForce);
+    void updateHist(QwtPlotHistogram *histogram, const Camera::PixelValue * frame,
+        const int imageW, const int imageH, double &maxcount, unsigned int &maxintensity);
     void updateIntenCurve(const Camera::PixelValue * frame,
         const int imageW, const int imageH, const int frameIdx);
     template<class Type> void setCurveData(CurveData *curveData, QwtPlotCurve *curve,
@@ -315,7 +315,10 @@ private:
     void clearConWavPlot();
     void rearrangeTabWindow();
     void displayConWaveData();
-    void findMismatch(QByteArray &img1, QByteArray &img2, int width, int height);
+    void enableMismatchCorrection(QByteArray &img1, QByteArray &img2, int width, int height);
+    bool autoFindMismatchParameters(QByteArray &img1, QByteArray &img2, int width, int height);
+    void displayImageUpdate(void);
+    void calHomogeneousTramsformMatrix(TransformParam &param, int width, int height);
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();
@@ -347,8 +350,10 @@ private slots:
     void on_actionCloseShutter_triggered();
     //void on_actionTemperature_triggered();
     void on_actionAutoScaleOnFirstFrame_triggered();
-    void on_actionContrastMin_triggered();
-    void on_actionContrastMax_triggered();
+    void on_actionContrastMin1_triggered();
+    void on_actionContrastMax1_triggered();
+    void on_actionContrastMin2_triggered();
+    void on_actionContrastMax2_triggered();
     void on_actionStimuli_triggered();
     void on_actionConfig_triggered();
     void on_actionLog_triggered();
@@ -503,10 +508,19 @@ private slots:
     void on_sbStackIdx_valueChanged(int newValue);
     void on_hsFrameIdx_valueChanged(int newValue);
     void on_hsStackIdx_valueChanged(int newValue);
+    void on_hsFrameIdx_sliderReleased();
+    void on_hsStackIdx_sliderReleased();
     void on_pbImg1Color_clicked();
     void on_pbImg2Color_clicked();
     void on_hsBlending_valueChanged();
+    void on_hsBlending_sliderReleased();
     void on_cbEnableMismatch_clicked(bool checked);
+    void on_sbXTranslation_valueChanged(int newValue);
+    void on_sbXTranslation_editingFinished();
+    void on_sbYTranslation_valueChanged(int newValue);
+    void on_sbYTranslation_editingFinished();
+    void on_dsbRotationAngle_valueChanged(double newValue);
+    void on_dsbRotationAngle_editingFinished();
 
     void on_actionViewHelp_triggered();
 

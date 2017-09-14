@@ -188,12 +188,8 @@ void Pixmapper::transform(const QByteArray &srcImg, QByteArray &destImg, int ima
                 if ((col >= dLeft) && (col < dLeft + dWidth)) {
                     // calculate transform
                     int i, j, k;
-                    i = -1.0*row + 0.0*col + 0.0;
-                    j = 0.0*row + 1.0*col + 0.0;
-                    k = 0.0*row + 0.0*col + 1.0;
-                    i = i + param.shiftY;
-                    j = j + param.shiftX;
-
+                    j = param.a[0][0]*col + param.a[0][1] *row + param.a[0][2];
+                    i = param.a[1][0]*col + param.a[1][1] *row + param.a[1][2];
                     if ((i >= 0) && (i < imageH) &&
                         (j >= 0) && (j < imageW)) {
                         inten = tp1[i*imageW + j];// *tp1++;

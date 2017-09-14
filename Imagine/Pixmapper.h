@@ -5,8 +5,10 @@
 #include "qpen.h"
 
 typedef struct{
-    double alpha, beta, gamma;
-    double shiftX, shiftY, shiftZ;
+    bool isAuto;
+    double theta; // rotation angle
+    double tx, ty; // translation
+    double a[2][3]; // homogeneous transform matrix for 2D transform
     bool isOk;
 } TransformParam;
 

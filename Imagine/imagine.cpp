@@ -106,6 +106,8 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
 
     minPixelValueByUser = 0;
     maxPixelValueByUser = 1 << 16;
+    minPixelValueByUser2 = 0;
+    maxPixelValueByUser2 = 1 << 16;
 
     ui.setupUi(this);
     //load user's preference/preset from js
@@ -157,6 +159,8 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
         ui.cbCam2Enable->setChecked(true);
         ui.rbImgCameraEnable->setChecked(true);
         ui.lineEditFilename->setText("d:/test/t2.imagine");
+        ui.actionContrastMin2->setVisible(false);
+        ui.actionContrastMax2->setVisible(false);
     }
     else {  // Imagine(1)
         conWaveDataParam = new ControlWaveform(rig);
@@ -449,7 +453,10 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
 
     ui.gbDontShowMe1->setVisible(false);
     ui.gbDontShowMe2->setVisible(false);
-//    ui.cbEnableMismatch->setVisible(false);
+    ui.gbDontShowMe3->setVisible(false);
+    ui.gbHorizontalShift->setVisible(false);
+    ui.gbVerticalShift->setVisible(false);
+    //    ui.cbEnableMismatch->setVisible(false);
     ui.pbTestButton->setVisible(false);
 }
 
@@ -532,14 +539,15 @@ void Imagine::setROIMinMaxSize()
 
 #pragma region DRAWING
 
-void Imagine::updateImage(bool isColor)
+void Imagine::updateImage(bool isColor, bool isForce)
 {
     if (isColor) {
-        if (lastRawImg.isNull()|| lastRawImg2.isNull() || isPixmapping) return;
+        if (lastRawImg.isNull()|| lastRawImg2.isNull()) return;
     }
     else {
-        if (lastRawImg.isNull() || isPixmapping) return;
+        if (lastRawImg.isNull()) return;
     }
+    if (isPixmapping && !isForce) return;
     isPixmapping = true;
 
     // making the pixmap is expensive - push it to another thread
@@ -585,8 +593,8 @@ void Imagine::handleColorPixmap(const QPixmap &pxmp, const QImage &img) {
 }
 
 int counts[1 << 16];
-void Imagine::updateHist(const Camera::PixelValue * frame,
-    const int imageW, const int imageH)
+void Imagine::updateHist(QwtPlotHistogram *histogram, const Camera::PixelValue * frame,
+    const int imageW, const int imageH, double &maxcount, unsigned int &maxintensity)
 {
     //initialize the counts to all 0's
     int ncounts = sizeof(counts) / sizeof(counts[0]);
@@ -597,7 +605,6 @@ void Imagine::updateHist(const Camera::PixelValue * frame,
     }
 
     // Autoscale
-    unsigned int maxintensity;
     for (maxintensity = ncounts - 1; maxintensity >= 0; maxintensity--)
         if (counts[maxintensity])
             break;
@@ -609,7 +616,6 @@ void Imagine::updateHist(const Camera::PixelValue * frame,
 
     QVector<QwtIntervalSample> intervals(nBins);
 
-    double maxcount = 0;
     for (unsigned int i = 0; i < nBins; i++) {
         double start = i*binWidth;                            //inclusive
         double end = (i == nBins - 1) ? totalWidth : start + binWidth;
@@ -630,11 +636,7 @@ void Imagine::updateHist(const Camera::PixelValue * frame,
     //cout << "; Last value: " << values[nBins-1] << endl;
 
     histogram->setSamples(intervals);
-
-    histPlot->setAxisScale(QwtPlot::yLeft, 1, maxcount);
-    histPlot->setAxisScale(QwtPlot::xBottom, 0.0, maxintensity);
-    histPlot->replot();
-
+    histogram->attach(histPlot);
 }//updateHist(),
 
 void Imagine::updateIntenCurve(const Camera::PixelValue * frame,
@@ -684,7 +686,8 @@ void Imagine::preparePlots()
     //the histgram
     histPlot = new QwtPlot();
     histPlot->setCanvasBackground(QColor(Qt::white));
-    ui.dwHist->setWidget(histPlot); //setWidget() causes the widget using all space
+//    ui.dwHist->setWidget(histPlot); //setWidget() causes the widget using all space
+    ui.histogramLayout->addWidget(histPlot); //setWidget() causes the widget using all space
     histPlot->setAxisScaleEngine(QwtPlot::yLeft, new QwtLogScaleEngine(10));
     histPlot->setMinimumWidth(200);
     //histPlot->setBaseSize(200, 100);
@@ -697,6 +700,7 @@ void Imagine::preparePlots()
     grid->attach(histPlot);
 
     histogram = new QwtPlotHistogram(); // HistogramItem();
+    histogram->setTitle("camera 1 or image 1");
     histogram->setPen(Qt::darkCyan);
     histogram->setBrush(QBrush(Qt::darkCyan));
     histogram->setBaseline(1.0); //baseline will be subtracted from pixel intensities
@@ -704,7 +708,18 @@ void Imagine::preparePlots()
     histogram->setItemAttribute(QwtPlotItem::Legend, true);
     histogram->setZ(20.0);
     histogram->setStyle(QwtPlotHistogram::Columns);
-    histogram->attach(histPlot);
+//    histogram->attach(histPlot);
+
+    histogram2 = new QwtPlotHistogram(); // HistogramItem();
+    histogram2->setTitle("camera 2 or image 2");
+    histogram2->setPen(Qt::darkYellow);
+    histogram2->setBrush(QBrush(Qt::darkYellow));
+    histogram2->setBaseline(1.0); //baseline will be subtracted from pixel intensities
+    histogram2->setItemAttribute(QwtPlotItem::AutoScale, true);
+    histogram2->setItemAttribute(QwtPlotItem::Legend, true);
+    histogram2->setZ(20.0);
+    histogram2->setStyle(QwtPlotHistogram::Columns);
+//    histogram2->attach(histPlot);
 
     ///todo: make it more robust by query Camera class
     if (dataAcqThread->pCamera->vendor == "andor"){
@@ -723,7 +738,8 @@ void Imagine::preparePlots()
     //the intensity plot
     int curveWidth = 500;
     intenPlot = new QwtPlot();
-    ui.dwIntenCurve->setWidget(intenPlot);
+//    ui.dwIntenCurve->setWidget(intenPlot);
+    ui.intensityLayout->addWidget(intenPlot);
     intenPlot->setAxisTitle(QwtPlot::xBottom, "frame number"); //TODO: stack number too
     intenPlot->setAxisTitle(QwtPlot::yLeft, "avg intensity");
     intenCurve = new QwtPlotCurve("avg intensity");
@@ -806,7 +822,20 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
     //update histogram plot
     int histSamplingRate = 3; //that is, calc histgram every 3 updating
     if (nUpdateImage%histSamplingRate == 0){
-        updateHist(frame, imageW, imageH);
+        unsigned int maxintensity;
+        double maxcount = 0;
+        if ((ui.rbImgCameraEnable->isChecked()&& ui.cbCam1Enable->isChecked()) ||
+            (ui.rbImgFileEnable->isChecked()&ui.cbImg1Enable->isChecked())) {
+            updateHist(histogram, frame, imageW, imageH, maxcount, maxintensity);
+            histogram2->detach();
+        }
+        else {
+            updateHist(histogram2, frame, imageW, imageH, maxcount, maxintensity);
+            histogram->detach();
+        }
+        histPlot->setAxisScale(QwtPlot::yLeft, 1, maxcount);
+        histPlot->setAxisScale(QwtPlot::xBottom, 0.0, maxintensity);
+        histPlot->replot();
     }
 
     //update intensity vs stack (or frame) curve
@@ -846,7 +875,7 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
     }//else, adjust contrast(i.e. scale data by min/max values)
 
     isUpdateImgColor = false;
-    updateImage(isUpdateImgColor);
+    updateImage(isUpdateImgColor, false);
 
     nUpdateImage++;
     appendLog(QString().setNum(nUpdateImage)
@@ -881,6 +910,30 @@ void Imagine::updateDisplayColor(const QByteArray &data1, const QByteArray &data
         maxPixelValue = oldMax; //?? do nothing?
     }
 
+    //update histogram plot
+    int histSamplingRate = 3; //that is, calc histgram every 3 updating
+    if (nUpdateImage%histSamplingRate == 0) {
+        unsigned int maxintensity, maxintensity2;
+        double maxcount = 0, maxcount2 = 0;
+        updateHist(histogram, frame1, imageW, imageH, maxcount, maxintensity);
+        updateHist(histogram2, frame2, imageW, imageH, maxcount2, maxintensity2);
+        histPlot->setAxisScale(QwtPlot::yLeft, 1, max(maxcount, maxcount2));
+        histPlot->setAxisScale(QwtPlot::xBottom, 0.0, max(maxintensity, maxintensity2));
+        histPlot->replot();
+        histPlot->legend();
+    }
+
+    //update intensity vs stack (or frame) curve
+    //  --- live mode:
+    if (nUpdateImage%histSamplingRate == 0 && curStatus == eRunning && curAction == eLive) {
+        updateIntenCurve(frame1, imageW, imageH, idx);
+    }
+    //  --- acq mode:
+    if (curStatus == eRunning && curAction == eAcqAndSave
+        && idx == dataAcqThread->nFramesPerStack - 1) {
+        updateIntenCurve(frame1, imageW, imageH, dataAcqThread->idxCurStack);
+    }
+
     //copy and scale data
     if (ui.actionNoAutoScale->isChecked()) {
         minPixelValue = 0;
@@ -903,8 +956,8 @@ void Imagine::updateDisplayColor(const QByteArray &data1, const QByteArray &data
         else {
             minPixelValue = minPixelValueByUser;
             maxPixelValue = maxPixelValueByUser;
-            minPixelValue2 = minPixelValueByUser;
-            maxPixelValue2 = maxPixelValueByUser;
+            minPixelValue2 = minPixelValueByUser2;
+            maxPixelValue2 = maxPixelValueByUser2;
         }//else, user supplied min/max
 
         factor = 1023.0 / (maxPixelValue - minPixelValue);
@@ -916,7 +969,7 @@ void Imagine::updateDisplayColor(const QByteArray &data1, const QByteArray &data
     }//else, adjust contrast(i.e. scale data by min/max values)
 
     isUpdateImgColor = true;
-    updateImage(isUpdateImgColor);
+    updateImage(isUpdateImgColor, false);
 
     nUpdateImage++;
     appendLog(QString().setNum(nUpdateImage)
@@ -1144,8 +1197,8 @@ void Imagine::readPiezoCurPos()
 
 void Imagine::zoom_onMouseReleased(QMouseEvent* event)
 {
-    appendLog("released");
-    if (event->button() == Qt::LeftButton && zoom_isMouseDown) {
+    if ((event->button() == Qt::LeftButton)&& zoom_isMouseDown) {
+        appendLog("released");
         zoom_curPos = event->pos();
         zoom_isMouseDown = false;
 
@@ -1159,7 +1212,7 @@ void Imagine::zoom_onMouseReleased(QMouseEvent* event)
         QPoint LT = calcPos(zoom_downPos);
         QPoint RB = calcPos(zoom_curPos);
 
-        if (LT.x() > RB.x() && LT.y() > RB.y()){
+        if (LT.x() > RB.x() && LT.y() > RB.y()) {
             L = -1;
             goto done;
         }//if, should show full image
@@ -1168,18 +1221,16 @@ void Imagine::zoom_onMouseReleased(QMouseEvent* event)
 
         L = LT.x(); T = LT.y();
         W = RB.x() - L; H = RB.y() - T;
-
     done:
         //refresh the image
-        updateImage(isUpdateImgColor);
+        updateImage(isUpdateImgColor, true);
     }//if, dragging
-
 }
 
 void Imagine::on_actionDisplayFullImage_triggered()
 {
     L = -1;
-    updateImage(isUpdateImgColor);
+    updateImage(isUpdateImgColor, true);
 
 }
 
@@ -1199,7 +1250,7 @@ void Imagine::zoom_onMouseMoved(QMouseEvent* event)
         zoom_curPos = event->pos();
 
         if (!pixmap.isNull()){ //TODO: if(pixmap && idle)
-            updateImage(isUpdateImgColor);
+            updateImage(isUpdateImgColor, false);
         }
     }
 }
@@ -1326,18 +1377,36 @@ void Imagine::on_actionAutoScaleOnFirstFrame_triggered()
     minPixelValue = maxPixelValue = -1;
 }
 
-void Imagine::on_actionContrastMin_triggered()
+void Imagine::on_actionContrastMin1_triggered()
 {
     bool ok;
     int value = QInputDialog::getInt(this, "please specify the min pixel value to cut off", "min", minPixelValueByUser, 0, 1 << 16, 10, &ok);
     if (ok) minPixelValueByUser = value;
+    displayImageUpdate();
 }
 
-void Imagine::on_actionContrastMax_triggered()
+void Imagine::on_actionContrastMax1_triggered()
 {
     bool ok;
     int value = QInputDialog::getInt(this, "please specify the max pixel value to cut off", "max", maxPixelValueByUser, 0, 1 << 16, 10, &ok);
     if (ok) maxPixelValueByUser = value;
+    displayImageUpdate();
+}
+
+void Imagine::on_actionContrastMin2_triggered()
+{
+    bool ok;
+    int value = QInputDialog::getInt(this, "please specify the min pixel value to cut off", "min", minPixelValueByUser2, 0, 1 << 16, 10, &ok);
+    if (ok) minPixelValueByUser2 = value;
+    displayImageUpdate();
+}
+
+void Imagine::on_actionContrastMax2_triggered()
+{
+    bool ok;
+    int value = QInputDialog::getInt(this, "please specify the max pixel value to cut off", "max", maxPixelValueByUser2, 0, 1 << 16, 10, &ok);
+    if (ok) maxPixelValueByUser2 = value;
+    displayImageUpdate();
 }
 
 void Imagine::on_actionStop_triggered()
@@ -1650,6 +1719,10 @@ void Imagine::duplicateParameters(Ui_ImagineClass* destUi)
             destUi->spinBoxGain->setValue(ui.spinBoxGain->value());
             destUi->comboBoxVertShiftSpeed->setCurrentIndex(ui.comboBoxVertShiftSpeed->currentIndex());
             destUi->comboBoxVertClockVolAmp->setCurrentIndex(ui.comboBoxVertClockVolAmp->currentIndex());
+            destUi->spinBoxHstart->setValue(ui.spinBoxHstart->value());
+            destUi->spinBoxHend->setValue(ui.spinBoxHend->value());
+            destUi->spinBoxVstart->setValue(ui.spinBoxVstart->value());
+            destUi->spinBoxVend->setValue(ui.spinBoxVend->value());
         }
         else {
             destUi->cbBothCamera->setChecked(false);
@@ -1667,6 +1740,7 @@ void Imagine::on_btnApply_clicked()
         destUi = &masterImagine->ui;
     }
 
+    // If both camera capturing, duplicate camera parameters to the other camera setting
     duplicateParameters(destUi);
 
     isApplyCommander = true;
@@ -1869,7 +1943,7 @@ bool Imagine::applySetting()
             conWaveDataParam->sampleRate = dataAcqThread->sampleRate;
             conWaveDataParam->nStacks = dataAcqThread->nStacksUser;
             conWaveDataParam->nFrames = dataAcqThread->nFramesPerStackUser;
-            if (ui.cbBothCamera->isChecked()) {
+            if (ui.cbBothCamera->isChecked()) { // Both camera
                 DataAcqThread *dataAcqThreadOther = otherImagine->dataAcqThread;
                 if (dataAcqThread->pCamera->getCameraID() == 1)
                     conWaveDataParam->exposureTime1 = dataAcqThread->exposureTime;
@@ -1884,7 +1958,7 @@ bool Imagine::applySetting()
                 conWaveDataParam->enableCam2 = true;
             }
             else {
-                if (dataAcqThread->pCamera->getCameraID() == 1) {
+                if (dataAcqThread->pCamera->getCameraID() == 1) { // If camera1
                     conWaveDataParam->exposureTime1 = dataAcqThread->exposureTime;
                     conWaveDataParam->exposureTime2 = 0;
                     conWaveDataParam->enableCam1 = true;
@@ -2593,7 +2667,7 @@ void Imagine::displayLaserGUI(int numLines, int *laserIndex, int *wavelength)
         laserShutterIndex[i - 1] = laserIndex[i - 1];
         QCheckBox *checkBox = ui.groupBoxLaser->findChild<QCheckBox *>(QString("cbLine%1").arg(i));
         QString wl= QString("%1 nm").arg(wavelength[i-1]);
-        checkBox->setText(wl);
+        if(checkBox) checkBox->setText(wl);
     }
     for (int i = numLines + 1; i <= 8; i++) {
         QCheckBox *checkBox = ui.groupBoxLaser->findChild<QCheckBox *>(QString("cbLine%1").arg(i));
@@ -4661,7 +4735,7 @@ bool Imagine::readCamFileImages()
 
 void Imagine::readCamFileImagesAndUpdate()
 {
-    isUpdatingImage = true; // updating cam file image
+    isUpdatingDisplay = true; // updating cam file image (this is meaningless)
     bool succeed = readCamFileImages();
 
     if (succeed) {
@@ -4676,7 +4750,7 @@ void Imagine::readCamFileImagesAndUpdate()
         else if (img2.enable && img2.valid)
             updateDisplay(img2.camImage, imgFrameIdx, img2.imgWidth, img2.imgHeight);
     }
-    isUpdatingImage = false;
+    isUpdatingDisplay = false;
 }
 
 void Imagine::updateLiveImagePlay(const QByteArray &data16, long idx, int imageW, int imageH)
@@ -4714,7 +4788,7 @@ void Imagine::readCameraImagesAndUpdate()
     int updateMethod = 0;
     if ((masterImagine != NULL) && masterImageReady) // slave Imagine
     {
-        dataAcqThread->isUpdatingImage = true;
+//        dataAcqThread->isUpdatingImage = true;
         live1 = dataAcqThread->pCamera->getLiveImage();
         width1 = dataAcqThread->pCamera->getImageWidth();
         height1 = dataAcqThread->pCamera->getImageHeight();
@@ -4737,6 +4811,7 @@ void Imagine::readCameraImagesAndUpdate()
             if ((width1 != width2) || (height1 != height2)) {
                 QMessageBox::warning(this, tr("Imagine"),
                     tr("Image size is different betwen camera 1 and camera 2"));
+                // only display camera1
                 ui.cbCam2Enable->setChecked(false);
                 updateMethod = 1;
             }
@@ -4900,7 +4975,9 @@ void Imagine::on_sbFrameIdx_valueChanged(int newValue)
 {
     imgFrameIdx = newValue;
     ui.hsFrameIdx->setValue(newValue);
-    if(!isUpdatingImage)
+    imagePlay->frameIdx1 = newValue;
+    imagePlay->frameIdx2 = newValue;
+    if(!isUpdatingDisplay)
         readCamFileImagesAndUpdate();
 }
 
@@ -4908,7 +4985,9 @@ void Imagine::on_sbStackIdx_valueChanged(int newValue)
 {
     imgStackIdx = newValue;
     ui.hsStackIdx->setValue(newValue);
-    if (!isUpdatingImage)
+    imagePlay->stackIdx1 = newValue;
+    imagePlay->stackIdx2 = newValue;
+    if (!isUpdatingDisplay)
         readCamFileImagesAndUpdate();
 }
 
@@ -4936,10 +5015,16 @@ void Imagine::reconfigDisplayTab()
         imagePlay->framePlaySpeed2 = 0;
         // reconfigurate some GUI items
         ui.groupBoxPlayCamImage->setEnabled(false);
-        if (ui.cbCam1Enable->isChecked() && ui.cbCam2Enable->isChecked())
+        if (ui.cbCam1Enable->isChecked() && ui.cbCam2Enable->isChecked()) {
             ui.groupBoxBlendingOption->setEnabled(true);
-        else
+//            ui.actionContrastMin2->setVisible(true);
+//            ui.actionContrastMax2->setVisible(true);
+        }
+        else {
             ui.groupBoxBlendingOption->setEnabled(false);
+//            ui.actionContrastMin2->setVisible(false);
+//            ui.actionContrastMax2->setVisible(false);
+        }
         if (slaveImagine) {
             if (ui.cbCam2Enable->isChecked()) {
                 connect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
@@ -4957,10 +5042,16 @@ void Imagine::reconfigDisplayTab()
         }
     }
     else {
-        if ((img1.enable && img1.camValid) || (img2.enable && img2.camValid))
+        if ((img1.enable && img1.camValid) || (img2.enable && img2.camValid)) {
             ui.groupBoxPlayCamImage->setEnabled(true);
-        else
+//            ui.actionContrastMin2->setVisible(true);
+//            ui.actionContrastMax2->setVisible(true);
+        }
+        else {
             ui.groupBoxPlayCamImage->setEnabled(false);
+//            ui.actionContrastMin2->setVisible(false);
+//            ui.actionContrastMax2->setVisible(false);
+        }
         if ((img1.enable && img1.camValid) && (img2.enable && img2.camValid))
             ui.groupBoxBlendingOption->setEnabled(true);
         else
@@ -5029,23 +5120,69 @@ void Imagine::on_rbImgFileEnable_toggled(bool checked)
 void Imagine::on_hsBlending_valueChanged()
 {
     alpha = ui.hsBlending->value();
-    if(!isUpdatingImage)
-        readCamFileImagesAndUpdate();
+    displayImageUpdate();
 }
 
-#define MAXSHIFT 100
+void Imagine::on_hsBlending_sliderReleased()
+{
+    updateImage(isUpdateImgColor, true);
+}
 
-void Imagine::findMismatch(QByteArray &img1, QByteArray &img2, int width, int height)
+void Imagine::on_hsFrameIdx_sliderReleased()
+{
+    updateImage(isUpdateImgColor, true);
+}
+
+void Imagine::on_hsStackIdx_sliderReleased()
+{
+    updateImage(isUpdateImgColor, true);
+}
+
+bool Imagine::autoFindMismatchParameters(QByteArray &img1, QByteArray &img2, int width, int height)
+{
+    // TODO: Auto find mismatch
+    return true;
+}
+
+void Imagine::calHomogeneousTramsformMatrix(TransformParam &param, int width, int height)
+{
+    double cx = (double)width / 2.;
+    double cy = (double)height / 2.;
+    double radian = param.theta / 180.*M_PI;
+    double c = cos(radian);
+    double s = sin(radian);
+    double tcx = cx + param.tx;
+    double tcy = cy + param.ty;
+    param.a[0][0] = c;
+    param.a[0][1] = s;
+    param.a[0][2] = -c*tcx - s*tcy + cx;
+    param.a[1][0] = s;
+    param.a[1][1] = -c;
+    param.a[1][2] = -s*tcx + c*tcy + cy;
+}
+
+// Currently we just apply translation and rotation parallel to the focal plain.
+void Imagine::enableMismatchCorrection(QByteArray &img1, QByteArray &img2, int width, int height)
 {
     if (pixmapper != NULL) {
-        pixmapper->param.alpha = 0.0; // 0.01rad -> 0.573degree
-        pixmapper->param.beta = 0.0;
-        pixmapper->param.gamma = 0.0;
-        pixmapper->param.shiftX = 42;
-        pixmapper->param.shiftY = height-362;
-        pixmapper->param.shiftZ = 0;
-        pixmapper->param.isOk = true;
         Camera::PixelValue * tp = (Camera::PixelValue *)img1.constData();
+
+        // TODO: Auto mismatch will be implemented later.
+        // Now we just use manual mode
+        pixmapper->param.isAuto = false;
+        if (pixmapper->param.isAuto) {
+            pixmapper->param.isOk = autoFindMismatchParameters(img1, img2, width, height);
+            ui.sbXTranslation->setValue(pixmapper->param.tx);
+            ui.sbYTranslation->setValue(pixmapper->param.ty);
+            ui.dsbRotationAngle->setValue(pixmapper->param.theta);
+        }
+        else {
+            pixmapper->param.tx = (double)ui.sbXTranslation->value();
+            pixmapper->param.ty = (double)ui.sbYTranslation->value();
+            pixmapper->param.theta = ui.dsbRotationAngle->value();
+            calHomogeneousTramsformMatrix(pixmapper->param, width, height);
+            pixmapper->param.isOk = true;
+        }
 
         if (!pixmapper->param.isOk) {
             // TODO: parameter finding error warning message
@@ -5060,27 +5197,87 @@ void Imagine::findMismatch(QByteArray &img1, QByteArray &img2, int width, int he
 
 void Imagine::on_pbSaveImage_clicked()
 {
-    bool result;
-    result = pixmap.save("f:/test/test.jpg", "JPG", 80);
+    QString proposedFile;
+    if (imageFilename == "")
+        proposedFile = m_OpenDialogLastDirectory + QDir::separator() + "image.jpg";
+    else
+        proposedFile = imageFilename;
+    imageFilename = QFileDialog::getSaveFileName(this, tr("Save current image"), proposedFile, tr("JPG file(*.jpg)"));
+    if (true == imageFilename.isEmpty()) { return; }
+    QFileInfo fi(imageFilename);
+    m_OpenDialogLastDirectory = fi.absolutePath();
+
+    bool result = pixmap.save(imageFilename, "JPG", 80);
+    if (!result) {
+        QMessageBox::critical(this, "Imagine", "Fail to save image.",
+            QMessageBox::Ok, QMessageBox::NoButton);
+    }
 }
 
 void Imagine::on_cbEnableMismatch_clicked(bool checked)
 {
     if (checked) {
         if (ui.rbImgCameraEnable->isChecked()) {
-            findMismatch(dataAcqThread->pCamera->getLiveImage(),
-                        slaveImagine->dataAcqThread->pCamera->getLiveImage(),
-                        dataAcqThread->pCamera->getImageWidth(),
-                        dataAcqThread->pCamera->getImageHeight());
+            enableMismatchCorrection(dataAcqThread->pCamera->getLiveImage(),
+                slaveImagine->dataAcqThread->pCamera->getLiveImage(),
+                dataAcqThread->pCamera->getImageWidth(),
+                dataAcqThread->pCamera->getImageHeight());
         }
         else
-            findMismatch(img1.camImage, img2.camImage, img1.imgWidth, img1.imgHeight);
+            enableMismatchCorrection(img1.camImage, img2.camImage, img1.imgWidth, img1.imgHeight);
     }
     else {
         if (pixmapper != NULL) pixmapper->param.isOk = false;
     }
-    if (!dataAcqThread->isUpdatingImage)
-        readCameraImagesAndUpdate();
+    displayImageUpdate();
+}
+
+void Imagine::displayImageUpdate()
+{
+    if (ui.rbImgCameraEnable->isChecked()) {
+        if(!dataAcqThread->isUpdatingImage)
+            readCameraImagesAndUpdate();
+    }
+    else {
+        if (!isUpdatingDisplay)
+            readCamFileImagesAndUpdate();
+    }
+}
+
+void Imagine::on_sbXTranslation_valueChanged(int newValue)
+{
+    pixmapper->param.tx = newValue;
+    calHomogeneousTramsformMatrix(pixmapper->param, img1.imgWidth, img1.imgHeight);
+    displayImageUpdate();
+}
+
+void Imagine::on_sbXTranslation_editingFinished()
+{
+    updateImage(isUpdateImgColor, true);
+}
+
+void Imagine::on_sbYTranslation_valueChanged(int newValue)
+{
+    pixmapper->param.ty = newValue;
+    calHomogeneousTramsformMatrix(pixmapper->param, img1.imgWidth, img1.imgHeight);
+    displayImageUpdate();
+}
+
+void Imagine::on_sbYTranslation_editingFinished()
+{
+    updateImage(isUpdateImgColor, true);
+}
+
+void Imagine::on_dsbRotationAngle_valueChanged(double newValue)
+{
+    pixmapper->param.theta = newValue;
+    calHomogeneousTramsformMatrix(pixmapper->param, img1.imgWidth, img1.imgHeight);
+    displayImageUpdate();
+}
+
+void Imagine::on_dsbRotationAngle_editingFinished()
+{
+    updateImage(isUpdateImgColor, true);
 }
 
 /****** Script ************************************************************/
