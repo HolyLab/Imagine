@@ -97,6 +97,7 @@ public:
     virtual bool waitCmd() = 0;
     virtual bool abortCmd() = 0;
     virtual bool singleOut(int lineIndex, bool newValue) = 0;
+    virtual bool clearAllOutput() = 0;
     virtual bool resetDAQ() = 0;
 
 };//class, DigitalControls

@@ -336,7 +336,6 @@ private slots:
     void on_btnSelectFile_clicked();
     void on_btnOpenStimFile_clicked();
     void on_btnApply_clicked();
-    void on_btnApply_clicked_old(); // will be deleted later
     void on_spinBoxHstart_editingFinished();
     void on_spinBoxHend_editingFinished();
     void on_spinBoxVstart_valueChanged(int newValue);

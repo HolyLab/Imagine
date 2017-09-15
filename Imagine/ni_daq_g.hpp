@@ -564,7 +564,22 @@ public:
       return !isError();
    }//write(),
 
-//   bool cfgTiming(int, int){ return true;} //do noting for Dig-out
+    //output data to hardware
+   bool clearAllOutput() {
+       for(int i = 0; i< numP0Channel;i++) data[i] = 0;
+       errorCode = DAQmxWriteDigitalLines(taskHandle,
+           1, //numSampsPerChan
+           1, //autoStart
+           10.0, //timeout: 10s
+           DAQmx_Val_GroupByChannel,//
+           data,
+           NULL, //sampsPerChanWritten
+           NULL);//reserved
+
+       return !isError();
+   }//write(),
+
+    //   bool cfgTiming(int, int){ return true;} //do noting for Dig-out
    bool cfgTiming(int scanRate, int nScans, string clkName = "") {
        this->scanRate = scanRate;
        this->nScans = nScans;

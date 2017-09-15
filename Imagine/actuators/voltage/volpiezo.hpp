@@ -98,6 +98,7 @@ public:
     bool waitCmd();
     bool abortCmd();
     bool singleOut(int lineIndex, bool newValue);
+    bool clearAllOutput();
     int readConPulseToBuffer(int num);
     void writeNextSamples(void);
     bool resetDAQ();

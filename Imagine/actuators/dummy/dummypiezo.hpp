@@ -174,6 +174,7 @@ public:
     bool waitCmd() { return true; }
     bool abortCmd() { return true; }
     bool singleOut(int lineIndex, bool newValue) { return true; }
+    bool clearAllOutput() { return true; }
     bool resetDAQ() { return true; }
 
 private:
