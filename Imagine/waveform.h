@@ -98,48 +98,60 @@ using namespace std;
 #define INFINITE_SAMPLE         0
 #define PIEZO_10V_UINT16_VALUE  32767.   // max value of uint16 (double constant)
 
-#define CF_VERSION          "v1.0"
+#define CF_V1P0                 "v1.0"
+#define CF_V1P1                 "v1.1"
+#define CF_VERSION              CF_V1P1
 
-#define STR_Rig             "rig"
-#define STR_SampleRate      "samples per second"
-#define STR_TotalSamples    "sample num"
-#define STR_Exposure        "exposure time in seconds"
-#define STR_Exposure1       "exposure time in seconds for camera1"
-#define STR_Exposure2       "exposure time in seconds for camera2"
-#define STR_BiDir           "bi-direction"
-#define STR_Stacks          "stacks"
-#define STR_Frames          "frames per stack"
-#define STR_Metadata        "metadata"
-#define STR_Analog          "analog waveform"
-#define STR_Digital         "digital pulse"
-#define STR_WaveList        "wave list"
-#define STR_Version         "version"
-#define STR_Seq             "sequence"
-#define STR_Channel         "daq channel"
-#define STR_AOHEADER        "AO"
-#define STR_AIHEADER        "AI"
-#define STR_P0HEADER        "P0."
+#define STR_Rig                 "rig"
+#define STR_SampleRate          "samples per second"
+#define STR_TotalSamples        "sample num"
+#define STR_Exposure            "exposure time in seconds"
+#define STR_ExpTrigMode         "exposure trigger mode"
+//#define STR_ExpStart            "Exposure Start"
+//#define STR_ExpControl          "Exposure Control"
+//#define STR_FastExpControl      "Fast Exposure Control"
+#define STR_Cam1Metadata        "camera1"
+#define STR_Cam2Metadata        "camera2"
+#define STR_Exposure1           "exposure time in seconds for camera1"
+#define STR_Exposure2           "exposure time in seconds for camera2"
+#define STR_BiDir               "bi-direction"
+#define STR_Stacks              "stacks"
+#define STR_Frames              "frames per stack"
+#define STR_GeneratedFrom       "generated from"
+#define STR_ImagineInterface    "ImagineInterface"
+#define STR_Imagine             "Imagine"
+#define STR_Metadata            "metadata"
+#define STR_Analog              "analog waveform"
+#define STR_Digital             "digital pulse"
+#define STR_WaveList            "wave list"
+#define STR_Version             "version"
+#define STR_Seq                 "sequence"
+#define STR_Channel             "daq channel"
+#define STR_AOHEADER            "AO"
+#define STR_AIHEADER            "AI"
+#define STR_P0HEADER            "P0."
 
-#define STR_piezo           "piezo"
-#define STR_piezo_mon       "piezo monitor"
-#define STR_laser           "laser"
-#define STR_camera          "camera"
-#define STR_axial_piezo     "axial piezo"
-#define STR_hor_piezo       "horizontal piezo"
-#define STR_axial_piezo_mon "axial piezo monitor"
-#define STR_hor_piezo_mon   "horizontal piezo monitor"
-#define STR_all_lasers      "all lasers"
-#define STR_camera1         "camera1"
-#define STR_camera2         "camera2"
-#define STR_488nm_laser     "488nm laser"
-#define STR_561nm_laser     "561nm laser"
-#define STR_405nm_laser     "405nm laser"
-#define STR_445nm_laser     "445nm laser"
-#define STR_514nm_laser     "514nm laser"
-#define STR_488nm_laser_str "488nm laser shutter"
-#define STR_camera1_mon     "camera1 frame monitor"
-#define STR_camera2_mon     "camera2 frame monitor"
-#define STR_camera_mon      "camera frame monitor"
+#define STR_piezo               "piezo"
+#define STR_piezo_mon           "piezo monitor"
+#define STR_laser               "laser"
+#define STR_camera              "camera"
+#define STR_axial_piezo         "axial piezo"
+#define STR_hor_piezo           "horizontal piezo"
+#define STR_axial_piezo_mon     "axial piezo monitor"
+#define STR_hor_piezo_mon       "horizontal piezo monitor"
+#define STR_all_lasers          "all lasers"
+#define STR_camera1             "camera1"
+#define STR_camera2             "camera2"
+#define STR_488nm_laser         "488nm laser"
+#define STR_561nm_laser         "561nm laser"
+#define STR_405nm_laser         "405nm laser"
+#define STR_445nm_laser         "445nm laser"
+#define STR_514nm_laser         "514nm laser"
+#define STR_488nm_laser_str     "488nm laser shutter"
+#define STR_camera1_mon         "camera1 frame monitor"
+#define STR_camera2_mon         "camera2 frame monitor"
+#define STR_camera_mon          "camera frame monitor"
+#define STR_stimuli_mon         "stimuli"
 
 enum CFErrorCode : unsigned int
 {
@@ -219,6 +231,7 @@ private:
         { QString(STR_AOHEADER).append("0"), STR_axial_piezo },     // 0
         // Analog input (AI0 ~ AI15)
         { QString(STR_AIHEADER).append("0"), STR_axial_piezo_mon }, // 2
+        { QString(STR_AIHEADER).append("1"), STR_stimuli_mon }, // 3
         // Digital output (P0.0 ~ P0.6)
         { QString(STR_P0HEADER).append("4"), STR_488nm_laser_str }, // 18
         { QString(STR_P0HEADER).append("5"), STR_camera1 },
@@ -267,16 +280,23 @@ private:
     CFErrorCode parsing(void);
 
 public:
+    QString version;
     QString rig;
-    int nStacks = 0;
-    int nFrames = 0;
+    QString generatedFrom = "NA";
+    int nStacks1 = 0;
+    int nStacks2 = 0;
+    int nFrames1 = 0;
+    int nFrames2 = 0;
     double exposureTime1 = 0;
     double exposureTime2 = 0;
+    QString expTriggerModeStr1 = "External Start";
+    QString expTriggerModeStr2 = "External Start";
     bool bidirection = false;
     int maxPiezoPos;
     int maxPiezoSpeed;
     int maxLaserFreq;
-    uInt32 laserTTLSig;
+    uInt32 laserTTLSig = 0;
+    double laserIntensity[6] = {0, };
 
     // for default control
     bool enableCam1, enableCam2;
@@ -332,7 +352,8 @@ public:
     int genTriangle(bool bidir);
     int genSinusoidal(bool bidir);
     // Laser default output
-    void setDefaultLaserTTLSig(uInt32 data);
+    void setLaserIntensityValue(int line, int data);
+    bool getLaserDefaultTTL(int line);
 }; // ControlWaveform
 
 

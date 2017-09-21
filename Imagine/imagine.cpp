@@ -1709,6 +1709,13 @@ bool Imagine::waveformValidityCheck(void)
         return false;
 }
 
+void Imagine::on_sbObjectiveLens_valueChanged(int newValue)
+{
+    int magnificationFactor = se->globalObject().property("magnificationFactor").toNumber();
+    double adjusted_mag = (double)newValue * (double)magnificationFactor;
+    ui.doubleSpinBoxUmPerPxlXy->setValue(6.5/ adjusted_mag); // PCO.Edge pixel size = 6.5um
+}
+
 void Imagine::duplicateParameters(Ui_ImagineClass* destUi)
 {
     if (destUi != NULL) {
@@ -1799,16 +1806,21 @@ bool Imagine::applySetting()
     dataAcqThread->angle = ui.spinBoxAngle->value();
 
     if ((*masterUi).cbWaveformEnable->isChecked()) { // waveform enabled
-        expTriggerModeStr = (*masterUi).comboBoxExpTriggerModeWav->currentText();
         dataAcqThread->sampleRate = conWaveDataUser->sampleRate;
-        dataAcqThread->nStacksUser = conWaveDataUser->nStacks;
-        dataAcqThread->nFramesPerStackUser = conWaveDataUser->nFrames;
         dataAcqThread->isBiDirectionalImaging = conWaveDataUser->bidirection;
         dataAcqThread->conWaveData = conWaveDataUser;
-        if(camera->getCameraID() == 1)
+        if (camera->getCameraID() == 1) {
             dataAcqThread->exposureTime = (*masterUi).doubleSpinBoxExpTimeWav1->value();
-        else
+            dataAcqThread->nStacksUser = conWaveDataUser->nStacks1;
+            dataAcqThread->nFramesPerStackUser = conWaveDataUser->nFrames1;
+            expTriggerModeStr = (*masterUi).comboBoxExpTriggerModeWav1->currentText();
+        }
+        else {
             dataAcqThread->exposureTime = (*masterUi).doubleSpinBoxExpTimeWav2->value();
+            dataAcqThread->nStacksUser = conWaveDataUser->nStacks2;
+            dataAcqThread->nFramesPerStackUser = conWaveDataUser->nFrames2;
+            expTriggerModeStr = (*masterUi).comboBoxExpTriggerModeWav2->currentText();
+        }
     }
     else {
         expTriggerModeStr = ui.comboBoxExpTriggerMode->currentText();
@@ -1947,19 +1959,25 @@ bool Imagine::applySetting()
                 delete conWaveDataParam;
             conWaveDataParam = new ControlWaveform(rig);
             conWaveDataParam->sampleRate = dataAcqThread->sampleRate;
-            conWaveDataParam->nStacks = dataAcqThread->nStacksUser;
-            conWaveDataParam->nFrames = dataAcqThread->nFramesPerStackUser;
             if (ui.cbBothCamera->isChecked()) { // Both camera
-                DataAcqThread *dataAcqThreadOther = otherImagine->dataAcqThread;
-                if (dataAcqThread->pCamera->getCameraID() == 1)
-                    conWaveDataParam->exposureTime1 = dataAcqThread->exposureTime;
-                else
-                    conWaveDataParam->exposureTime2 = dataAcqThread->exposureTime;
-                if (dataAcqThreadOther->pCamera->getCameraID() == 1)
-                    conWaveDataParam->exposureTime1 = dataAcqThreadOther->exposureTime;
-                else
-                    conWaveDataParam->exposureTime2 = dataAcqThreadOther->exposureTime;
-                conWaveDataParam->cycleTime = max(dataAcqThread->cycleTime, dataAcqThreadOther->cycleTime);
+                DataAcqThread *dataAcqThreadCam1, *dataAcqThreadCam2;
+                if (dataAcqThread->pCamera->getCameraID() == 1) {
+                    dataAcqThreadCam1 = dataAcqThread;
+                    dataAcqThreadCam2 = otherImagine->dataAcqThread;
+                }
+                else {
+                    dataAcqThreadCam1 = otherImagine->dataAcqThread;
+                    dataAcqThreadCam2 = dataAcqThread;
+                }
+                conWaveDataParam->nStacks1 = dataAcqThreadCam1->nStacksUser;
+                conWaveDataParam->nFrames1 = dataAcqThreadCam1->nFramesPerStackUser;
+                conWaveDataParam->expTriggerModeStr1 = expTriggerModeStr;
+                conWaveDataParam->exposureTime1 = dataAcqThreadCam1->exposureTime;
+                conWaveDataParam->nStacks2 = dataAcqThreadCam2->nStacksUser;
+                conWaveDataParam->nFrames2 = dataAcqThreadCam2->nFramesPerStackUser;
+                conWaveDataParam->expTriggerModeStr2 = expTriggerModeStr;
+                conWaveDataParam->exposureTime2 = dataAcqThreadCam2->exposureTime;
+                conWaveDataParam->cycleTime = max(dataAcqThreadCam1->cycleTime, dataAcqThreadCam2->cycleTime);
                 conWaveDataParam->enableCam1 = true;
                 conWaveDataParam->enableCam2 = true;
             }
@@ -1967,19 +1985,30 @@ bool Imagine::applySetting()
                 if (dataAcqThread->pCamera->getCameraID() == 1) { // If camera1
                     conWaveDataParam->exposureTime1 = dataAcqThread->exposureTime;
                     conWaveDataParam->exposureTime2 = 0;
+                    conWaveDataParam->nStacks1 = dataAcqThread->nStacksUser;
+                    conWaveDataParam->nFrames1 = dataAcqThread->nFramesPerStackUser;
+                    conWaveDataParam->nStacks2 = 0;
+                    conWaveDataParam->nFrames2 = 0;
                     conWaveDataParam->enableCam1 = true;
                     conWaveDataParam->enableCam2 = false;
                 }
                 else {
                     conWaveDataParam->exposureTime1 = 0;
                     conWaveDataParam->exposureTime2 = dataAcqThread->exposureTime;
+                    conWaveDataParam->nStacks1 = 0;
+                    conWaveDataParam->nFrames1 = 0;
+                    conWaveDataParam->nStacks2 = dataAcqThread->nStacksUser;
+                    conWaveDataParam->nFrames2 = dataAcqThread->nFramesPerStackUser;
                     conWaveDataParam->enableCam1 = false;
                     conWaveDataParam->enableCam2 = true;
                 }
+                conWaveDataParam->expTriggerModeStr1 = expTriggerModeStr;
+                conWaveDataParam->expTriggerModeStr2 = expTriggerModeStr;
                 conWaveDataParam->cycleTime = dataAcqThread->cycleTime;
             }
+
             conWaveDataParam->bidirection = dataAcqThread->isBiDirectionalImaging;
-            if (conWaveDataParam->bidirection && (conWaveDataParam->nStacks % 2)) {
+            if (dataAcqThread->isBiDirectionalImaging && (dataAcqThread->nStacksUser % 2)) {
                 QMessageBox::critical(this, "Imagine", "Stack number should be even number in bi-dirctional acquisition mode"
                     , QMessageBox::Ok, QMessageBox::NoButton);
                 goto skip;
@@ -2012,7 +2041,6 @@ bool Imagine::applySetting()
         }
         if (!waveformValidityCheck()) // waveform is not valid
             goto skip;
-
         // setup default laser TTL output value
         conWaveData->laserTTLSig = laserTTLSig;
         // move positioner to start position
@@ -2512,6 +2540,7 @@ void Imagine::changeLaserTrans(bool isAotf, int line)
             str = QString("Set laser ND wheel value as %1").arg(slider->value());
         }
         appendLog(str);
+        conWaveData->setLaserIntensityValue(line, slider->value());
     }
     else {
         QString str = QString("laserCtrlSerial object is not defined");
@@ -2852,7 +2881,7 @@ void Imagine::writeSettings(QString file)
     if (masterImagine == NULL) {
         prefs.beginGroup("Waveform");
         WRITE_CHECKBOX_SETTING(prefs, cbWaveformEnable);
-        WRITE_COMBO_SETTING(prefs, comboBoxExpTriggerModeWav);
+//        WRITE_COMBO_SETTING(prefs, comboBoxExpTriggerModeWav);
 //        WRITE_SETTING(prefs, doubleSpinBoxExpTimeWav);
         WRITE_STRING_SETTING(prefs, lineEditConWaveFile);
         prefs.endGroup();
@@ -2942,7 +2971,7 @@ void Imagine::readSettings(QString file)
     if (masterImagine == NULL) {
         prefs.beginGroup("Waveform");
         READ_CHECKBOX_SETTING(prefs, cbWaveformEnable, false);
-        READ_COMBO_SETTING(prefs, comboBoxExpTriggerModeWav, 0);
+//        READ_COMBO_SETTING(prefs, comboBoxExpTriggerModeWav, 0);
 //        READ_SETTING(prefs, doubleSpinBoxExpTimeWav, ok, d, 0.0107, Double);
         READ_STRING_SETTING(prefs, lineEditConWaveFile, "");
         prefs.endGroup();
@@ -3429,14 +3458,11 @@ void Imagine::on_btnReadAiWavOpen_clicked()
         }
 
         // GUI waveform y axis display value adjusting box setup
-        if (numAiCurveData) {
+        if (numAiCurveData)
             ui.sbAiDiDsplyTop->setValue(aiWaveData->getMaxyValue() + 50);
-            ui.sbAiDiDsplyTop->setMinimum(0);
-        }
-        else {
+        else
             ui.sbAiDiDsplyTop->setValue(200);
-            ui.sbAiDiDsplyTop->setMinimum(0);
-        }
+        ui.sbAiDiDsplyTop->setMinimum(0);
         ui.sbAiDiDsplyTop->setMaximum(1000);
         // When current sbAiDiDsplyRight value is bigger than new maximum value
         // QT change current value as the new maximum value and this activate
@@ -3498,8 +3524,10 @@ bool Imagine::loadAiDiWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx)
         curveDataSampleNum = sampleNum / factor;
 
     int comboIdx = comboBoxAiDi[curveIdx]->currentIndex();
-    if (comboIdx == 0) // "empty"
+    if (comboIdx == 0) {// "empty"
+        inCurve[curveIdx]->setData(0);
         return false;
+    }
 
     ctrlIdx = comboIdx - 1;
     curve = inCurve[curveIdx];
@@ -3677,7 +3705,7 @@ void Imagine::on_comboBoxDI6_currentIndexChanged(int index)
 {
     loadAiDiWavDataAndPlot(ui.sbAiDiDsplyLeft->value(),
         ui.sbAiDiDsplyRight->value(), 8);
-    on_cbDI6Wav_clicked(ui.cbDI5Wav->isChecked());
+    on_cbDI6Wav_clicked(ui.cbDI6Wav->isChecked());
 }
 
 void Imagine::on_sbAiDiDsplyRight_valueChanged(int value)
@@ -3706,7 +3734,10 @@ void Imagine::on_btnAiDiDsplyReset_clicked()
 {
     ui.sbAiDiDsplyLeft->setValue(0);
     ui.sbAiDiDsplyRight->setValue(dsplyTotalSampleNum - 1);
-    ui.sbAiDiDsplyTop->setValue(ui.sbAiDiDsplyTop->maximum());
+    if (numAiCurveData)
+        ui.sbAiDiDsplyTop->setValue(aiWaveData->getMaxyValue() + 50);
+    else
+        ui.sbAiDiDsplyTop->setValue(200);
 }
 
 /***************** Waveform control *************************/
@@ -3822,13 +3853,23 @@ void Imagine::clearConWavPlot()
 void Imagine::displayConWaveData()
 {
     // GUI metadata display
-    ui.lableConWavRigname->setText(conWaveData->rig);
-    ui.doubleSpinBoxExpTimeWav1->setValue(conWaveData->exposureTime1);
-    ui.doubleSpinBoxExpTimeWav2->setValue(conWaveData->exposureTime2);
+    ui.lableConWavRigname->setText(QString("rig : %1").arg(conWaveData->rig));
     ui.labelPiezoSampleRate->setText(QString("%1").arg(conWaveData->sampleRate));
-    ui.labelNumOfStacksWav->setText(QString("%1").arg(conWaveData->nStacks));
-    ui.labelFramesPerStackWav->setText(QString("%1").arg(conWaveData->nFrames));
-    ui.labelSampleNumber->setText(QString("%1").arg(conWaveData->totalSampleNum));
+    int sec = conWaveData->totalSampleNum / conWaveData->sampleRate;
+    int min = sec / 60; sec -= min * 60;
+    int hour = min / 60; min -= hour * 60;
+    ui.labelSampleNumber->setText(QString("%1 (%2h %3m %4s)")
+        .arg(conWaveData->totalSampleNum).arg(hour).arg(min).arg(sec));
+    ui.doubleSpinBoxExpTimeWav1->setValue(conWaveData->exposureTime1);
+    ui.labelNumOfStacksWav1->setText(QString("%1").arg(conWaveData->nStacks1));
+    ui.labelFramesPerStackWav1->setText(QString("%1").arg(conWaveData->nFrames1));
+    ui.comboBoxExpTriggerModeWav1->setCurrentText(conWaveData->expTriggerModeStr1);
+    if ((rig == "ocpi-2") || (rig == "dummy")) {
+        ui.doubleSpinBoxExpTimeWav2->setValue(conWaveData->exposureTime2);
+        ui.labelNumOfStacksWav2->setText(QString("%1").arg(conWaveData->nStacks2));
+        ui.labelFramesPerStackWav2->setText(QString("%1").arg(conWaveData->nFrames2));
+        ui.comboBoxExpTriggerModeWav2->setCurrentText(conWaveData->expTriggerModeStr2);
+    }
     if (conWaveData->bidirection)
         ui.labelBidirection->setText("on");
     else
@@ -4131,29 +4172,6 @@ void Imagine::on_comboBoxDO5_currentIndexChanged(int index)
     on_cbDO5Wav_clicked(ui.cbDO4Wav->isChecked());
 }
 
-void Imagine::on_comboBoxExpTriggerModeWav_currentIndexChanged(int index)
-{
-    /*
-    if (index == 0) { // External Start : exposure follows spinbox value
-        ui.doubleSpinBoxExpTimeWav->setEnabled(true);
-        if(slaveImagine!=NULL)
-            slaveImagine->ui.doubleSpinBoxExpTimeWav->setEnabled(true);
-    }
-    else { // External Control : exposure just follows control waveform
-        // GUI just display exposure value from control file
-        ui.doubleSpinBoxExpTimeWav->setValue(conWaveData->exposureTime1);
-        ui.doubleSpinBoxExpTimeWav->setEnabled(false);
-        if (slaveImagine != NULL) {
-            slaveImagine->ui.doubleSpinBoxExpTimeWav->setValue(conWaveData->exposureTime2);
-            slaveImagine->ui.doubleSpinBoxExpTimeWav->setEnabled(false);
-        }
-    }
-    */
-    if (slaveImagine != NULL) {
-        slaveImagine->ui.comboBoxExpTriggerModeWav->setCurrentIndex(index);
-    }
-}
-
 void Imagine::on_sbWavDsplyRight_valueChanged(int value)
 {
     int left = ui.sbWavDsplyLeft->value();
@@ -4187,6 +4205,10 @@ void Imagine::on_btnWavDsplyReset_clicked()
 void Imagine::on_btnConWavList_clicked()
 {
     QString msg = "";
+    msg.append(QString("version : %1\n")
+        .arg(conWaveData->version));
+    msg.append(QString("generated from : %1\n\n")
+        .arg(conWaveData->generatedFrom));
     for (int i = 0; i < conWaveData->getNumChannel(); i++) {
         QString sigName = conWaveData->getSignalName(i);
         if (sigName != "") {

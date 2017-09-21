@@ -1,5 +1,6 @@
 if(rig=="dummy"){
-	var camera="dummy";
+    var camera = "dummy";
+    var magnificationFactor = "1"
 	var positioner = "dummy";
 	var maxposition = "400"; // this value is for ocpi-2 positioner
 	var maxspeed = "2000"; // this value is for ocpi-2 positioner
@@ -44,6 +45,7 @@ if(rig=="bakewell"){
 
 if(rig=="ocpi-1"){
 	var camera="cooke";
+	var magnificationFactor = "0.5"
 	var positioner = "volpiezo"; //NOTE: requires daq=="ni"
 	var maxposition = "400"; // this value is for ocpi-1 positioner
 	var maxspeed = "2000"; // this value is for ocpi-2 positioner
@@ -58,6 +60,7 @@ if(rig=="ocpi-1"){
 
 if(rig=="ocpi-2"){
 	var camera="cooke";
+	var magnificationFactor = "1"
 	var positioner = "volpiezo"; //NOTE: requires daq=="ni"
 	var maxposition = "800"; // this value is for ocpi-2 positioner
 	var maxspeed = "2000"; // this value is for ocpi-2 positioner
@@ -79,6 +82,7 @@ if (rig=="ocpi-1bidi") {
 
 if (rig == "ocpi-lsk") {
     var camera = "cooke";
+    var magnificationFactor = "1"
     var positioner = "volpiezo"; //NOTE: requires daq=="ni"
     var maxposition = "400"; // this value is for ocpi-2 positioner
     var maxspeed = "2000"; // this value is for ocpi-2 positioner

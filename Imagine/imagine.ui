@@ -233,7 +233,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>5</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -318,6 +318,140 @@
           <item>
            <widget class="QTextEdit" name="textEditComment"/>
           </item>
+          <item>
+           <layout class="QHBoxLayout">
+            <property name="spacing">
+             <number>6</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QGroupBox" name="gbVerticalShift">
+              <property name="title">
+               <string>vertical pixel shift</string>
+              </property>
+              <layout class="QGridLayout">
+               <property name="leftMargin">
+                <number>9</number>
+               </property>
+               <property name="topMargin">
+                <number>9</number>
+               </property>
+               <property name="rightMargin">
+                <number>9</number>
+               </property>
+               <property name="bottomMargin">
+                <number>9</number>
+               </property>
+               <property name="spacing">
+                <number>6</number>
+               </property>
+               <item row="1" column="1">
+                <widget class="QComboBox" name="comboBoxVertClockVolAmp"/>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="comboBoxVertShiftSpeed"/>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_55">
+                 <property name="text">
+                  <string>voltage amplitude:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_18">
+                 <property name="text">
+                  <string>vertical clock</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_17">
+                 <property name="text">
+                  <string>shift speed:</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="gbHorizontalShift">
+              <property name="title">
+               <string>horizontal pixel shift</string>
+              </property>
+              <layout class="QGridLayout">
+               <property name="leftMargin">
+                <number>9</number>
+               </property>
+               <property name="topMargin">
+                <number>9</number>
+               </property>
+               <property name="rightMargin">
+                <number>9</number>
+               </property>
+               <property name="bottomMargin">
+                <number>9</number>
+               </property>
+               <property name="spacing">
+                <number>6</number>
+               </property>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="comboBoxHorReadoutRate"/>
+               </item>
+               <item row="1" column="1">
+                <widget class="QComboBox" name="comboBoxPreAmpGains"/>
+               </item>
+               <item row="2" column="1">
+                <widget class="QSpinBox" name="spinBoxGain">
+                 <property name="maximum">
+                  <number>255</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_15">
+                 <property name="text">
+                  <string>pre-amp gain</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_16">
+                 <property name="toolTip">
+                  <string>Horizontal shift speed</string>
+                 </property>
+                 <property name="text">
+                  <string>readout rate:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_14">
+                 <property name="text">
+                  <string>Gain:</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </item>
          </layout>
         </widget>
         <widget class="QWidget" name="tabCamera">
@@ -368,13 +502,6 @@
              <property name="spacing">
               <number>6</number>
              </property>
-             <item row="10" column="0">
-              <widget class="QLabel" name="label_32">
-               <property name="text">
-                <string>Angle from horizontal (deg):</string>
-               </property>
-              </widget>
-             </item>
              <item row="6" column="0">
               <widget class="QLabel" name="label_5">
                <property name="toolTip">
@@ -382,13 +509,6 @@
                </property>
                <property name="text">
                 <string>exposure time(s):</string>
-               </property>
-              </widget>
-             </item>
-             <item row="11" column="0">
-              <widget class="QLabel" name="label_33">
-               <property name="text">
-                <string>um per pixle (xy plane):</string>
                </property>
               </widget>
              </item>
@@ -415,38 +535,6 @@
                </property>
                <property name="value">
                 <double>0.010700000000000</double>
-               </property>
-              </widget>
-             </item>
-             <item row="10" column="1">
-              <widget class="QSpinBox" name="spinBoxAngle">
-               <property name="toolTip">
-                <string>-1 means n/a</string>
-               </property>
-               <property name="minimum">
-                <number>-1</number>
-               </property>
-               <property name="maximum">
-                <number>360</number>
-               </property>
-               <property name="value">
-                <number>-1</number>
-               </property>
-              </widget>
-             </item>
-             <item row="11" column="1">
-              <widget class="QDoubleSpinBox" name="doubleSpinBoxUmPerPxlXy">
-               <property name="toolTip">
-                <string>-1 means n/a</string>
-               </property>
-               <property name="decimals">
-                <number>4</number>
-               </property>
-               <property name="minimum">
-                <double>-1.000000000000000</double>
-               </property>
-               <property name="value">
-                <double>-1.000000000000000</double>
                </property>
               </widget>
              </item>
@@ -547,141 +635,129 @@
            </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout">
-            <property name="spacing">
-             <number>6</number>
+           <widget class="QGroupBox" name="groupBox">
+            <property name="title">
+             <string>angle/pixel size</string>
             </property>
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
-             <number>0</number>
-            </property>
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_8">
-              <item>
-               <widget class="QGroupBox" name="gbHorizontalShift">
-                <property name="title">
-                 <string>horizontal pixel shift</string>
-                </property>
-                <layout class="QGridLayout">
-                 <property name="leftMargin">
-                  <number>9</number>
+            <layout class="QVBoxLayout" name="verticalLayout_9">
+             <item>
+              <layout class="QHBoxLayout" name="_5">
+               <property name="spacing">
+                <number>6</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="label_32">
+                 <property name="text">
+                  <string>Angle from horizontal (deg):</string>
                  </property>
-                 <property name="topMargin">
-                  <number>9</number>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="spinBoxAngle">
+                 <property name="toolTip">
+                  <string>-1 means n/a</string>
                  </property>
-                 <property name="rightMargin">
-                  <number>9</number>
+                 <property name="minimum">
+                  <number>-1</number>
                  </property>
-                 <property name="bottomMargin">
-                  <number>9</number>
+                 <property name="maximum">
+                  <number>360</number>
                  </property>
-                 <property name="spacing">
-                  <number>6</number>
+                 <property name="value">
+                  <number>-1</number>
                  </property>
-                 <item row="0" column="1">
-                  <widget class="QComboBox" name="comboBoxHorReadoutRate"/>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QComboBox" name="comboBoxPreAmpGains"/>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QSpinBox" name="spinBoxGain">
-                   <property name="maximum">
-                    <number>255</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="label_14">
-                   <property name="text">
-                    <string>Gain:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_15">
-                   <property name="text">
-                    <string>pre-amp gain</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_16">
-                   <property name="toolTip">
-                    <string>Horizontal shift speed</string>
-                   </property>
-                   <property name="text">
-                    <string>readout rate:</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QGroupBox" name="gbVerticalShift">
-                <property name="title">
-                 <string>vertical pixel shift</string>
-                </property>
-                <layout class="QGridLayout">
-                 <property name="leftMargin">
-                  <number>9</number>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="_3">
+               <property name="spacing">
+                <number>6</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="label_40">
+                 <property name="text">
+                  <string>objective lens:</string>
                  </property>
-                 <property name="topMargin">
-                  <number>9</number>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="sbObjectiveLens">
+                 <property name="suffix">
+                  <string>X</string>
                  </property>
-                 <property name="rightMargin">
-                  <number>9</number>
+                 <property name="minimum">
+                  <number>1</number>
                  </property>
-                 <property name="bottomMargin">
-                  <number>9</number>
+                 <property name="maximum">
+                  <number>100</number>
                  </property>
-                 <property name="spacing">
-                  <number>6</number>
+                 <property name="value">
+                  <number>20</number>
                  </property>
-                 <item row="1" column="1">
-                  <widget class="QComboBox" name="comboBoxVertClockVolAmp"/>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QComboBox" name="comboBoxVertShiftSpeed"/>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="label_55">
-                   <property name="text">
-                    <string>voltage amplitude:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_18">
-                   <property name="text">
-                    <string>vertical clock</string>
-                   </property>
-                   <property name="wordWrap">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_17">
-                   <property name="text">
-                    <string>shift speed:</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-             </layout>
-            </item>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_33">
+                 <property name="text">
+                  <string>um per pixle (xy plane):</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="doubleSpinBoxUmPerPxlXy">
+                 <property name="toolTip">
+                  <string>-1 means n/a</string>
+                 </property>
+                 <property name="decimals">
+                  <number>3</number>
+                 </property>
+                 <property name="minimum">
+                  <double>0.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>10.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.010000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>0.325000000000000</double>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_8">
             <item>
              <widget class="QGroupBox" name="groupBox_4">
               <property name="title">
@@ -800,7 +876,22 @@
                 </layout>
                </item>
                <item>
-                <layout class="QVBoxLayout" name="verticalLayout_9">
+                <layout class="QHBoxLayout" name="_4">
+                 <property name="spacing">
+                  <number>6</number>
+                 </property>
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
                  <item>
                   <widget class="QPushButton" name="btnUseZoomWindow">
                    <property name="text">
@@ -3349,8 +3440,8 @@
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_5">
           <item>
-           <layout class="QGridLayout" name="gridLayout_5">
-            <item row="0" column="0">
+           <layout class="QHBoxLayout" name="hlWaveform3">
+            <item>
              <widget class="QCheckBox" name="cbWaveformEnable">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -3363,8 +3454,241 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="3">
-             <widget class="QComboBox" name="comboBoxExpTriggerModeWav">
+            <item>
+             <spacer name="horizontalSpacer_12">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Maximum</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>30</width>
+                <height>3</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_12">
+              <property name="text">
+               <string>File name</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEditConWaveFile"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnConWavOpen">
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QGridLayout" name="gridLayout_4">
+            <property name="horizontalSpacing">
+             <number>2</number>
+            </property>
+            <property name="verticalSpacing">
+             <number>4</number>
+            </property>
+            <item row="1" column="3">
+             <widget class="QLabel" name="label_41">
+              <property name="text">
+               <string>#sample :</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QLabel" name="label_44">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="text">
+               <string>&lt;Camera1&gt; #stacks :</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLabel" name="label_36">
+              <property name="text">
+               <string>samples/sec :</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="2">
+             <widget class="QLabel" name="labelNumOfStacksWav1">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="text">
+               <string>0</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="3">
+             <widget class="QLabel" name="label_46">
+              <property name="text">
+               <string>exposure time :</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QLabel" name="labelPiezoSampleRate">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="text">
+               <string>0</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QLabel" name="label_45">
+              <property name="text">
+               <string>#frames/stack :</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="2">
+             <widget class="QLabel" name="labelFramesPerStackWav1">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="text">
+               <string>0</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="2">
+             <widget class="QLabel" name="labelNumOfStacksWav2">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="text">
+               <string>0</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="3">
+             <widget class="QLabel" name="label_5_5">
+              <property name="toolTip">
+               <string>That is, msec/frame</string>
+              </property>
+              <property name="text">
+               <string>exp. trigger mode:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="1">
+             <widget class="QLabel" name="label_82">
+              <property name="text">
+               <string>#frames/stack :</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="2">
+             <widget class="QLabel" name="labelFramesPerStackWav2">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="text">
+               <string>0</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="4">
+             <widget class="QLabel" name="labelSampleNumber">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="text">
+               <string>0</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="4">
+             <widget class="QDoubleSpinBox" name="doubleSpinBoxExpTimeWav1">
+              <property name="suffix">
+               <string> sec</string>
+              </property>
+              <property name="decimals">
+               <number>4</number>
+              </property>
+              <property name="singleStep">
+               <double>0.001000000000000</double>
+              </property>
+              <property name="value">
+               <double>0.010700000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="3">
+             <widget class="QLabel" name="label_72">
+              <property name="text">
+               <string>exposure time :</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="4">
+             <widget class="QDoubleSpinBox" name="doubleSpinBoxExpTimeWav2">
+              <property name="suffix">
+               <string> sec</string>
+              </property>
+              <property name="decimals">
+               <number>4</number>
+              </property>
+              <property name="singleStep">
+               <double>0.001000000000000</double>
+              </property>
+              <property name="value">
+               <double>0.010700000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="4">
+             <widget class="QComboBox" name="comboBoxExpTriggerModeWav1">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -3415,107 +3739,72 @@
               </item>
              </widget>
             </item>
-            <item row="0" column="1">
-             <spacer name="horizontalSpacer_12">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Maximum</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>30</width>
-                <height>3</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="0" column="2">
-             <widget class="QLabel" name="label_5_5">
+            <item row="8" column="3">
+             <widget class="QLabel" name="label_5_6">
               <property name="toolTip">
                <string>That is, msec/frame</string>
               </property>
               <property name="text">
-               <string>Exp. trigger mode:</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="hlWaveform3">
-            <item>
-             <widget class="QLabel" name="label_12">
-              <property name="text">
-               <string>File name</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="lineEditConWaveFile"/>
-            </item>
-            <item>
-             <widget class="QPushButton" name="btnConWavOpen">
-              <property name="text">
-               <string>...</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QGridLayout" name="gridLayout_4">
-            <property name="horizontalSpacing">
-             <number>2</number>
-            </property>
-            <property name="verticalSpacing">
-             <number>4</number>
-            </property>
-            <item row="1" column="3">
-             <widget class="QLabel" name="label_41">
-              <property name="text">
-               <string>#sample :</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="4">
-             <widget class="QLabel" name="labelSampleNumber">
-              <property name="layoutDirection">
-               <enum>Qt::LeftToRight</enum>
-              </property>
-              <property name="text">
-               <string>0</string>
+               <string>exp. trigger mode:</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
-             <widget class="QLabel" name="label_44">
-              <property name="layoutDirection">
-               <enum>Qt::LeftToRight</enum>
+            <item row="8" column="4">
+             <widget class="QComboBox" name="comboBoxExpTriggerModeWav2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
               </property>
-              <property name="text">
-               <string>#stacks :</string>
+              <property name="minimumSize">
+               <size>
+                <width>40</width>
+                <height>0</height>
+               </size>
               </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              <property name="maximumSize">
+               <size>
+                <width>130</width>
+                <height>16777215</height>
+               </size>
               </property>
+              <property name="editable">
+               <bool>false</bool>
+              </property>
+              <property name="currentText">
+               <string>External Start</string>
+              </property>
+              <property name="currentIndex">
+               <number>0</number>
+              </property>
+              <property name="maxVisibleItems">
+               <number>3</number>
+              </property>
+              <property name="maxCount">
+               <number>3</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>External Start</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>External Control</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Fast External Control</string>
+               </property>
+              </item>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QLabel" name="label_71">
-              <property name="text">
-               <string>Rig :</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="3">
+            <item row="3" column="4">
              <widget class="QPushButton" name="btnConWavList">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -3540,43 +3829,10 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
-             <widget class="QLabel" name="label_36">
+            <item row="8" column="1">
+             <widget class="QLabel" name="label_84">
               <property name="text">
-               <string>samples/sec :</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="4">
-             <widget class="QDoubleSpinBox" name="doubleSpinBoxExpTimeWav2">
-              <property name="decimals">
-               <number>4</number>
-              </property>
-              <property name="singleStep">
-               <double>0.001000000000000</double>
-              </property>
-              <property name="value">
-               <double>0.010700000000000</double>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="2">
-             <widget class="QLabel" name="labelNumOfStacksWav">
-              <property name="layoutDirection">
-               <enum>Qt::LeftToRight</enum>
-              </property>
-              <property name="text">
-               <string>0</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="3">
-             <widget class="QLabel" name="label_46">
-              <property name="text">
-               <string>Cam1 exp. time (sec) :</string>
+               <string>&lt;Camera2&gt; #stacks :</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -3596,21 +3852,8 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="2">
-             <widget class="QLabel" name="labelPiezoSampleRate">
-              <property name="layoutDirection">
-               <enum>Qt::LeftToRight</enum>
-              </property>
-              <property name="text">
-               <string>0</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
             <item row="3" column="1">
-             <widget class="QLabel" name="label_40">
+             <widget class="QLabel" name="label_83">
               <property name="text">
                <string>Bi-direction :</string>
               </property>
@@ -3619,7 +3862,7 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="2">
+            <item row="3" column="3">
              <widget class="QLabel" name="lableConWavRigname">
               <property name="maximumSize">
                <size>
@@ -3629,52 +3872,6 @@
               </property>
               <property name="text">
                <string>Rig</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="3">
-             <widget class="QLabel" name="label_45">
-              <property name="text">
-               <string>#frames/stack :</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="4">
-             <widget class="QDoubleSpinBox" name="doubleSpinBoxExpTimeWav1">
-              <property name="decimals">
-               <number>4</number>
-              </property>
-              <property name="singleStep">
-               <double>0.001000000000000</double>
-              </property>
-              <property name="value">
-               <double>0.010700000000000</double>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="3">
-             <widget class="QLabel" name="label_72">
-              <property name="text">
-               <string>Cam2 exp. time (sec) :</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="4">
-             <widget class="QLabel" name="labelFramesPerStackWav">
-              <property name="layoutDirection">
-               <enum>Qt::LeftToRight</enum>
-              </property>
-              <property name="text">
-               <string>0</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

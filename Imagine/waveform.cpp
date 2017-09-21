@@ -217,6 +217,8 @@ CFErrorCode ControlWaveform::loadJsonDocument(QJsonDocument &loadDoc)
 CFErrorCode ControlWaveform::parsing(void)
 {
     QJsonObject metadata;
+    QJsonObject cam1metadata;
+    QJsonObject cam2metadata;
     QJsonObject analog;
     QJsonObject digital;
     QJsonObject wavelist;
@@ -229,8 +231,8 @@ CFErrorCode ControlWaveform::parsing(void)
 
     // Parsing
     // 1. Metadata
-    QString version = alldata[STR_Version].toString();
-    if (version != CF_VERSION)
+    version = alldata[STR_Version].toString();
+    if ((version != CF_VERSION)&& (version != CF_V1P0))
         return ERR_INVALID_VERSION;
 
     metadata = alldata[STR_Metadata].toObject();
@@ -246,15 +248,42 @@ CFErrorCode ControlWaveform::parsing(void)
         return ERR_RIG_MISMATCHED;
     sampleRate = metadata[STR_SampleRate].toInt();
     totalSampleNum = metadata[STR_TotalSamples].toInt();
-    if (rig == "ocpi-2") {
+    if (version == CF_VERSION) {
+        generatedFrom = metadata[STR_GeneratedFrom].toString();
+        if (metadata.contains(STR_Cam1Metadata))
+            enableCam1 = true;
+        else
+            enableCam1 = false;
+        cam1metadata = metadata[STR_Cam1Metadata].toObject();
+        exposureTime1 = cam1metadata[STR_Exposure].toDouble();
+        nStacks1 = cam1metadata[STR_Stacks].toInt();
+        nFrames1 = cam1metadata[STR_Frames].toInt();
+        expTriggerModeStr1 = cam1metadata[STR_ExpTrigMode].toString();
+        if ((rig == "ocpi-2") || (rig == "dummy")) {
+            cam2metadata = metadata[STR_Cam2Metadata].toObject();
+            exposureTime2 = cam2metadata[STR_Exposure].toDouble();
+            nStacks2 = cam2metadata[STR_Stacks].toInt();
+            nFrames2 = cam2metadata[STR_Frames].toInt();
+            expTriggerModeStr2 = cam2metadata[STR_ExpTrigMode].toString();
+            if (metadata.contains(STR_Cam2Metadata))
+                enableCam2 = true;
+            else
+                enableCam2 = false;
+        }
+    }
+    else if (version == CF_V1P0) {
+        generatedFrom = "NA";
         exposureTime1 = metadata[STR_Exposure1].toDouble();
-        exposureTime2 = metadata[STR_Exposure2].toDouble();
+        nStacks1 = metadata[STR_Stacks].toInt();
+        nFrames1 = metadata[STR_Frames].toInt();
+        expTriggerModeStr1 = "External Start";
+        if ((rig == "ocpi-2") || (rig == "dummy")) {
+            exposureTime2 = metadata[STR_Exposure2].toDouble();
+            nStacks2 = nStacks1;
+            nFrames2 = nFrames1;
+            expTriggerModeStr2 = "External Start";
+        }
     }
-    else {
-        exposureTime1 = metadata[STR_Exposure].toDouble();
-    }
-    nStacks = metadata[STR_Stacks].toInt();
-    nFrames = metadata[STR_Frames].toInt();
     analog = alldata[STR_Analog].toObject();
     digital = alldata[STR_Digital].toObject();
     wavelist = alldata[STR_WaveList].toObject();
@@ -548,9 +577,14 @@ int ControlWaveform::getNumChannel(void)
     return numChannel;
 }
 
-void ControlWaveform::setDefaultLaserTTLSig(uInt32 data)
+void ControlWaveform::setLaserIntensityValue(int line, int data)
 {
-    laserTTLSig = data;
+    laserIntensity[line] = data;
+}
+
+bool ControlWaveform::getLaserDefaultTTL(int line)
+{
+    return (laserTTLSig&(0x01<<(line+7)));
 }
 
 // binary search recursive function
@@ -1184,6 +1218,15 @@ int ControlWaveform::genControlFileJSON(void)
 
 CFErrorCode ControlWaveform::genDefaultControl(QString filename)
 {
+    int nFrames, nStacks;
+    if (enableCam1) {
+        nFrames = nFrames1;
+        nStacks = nStacks1;
+    }
+    else if (enableCam2) {
+        nFrames = nFrames2;
+        nStacks = nStacks2;
+    }
     CFErrorCode err = NO_CF_ERROR;
     errorMsg.clear();
     double shutterControlMargin = 0.01; // (sec) shutter control begin after piezo start and stop before piezo stop
@@ -1366,13 +1409,16 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
     QJsonArray piezo1Seq, camera1Seq, camera2Seq, laser1Seq;
     QJsonObject piezo1, camera1, camera2, laser1;
     QJsonObject stimulus1, stimulus2, stimulus3, stimulus4;
-    QJsonObject piezo1Mon, piezo2Mon, ai1Mon, ai4Mon, camera1Mon, camera2Mon;
+    QJsonObject piezo1Mon, piezo2Mon, ai1Mon, camera1Mon, camera2Mon;
+    QJsonObject ai4Mon, ai5Mon;
     QJsonObject laser1Mon, stimulus1Mon, stimulus2Mon;
     int repeat;
-    if (bidirection)
+    if (bidirection) {
         repeat = nStacks / 2;
-    else
+    }
+    else {
         repeat = nStacks;
+    }
     for (int i = 0; i < channelSignalList.size(); i++) {
         QString port = channelSignalList[i][0];
         QString sig = channelSignalList[i][1];
@@ -1387,11 +1433,10 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
             piezo1Mon[STR_Channel] = port;
             analog[sig] = piezo1Mon; // secured port for piezo monitor
         }
-
-        if ((rig != "dummy")&&(rig != "ocpi-2")) {
+        if ((rig == "ocpi-1") || (rig == "ocpi-lsk")) {
             if (port == QString(STR_AIHEADER).append("1")) { // AI1
-                ai1Mon[STR_Channel] = port;
-                analog["stimuli"] = ai1Mon; // for compatibility with old Imainge HW configuration
+                stimulus1Mon[STR_Channel] = port;
+                analog[sig] = stimulus1Mon; // secured port for stimulus monitor
             }
         }
         else {
@@ -1400,9 +1445,14 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
                 analog[sig] = piezo2Mon; // horizontal piezo monitor
             }
         }
+
         if (port == QString(STR_AIHEADER).append("4")) { // AI4
             ai4Mon[STR_Channel] = port;
             analog["AI4"] = ai4Mon; // for compatibility with old Imainge HW configuration
+        }
+        if (port == QString(STR_AIHEADER).append("5")) { // AI5
+            ai5Mon[STR_Channel] = port;
+            analog["AI5"] = ai5Mon; // for compatibility with old Imainge HW configuration
         }
 
         if (enableCam1) {
@@ -1446,15 +1496,19 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
             }
         }
         else {
-            camera1InPort = QString(STR_P0HEADER).append("24"); // P0.24
-            if (port == camera1InPort) {
-                camera1Mon[STR_Channel] = port;
-                digital[sig] = camera1Mon; // secured port for camera1 mon
+            if (enableCam1) {
+                camera1InPort = QString(STR_P0HEADER).append("24"); // P0.24
+                if (port == camera1InPort) {
+                    camera1Mon[STR_Channel] = port;
+                    digital[sig] = camera1Mon; // secured port for camera1 mon
+                }
             }
-            camera2InPort = QString(STR_P0HEADER).append("25"); // P0.25
-            if (port == camera2InPort) {
-                camera2Mon[STR_Channel] = port;
-                digital[sig] = camera2Mon; // secured port for camera2 mon
+            if (enableCam2) {
+                camera2InPort = QString(STR_P0HEADER).append("25"); // P0.25
+                if (port == camera2InPort) {
+                    camera2Mon[STR_Channel] = port;
+                    digital[sig] = camera2Mon; // secured port for camera2 mon
+                }
             }
         }
 
@@ -1511,23 +1565,38 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
     long long totalSamples = nStacks * perStackSamples;
     // packing all
     QJsonObject metadata;
+    QJsonObject cam1metadata;
+    QJsonObject cam2metadata;
 
+    if (enableCam1) {
+        cam1metadata[STR_Exposure] = exposureTime1;
+        cam1metadata[STR_ExpTrigMode] = expTriggerModeStr1;
+        cam1metadata[STR_Frames] = nFrames1;
+        if (bidirection) {
+            cam1metadata[STR_Stacks] = repeat * 2;
+        }
+        else {
+            cam1metadata[STR_Stacks] = nStacks1;
+        }
+        metadata[STR_Cam1Metadata] = cam1metadata;
+    }
+    if (enableCam2) {
+        cam2metadata[STR_Exposure] = exposureTime2;
+        cam2metadata[STR_ExpTrigMode] = expTriggerModeStr2;
+        cam2metadata[STR_Frames] = nFrames2;
+        if (bidirection) {
+            cam2metadata[STR_Stacks] = repeat * 2;
+        }
+        else {
+            cam2metadata[STR_Stacks] = nStacks2;
+        }
+        metadata[STR_Cam2Metadata] = cam2metadata;
+    }
     metadata[STR_SampleRate] = sampleRate;
     metadata[STR_TotalSamples] = totalSamples;
-    if (rig == "ocpi-2") {
-        metadata[STR_Exposure1] = exposureTime1;
-        metadata[STR_Exposure2] = exposureTime2;
-    }
-    else {
-        metadata[STR_Exposure] = exposureTime1;
-    }
     metadata[STR_BiDir] = bidirection;
-    if(bidirection)
-        metadata[STR_Stacks] = repeat*2;
-    else
-        metadata[STR_Stacks] = nStacks;
-    metadata[STR_Frames] = nFrames;
     metadata[STR_Rig] = rig;
+    metadata[STR_GeneratedFrom] = STR_Imagine;
 
     alldata[STR_Metadata] = metadata;
     alldata[STR_Analog] = analog;

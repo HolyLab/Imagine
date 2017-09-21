@@ -374,6 +374,7 @@ private slots:
     void readPiezoCurPos();
     void onModified();
     void on_doubleSpinBoxExpTime_valueChanged();
+    void on_sbObjectiveLens_valueChanged(int newValue);
 
     void updateStatus(const QString &str);
     void appendLog(const QString& msg);
@@ -483,7 +484,6 @@ private slots:
     void on_comboBoxDO3_currentIndexChanged(int index);
     void on_comboBoxDO4_currentIndexChanged(int index);
     void on_comboBoxDO5_currentIndexChanged(int index);
-    void on_comboBoxExpTriggerModeWav_currentIndexChanged(int index);
 
     void on_btnImg1LoadFile_clicked();
     void on_btnImg2LoadFile_clicked();
