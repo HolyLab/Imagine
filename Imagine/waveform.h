@@ -168,16 +168,17 @@ enum CFErrorCode : unsigned int
     ERR_PIEZO_VALUE_INVALID     = 1 << 7,
     ERR_PIEZO_SPEED_FAST        = 1 << 8,
     ERR_PIEZO_INSTANT_CHANGE    = 1 << 9,
-    ERR_LASER_SPEED_FAST        = 1 << 10,
-    ERR_LASER_INSTANT_CHANGE    = 1 << 11,
-    ERR_SHORT_WAVEFORM          = 1 << 12,
+    ERR_CAMERA_PULSE_NUM_ERR    = 1 << 10,
+    ERR_LASER_SPEED_FAST        = 1 << 11,
+    ERR_LASER_INSTANT_CHANGE    = 1 << 12,
+    ERR_SHORT_WAVEFORM          = 1 << 13,
     // load ai di data error
-    ERR_READ_AI                 = 1 << 13,
-    ERR_READ_DI                 = 1 << 14,
+    ERR_READ_AI                 = 1 << 14,
+    ERR_READ_DI                 = 1 << 15,
     // waveform generation error
-    ERR_TRAVELBACKTIME_SHORT    = 1 << 15,
-    ERR_IDLETIME_SHORT          = 1 << 16,
-    ERR_FILE_OPEN               = 1 << 17
+    ERR_TRAVELBACKTIME_SHORT    = 1 << 16,
+    ERR_IDLETIME_SHORT          = 1 << 17,
+    ERR_FILE_OPEN               = 1 << 18
 }; // ai, di and command file error code
 
 enum PiezoDataType
@@ -345,6 +346,7 @@ public:
     // Waveform validity check
     CFErrorCode positionerSpeedCheck(int maxPos, int maxSpeed, int ctrlIdx, int &dataSize);
     CFErrorCode laserSpeedCheck(double maxFreq, int ctrlIdx, int &dataSize);
+    CFErrorCode cameraPulseNumCheck(int nTotalFrames, int ctrlIdx, int &nPulses, int &dataSize);
     CFErrorCode waveformValidityCheck();
     // Generate control waveform and command file
     CFErrorCode genDefaultControl(QString filename = "");

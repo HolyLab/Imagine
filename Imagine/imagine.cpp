@@ -1824,7 +1824,7 @@ bool Imagine::applySetting()
     }
     else {
         expTriggerModeStr = ui.comboBoxExpTriggerMode->currentText();
-        dataAcqThread->sampleRate = 50000; // Hard coded
+        dataAcqThread->sampleRate = 100000; // Hard coded
         dataAcqThread->nStacksUser = ui.spinBoxNumOfStacks->value();
         dataAcqThread->nFramesPerStackUser = ui.spinBoxFramesPerStack->value();
         dataAcqThread->idleTimeBwtnStacks = ui.doubleSpinBoxBoxIdleTimeBtwnStacks->value();
@@ -2025,12 +2025,12 @@ bool Imagine::applySetting()
             conWaveDataParam->applyStim = masterUi->cbStim->isChecked();
             conWaveDataParam->stimuli = &(masterDataAcqTh->stimuli);
             conWaveDataParam->genDefaultControl(headerFilename);
+            dataAcqThread->conWaveData = conWaveDataParam;
+            conWaveData = conWaveDataParam;
             if(masterImagine != NULL)
                 masterImagine->displayConWaveData();
             else
                 displayConWaveData();
-            dataAcqThread->conWaveData = conWaveDataParam;
-            conWaveData = conWaveDataParam;
             if (conWaveData->getErrorMsg() != "") {
                 QMessageBox::critical(this, "Imagine", conWaveData->getErrorMsg(),
                     QMessageBox::Ok, QMessageBox::NoButton);

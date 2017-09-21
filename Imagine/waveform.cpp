@@ -803,6 +803,34 @@ CFErrorCode ControlWaveform::positionerSpeedCheck(int maxPos, int maxSpeed, int 
     return NO_CF_ERROR;
 }
 
+
+CFErrorCode ControlWaveform::cameraPulseNumCheck(int nTotalFrames, int ctrlIdx, int &nPulses, int &dataSize)
+{
+    dataSize = getCtrlSampleNum(ctrlIdx);
+    if (dataSize == 0)
+        return NO_CF_ERROR;
+    int repeat, waveIdx, controlIdx;
+    nPulses = 0;
+
+    for (controlIdx = 0; controlIdx < controlList[ctrlIdx]->size(); controlIdx += 2) {
+        repeat = controlList[ctrlIdx]->at(controlIdx);
+        waveIdx = controlList[ctrlIdx]->at(controlIdx + 1);
+        int nPulsesInStack = 0;
+        int wave0, wave1, lastIdx = -1;
+        for (int i = 0; i < getWaveSampleNum(waveIdx) - 1; i++) {
+            getWaveSampleValue(waveIdx, i, wave0);
+            getWaveSampleValue(waveIdx, i + 1, wave1);
+            if ((wave0 == 0) && (wave1 != 0)) { // check rising edge
+                nPulsesInStack++;
+            }
+        }
+        nPulses += repeat*nPulsesInStack;
+    }
+    if (nPulses != nTotalFrames)
+        return ERR_CAMERA_PULSE_NUM_ERR;
+    return NO_CF_ERROR;
+}
+
 CFErrorCode ControlWaveform::laserSpeedCheck(double maxFreq, int ctrlIdx, int &dataSize)
 {
     dataSize = getCtrlSampleNum(ctrlIdx);
@@ -869,6 +897,33 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
                 if (err & (ERR_SHORT_WAVEFORM)) {
                     errorMsg.append(QString("'%1' control includes too short waveform\nWaveform should be at least %2 samples")
                         .arg(channelSignalList[i][1]).arg(SPEED_CHECK_INTERVAL));
+                }
+                errorCode |= err;
+            }
+            // camera pulse number check
+            else if (channelSignalList[i][1] == STR_camera1) {
+                int nPulses;
+                CFErrorCode err = cameraPulseNumCheck(nStacks1*nFrames1, i, nPulses, sampleNum);
+                if (err & ERR_CAMERA_PULSE_NUM_ERR) {
+                    errorMsg.append(QString("'%1' pulse number %2 is not consistent with stack and frame number\n")
+                        .arg(channelSignalList[i][1]).arg(nPulses));
+                }
+                if ((sampleNum != 0) && (sampleNum != totalSampleNum)) {
+                    err |= ERR_SAMPLE_NUM_MISMATCHED;
+                    errorMsg.append(QString("'%1' sample number is different from total sample number\n").arg(channelSignalList[i][1]));
+                }
+                errorCode |= err;
+            }
+            else if (channelSignalList[i][1] == STR_camera2) {
+                int nPulses;
+                CFErrorCode err = cameraPulseNumCheck(nStacks2*nFrames2, i, nPulses, sampleNum);
+                if (err & ERR_CAMERA_PULSE_NUM_ERR) {
+                    errorMsg.append(QString("'%1' pulse number %2 is not consistent with stack and frame number\n")
+                        .arg(channelSignalList[i][1]).arg(nPulses));
+                }
+                if ((sampleNum != 0) && (sampleNum != totalSampleNum)) {
+                    err |= ERR_SAMPLE_NUM_MISMATCHED;
+                    errorMsg.append(QString("'%1' sample number is different from total sample number\n").arg(channelSignalList[i][1]));
                 }
                 errorCode |= err;
             }
