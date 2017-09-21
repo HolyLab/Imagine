@@ -2043,6 +2043,11 @@ bool Imagine::applySetting()
             goto skip;
         // setup default laser TTL output value
         conWaveData->laserTTLSig = laserTTLSig;
+        conWaveData->setLaserIntensityValue(1, ui.doubleSpinBox_aotfLine1->value());
+        conWaveData->setLaserIntensityValue(2, ui.doubleSpinBox_aotfLine2->value());
+        conWaveData->setLaserIntensityValue(3, ui.doubleSpinBox_aotfLine3->value());
+        conWaveData->setLaserIntensityValue(4, ui.doubleSpinBox_aotfLine4->value());
+        conWaveData->setLaserIntensityValue(5, ui.doubleSpinBox_aotfLine5->value());
         // move positioner to start position
         int chIdx = conWaveData->getChannelIdxFromSig(STR_axial_piezo);
         double um;
@@ -2540,7 +2545,6 @@ void Imagine::changeLaserTrans(bool isAotf, int line)
             str = QString("Set laser ND wheel value as %1").arg(slider->value());
         }
         appendLog(str);
-        conWaveData->setLaserIntensityValue(line, slider->value());
     }
     else {
         QString str = QString("laserCtrlSerial object is not defined");
@@ -2840,6 +2844,7 @@ void Imagine::writeSettings(QString file)
 //    WRITE_COMBO_SETTING(prefs, comboBoxAcqTriggerMode);
     WRITE_COMBO_SETTING(prefs, comboBoxExpTriggerMode);
     WRITE_SETTING(prefs, spinBoxAngle);
+    WRITE_SETTING(prefs, sbObjectiveLens);
     WRITE_SETTING(prefs, doubleSpinBoxUmPerPxlXy);
     WRITE_COMBO_SETTING(prefs, comboBoxHorReadoutRate);
     WRITE_COMBO_SETTING(prefs, comboBoxPreAmpGains);
@@ -2951,6 +2956,7 @@ void Imagine::readSettings(QString file)
     //    READ_COMBO_SETTING(prefs, comboBoxAcqTriggerMode, 1);
     READ_COMBO_SETTING(prefs, comboBoxExpTriggerMode, 0);
     READ_SETTING(prefs, spinBoxAngle, ok, i, 0, Int);
+    READ_SETTING(prefs, sbObjectiveLens, ok, i, 20, Int);
     READ_SETTING(prefs, doubleSpinBoxUmPerPxlXy, ok, d, -1.0000, Double);
     READ_COMBO_SETTING(prefs, comboBoxHorReadoutRate, 0);
     READ_COMBO_SETTING(prefs, comboBoxPreAmpGains, 0);

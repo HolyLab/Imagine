@@ -354,7 +354,7 @@ public:
     int genTriangle(bool bidir);
     int genSinusoidal(bool bidir);
     // Laser default output
-    void setLaserIntensityValue(int line, int data);
+    void setLaserIntensityValue(int line, double data);
     bool getLaserDefaultTTL(int line);
 }; // ControlWaveform
 

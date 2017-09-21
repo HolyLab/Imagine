@@ -2844,7 +2844,7 @@
             <layout class="QVBoxLayout" name="verticalLayout">
              <item>
               <layout class="QGridLayout" name="gridLaserSetup_layout">
-               <item row="0" column="1">
+               <item row="4" column="1">
                 <widget class="QSlider" name="aotfLine1">
                  <property name="maximum">
                   <number>1000</number>
@@ -2856,14 +2856,17 @@
                   <number>100</number>
                  </property>
                  <property name="value">
-                  <number>500</number>
+                  <number>0</number>
+                 </property>
+                 <property name="sliderPosition">
+                  <number>0</number>
                  </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
                 </widget>
                </item>
-               <item row="6" column="0">
+               <item row="8" column="0">
                 <widget class="QCheckBox" name="cbLine7">
                  <property name="accessibleDescription">
                   <string notr="true">no apply</string>
@@ -2873,7 +2876,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="0" column="2">
+               <item row="4" column="2">
                 <widget class="QDoubleSpinBox" name="doubleSpinBox_aotfLine1">
                  <property name="accessibleDescription">
                   <string notr="true">no apply</string>
@@ -2904,7 +2907,10 @@
                   <number>100</number>
                  </property>
                  <property name="value">
-                  <number>500</number>
+                  <number>0</number>
+                 </property>
+                 <property name="sliderPosition">
+                  <number>0</number>
                  </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
@@ -2949,26 +2955,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="1" column="2">
-                <widget class="QDoubleSpinBox" name="doubleSpinBox_aotfLine2">
-                 <property name="accessibleDescription">
-                  <string notr="true">no apply</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                 </property>
-                 <property name="decimals">
-                  <number>1</number>
-                 </property>
-                 <property name="singleStep">
-                  <double>0.100000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>0.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="0">
+               <item row="7" column="0">
                 <widget class="QCheckBox" name="cbLine6">
                  <property name="accessibleDescription">
                   <string notr="true">no apply</string>
@@ -2990,33 +2977,17 @@
                   <number>100</number>
                  </property>
                  <property name="value">
-                  <number>500</number>
+                  <number>0</number>
+                 </property>
+                 <property name="sliderPosition">
+                  <number>0</number>
                  </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="1">
-                <widget class="QSlider" name="aotfLine2">
-                 <property name="maximum">
-                  <number>1000</number>
-                 </property>
-                 <property name="singleStep">
-                  <number>10</number>
-                 </property>
-                 <property name="pageStep">
-                  <number>100</number>
-                 </property>
-                 <property name="value">
-                  <number>500</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="7" column="0">
+               <item row="9" column="0">
                 <widget class="QCheckBox" name="cbLine8">
                  <property name="accessibleDescription">
                   <string notr="true">no apply</string>
@@ -3026,7 +2997,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="4" column="1">
+               <item row="5" column="1">
                 <widget class="QSlider" name="aotfLine5">
                  <property name="maximum">
                   <number>1000</number>
@@ -3038,14 +3009,17 @@
                   <number>100</number>
                  </property>
                  <property name="value">
-                  <number>500</number>
+                  <number>0</number>
+                 </property>
+                 <property name="sliderPosition">
+                  <number>0</number>
                  </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
+               <item row="7" column="1">
                 <widget class="QSlider" name="aotfLine6">
                  <property name="maximum">
                   <number>1000</number>
@@ -3057,14 +3031,17 @@
                   <number>100</number>
                  </property>
                  <property name="value">
-                  <number>500</number>
+                  <number>0</number>
+                 </property>
+                 <property name="sliderPosition">
+                  <number>0</number>
                  </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
                 </widget>
                </item>
-               <item row="6" column="1">
+               <item row="8" column="1">
                 <widget class="QSlider" name="aotfLine7">
                  <property name="maximum">
                   <number>1000</number>
@@ -3076,14 +3053,17 @@
                   <number>100</number>
                  </property>
                  <property name="value">
-                  <number>500</number>
+                  <number>0</number>
+                 </property>
+                 <property name="sliderPosition">
+                  <number>0</number>
                  </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="1">
+               <item row="9" column="1">
                 <widget class="QSlider" name="aotfLine8">
                  <property name="maximum">
                   <number>1000</number>
@@ -3095,14 +3075,17 @@
                   <number>100</number>
                  </property>
                  <property name="value">
-                  <number>500</number>
+                  <number>0</number>
+                 </property>
+                 <property name="sliderPosition">
+                  <number>0</number>
                  </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="2">
+               <item row="5" column="2">
                 <widget class="QDoubleSpinBox" name="doubleSpinBox_aotfLine5">
                  <property name="accessibleDescription">
                   <string notr="true">no apply</string>
@@ -3121,7 +3104,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="5" column="2">
+               <item row="7" column="2">
                 <widget class="QDoubleSpinBox" name="doubleSpinBox_aotfLine6">
                  <property name="accessibleDescription">
                   <string notr="true">no apply</string>
@@ -3140,7 +3123,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="6" column="2">
+               <item row="8" column="2">
                 <widget class="QDoubleSpinBox" name="doubleSpinBox_aotfLine7">
                  <property name="accessibleDescription">
                   <string notr="true">no apply</string>
@@ -3159,7 +3142,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="7" column="2">
+               <item row="9" column="2">
                 <widget class="QDoubleSpinBox" name="doubleSpinBox_aotfLine8">
                  <property name="accessibleDescription">
                   <string notr="true">no apply</string>
@@ -3175,26 +3158,6 @@
                  </property>
                  <property name="value">
                   <double>0.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QCheckBox" name="cbLineTTL1">
-                 <property name="accessibleDescription">
-                  <string notr="true"/>
-                 </property>
-                 <property name="text">
-                  <string>488nm</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QCheckBox" name="cbLineTTL2">
-                 <property name="accessibleDescription">
-                  <string notr="true"/>
-                 </property>
-                 <property name="text">
-                  <string>561nm</string>
                  </property>
                 </widget>
                </item>
@@ -3218,13 +3181,74 @@
                  </property>
                 </widget>
                </item>
-               <item row="4" column="0">
+               <item row="5" column="0">
                 <widget class="QCheckBox" name="cbLineTTL5">
                  <property name="accessibleDescription">
                   <string notr="true"/>
                  </property>
                  <property name="text">
                   <string>514nm</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QCheckBox" name="cbLineTTL1">
+                 <property name="accessibleDescription">
+                  <string notr="true"/>
+                 </property>
+                 <property name="text">
+                  <string>488nm</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0">
+                <widget class="QCheckBox" name="cbLineTTL2">
+                 <property name="accessibleDescription">
+                  <string notr="true"/>
+                 </property>
+                 <property name="text">
+                  <string>561nm</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="1">
+                <widget class="QSlider" name="aotfLine2">
+                 <property name="maximum">
+                  <number>1000</number>
+                 </property>
+                 <property name="singleStep">
+                  <number>10</number>
+                 </property>
+                 <property name="pageStep">
+                  <number>100</number>
+                 </property>
+                 <property name="value">
+                  <number>0</number>
+                 </property>
+                 <property name="sliderPosition">
+                  <number>0</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="2">
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_aotfLine2">
+                 <property name="accessibleDescription">
+                  <string notr="true">no apply</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.100000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>0.000000000000000</double>
                  </property>
                 </widget>
                </item>

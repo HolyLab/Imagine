@@ -577,7 +577,7 @@ int ControlWaveform::getNumChannel(void)
     return numChannel;
 }
 
-void ControlWaveform::setLaserIntensityValue(int line, int data)
+void ControlWaveform::setLaserIntensityValue(int line, double data)
 {
     laserIntensity[line] = data;
 }
