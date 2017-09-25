@@ -740,7 +740,7 @@ CFErrorCode ControlWaveform::positionerSpeedCheck(int maxPos, int maxSpeed, int 
         repeat = controlList[ctrlIdx]->at(controlIdx);
         waveIdx = controlList[ctrlIdx]->at(controlIdx + 1);
         int waveLength = getWaveSampleNum(waveIdx);
-        if (waveLength < SPEED_CHECK_INTERVAL)
+        if (waveLength < SPEED_CHECK_INTERVAL) // we don't allow short waveform
             return ERR_SHORT_WAVEFORM;
         if (usedWaveIdx[waveIdx] == false)
         {
@@ -781,6 +781,8 @@ CFErrorCode ControlWaveform::positionerSpeedCheck(int maxPos, int maxSpeed, int 
         // 2. If control signal is compoused of several waveforms, we need to check connection points.
         if (controlIdx >= 2) {
             // 2.1 Speed check
+                // if we allow sort (if (waveLength < SPEED_CHECK_INTERVAL)) waveform
+                // TODO: just check actual point using readControlWaveform()
             int oldWaveIdx = controlList[ctrlIdx]->at(controlIdx - 1);
             for (int i = getWaveSampleNum(oldWaveIdx) - SPEED_CHECK_INTERVAL, j = 0; i < getWaveSampleNum(oldWaveIdx); i++, j++) {
                 getWaveSampleValue(oldWaveIdx, i, rawWave0, PDT_RAW);
@@ -809,12 +811,14 @@ CFErrorCode ControlWaveform::cameraPulseNumCheck(int nTotalFrames, int ctrlIdx, 
     dataSize = getCtrlSampleNum(ctrlIdx);
     if (dataSize == 0)
         return NO_CF_ERROR;
-    int repeat, waveIdx, controlIdx;
+    int repeat, waveIdx, lastWaveIdx, controlIdx;
     nPulses = 0;
 
     for (controlIdx = 0; controlIdx < controlList[ctrlIdx]->size(); controlIdx += 2) {
+        lastWaveIdx = waveIdx;
         repeat = controlList[ctrlIdx]->at(controlIdx);
         waveIdx = controlList[ctrlIdx]->at(controlIdx + 1);
+        // count transition inside waveform
         int nPulsesInStack = 0;
         int wave0, wave1, lastIdx = -1;
         for (int i = 0; i < getWaveSampleNum(waveIdx) - 1; i++) {
@@ -825,6 +829,21 @@ CFErrorCode ControlWaveform::cameraPulseNumCheck(int nTotalFrames, int ctrlIdx, 
             }
         }
         nPulses += repeat*nPulsesInStack;
+        // count transition between same waveform
+        if (repeat > 1) {
+            getWaveSampleValue(waveIdx, getWaveSampleNum(waveIdx)-1, wave0);
+            getWaveSampleValue(waveIdx, 0, wave1);
+            if ((wave0 == 0) && (wave1 != 0)) { // check rising edge
+                nPulses += repeat-1;
+            }
+        }
+        // count transition between different waveform
+        if (controlIdx == 0) wave0 = 0; // every channel is low initially
+        else getWaveSampleValue(lastWaveIdx, getWaveSampleNum(lastWaveIdx) - 1, wave0);
+        getWaveSampleValue(waveIdx, 0, wave1);
+        if ((wave0 == 0) && (wave1 != 0)) { // check rising edge
+            nPulses++;
+        }
     }
     if (nPulses != nTotalFrames)
         return ERR_CAMERA_PULSE_NUM_ERR;

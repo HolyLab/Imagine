@@ -233,7 +233,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>5</number>
+         <number>6</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -3474,7 +3474,7 @@
                </sizepolicy>
               </property>
               <property name="text">
-               <string>Enbale</string>
+               <string>Enable</string>
               </property>
              </widget>
             </item>
