@@ -128,6 +128,11 @@ bool AiThread::mSave(ofstream& ofsAi)
     return ofsAi.good();
 }
 
+bool AiThread::isLeftToReadSamples()
+{
+    return (totalSampleNum - writeSampleNum);
+}
+
 //same as mSave() but w/ lock
 bool AiThread::save(ofstream& ofsAi)
 {

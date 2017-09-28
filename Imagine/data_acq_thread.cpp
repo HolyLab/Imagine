@@ -749,30 +749,25 @@ nextStack:  //code below is repeated every stack
     camera->stopAcqFinal(); //priority inversion delays stopping, so we haave to elevate priority
     this->setPriority(getDefaultPriority());
 
-    ///save ai data:
-    if (ownPos) {
-        if (isAiEnable) {
-            aiThread->stopAcq();
-            ofsAi->flush();
-        }
-        diThread->stopAcq();
-        ofsDi->flush();
-        digOut->abortCmd();
-        // reset for On Demend digital output
-        // digOut->resetDAQ(); // need to do this every time we output single value to dout
-    }
-
-    ///reset the actuator to its exact starting pos
     if (hasPos && ownPos) {
+        while (!stopRequested && aiThread->isLeftToReadSamples()) { // wait until all daq samples are read
+            QThread::msleep(100);
+        }
         if (isAiEnable) {
             aiThread->stopAcq();
             aiThread->save(*ofsAi);
+            ofsAi->flush();
         }
         diThread->stopAcq();
         diThread->save(*ofsDi);
+        ofsDi->flush();
         pPositioner->abortCmd();
-//        pPositioner->resetDAQ();
+        //        pPositioner->resetDAQ();
+        digOut->abortCmd();
+        // reset for On Demend digital output
+        // digOut->resetDAQ(); // need to do this every time we output single value to dout
         emit newStatusMsgReady("Now resetting the actuator to its exact starting pos ...");
+        //reset the actuator to its exact starting pos
         emit resetActuatorPosReady();
     }
 

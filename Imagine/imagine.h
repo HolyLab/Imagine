@@ -475,7 +475,8 @@ private slots:
     void on_sbAiDiDsplyRight_valueChanged(int value);
     void on_sbAiDiDsplyLeft_valueChanged(int value);
     void on_sbAiDiDsplyTop_valueChanged(int value);
-    void on_btnAiDiDsplyReset_clicked();
+    void on_sbAiDiDsplyBottom_valueChanged(int value);
+    void on_btnAiDiDsplyReload_clicked();
     void on_comboBoxAO0_currentIndexChanged(int index);
     void on_comboBoxAO1_currentIndexChanged(int index);
     void on_comboBoxDO0_currentIndexChanged(int index);

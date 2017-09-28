@@ -65,9 +65,8 @@ public:
    string getErrorMsg(){return "no error";}
 
    bool cfgTiming(int scanRate, int size, string clkName = ""){
-      //this->scanRate=scanRate;
-      this->scanRate=1000;
-
+      this->scanRate=scanRate;
+      //this->scanRate=1000;
       return true;
    }
    bool setTrigger(string clkName) {return true;}
@@ -98,7 +97,8 @@ public:
     string getErrorMsg() { return "no error"; }
 
     bool cfgTiming(int scanRate, int size, string clkName = "") {
-        this->scanRate = 1000;
+        this->scanRate = scanRate;
+        //this->scanRate = 1000;
         return true;
     }
     bool setTrigger(string clkName) { return true; }

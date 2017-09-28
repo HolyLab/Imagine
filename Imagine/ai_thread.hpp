@@ -48,6 +48,7 @@ public:
     bool save(ofstream& ofsAi);
     void setOfstream(ofstream* ofs){ this->ofs = ofs; }
     bool setTrigger(string clkName);
+    bool isLeftToReadSamples();
 
 protected:
     void run();

@@ -1524,11 +1524,12 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
             ai4Mon[STR_Channel] = port;
             analog["AI4"] = ai4Mon; // for compatibility with old Imainge HW configuration
         }
-        if (port == QString(STR_AIHEADER).append("5")) { // AI5
-            ai5Mon[STR_Channel] = port;
-            analog["AI5"] = ai5Mon; // for compatibility with old Imainge HW configuration
+        if (rig != "ocpi-1") {
+            if (port == QString(STR_AIHEADER).append("5")) { // AI5
+                ai5Mon[STR_Channel] = port;
+                analog["AI5"] = ai5Mon; // for compatibility with old Imainge HW configuration
+            }
         }
-
         if (enableCam1) {
             if (port == QString(STR_P0HEADER).append("5")) { // P0.5
                 camera1Seq = { repeat, "camera1_001" };
@@ -2195,16 +2196,73 @@ int ControlWaveform::genSinusoidal(bool bidir)
 
 /***** AiWaveform class ******************************************************/
 #define MIN_VALUE (-PIEZO_10V_UINT16_VALUE + 8192.) // (-10+2.5V) = -7.5V
-AiWaveform::AiWaveform(QByteArray &data, int num)
+AiWaveform::AiWaveform(QString filename, int num)
 {
+    errorMsg.clear();
     numAiCurveData = num;
-    if (num <= 0)
+    if (!numAiCurveData)
         return;
-    QDataStream aiStream(data);
-    aiStream.setByteOrder(QDataStream::LittleEndian);//BigEndian, LittleEndian
-    int perSampleSize = numAiCurveData * 2; // number of ai channel * 2 bytes
-    int perSignalSize = data.size() / perSampleSize;
-    totalSampleNum = (perSignalSize > MAX_AI_DI_SAMPLE_NUM) ? MAX_AI_DI_SAMPLE_NUM : perSignalSize;
+    readFile(filename);
+}
+
+AiWaveform::~AiWaveform()
+{
+    fileClose();
+}
+
+bool AiWaveform::fileClose()
+{
+    if (file.isOpen())
+        file.close();
+    totalSampleNum = 0;
+    return true;
+}
+
+bool AiWaveform::readFile(QString filename)
+{
+    // read ai file
+    file.setFileName(filename);
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        errorMsg.append(QString(tr("Cannot read file %1:\n%2.")
+            .arg(filename)
+            .arg(file.errorString())));
+        return false;
+    }
+    else {
+        stream.setDevice(&file);
+        stream.setByteOrder(QDataStream::LittleEndian);//BigEndian, LittleEndian
+        QFileInfo fi(filename);
+        int perSampleSize = numAiCurveData * 2; // number of ai channel * 2 bytes
+        totalSampleNum = fi.size() / perSampleSize;
+        if (totalSampleNum*numAiCurveData < MAX_AI_DI_SAMPLE_NUM) {
+            if (!readStreamToWaveforms())
+                return false;
+            isReadFromFile = false;
+            file.close();
+        }
+        else {
+            isReadFromFile = true;
+            maxy = 1000;
+            miny = -100;
+        }
+    }
+    return true;
+}
+
+double AiWaveform::convertRawToVoltage(short us)
+{
+    int wus; // warp arounded value
+    if (us < (int)MIN_VALUE) // if 'us' is too negative value then probably it was positive
+                             // value overflowed the maximum value so we wrap around
+        wus = (int)us + 2 * (PIEZO_10V_UINT16_VALUE + 1);
+    else
+        wus = (int)us;
+    return static_cast<double>(wus)*1000. / PIEZO_10V_UINT16_VALUE; // int value to double(mV)
+}
+
+bool AiWaveform::readStreamToWaveforms()
+{
     for (int i = 0; i < numAiCurveData; i++) {
         aiData.push_back(QVector<int>()); // add empty vectors to rows
     }
@@ -2213,39 +2271,69 @@ AiWaveform::AiWaveform(QByteArray &data, int num)
         short us;
         int wus; // warp arounded value
         for (int j = 0; j < numAiCurveData; j++) {
-            aiStream >> us;
-            if (us < (int)MIN_VALUE) // if us is too negative value than wrap around
-                wus = (int)us + 2*(PIEZO_10V_UINT16_VALUE+1);
-            else
-                wus = (int)us;
-            double y = static_cast<double>(wus)*1000. / PIEZO_10V_UINT16_VALUE; // int value to double(mV)
+            stream >> us;
+            double y = convertRawToVoltage(us);
             if (y > maxy) maxy = y;
             if (y < miny) miny = y;
             aiData[j].push_back(y);
         }
     }
+    return true;
 }
 
 bool AiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, long long end, int downSampleRate)
 {
-    if (end >= aiData[ctrlIdx].size())
-        return false;
-    for (long long i = begin, j = 0; i <= end; i += downSampleRate) {
-        dest.push_back(aiData[ctrlIdx][i]);
-        if (i >= end - downSampleRate + 1)
-            return true;
+    if (!numAiCurveData)
+        return true;
+    if (isReadFromFile) {
+        if (end >= totalSampleNum)
+            return false;
+        file.seek(0);
+        stream.skipRawData(sizeof(short)*(begin*numAiCurveData + ctrlIdx));
+        for (long long i = begin; i <= end; i += downSampleRate) {
+            short us;
+            stream >> us;
+            double y = convertRawToVoltage(us);
+            dest.push_back(y);
+            if (i >= end - downSampleRate + 1)
+                return true;
+            else
+                stream.skipRawData(sizeof(short)*(downSampleRate*numAiCurveData-1));
+        }
+    }
+    else {
+        if (end >= aiData[ctrlIdx].size())
+            return false;
+        for (long long i = begin; i <= end; i += downSampleRate) {
+            dest.push_back(aiData[ctrlIdx][i]);
+//            if (i >= end - downSampleRate + 1)
+//                return true;
+        }
+        return true;
     }
     return false;
 }
 
 bool AiWaveform::getSampleValue(int ctrlIdx, long long idx, int &value)
 {
-    if (idx >= aiData[ctrlIdx].size())
-        return false;
-    else {
-
-        value = aiData[ctrlIdx][idx];
+    if (!numAiCurveData)
         return true;
+    if (isReadFromFile) {
+        if (idx >= totalSampleNum)
+            return false;
+        file.seek(0);
+        stream.skipRawData(sizeof(short)*(idx*numAiCurveData + ctrlIdx));
+        short us;
+        stream >> us;
+        value = us; // short to int
+    }
+    else {
+        if (idx >= aiData[ctrlIdx].size())
+            return false;
+        else {
+            value = aiData[ctrlIdx][idx];
+            return true;
+        }
     }
 }
 
@@ -2260,41 +2348,155 @@ int AiWaveform::getMinyValue()
 }
 
 /***** DiWaveform class ******************************************************/
-DiWaveform::DiWaveform(QByteArray &data, QVector<int> diChNumList)
+DiWaveform::DiWaveform(QString filename, QVector<int> diChNumList)
 {
+    errorMsg.clear();
     numDiCurveData = diChNumList.size();
     if (!numDiCurveData)
         return;
-    QDataStream diStream(data);
-    int perSampleSize = 1; // 1 bytes
-    int perSignalSize = data.size() / perSampleSize;
-    totalSampleNum = (perSignalSize > MAX_AI_DI_SAMPLE_NUM) ? MAX_AI_DI_SAMPLE_NUM : perSignalSize;
+    chNumList = diChNumList;
+    readFile(filename);
+}
+
+DiWaveform::~DiWaveform()
+{
+    fileClose();
+}
+
+bool DiWaveform::fileClose()
+{
+    if (file.isOpen())
+        file.close();
+    totalSampleNum = 0;
+    return true;
+}
+
+bool DiWaveform::readFile(QString filename)
+{
+    // read di file
+    file.setFileName(filename);
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        errorMsg.append(QString(tr("Cannot read file %1:\n%2.")
+            .arg(filename)
+            .arg(file.errorString())));
+        return false;
+    }
+    else {
+        stream.setDevice(&file);
+        QFileInfo fi(filename);
+        int perSampleSize = 1;
+        totalSampleNum = fi.size() / perSampleSize;
+        if (totalSampleNum < MAX_AI_DI_SAMPLE_NUM) {
+            if (!readStreamToWaveforms())
+                return false;
+            isReadFromFile = false;
+        }
+        else {
+            if (!readStreamToCRLWaveforms())
+                return false;
+            isReadFromFile = true;
+        }
+        file.close();
+    }
+    return true;
+}
+
+bool DiWaveform::readStreamToWaveforms()
+{
     for (int i = 0; i < numDiCurveData; i++) {
         diData.push_back(QVector<int>()); // add empty vectors to rows
     }
-    for (int i = 0; i < totalSampleNum; i++)
+    for (long long i = 0; i < totalSampleNum; i++)
     {
         uInt8 us;
-        diStream >> us;
+        stream >> us;
         for (int j = 0; j < numDiCurveData; j++) {
-            if (us &(1 << diChNumList[j]))
+            if (us &(1 << chNumList[j]))
                 diData[j].push_back(1);
             else
                 diData[j].push_back(0);
         }
     }
+    return true;
+}
+
+
+bool DiWaveform::readStreamToCRLWaveforms()
+{
+    uInt8 us;
+    QVector<long long> runLength(numDiCurveData,1);
+    QVector<int> lastValue(numDiCurveData,0);
+    int currentValue;
+
+    for (int i = 0; i < numDiCurveData; i++) {
+        diCRLData.push_back(QVector<long long>()); // add empty vectors to rows
+        diData.push_back(QVector<int>()); // add empty vectors to rows
+    }
+
+    stream >> us;
+    for (int j = 0; j < numDiCurveData; j++) {
+        currentValue = (us &(1 << chNumList[j]))? 1 : 0;
+        lastValue[j] = currentValue;
+    }
+    for (long long i = 0; i < totalSampleNum-1; i++)
+    {
+        stream >> us;
+        for (int j = 0; j < numDiCurveData; j++) {
+            currentValue = (us &(1 << chNumList[j])) ? 1 : 0;
+            if (lastValue[j] == currentValue) {
+                runLength[j]++;
+            }
+            else {
+                diCRLData[j].push_back(runLength[j]);
+                diData[j].push_back(lastValue[j]);
+                lastValue[j] = currentValue;
+            }
+        }
+    }
+    for (int j = 0; j < numDiCurveData; j++) {
+        diCRLData[j].push_back(runLength[j]);
+        diData[j].push_back(lastValue[j]);
+    }
+    return true;
 }
 
 bool DiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, long long end, int downSampleRate)
 {
     if (!numDiCurveData)
         return true;
-    if (end >= diData[ctrlIdx].size())
+    if (end >= totalSampleNum)
         return false;
-    for (long long i = begin, j = 0; i <= end; i += downSampleRate) {
-        dest.push_back(diData[ctrlIdx][i]);
-        if (i >= end - downSampleRate + 1)
-            return true;
+    if (isReadFromFile) {
+        if (end >= totalSampleNum)
+            return false;
+        return readCRLWaveform(dest, ctrlIdx, begin, end, downSampleRate);
+    }
+    else {
+        for (long long i = begin; i <= end; i += downSampleRate) {
+            dest.push_back(diData[ctrlIdx][i]);
+//            if (i >= end - downSampleRate + 1)
+//                return true;
+        }
+        return true;
+    }
+    return false;
+}
+
+bool DiWaveform::readCRLWaveform(QVector<int> &dest, int ctrlIdx, long long begin, long long end, int downSampleRate)
+{
+    if (!numDiCurveData)
+        return true;
+    if (end >= totalSampleNum)
+        return false;
+    long long i = begin;
+    for(long long j = 0; j < diCRLData[ctrlIdx].size(); j++) {
+        while (i < diCRLData[ctrlIdx][j]) {
+            dest.push_back(diData[ctrlIdx][j]);
+            i += downSampleRate;
+            if (i > end)
+                return true;
+        }
     }
     return false;
 }
@@ -2303,10 +2505,18 @@ bool DiWaveform::getSampleValue(int ctrlIdx, long long idx, int &value)
 {
     if (!numDiCurveData)
         return true;
-    if (idx >= diData[ctrlIdx].size())
-        return false;
-    else {
-        value = diData[ctrlIdx][idx];
+    if (isReadFromFile) {
+        if (idx >= totalSampleNum)
+            return false;
+        long long j = -1;
+        while (idx < diCRLData[ctrlIdx][++j]);
+        value = diData[ctrlIdx][j];
         return true;
     }
+    else {
+        if (idx >= diData[ctrlIdx].size())
+            return false;
+        value = diData[ctrlIdx][idx];
+    }
+    return true;
 }

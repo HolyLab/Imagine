@@ -1824,7 +1824,7 @@ bool Imagine::applySetting()
     }
     else {
         expTriggerModeStr = ui.comboBoxExpTriggerMode->currentText();
-        dataAcqThread->sampleRate = 100000; // Hard coded
+        dataAcqThread->sampleRate = 50000; // Hard coded (ocpi-1 cannot work with 100000)
         dataAcqThread->nStacksUser = ui.spinBoxNumOfStacks->value();
         dataAcqThread->nFramesPerStackUser = ui.spinBoxFramesPerStack->value();
         dataAcqThread->idleTimeBwtnStacks = ui.doubleSpinBoxBoxIdleTimeBtwnStacks->value();
@@ -3341,6 +3341,9 @@ void Imagine::on_btnReadAiWavOpen_clicked()
     if (seekField("[general]", "rig", in, container)) {
         ui.lableAiDiWavRigname->setText(container);
     }
+    if (seekField("[ai]", "scan rate", in, container)) {
+        ui.labelAiDiSampleRate->setText(container);
+    }
     if (seekField("[misc params]", "ai data file", in, container)) {
         if (container != "NA")
             aiFilename = m_OpenDialogLastDirectory + '/' + container.section("/", -1, -1);
@@ -3382,10 +3385,11 @@ void Imagine::on_btnReadAiWavOpen_clicked()
     }
     file.close();
     QByteArray data;
+    /*
     // read ai file
     if (aiFilename != "NA") {
         file.setFileName(aiFilename);
-        if (!file.open(QFile::ReadOnly)) {
+        if (!file.open(QFile::ReadOnly)) {// if we are to use iostream, QIODevice
             QMessageBox::warning(this, tr("Imagine"),
                 tr("Cannot read file %1:\n%2.")
                 .arg(aiFilename)
@@ -3393,30 +3397,34 @@ void Imagine::on_btnReadAiWavOpen_clicked()
             numAiCurveData = 0;
         }
         else {
+            //data.resize(1000000);
+            //QDataStream in(&file);
+            //in.readRawData(data.data(), 1000000);// skipRawData()
             data = file.readAll();
             file.close();
         }
     }
-    if (aiWaveData)
-        delete aiWaveData;
-    aiWaveData = new AiWaveform(data, numAiCurveData); // load data to aiWaveData
+    */
+    if (aiFilename != "NA") {
+        if (aiWaveData)
+            delete aiWaveData;
+        aiWaveData = new AiWaveform(aiFilename, numAiCurveData); // load data to aiWaveData
+        if (aiWaveData->getErrorMsg() != "") {
+            QMessageBox::warning(this, "Imagine", aiWaveData->getErrorMsg());
+            numAiCurveData = 0;
+        }
+    }
 
     // read di file
     if (diFilename != "NA") {
-        file.setFileName(diFilename);
-        if (!file.open(QFile::ReadOnly)) {
-            QMessageBox::warning(this, tr("Imagine"),
-                tr("Cannot read file %1:\n%2.")
-                .arg(diFilename)
-                .arg(file.errorString()));
-            return;
+        if (diWaveData)
+            delete diWaveData;
+        diWaveData = new DiWaveform(diFilename, diChNumList); // load data to diWaveData
+        if (diWaveData->getErrorMsg() != "") {
+            QMessageBox::warning(this, "Imagine", diWaveData->getErrorMsg());
+            numDiCurveData = 0;
         }
-        data = file.readAll();
-        file.close();
     }
-    if (diWaveData)
-        delete diWaveData;
-    diWaveData = new DiWaveform(data, diChNumList); // load data to diWaveData
 
     int err = NO_CF_ERROR; // for later use
     if (err == NO_CF_ERROR) {
@@ -3464,12 +3472,20 @@ void Imagine::on_btnReadAiWavOpen_clicked()
         }
 
         // GUI waveform y axis display value adjusting box setup
-        if (numAiCurveData)
-            ui.sbAiDiDsplyTop->setValue(aiWaveData->getMaxyValue() + 50);
-        else
+        if (numAiCurveData) {
+            int maxy = aiWaveData->getMaxyValue();
+            int miny = aiWaveData->getMinyValue();
+            ui.sbAiDiDsplyTop->setValue(maxy + 50);
+            ui.sbAiDiDsplyBottom->setValue(miny - 50);
+            ui.sbAiDiDsplyTop->setMinimum(-1500);
+            ui.sbAiDiDsplyTop->setMaximum(1500);
+            ui.sbAiDiDsplyBottom->setMinimum(-1500);
+            ui.sbAiDiDsplyBottom->setMaximum(1500);
+        }
+        else {
             ui.sbAiDiDsplyTop->setValue(200);
-        ui.sbAiDiDsplyTop->setMinimum(0);
-        ui.sbAiDiDsplyTop->setMaximum(1000);
+            ui.sbAiDiDsplyBottom->setValue(0);
+        }
         // When current sbAiDiDsplyRight value is bigger than new maximum value
         // QT change current value as the new maximum value and this activate
         // sbAiDiDsplyRight_valueChanged signal. The slot of this signal calls
@@ -3544,6 +3560,8 @@ bool Imagine::loadAiDiWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx)
     if (curveIdx < numAiCurve) {
         amplitude = 1;
         yoffset = 0;
+        if (!aiWaveData)
+            return false;
         retVal = aiWaveData->readWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor);
         if (retVal) {
             curveData = new CurveData(aiWaveData->totalSampleNum); // parameter should not be xpoint.size()
@@ -3552,6 +3570,8 @@ bool Imagine::loadAiDiWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx)
     else if (curveIdx < numAiCurve + numDiCurve) {
         amplitude = 10;
         yoffset = (curveIdx- numAiCurve) * 15;
+        if (!diWaveData)
+            return false;
         retVal = diWaveData->readWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor);
         if (retVal) {
             curveData = new CurveData(diWaveData->totalSampleNum); // parameter should not be xpoint.size()
@@ -3718,32 +3738,46 @@ void Imagine::on_sbAiDiDsplyRight_valueChanged(int value)
 {
     int left = ui.sbAiDiDsplyLeft->value();
     ui.sbAiDiDsplyLeft->setMaximum(value);
-    updateAiDiWaveform(left, value);
-    conReadWavPlot->replot();
 }
 
 void Imagine::on_sbAiDiDsplyLeft_valueChanged(int value)
 {
     int right = ui.sbAiDiDsplyRight->value();
     ui.sbAiDiDsplyRight->setMinimum(value);
-    updateAiDiWaveform(value, right);
-    conReadWavPlot->replot();
 }
 
 void Imagine::on_sbAiDiDsplyTop_valueChanged(int value)
 {
-    conReadWavPlot->setAxisScale(QwtPlot::yLeft, MIN_Y, value);
+    int bottom = ui.sbAiDiDsplyBottom->value();
+    if (value < bottom)
+        return;
+    conReadWavPlot->setAxisScale(QwtPlot::yLeft, bottom, value);
     conReadWavPlot->replot();
 }
 
-void Imagine::on_btnAiDiDsplyReset_clicked()
+void Imagine::on_sbAiDiDsplyBottom_valueChanged(int value)
 {
+    int top = ui.sbAiDiDsplyTop->value();
+    if (value > top)
+        return;
+    conReadWavPlot->setAxisScale(QwtPlot::yLeft, value, top);
+    conReadWavPlot->replot();
+}
+
+void Imagine::on_btnAiDiDsplyReload_clicked()
+{
+    /*
     ui.sbAiDiDsplyLeft->setValue(0);
     ui.sbAiDiDsplyRight->setValue(dsplyTotalSampleNum - 1);
     if (numAiCurveData)
         ui.sbAiDiDsplyTop->setValue(aiWaveData->getMaxyValue() + 50);
     else
         ui.sbAiDiDsplyTop->setValue(200);
+        */
+    int left = ui.sbAiDiDsplyLeft->value();
+    int right = ui.sbAiDiDsplyRight->value();
+    updateAiDiWaveform(left, right);
+    conReadWavPlot->replot();
 }
 
 /***************** Waveform control *************************/

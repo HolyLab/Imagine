@@ -359,25 +359,35 @@ public:
 }; // ControlWaveform
 
 
-#define MAX_AI_DI_SAMPLE_NUM    4500000000 // 25Hr when sampleRate = 50000
+#define MAX_AI_DI_SAMPLE_NUM    100000000
 class AiWaveform : public Waveform {
     Q_OBJECT
 
 private:
+    QFile file;
     QVector<QVector<int>> aiData;
     int numAiCurveData;
     double maxy = 0, miny = INFINITY;
+    QDataStream stream;
+    bool isReadFromFile = false;
+    double convertRawToVoltage(short us);
 
 public:
-    AiWaveform(QByteArray &data, int num);
-    ~AiWaveform() {};
+    AiWaveform(QString filename, int num);
+    ~AiWaveform();
 
+    // Read file
+    bool readFile(QString filename);
+    // Read stream to waveforms
+    bool readStreamToWaveforms();
     // Read block
     bool readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, long long end, int downSampleRate);
     // Read single value
     bool getSampleValue(int ctrlIdx, long long idx, int &value);
     int getMaxyValue();
     int getMinyValue();
+    // Close open file
+    bool fileClose();
 };
 
 
@@ -385,17 +395,28 @@ class DiWaveform : public Waveform {
     Q_OBJECT
 
 private:
+    QFile file;
     QVector<QVector<int>> diData;
+    QVector<QVector<long long>> diCRLData;
     int numDiCurveData;
+    QVector<int> chNumList;
+    QDataStream stream;
+    bool isReadFromFile = false;
 
 public:
-    DiWaveform(QByteArray &data, QVector<int> diChNumList);
-    ~DiWaveform() {};
+    DiWaveform(QString filename, QVector<int> diChNumList);
+    bool readStreamToWaveforms();
+    bool readStreamToCRLWaveforms();
+    bool readFile(QString filename);
+    ~DiWaveform();
 
     // Read block
     bool readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, long long end, int downSampleRate);
+    bool readCRLWaveform(QVector<int> &dest, int ctrlIdx, long long begin, long long end, int downSampleRate);
     // Read single value
     bool getSampleValue(int ctrlIdx, long long idx, int &value);
+    // Close open file
+    bool fileClose();
 };
 
 
