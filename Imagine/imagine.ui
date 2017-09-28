@@ -233,7 +233,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>7</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -630,6 +630,13 @@
                 </widget>
                </item>
               </layout>
+             </item>
+             <item row="10" column="0">
+              <widget class="QCheckBox" name="cbBidirectionalImaging">
+               <property name="text">
+                <string>Bi-directional Imaging</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </widget>
@@ -1478,19 +1485,6 @@
           </property>
           <property name="text">
            <string>Move</string>
-          </property>
-         </widget>
-         <widget class="QCheckBox" name="cbBidirectionalImaging">
-          <property name="geometry">
-           <rect>
-            <x>130</x>
-            <y>370</y>
-            <width>141</width>
-            <height>17</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Bi-directional Imaging</string>
           </property>
          </widget>
          <widget class="QLabel" name="label_30">
@@ -3521,13 +3515,6 @@
             <property name="verticalSpacing">
              <number>4</number>
             </property>
-            <item row="1" column="3">
-             <widget class="QLabel" name="label_41">
-              <property name="text">
-               <string>#sample :</string>
-              </property>
-             </widget>
-            </item>
             <item row="4" column="1">
              <widget class="QLabel" name="label_44">
               <property name="layoutDirection">
@@ -3538,13 +3525,6 @@
               </property>
               <property name="alignment">
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLabel" name="label_36">
-              <property name="text">
-               <string>samples/sec :</string>
               </property>
              </widget>
             </item>
@@ -3571,26 +3551,13 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="2">
-             <widget class="QLabel" name="labelPiezoSampleRate">
-              <property name="layoutDirection">
-               <enum>Qt::LeftToRight</enum>
-              </property>
-              <property name="text">
-               <string>0</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
             <item row="5" column="1">
              <widget class="QLabel" name="label_45">
               <property name="text">
                <string>#frames/stack :</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
@@ -3639,25 +3606,12 @@
                <string>#frames/stack :</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
             <item row="9" column="2">
              <widget class="QLabel" name="labelFramesPerStackWav2">
-              <property name="layoutDirection">
-               <enum>Qt::LeftToRight</enum>
-              </property>
-              <property name="text">
-               <string>0</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="4">
-             <widget class="QLabel" name="labelSampleNumber">
               <property name="layoutDirection">
                <enum>Qt::LeftToRight</enum>
               </property>
@@ -3828,7 +3782,60 @@
               </item>
              </widget>
             </item>
-            <item row="3" column="4">
+            <item row="8" column="1">
+             <widget class="QLabel" name="label_84">
+              <property name="text">
+               <string>&lt;Camera2&gt; #stacks :</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLabel" name="label_36">
+              <property name="text">
+               <string>samples/sec :</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="2">
+             <widget class="QLabel" name="labelPiezoSampleRate">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="text">
+               <string>0</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLabel" name="lableConWavRigname">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Rig</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="3">
+             <widget class="QLabel" name="label_41">
+              <property name="text">
+               <string>#sample :</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
              <widget class="QPushButton" name="btnConWavList">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -3844,58 +3851,22 @@
               </property>
               <property name="maximumSize">
                <size>
-                <width>55</width>
+                <width>70</width>
                 <height>16777215</height>
                </size>
               </property>
               <property name="text">
-               <string>Signal list</string>
+               <string>Control info.</string>
               </property>
              </widget>
             </item>
-            <item row="8" column="1">
-             <widget class="QLabel" name="label_84">
-              <property name="text">
-               <string>&lt;Camera2&gt; #stacks :</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="2">
-             <widget class="QLabel" name="labelBidirection">
+            <item row="3" column="4">
+             <widget class="QLabel" name="labelSampleNumber">
               <property name="layoutDirection">
                <enum>Qt::LeftToRight</enum>
               </property>
               <property name="text">
-               <string>off</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QLabel" name="label_83">
-              <property name="text">
-               <string>Bi-direction :</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="3">
-             <widget class="QLabel" name="lableConWavRigname">
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Rig</string>
+               <string>0</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

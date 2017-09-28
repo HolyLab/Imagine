@@ -838,7 +838,6 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, DaqDi* di, ControlWa
         header << "piezo=start position: " << conWaveData->piezoStartPosUm << " um"
             << ";stop position: " << conWaveData->piezoStopPosUm << " um"
             << ";output scan rate: " << conWaveData->sampleRate
-            << ";bidirection: " << conWaveData->bidirection
             << endl << endl;
     }
     else {
@@ -948,7 +947,14 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, DaqDi* di, ControlWa
         << ";hend:" << camera.hend
         << ";vstart:" << camera.vstart
         << ";vend:" << camera.vend << endl
-        << "angle from horizontal (deg)=" << angle << endl << endl;
+        << "angle from horizontal (deg)=" << angle << endl;
+    if (isUsingWav) {
+        header << "bidirectional: " << isBiDirectionalImaging
+            << endl << endl;
+    }
+    else {
+        header << endl;
+    }
 
     header << "[laser]" << endl
         << "405nm on :" << conWaveData->getLaserDefaultTTL(1) << endl

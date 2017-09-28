@@ -114,7 +114,8 @@ using namespace std;
 #define STR_Cam2Metadata        "camera2"
 #define STR_Exposure1           "exposure time in seconds for camera1"
 #define STR_Exposure2           "exposure time in seconds for camera2"
-#define STR_BiDir               "bi-direction"
+#define STR_BiDirV1P0           "bi-direction"
+#define STR_BiDir               "bidirectional"
 #define STR_Stacks              "stacks"
 #define STR_Frames              "frames per stack"
 #define STR_GeneratedFrom       "generated from"
@@ -292,7 +293,8 @@ public:
     double exposureTime2 = 0;
     QString expTriggerModeStr1 = "External Start";
     QString expTriggerModeStr2 = "External Start";
-    bool bidirection = false;
+    bool bidirection1 = false;
+    bool bidirection2 = false;
     int maxPiezoPos;
     int maxPiezoSpeed;
     int maxLaserFreq;

@@ -1540,12 +1540,12 @@ void Imagine::closeEvent(QCloseEvent *event)
         (*slaveUi).groupBoxBlendingOption->show();
         (*slaveUi).cbCam2Enable->setChecked(false);
         (*slaveUi).cbCam2Enable->setVisible(false);
-        slaveImagine->masterImagine == NULL;
+        slaveImagine->masterImagine = NULL;
     }
     if (masterImagine != NULL) {
         masterImagine->ui.cbBothCamera->setChecked(false);
         masterImagine->ui.cbBothCamera->setVisible(false);
-        masterImagine->slaveImagine == NULL;
+        masterImagine->slaveImagine = NULL;
     }
 
     event->accept();
@@ -1721,7 +1721,12 @@ void Imagine::duplicateParameters(Ui_ImagineClass* destUi)
     if (destUi != NULL) {
         if (ui.cbBothCamera->isChecked()) {
             destUi->cbBothCamera->setChecked(true);
-            destUi->spinBoxNumOfStacks->setValue(ui.spinBoxNumOfStacks->value());
+            if(ui.cbBidirectionalImaging->isChecked() && !destUi->cbBidirectionalImaging->isChecked())
+                destUi->spinBoxNumOfStacks->setValue(ui.spinBoxNumOfStacks->value()/2);
+            else if(!ui.cbBidirectionalImaging->isChecked() && destUi->cbBidirectionalImaging->isChecked())
+                destUi->spinBoxNumOfStacks->setValue(ui.spinBoxNumOfStacks->value()*2);
+            else
+                destUi->spinBoxNumOfStacks->setValue(ui.spinBoxNumOfStacks->value());
             destUi->spinBoxFramesPerStack->setValue(ui.spinBoxFramesPerStack->value());
             destUi->doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(ui.doubleSpinBoxBoxIdleTimeBtwnStacks->value());
             destUi->comboBoxExpTriggerMode->setCurrentIndex(ui.comboBoxExpTriggerMode->currentIndex());
@@ -1807,19 +1812,20 @@ bool Imagine::applySetting()
 
     if ((*masterUi).cbWaveformEnable->isChecked()) { // waveform enabled
         dataAcqThread->sampleRate = conWaveDataUser->sampleRate;
-        dataAcqThread->isBiDirectionalImaging = conWaveDataUser->bidirection;
         dataAcqThread->conWaveData = conWaveDataUser;
         if (camera->getCameraID() == 1) {
             dataAcqThread->exposureTime = (*masterUi).doubleSpinBoxExpTimeWav1->value();
             dataAcqThread->nStacksUser = conWaveDataUser->nStacks1;
             dataAcqThread->nFramesPerStackUser = conWaveDataUser->nFrames1;
             expTriggerModeStr = (*masterUi).comboBoxExpTriggerModeWav1->currentText();
+            dataAcqThread->isBiDirectionalImaging = conWaveDataUser->bidirection1;
         }
         else {
             dataAcqThread->exposureTime = (*masterUi).doubleSpinBoxExpTimeWav2->value();
             dataAcqThread->nStacksUser = conWaveDataUser->nStacks2;
             dataAcqThread->nFramesPerStackUser = conWaveDataUser->nFrames2;
             expTriggerModeStr = (*masterUi).comboBoxExpTriggerModeWav2->currentText();
+            dataAcqThread->isBiDirectionalImaging = conWaveDataUser->bidirection2;
         }
     }
     else {
@@ -1831,7 +1837,7 @@ bool Imagine::applySetting()
         dataAcqThread->piezoStartPosUm = (*masterUi).doubleSpinBoxStartPos->value();
         dataAcqThread->piezoStopPosUm = (*masterUi).doubleSpinBoxStopPos->value();
         dataAcqThread->piezoTravelBackTime = (*masterUi).doubleSpinBoxPiezoTravelBackTime->value();
-        dataAcqThread->isBiDirectionalImaging = (*masterUi).cbBidirectionalImaging->isChecked();
+        dataAcqThread->isBiDirectionalImaging = ui.cbBidirectionalImaging->isChecked();
         dataAcqThread->exposureTime = ui.doubleSpinBoxExpTime->value();
     }
     dataAcqThread->nFramesPerStack = dataAcqThread->nStacksUser*dataAcqThread->nFramesPerStackUser;
@@ -1978,6 +1984,8 @@ bool Imagine::applySetting()
                 conWaveDataParam->expTriggerModeStr2 = expTriggerModeStr;
                 conWaveDataParam->exposureTime2 = dataAcqThreadCam2->exposureTime;
                 conWaveDataParam->cycleTime = max(dataAcqThreadCam1->cycleTime, dataAcqThreadCam2->cycleTime);
+                conWaveDataParam->bidirection1 = dataAcqThreadCam1->isBiDirectionalImaging;
+                conWaveDataParam->bidirection2 = dataAcqThreadCam2->isBiDirectionalImaging;
                 conWaveDataParam->enableCam1 = true;
                 conWaveDataParam->enableCam2 = true;
             }
@@ -1991,6 +1999,8 @@ bool Imagine::applySetting()
                     conWaveDataParam->nFrames2 = 0;
                     conWaveDataParam->enableCam1 = true;
                     conWaveDataParam->enableCam2 = false;
+                    conWaveDataParam->bidirection1 = dataAcqThread->isBiDirectionalImaging;
+                    conWaveDataParam->bidirection2 = false;
                 }
                 else {
                     conWaveDataParam->exposureTime1 = 0;
@@ -2001,13 +2011,14 @@ bool Imagine::applySetting()
                     conWaveDataParam->nFrames2 = dataAcqThread->nFramesPerStackUser;
                     conWaveDataParam->enableCam1 = false;
                     conWaveDataParam->enableCam2 = true;
+                    conWaveDataParam->bidirection1 = false;
+                    conWaveDataParam->bidirection2 = dataAcqThread->isBiDirectionalImaging;
                 }
                 conWaveDataParam->expTriggerModeStr1 = expTriggerModeStr;
                 conWaveDataParam->expTriggerModeStr2 = expTriggerModeStr;
                 conWaveDataParam->cycleTime = dataAcqThread->cycleTime;
             }
 
-            conWaveDataParam->bidirection = dataAcqThread->isBiDirectionalImaging;
             if (dataAcqThread->isBiDirectionalImaging && (dataAcqThread->nStacksUser % 2)) {
                 QMessageBox::critical(this, "Imagine", "Stack number should be even number in bi-dirctional acquisition mode"
                     , QMessageBox::Ok, QMessageBox::NoButton);
@@ -3910,10 +3921,6 @@ void Imagine::displayConWaveData()
         ui.labelFramesPerStackWav2->setText(QString("%1").arg(conWaveData->nFrames2));
         ui.comboBoxExpTriggerModeWav2->setCurrentText(conWaveData->expTriggerModeStr2);
     }
-    if (conWaveData->bidirection)
-        ui.labelBidirection->setText("on");
-    else
-        ui.labelBidirection->setText("off");
 
     // Waveform selection combobox setup
     QStringList aoList, doList;
@@ -4245,10 +4252,17 @@ void Imagine::on_btnWavDsplyReset_clicked()
 void Imagine::on_btnConWavList_clicked()
 {
     QString msg = "";
+    msg.append(QString("rig : %1\n")
+        .arg(conWaveData->rig));
     msg.append(QString("version : %1\n")
         .arg(conWaveData->version));
     msg.append(QString("generated from : %1\n\n")
         .arg(conWaveData->generatedFrom));
+    msg.append(QString("bidirectional(camera1) : %1\n")
+        .arg(conWaveData->bidirection1 ? "true" : "false"));
+    if((rig=="ocpi-2")|| (rig == "dummy"))
+        msg.append(QString("bidirectional(camera2) : %1\n\n")
+            .arg(conWaveData->bidirection2 ? "true" : "false"));
     for (int i = 0; i < conWaveData->getNumChannel(); i++) {
         QString sigName = conWaveData->getSignalName(i);
         if (sigName != "") {

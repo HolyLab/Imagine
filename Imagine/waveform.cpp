@@ -259,12 +259,14 @@ CFErrorCode ControlWaveform::parsing(void)
         nStacks1 = cam1metadata[STR_Stacks].toInt();
         nFrames1 = cam1metadata[STR_Frames].toInt();
         expTriggerModeStr1 = cam1metadata[STR_ExpTrigMode].toString();
+        bidirection1 = cam1metadata[STR_BiDir].toBool();
         if ((rig == "ocpi-2") || (rig == "dummy")) {
             cam2metadata = metadata[STR_Cam2Metadata].toObject();
             exposureTime2 = cam2metadata[STR_Exposure].toDouble();
             nStacks2 = cam2metadata[STR_Stacks].toInt();
             nFrames2 = cam2metadata[STR_Frames].toInt();
             expTriggerModeStr2 = cam2metadata[STR_ExpTrigMode].toString();
+            bidirection2 = cam2metadata[STR_BiDir].toBool();
             if (metadata.contains(STR_Cam2Metadata))
                 enableCam2 = true;
             else
@@ -277,17 +279,18 @@ CFErrorCode ControlWaveform::parsing(void)
         nStacks1 = metadata[STR_Stacks].toInt();
         nFrames1 = metadata[STR_Frames].toInt();
         expTriggerModeStr1 = "External Start";
+        bidirection1 = metadata[STR_BiDirV1P0].toBool();
         if ((rig == "ocpi-2") || (rig == "dummy")) {
             exposureTime2 = metadata[STR_Exposure2].toDouble();
             nStacks2 = nStacks1;
             nFrames2 = nFrames1;
             expTriggerModeStr2 = "External Start";
+            bidirection2 = bidirection1;
         }
     }
     analog = alldata[STR_Analog].toObject();
     digital = alldata[STR_Digital].toObject();
     wavelist = alldata[STR_WaveList].toObject();
-    bidirection = metadata[STR_BiDir].toBool();
     QStringList analogKeys = analog.keys();
     QStringList digitalKeys = digital.keys();
     QJsonObject obj;
@@ -1130,7 +1133,8 @@ void genWavBiDirection(QVariantList &vlarray, QVariantList refArray, int nDelay,
     conWavToRunLength(buf2, vlarray);
 }
 
-void genBiDirection(QVariantList &vlarray, QVariantList refArray, int nDelay, int nRising, int nIdleTime, int numOnSample)
+void genBiDirection(QVariantList &vlarray, QVariantList refArray, int nDelay, int nRising,
+            int nIdleTime, int numOnSample, bool bidirection)
 {
     int i;
     QVariantList buf1, buf2;
@@ -1154,7 +1158,10 @@ void genBiDirection(QVariantList &vlarray, QVariantList refArray, int nDelay, in
         next = buf1.at(i-1).toInt();
         if ((cur == 0) && (next == 1)) // riging edge
         //if ((cur == 1) && (next == 0)) // falling edge
+            if(bidirection)
                 buf2.push_back(1);
+            else
+                buf2.push_back(0);
         else
             buf2.push_back(0);
         cur = next;
@@ -1293,11 +1300,15 @@ int ControlWaveform::genControlFileJSON(void)
 CFErrorCode ControlWaveform::genDefaultControl(QString filename)
 {
     int nFrames, nStacks;
-    if (enableCam1) {
+    if ((enableCam1)&& (enableCam2)) {
+        nFrames = max(nFrames1, nFrames2);
+        nStacks = max(nStacks1, nStacks2);
+    }
+    else if (enableCam1) {
         nFrames = nFrames1;
         nStacks = nStacks1;
     }
-    else if (enableCam2) {
+    else {
         nFrames = nFrames2;
         nStacks = nStacks2;
     }
@@ -1319,7 +1330,7 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
     int piezoRisingSamples = nFrames*eachShutterCtrlSamples + 2*shutterControlMargin*sampleRate;
     //int piezoRisingSamples = (nFrames*frameTime + 2 * shutterControlMargin)*sampleRate;
     double minPiezoTravelBackTime = (double)abs(piezoStopPosUm - piezoStartPosUm) / (double)maxPiezoSpeed;
-    if (!bidirection&&(piezoTravelBackTime < minPiezoTravelBackTime)) {
+    if (!bidirection1 && !bidirection2 && (piezoTravelBackTime < minPiezoTravelBackTime)) {
         errorMsg.append(QString("Piezo travel back time is too short\n"));
         err |= ERR_TRAVELBACKTIME_SHORT;
         return err;
@@ -1367,15 +1378,15 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
     QJsonArray camera2_001;
     QJsonArray laser1_001;
 
-    if (bidirection) {
+    if (bidirection1 || bidirection2) {
         // bi-directional wave
-        genWavBiDirection(buf11, buf1, piezoDelaySamples, piezoRisingSamples, idleTimeSamples);
+        genWavBiDirection(buf11, buf1, piezoDelaySamples, piezoRisingSamples, idleTimeSamples); // piezo
         eachShutterOnSamples = exposureSamples1;
-        genBiDirection(buf22, buf2, piezoDelaySamples, piezoRisingSamples, idleTimeSamples, eachShutterOnSamples);
+        genBiDirection(buf22, buf2, piezoDelaySamples, piezoRisingSamples, idleTimeSamples, eachShutterOnSamples, bidirection1); // camera1
         eachShutterOnSamples = exposureSamples2;
-        genBiDirection(buf44, buf4, piezoDelaySamples, piezoRisingSamples, idleTimeSamples, eachShutterOnSamples);
+        genBiDirection(buf44, buf4, piezoDelaySamples, piezoRisingSamples, idleTimeSamples, eachShutterOnSamples, bidirection2); // camera2
         eachShutterOnSamples = stakShutterCtrlSamples;
-        genBiDirection(buf33, buf3, piezoDelaySamples, piezoRisingSamples, idleTimeSamples, eachShutterOnSamples);
+        genBiDirection(buf33, buf3, piezoDelaySamples, piezoRisingSamples, idleTimeSamples, eachShutterOnSamples, true); // laser
         piezo1_001 = QJsonArray::fromVariantList(buf11);
         camera1_001 = QJsonArray::fromVariantList(buf22);
         camera2_001 = QJsonArray::fromVariantList(buf44);
@@ -1412,7 +1423,7 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
         eachShutterCtrlSamples = valveOnSamples; // just one pulse
         eachShutterOnSamples = valveOnSamples; // all high
                                                // generating stimulus valve pulse
-        if (bidirection) {
+        if (bidirection1 || bidirection2) {
             QJsonArray valve_on_mirror;
             valveOnSamples = piezoRisingSamples + piezoDelaySamples + idleTimeSamples;
             valveOffSamples = 0;
@@ -1487,7 +1498,7 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
     QJsonObject ai4Mon, ai5Mon;
     QJsonObject laser1Mon, stimulus1Mon, stimulus2Mon;
     int repeat;
-    if (bidirection) {
+    if (bidirection1 || bidirection2) {
         repeat = nStacks / 2;
     }
     else {
@@ -1597,7 +1608,7 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
                     int cur_val = (valve[0] >> j) & 1;
                     for (int k = 1; k < valve.size(); k++) {
                         pre_val = cur_val;
-                        if (bidirection)
+                        if (bidirection1)
                             cur_val = (k % 2) ? ((valve[k] >> j) & 1) * 2 : // valve_on_mirror
                                                  (valve[k] >> j) & 1;       // valve_on
                         else
@@ -1647,29 +1658,20 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
         cam1metadata[STR_Exposure] = exposureTime1;
         cam1metadata[STR_ExpTrigMode] = expTriggerModeStr1;
         cam1metadata[STR_Frames] = nFrames1;
-        if (bidirection) {
-            cam1metadata[STR_Stacks] = repeat * 2;
-        }
-        else {
-            cam1metadata[STR_Stacks] = nStacks1;
-        }
+        cam1metadata[STR_BiDir] = bidirection1;
+        cam1metadata[STR_Stacks] = nStacks1;
         metadata[STR_Cam1Metadata] = cam1metadata;
     }
     if (enableCam2) {
         cam2metadata[STR_Exposure] = exposureTime2;
         cam2metadata[STR_ExpTrigMode] = expTriggerModeStr2;
         cam2metadata[STR_Frames] = nFrames2;
-        if (bidirection) {
-            cam2metadata[STR_Stacks] = repeat * 2;
-        }
-        else {
-            cam2metadata[STR_Stacks] = nStacks2;
-        }
+        cam2metadata[STR_BiDir] = bidirection2;
+        cam2metadata[STR_Stacks] = nStacks2;
         metadata[STR_Cam2Metadata] = cam2metadata;
     }
     metadata[STR_SampleRate] = sampleRate;
     metadata[STR_TotalSamples] = totalSamples;
-    metadata[STR_BiDir] = bidirection;
     metadata[STR_Rig] = rig;
     metadata[STR_GeneratedFrom] = STR_Imagine;
 
@@ -2043,13 +2045,13 @@ int ControlWaveform::genSinusoidal(bool bidir)
     int eachShutterOnSamples = exposureSamples;
     QVariantList buf11, buf22, buf33;
     // buf11: bi-directional wave
-    genBiDirection(buf11, buf1, piezoDelaySamples, getRunLengthSize(buf1) - piezoDelaySamples, idleTime, eachShutterOnSamples);
+    genBiDirection(buf11, buf1, piezoDelaySamples, getRunLengthSize(buf1) - piezoDelaySamples, idleTime, eachShutterOnSamples, true);
     QJsonArray piezo_cos = QJsonArray::fromVariantList(buf11);
     // buf22: bi-directional pulse
-    genBiDirection(buf22, buf2, piezoDelaySamples, getRunLengthSize(buf2) - piezoDelaySamples, idleTime, eachShutterOnSamples);
+    genBiDirection(buf22, buf2, piezoDelaySamples, getRunLengthSize(buf2) - piezoDelaySamples, idleTime, eachShutterOnSamples, true);
     QJsonArray pulse1_cos = QJsonArray::fromVariantList(buf22);
     // buf22: bi-directional pulse
-    genBiDirection(buf33, buf3, piezoDelaySamples, getRunLengthSize(buf3) - piezoDelaySamples, idleTime, eachShutterOnSamples);
+    genBiDirection(buf33, buf3, piezoDelaySamples, getRunLengthSize(buf3) - piezoDelaySamples, idleTime, eachShutterOnSamples, true);
     QJsonArray pulse2_cos = QJsonArray::fromVariantList(buf33);
 
     /// stimulus valve pulse ///
