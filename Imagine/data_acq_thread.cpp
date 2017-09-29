@@ -949,7 +949,7 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, DaqDi* di, ControlWa
         << ";vend:" << camera.vend << endl
         << "angle from horizontal (deg)=" << angle << endl;
     if (isUsingWav) {
-        header << "bidirectional: " << isBiDirectionalImaging
+        header << "bidirectional=" << isBiDirectionalImaging
             << endl << endl;
     }
     else {

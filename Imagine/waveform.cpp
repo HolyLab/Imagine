@@ -1340,7 +1340,7 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
     int piezoWaitSamples = (idleTimeBwtnStacks - piezoTravelBackTime)*sampleRate;
     if (idleTimeBwtnStacks < piezoTravelBackTime)
         err |= ERR_IDLETIME_SHORT;
-    int perStackSamples = piezoRisingSamples + piezoFallingSamples + piezoWaitSamples;
+    perStackSamples = piezoRisingSamples + piezoFallingSamples + piezoWaitSamples;
     genWaveform(buf1, zpos2Raw(piezoStartPosUm), zpos2Raw(piezoStopPosUm), piezoDelaySamples,
         piezoRisingSamples, piezoFallingSamples, perStackSamples);
 

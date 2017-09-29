@@ -1776,6 +1776,7 @@ bool Imagine::applySetting()
 
     QString headerFilename;
     Ui_ImagineClass* masterUi = NULL;    // master window
+    Ui_ImagineClass* slaveUi = NULL;    // slave window
     Camera* camera = dataAcqThread->pCamera;
     QString expTriggerModeStr;
     Camera::AcqTriggerMode acqTriggerMode;
@@ -1787,10 +1788,13 @@ bool Imagine::applySetting()
     if (masterImagine == NULL) { // Imagine (1)
         masterUi = &ui;
         masterDataAcqTh = dataAcqThread;
-        if (slaveImagine != NULL)
+        if (slaveImagine != NULL) {
             otherImagine = slaveImagine;
+            slaveUi = &(slaveImagine->ui);
+        }
     }
     else {                       // Imagine (2)
+        slaveUi = &ui;
         masterUi = &masterImagine->ui;
         masterDataAcqTh = masterImagine->dataAcqThread;
 // TMP        masterControlWav = masterImagine->conWaveData;
@@ -2038,10 +2042,41 @@ bool Imagine::applySetting()
             conWaveDataParam->genDefaultControl(headerFilename);
             dataAcqThread->conWaveData = conWaveDataParam;
             conWaveData = conWaveDataParam;
-            if(masterImagine != NULL)
+            double additionalIdleTime1, additionalIdleTime2;
+            long perStackSamples1, perStackSamples2;
+            if (ui.cbBothCamera->isChecked() &&
+                (conWaveDataParam->bidirection1 != conWaveDataParam->bidirection2)) {
+                    perStackSamples1 = (2-(int)conWaveDataParam->bidirection1)*conWaveDataParam->perStackSamples;
+                    perStackSamples2 = (2-(int)conWaveDataParam->bidirection2)*conWaveDataParam->perStackSamples;
+                    additionalIdleTime1 = (double)(perStackSamples1 - conWaveDataParam->perStackSamples)
+                                        / (double)conWaveDataParam->sampleRate;
+                    additionalIdleTime2 = (double)(perStackSamples2 - conWaveDataParam->perStackSamples)
+                                        / (double)conWaveDataParam->sampleRate;
+            }
+            else {
+                perStackSamples1 = conWaveDataParam->perStackSamples;
+                perStackSamples2 = conWaveDataParam->perStackSamples;
+                additionalIdleTime1 = 0.;
+                additionalIdleTime2 = 0.;
+            }
+            if (conWaveDataParam->enableCam1) {
+                double lastIdleTime = masterUi->doubleSpinBoxBoxIdleTimeBtwnStacks->value();
+//                masterUi->doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(lastIdleTime + additionalIdleTime1);
+                masterUi->labelPerStackTime->setText(QString("#time/stack(s) : %1(%2sample)")
+                    .arg((double)perStackSamples1 / (double)conWaveDataParam->sampleRate).arg(perStackSamples1));
+            }
+            if ((conWaveDataParam->enableCam2)&&slaveUi){
+                double lastIdleTime = slaveUi->doubleSpinBoxBoxIdleTimeBtwnStacks->value();
+//                slaveUi->doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(lastIdleTime + additionalIdleTime2);
+                slaveUi->labelPerStackTime->setText(QString("#time/stack(s) : %1(%2sample)")
+                    .arg((double)perStackSamples2 / (double)conWaveDataParam->sampleRate).arg(perStackSamples2));
+            }
+            if (masterImagine != NULL) {
                 masterImagine->displayConWaveData();
-            else
+            }
+            else {
                 displayConWaveData();
+            }
             if (conWaveData->getErrorMsg() != "") {
                 QMessageBox::critical(this, "Imagine", conWaveData->getErrorMsg(),
                     QMessageBox::Ok, QMessageBox::NoButton);
