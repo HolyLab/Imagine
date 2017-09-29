@@ -957,16 +957,16 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, DaqDi* di, ControlWa
     }
 
     header << "[laser]" << endl
-        << "405nm on :" << conWaveData->getLaserDefaultTTL(1) << endl
-        << "445nm on :" << conWaveData->getLaserDefaultTTL(2) << endl
-        << "488nm on :" << conWaveData->getLaserDefaultTTL(3) << endl
-        << "514nm on :" << conWaveData->getLaserDefaultTTL(4) << endl
-        << "561nm on :" << conWaveData->getLaserDefaultTTL(5) << endl
-        << "405nm percent intensity :" << conWaveData->laserIntensity[3] << endl
-        << "445nm percent intensity :" << conWaveData->laserIntensity[4] << endl
-        << "488nm percent intensity :" << conWaveData->laserIntensity[1] << endl
-        << "514nm percent intensity :" << conWaveData->laserIntensity[5] << endl
-        << "561nm percent intensity :" << conWaveData->laserIntensity[2] << endl;
+        << "405nm on=" << conWaveData->getLaserDefaultTTL(1) << endl
+        << "445nm on=" << conWaveData->getLaserDefaultTTL(2) << endl
+        << "488nm on=" << conWaveData->getLaserDefaultTTL(3) << endl
+        << "514nm on=" << conWaveData->getLaserDefaultTTL(4) << endl
+        << "561nm on=" << conWaveData->getLaserDefaultTTL(5) << endl
+        << "405nm percent intensity=" << conWaveData->laserIntensity[3] << endl
+        << "445nm percent intensity=" << conWaveData->laserIntensity[4] << endl
+        << "488nm percent intensity=" << conWaveData->laserIntensity[1] << endl
+        << "514nm percent intensity=" << conWaveData->laserIntensity[5] << endl
+        << "561nm percent intensity=" << conWaveData->laserIntensity[2] << endl;
 
     header.close();
 
