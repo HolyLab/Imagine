@@ -284,8 +284,8 @@ private:
     void updateAiDiWaveform(int leftEnd, int rightEnd);
     void updataSpeedData(CurveData *curveData, int newValue, int start, int end);
     bool waveformValidityCheck(void);
-    bool loadConWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx);
-    bool loadAiDiWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx);
+    bool loadConWavDataAndPlot(long long leftEnd, long long rightEnd, int curveIdx);
+    bool loadAiDiWavDataAndPlot(long long leftEnd, long long rightEnd, int curveIdx);
     bool readImagineFile(QString file, ImagineData &img);
     bool openAndReadCamFile(QString filename, ImagineData &img);
     bool setupPlayCamParam(ImagineData &img);
@@ -304,7 +304,7 @@ private:
     void showInCurve(int idx, bool checked);
     bool applySetting();
     void startAcqAndSave();
-    void duplicateParameters(Ui_ImagineClass* destUi);
+    bool duplicateParameters(Ui_ImagineClass* destUi);
     void scriptStopRecord();
     void scriptApplyAndReport(bool preRetVal);
     void scriptJustReport(bool preRetVal);

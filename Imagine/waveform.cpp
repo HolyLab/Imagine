@@ -229,6 +229,7 @@ CFErrorCode ControlWaveform::parsing(void)
     QJsonArray stimulus1, stimulus2, stimulus3, stimulus4;
     QJsonArray stimulus5, stimulus6, stimulus7, stimulus8;
 
+    errorMsg.clear();
     // Parsing
     // 1. Metadata
     version = alldata[STR_Version].toString();
@@ -250,25 +251,35 @@ CFErrorCode ControlWaveform::parsing(void)
     totalSampleNum = metadata[STR_TotalSamples].toInt();
     if (version == CF_VERSION) {
         generatedFrom = metadata[STR_GeneratedFrom].toString();
-        if (metadata.contains(STR_Cam1Metadata))
+        if (metadata.contains(STR_Cam1Metadata)) {
             enableCam1 = true;
+            cam1metadata = metadata[STR_Cam1Metadata].toObject();
+            exposureTime1 = cam1metadata[STR_Exposure].toDouble();
+            nStacks1 = cam1metadata[STR_Stacks].toInt();
+            nFrames1 = cam1metadata[STR_Frames].toInt();
+            expTriggerModeStr1 = cam1metadata[STR_ExpTrigMode].toString();
+            bidirection1 = cam1metadata[STR_BiDir].toBool();
+            if ((expTriggerModeStr1 == "External Start") && !exposureTime1)
+                errorMsg.append(QString("Exposure for camera1 should not be zero in the 'External Start' trigger mode\n"));
+        }
         else
             enableCam1 = false;
-        cam1metadata = metadata[STR_Cam1Metadata].toObject();
-        exposureTime1 = cam1metadata[STR_Exposure].toDouble();
-        nStacks1 = cam1metadata[STR_Stacks].toInt();
-        nFrames1 = cam1metadata[STR_Frames].toInt();
-        expTriggerModeStr1 = cam1metadata[STR_ExpTrigMode].toString();
-        bidirection1 = cam1metadata[STR_BiDir].toBool();
         if ((rig == "ocpi-2") || (rig == "dummy")) {
-            cam2metadata = metadata[STR_Cam2Metadata].toObject();
-            exposureTime2 = cam2metadata[STR_Exposure].toDouble();
-            nStacks2 = cam2metadata[STR_Stacks].toInt();
-            nFrames2 = cam2metadata[STR_Frames].toInt();
-            expTriggerModeStr2 = cam2metadata[STR_ExpTrigMode].toString();
-            bidirection2 = cam2metadata[STR_BiDir].toBool();
-            if (metadata.contains(STR_Cam2Metadata))
+            if (metadata.contains(STR_Cam2Metadata)) {
                 enableCam2 = true;
+                cam2metadata = metadata[STR_Cam2Metadata].toObject();
+                exposureTime2 = cam2metadata[STR_Exposure].toDouble();
+                nStacks2 = cam2metadata[STR_Stacks].toInt();
+                nFrames2 = cam2metadata[STR_Frames].toInt();
+                expTriggerModeStr2 = cam2metadata[STR_ExpTrigMode].toString();
+                bidirection2 = cam2metadata[STR_BiDir].toBool();
+                if (metadata.contains(STR_Cam2Metadata))
+                    enableCam2 = true;
+                else
+                    enableCam2 = false;
+                if ((expTriggerModeStr2 == "External Start") && !exposureTime2)
+                    errorMsg.append(QString("Exposure for camera2 should not be zero in the 'External Start' trigger mode\n"));
+            }
             else
                 enableCam2 = false;
         }
@@ -299,7 +310,6 @@ CFErrorCode ControlWaveform::parsing(void)
 
     // 2. Read signal names and position them accoding to their channel names
     // - Analog signals (Output/Input)
-    errorMsg.clear();
     for (int i = 0; i < analogKeys.size(); i++) {
         obj = analog[analogKeys[i]].toObject();
         QString port = obj[STR_Channel].toString();
@@ -2392,12 +2402,12 @@ bool DiWaveform::readFile(QString filename)
         if (totalSampleNum < MAX_AI_DI_SAMPLE_NUM) {
             if (!readStreamToWaveforms())
                 return false;
-            isReadFromFile = false;
+            isCRLEncoded = false;
         }
         else {
             if (!readStreamToCRLWaveforms())
                 return false;
-            isReadFromFile = true;
+            isCRLEncoded = true;
         }
         file.close();
     }
@@ -2422,7 +2432,6 @@ bool DiWaveform::readStreamToWaveforms()
     }
     return true;
 }
-
 
 bool DiWaveform::readStreamToCRLWaveforms()
 {
@@ -2453,6 +2462,7 @@ bool DiWaveform::readStreamToCRLWaveforms()
                 diCRLData[j].push_back(runLength[j]);
                 diData[j].push_back(lastValue[j]);
                 lastValue[j] = currentValue;
+                runLength[j]++;
             }
         }
     }
@@ -2469,10 +2479,11 @@ bool DiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, 
         return true;
     if (end >= totalSampleNum)
         return false;
-    if (isReadFromFile) {
-        if (end >= totalSampleNum)
+    if (isCRLEncoded) {
+        if (readCRLWaveform(dest, ctrlIdx, begin, end, downSampleRate))
+            return true;
+        else
             return false;
-        return readCRLWaveform(dest, ctrlIdx, begin, end, downSampleRate);
     }
     else {
         for (long long i = begin; i <= end; i += downSampleRate) {
@@ -2492,7 +2503,8 @@ bool DiWaveform::readCRLWaveform(QVector<int> &dest, int ctrlIdx, long long begi
     if (end >= totalSampleNum)
         return false;
     long long i = begin;
-    for(long long j = 0; j < diCRLData[ctrlIdx].size(); j++) {
+    long long j;
+    for(j = 0; j < diCRLData[ctrlIdx].size(); j++) {
         while (i < diCRLData[ctrlIdx][j]) {
             dest.push_back(diData[ctrlIdx][j]);
             i += downSampleRate;
@@ -2507,7 +2519,7 @@ bool DiWaveform::getSampleValue(int ctrlIdx, long long idx, int &value)
 {
     if (!numDiCurveData)
         return true;
-    if (isReadFromFile) {
+    if (isCRLEncoded) {
         if (idx >= totalSampleNum)
             return false;
         long long j = -1;

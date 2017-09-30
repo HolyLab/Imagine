@@ -1716,10 +1716,14 @@ void Imagine::on_sbObjectiveLens_valueChanged(int newValue)
     ui.doubleSpinBoxUmPerPxlXy->setValue(6.5/ adjusted_mag); // PCO.Edge pixel size = 6.5um
 }
 
-void Imagine::duplicateParameters(Ui_ImagineClass* destUi)
+bool Imagine::duplicateParameters(Ui_ImagineClass* destUi)
 {
     if (destUi != NULL) {
         if (ui.cbBothCamera->isChecked()) {
+            if (ui.lineEditFilename->text() == destUi->lineEditFilename->text()) {
+                QMessageBox::critical(this, "Imagine", "Camera1 save file name and camera2 file name is same");
+                return false;
+            }
             destUi->cbBothCamera->setChecked(true);
             if(ui.cbBidirectionalImaging->isChecked() && !destUi->cbBidirectionalImaging->isChecked())
                 destUi->spinBoxNumOfStacks->setValue(ui.spinBoxNumOfStacks->value()/2);
@@ -1746,6 +1750,7 @@ void Imagine::duplicateParameters(Ui_ImagineClass* destUi)
             destUi->cbBothCamera->setChecked(false);
         }
     }
+    return true;
 }
 
 void Imagine::on_btnApply_clicked()
@@ -1759,7 +1764,8 @@ void Imagine::on_btnApply_clicked()
     }
 
     // If both camera capturing, duplicate camera parameters to the other camera setting
-    duplicateParameters(destUi);
+    if (!duplicateParameters(destUi))
+        return;
 
     isApplyCommander = true;
     applySetting();
@@ -1961,8 +1967,13 @@ bool Imagine::applySetting()
             img2.camFile.close();
 
     if (isApplyCommander) {
-        if (otherImagine != NULL) {
-            otherImagine->applySetting();
+        if (otherImagine) {
+            if (ui.cbBothCamera->isChecked())
+                otherImagine->applySetting();
+            else {
+                otherImagine->modified = true;
+                otherImagine->ui.btnApply->setEnabled(true);
+            }
         }
         if (!(*masterUi).cbWaveformEnable->isChecked()) { // waveform disabled
             if (conWaveDataParam)
@@ -2061,15 +2072,19 @@ bool Imagine::applySetting()
             }
             if (conWaveDataParam->enableCam1) {
                 double lastIdleTime = masterUi->doubleSpinBoxBoxIdleTimeBtwnStacks->value();
-//                masterUi->doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(lastIdleTime + additionalIdleTime1);
+                masterUi->doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(lastIdleTime + additionalIdleTime1);
                 masterUi->labelPerStackTime->setText(QString("#time/stack(s) : %1(%2sample)")
                     .arg((double)perStackSamples1 / (double)conWaveDataParam->sampleRate).arg(perStackSamples1));
             }
             if ((conWaveDataParam->enableCam2)&&slaveUi){
                 double lastIdleTime = slaveUi->doubleSpinBoxBoxIdleTimeBtwnStacks->value();
-//                slaveUi->doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(lastIdleTime + additionalIdleTime2);
+                slaveUi->doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(lastIdleTime + additionalIdleTime2);
                 slaveUi->labelPerStackTime->setText(QString("#time/stack(s) : %1(%2sample)")
                     .arg((double)perStackSamples2 / (double)conWaveDataParam->sampleRate).arg(perStackSamples2));
+            }
+            if (ui.cbBothCamera->isChecked()) {
+                otherImagine->modified = false;
+                otherImagine->ui.btnApply->setEnabled(false);
             }
             if (masterImagine != NULL) {
                 masterImagine->displayConWaveData();
@@ -2302,10 +2317,14 @@ void Imagine::set_safe_piezo_params()
     if (masterImagine == NULL) {
         cur_travel_back = (double)ui.doubleSpinBoxPiezoTravelBackTime->value();
         biDirection = ui.cbBidirectionalImaging->isChecked();
+        if(ui.cbBothCamera->isChecked() && slaveImagine)
+            biDirection |= slaveImagine->ui.cbBidirectionalImaging->isChecked();
     }
     else {
         cur_travel_back = (double)masterImagine->ui.doubleSpinBoxPiezoTravelBackTime->value();
-        biDirection = masterImagine->ui.cbBidirectionalImaging->isChecked();
+        biDirection = ui.cbBidirectionalImaging->isChecked();
+        if (ui.cbBothCamera->isChecked())
+            biDirection |= masterImagine->ui.cbBidirectionalImaging->isChecked();
     }
     if (!biDirection){
         //reset to respect maximum speed limit if necessary
@@ -2889,14 +2908,15 @@ void Imagine::writeSettings(QString file)
     WRITE_SETTING(prefs, doubleSpinBoxBoxIdleTimeBtwnStacks);
 //    WRITE_COMBO_SETTING(prefs, comboBoxAcqTriggerMode);
     WRITE_COMBO_SETTING(prefs, comboBoxExpTriggerMode);
+    WRITE_CHECKBOX_SETTING(prefs, cbBidirectionalImaging);
     WRITE_SETTING(prefs, spinBoxAngle);
     WRITE_SETTING(prefs, sbObjectiveLens);
     WRITE_SETTING(prefs, doubleSpinBoxUmPerPxlXy);
-    WRITE_COMBO_SETTING(prefs, comboBoxHorReadoutRate);
-    WRITE_COMBO_SETTING(prefs, comboBoxPreAmpGains);
-    WRITE_SETTING(prefs, spinBoxGain);
-    WRITE_COMBO_SETTING(prefs, comboBoxVertShiftSpeed);
-    WRITE_COMBO_SETTING(prefs, comboBoxVertClockVolAmp);
+//    WRITE_COMBO_SETTING(prefs, comboBoxHorReadoutRate);
+//    WRITE_COMBO_SETTING(prefs, comboBoxPreAmpGains);
+//    WRITE_SETTING(prefs, spinBoxGain);
+//    WRITE_COMBO_SETTING(prefs, comboBoxVertShiftSpeed);
+//    WRITE_COMBO_SETTING(prefs, comboBoxVertClockVolAmp);
     WRITE_BOOL_SETTING(prefs, isUsingSoftROI);
     WRITE_SETTING(prefs, spinBoxHstart);
     WRITE_SETTING(prefs, spinBoxHend);
@@ -2916,7 +2936,6 @@ void Imagine::writeSettings(QString file)
         WRITE_SETTING(prefs, spinBoxNumOfDecimalDigits);
         WRITE_SETTING(prefs, doubleSpinBoxPiezoTravelBackTime);
         WRITE_CHECKBOX_SETTING(prefs, cbAutoSetPiezoTravelBackTime);
-        WRITE_CHECKBOX_SETTING(prefs, cbBidirectionalImaging);
         prefs.endGroup();
 
         prefs.beginGroup("Stimuli");
@@ -2927,6 +2946,9 @@ void Imagine::writeSettings(QString file)
 
     prefs.beginGroup("Display");
     WRITE_SETTING(prefs, spinBoxDisplayAreaSize);
+    WRITE_SETTING(prefs, sbXTranslation);
+    WRITE_SETTING(prefs, sbYTranslation);
+    WRITE_SETTING(prefs, dsbRotationAngle);
     prefs.endGroup();
 
     if (masterImagine == NULL) {
@@ -2983,7 +3005,6 @@ void Imagine::readSettings(QString file)
         READ_SETTING(prefs, spinBoxNumOfDecimalDigits, ok, i, 0, Int);
         READ_SETTING(prefs, doubleSpinBoxPiezoTravelBackTime, ok, d, 0., Double);
         READ_CHECKBOX_SETTING(prefs, cbAutoSetPiezoTravelBackTime, false); // READ_CHECKBOX_SETTING
-        READ_CHECKBOX_SETTING(prefs, cbBidirectionalImaging, false); // READ_CHECKBOX_SETTING
         READ_COMBO_SETTING(prefs, comboBoxPositionerOwner, 0);
         prefs.endGroup();
 
@@ -3001,14 +3022,15 @@ void Imagine::readSettings(QString file)
     READ_SETTING(prefs, doubleSpinBoxBoxIdleTimeBtwnStacks, ok, d, 0.700, Double); // this should be loaded after doubleSpinBoxPiezoTravelBackTime
     //    READ_COMBO_SETTING(prefs, comboBoxAcqTriggerMode, 1);
     READ_COMBO_SETTING(prefs, comboBoxExpTriggerMode, 0);
+    READ_CHECKBOX_SETTING(prefs, cbBidirectionalImaging, false); // READ_CHECKBOX_SETTING
     READ_SETTING(prefs, spinBoxAngle, ok, i, 0, Int);
     READ_SETTING(prefs, sbObjectiveLens, ok, i, 20, Int);
     READ_SETTING(prefs, doubleSpinBoxUmPerPxlXy, ok, d, -1.0000, Double);
-    READ_COMBO_SETTING(prefs, comboBoxHorReadoutRate, 0);
-    READ_COMBO_SETTING(prefs, comboBoxPreAmpGains, 0);
-    READ_SETTING(prefs, spinBoxGain, ok, i, 0, Int);
-    READ_COMBO_SETTING(prefs, comboBoxVertShiftSpeed, 0);
-    READ_COMBO_SETTING(prefs, comboBoxVertClockVolAmp, 0);
+//    READ_COMBO_SETTING(prefs, comboBoxHorReadoutRate, 0);
+//    READ_COMBO_SETTING(prefs, comboBoxPreAmpGains, 0);
+//    READ_SETTING(prefs, spinBoxGain, ok, i, 0, Int);
+//    READ_COMBO_SETTING(prefs, comboBoxVertShiftSpeed, 0);
+//    READ_COMBO_SETTING(prefs, comboBoxVertClockVolAmp, 0);
     READ_BOOL_SETTING(prefs, isUsingSoftROI, false);
     READ_SETTING(prefs, spinBoxHstart, ok, i, 1, Int);
     READ_SETTING(prefs, spinBoxHend, ok, i, maxROIHSize, Int);
@@ -3018,6 +3040,9 @@ void Imagine::readSettings(QString file)
 
     prefs.beginGroup("Display");
     READ_SETTING(prefs, spinBoxDisplayAreaSize, ok, i, 0, Int);
+    READ_SETTING(prefs, sbXTranslation, ok, i, 0, Int);
+    READ_SETTING(prefs, sbYTranslation, ok, i, 0, Int);
+    READ_SETTING(prefs, dsbRotationAngle, ok, i, 0, Double);
     prefs.endGroup();
 
     if (masterImagine == NULL) {
@@ -3381,6 +3406,7 @@ void Imagine::on_btnReadAiWavOpen_clicked()
     QVector<QString> aiName, diName;
     QVector<int> diChNumList;
     int diChBase;
+    int sampleRate;
     bool valid, preSection = false, aiSection = false, diSection = false;
     numAiCurveData = 0;
     numDiCurveData = 0;
@@ -3388,6 +3414,7 @@ void Imagine::on_btnReadAiWavOpen_clicked()
         ui.lableAiDiWavRigname->setText(container);
     }
     if (seekField("[ai]", "scan rate", in, container)) {
+        sampleRate = container.toInt();
         ui.labelAiDiSampleRate->setText(container);
     }
     if (seekField("[misc params]", "ai data file", in, container)) {
@@ -3451,6 +3478,8 @@ void Imagine::on_btnReadAiWavOpen_clicked()
         }
     }
     */
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    QApplication::processEvents(); // to make setOverrideCursor effect
     if (aiFilename != "NA") {
         if (aiWaveData)
             delete aiWaveData;
@@ -3482,7 +3511,11 @@ void Imagine::on_btnReadAiWavOpen_clicked()
             dsplyTotalSampleNum = aiSampleNum;
         else
             dsplyTotalSampleNum = diSampleNum;
-        ui.labelAiSampleNum->setText(QString("%1").arg(dsplyTotalSampleNum));
+        int sec = dsplyTotalSampleNum / sampleRate;
+        int min = sec / 60; sec -= min * 60;
+        int hour = min / 60; min -= hour * 60;
+        ui.labelAiSampleNum->setText(QString("%1 (%2h %3m %4s)")
+            .arg(dsplyTotalSampleNum).arg(hour).arg(min).arg(sec));
 
         // Waveform selection combobox setup
         QStringList aiList, diList;
@@ -3568,10 +3601,11 @@ void Imagine::on_btnReadAiWavOpen_clicked()
             QMessageBox::critical(this, "Imagine", diWaveData->getErrorMsg(),
                 QMessageBox::Ok, QMessageBox::NoButton);
         }
+        QApplication::restoreOverrideCursor();
     }
 }
 
-bool Imagine::loadAiDiWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx)
+bool Imagine::loadAiDiWavDataAndPlot(long long leftEnd, long long rightEnd, int curveIdx)
 {
     int retVal;
     int curveDataSampleNum = 50000;
@@ -3659,6 +3693,7 @@ void Imagine::updateAiDiWaveform(int leftEnd, int rightEnd)
     ui.sbAiDiDsplyLeft->setMinimum(0);
     ui.sbAiDiDsplyLeft->setMaximum(rightEnd);
     ui.sbAiDiDsplyRight->setMinimum(leftEnd);
+    QApplication::restoreOverrideCursor();
 }
 
 void Imagine::showInCurve(int idx, bool checked)
@@ -3820,6 +3855,7 @@ void Imagine::on_btnAiDiDsplyReload_clicked()
     else
         ui.sbAiDiDsplyTop->setValue(200);
         */
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     int left = ui.sbAiDiDsplyLeft->value();
     int right = ui.sbAiDiDsplyRight->value();
     updateAiDiWaveform(left, right);
@@ -4014,7 +4050,7 @@ void Imagine::displayConWaveData()
     }
 }
 
-bool Imagine::loadConWavDataAndPlot(int leftEnd, int rightEnd, int curveIdx)
+bool Imagine::loadConWavDataAndPlot(long long leftEnd, long long rightEnd, int curveIdx)
 {
     int retVal;
     int curveDataSampleNum = 50000; //100000

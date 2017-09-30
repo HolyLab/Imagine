@@ -376,21 +376,23 @@ private:
     double convertRawToVoltage(short us);
 
 public:
+    QVector<int> dest;
+
     AiWaveform(QString filename, int num);
     ~AiWaveform();
 
     // Read file
+    bool readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, long long end, int downSampleRate);
     bool readFile(QString filename);
     // Read stream to waveforms
     bool readStreamToWaveforms();
-    // Read block
-    bool readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, long long end, int downSampleRate);
     // Read single value
     bool getSampleValue(int ctrlIdx, long long idx, int &value);
     int getMaxyValue();
     int getMinyValue();
     // Close open file
     bool fileClose();
+    // Read block
 };
 
 
@@ -404,14 +406,14 @@ private:
     int numDiCurveData;
     QVector<int> chNumList;
     QDataStream stream;
-    bool isReadFromFile = false;
+    bool isCRLEncoded = false;
 
 public:
     DiWaveform(QString filename, QVector<int> diChNumList);
+    ~DiWaveform();
     bool readStreamToWaveforms();
     bool readStreamToCRLWaveforms();
     bool readFile(QString filename);
-    ~DiWaveform();
 
     // Read block
     bool readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, long long end, int downSampleRate);
