@@ -10,7 +10,10 @@ if(rig=="dummy"){
 	var diname = "Dev2/port0/line7";
 	var aoname = "Dev2/ao";
 	var ainame = "Dev2/ai";
-	var maxlaserfreq = "25";
+	var maxlaserfreq = "1000"; // this shutter is fast but temporally set as 1000
+	var maxgalvospeed = "100"; // 100V/sec
+	var mingalvovoltage = "-10"; // 100V/sec
+	var maxgalvovoltage = "10"; // 100V/sec
 }
 
 
@@ -72,6 +75,9 @@ if(rig=="ocpi-2"){
 	var aoname = "Dev2/ao";
 	var ainame = "Dev2/ai";
 	var maxlaserfreq = "1000"; // this shutter is fast but temporally set as 1000
+	var maxgalvospeed = "100"; // 100V/sec
+	var mingalvovoltage = "-10"; // 100V/sec
+	var maxgalvovoltage = "10"; // 100V/sec
 }
 
 if (rig=="ocpi-1bidi") {

@@ -173,7 +173,7 @@
      <rect>
       <x>10</x>
       <y>120</y>
-      <width>408</width>
+      <width>417</width>
       <height>532</height>
      </rect>
     </property>
@@ -185,7 +185,7 @@
     </property>
     <property name="minimumSize">
      <size>
-      <width>408</width>
+      <width>417</width>
       <height>532</height>
      </size>
     </property>
@@ -233,7 +233,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>6</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -4382,6 +4382,47 @@
                </size>
               </property>
               <property name="text">
+               <string>Y min</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="sbWavDsplyBottom">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>42</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="accessibleDescription">
+               <string notr="true">no apply</string>
+              </property>
+              <property name="minimum">
+               <number>-5000000</number>
+              </property>
+              <property name="maximum">
+               <number>5000000</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_49">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
                <string>Y max</string>
               </property>
               <property name="alignment">
@@ -4406,8 +4447,11 @@
               <property name="accessibleDescription">
                <string notr="true">no apply</string>
               </property>
+              <property name="minimum">
+               <number>-5000000</number>
+              </property>
               <property name="maximum">
-               <number>50000000</number>
+               <number>5000000</number>
               </property>
              </widget>
             </item>
@@ -4462,22 +4506,6 @@
                <number>1000000000</number>
               </property>
              </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_14">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Maximum</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>30</width>
-                <height>3</height>
-               </size>
-              </property>
-             </spacer>
             </item>
             <item>
              <widget class="QPushButton" name="btnWavDsplyReset">

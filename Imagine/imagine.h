@@ -264,7 +264,7 @@ private:
     void updateIntenCurve(const Camera::PixelValue * frame,
         const int imageW, const int imageH, const int frameIdx);
     template<class Type> void setCurveData(CurveData *curveData, QwtPlotCurve *curve,
-        QVector<Type> &wave, int start, int end, int factor, int amplitude, int yoffset);
+        QVector<Type> &wave, int start, int end, int factor, double amplitude, double yoffset);
     bool checkRoi();
     bool loadPreset();
     void preparePlots();
@@ -470,6 +470,7 @@ private slots:
     void on_sbWavDsplyRight_valueChanged(int value);
     void on_sbWavDsplyLeft_valueChanged(int value);
     void on_sbWavDsplyTop_valueChanged(int value);
+    void on_sbWavDsplyBottom_valueChanged(int value);
     void on_btnWavDsplyReset_clicked();
     void on_btnConWavList_clicked();
     void on_sbAiDiDsplyRight_valueChanged(int value);

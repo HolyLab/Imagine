@@ -770,15 +770,16 @@ void Imagine::preparePlots()
                 Qt::darkGreen,  Qt::magenta,  Qt::darkYellow, Qt::darkMagenta, Qt::cyan };
     QwtText xTitle("Sample index");
     QwtText yTitle("Position");
+    QwtText aoDoyTitle("Voltage(mV)");
     QwtText aiDiyTitle("Voltage(mV)");
     //the control waveform
     conWavPlot = new QwtPlot;// (ui.frameConWav);
     for (int i = 0; i < numAoCurve + numDoCurve; i++) {
         outCurve.push_back(new QwtPlotCurve(QString("Signal out curve %1").arg(i)));
-        prepareCurve(outCurve[i], conWavPlot, xTitle, yTitle, curveColor[i]);
+        prepareCurve(outCurve[i], conWavPlot, xTitle, aoDoyTitle, curveColor[i]);
     }
     piezoSpeedCurve = new QwtPlotCurve("Positioner max speed");
-    prepareCurve(piezoSpeedCurve, conWavPlot, xTitle, yTitle, Qt::cyan);
+    prepareCurve(piezoSpeedCurve, conWavPlot, xTitle, aoDoyTitle, Qt::cyan);
     ui.conWavLayout->addWidget(conWavPlot);
 
     //the read out waveform
@@ -1282,17 +1283,50 @@ void Imagine::startAcqAndSave()
     }
 
     //warn user if overwrite file:
-    if (QFile::exists(dataAcqThread->headerFilename) &&
-        QMessageBox::question(
-            this,
-            tr("Overwrite File? -- Imagine"),
-            tr("The file called \n   %1\n already exists. "
-                "Do you want to overwrite it?").arg(dataAcqThread->headerFilename),
-            tr("&Yes"), tr("&No"),
-            QString(), 0, 1)) {
-        return;
-    }//if, file exists and user don't want to overwrite it
-
+    QString filenames[] = { dataAcqThread->headerFilename,
+                dataAcqThread->aiFilename , dataAcqThread->diFilename };
+    QString existingFiles, unableToRemoveFiles;
+    int exist = 0, unableToRemove = 0;
+    QString title, text;
+    for (auto filename : filenames) {
+        if (QFile::exists(filename)) {
+            existingFiles.append(QString("%1 and ").arg(filename));
+            exist++;
+        }
+    }
+    if (exist) {
+        existingFiles.chop(5);
+        if (exist == 1) {
+            title = tr("Overwrite File? -- Imagine");
+            text = tr("The file called \n   %1\n already exists. "
+                "Do you want to overwrite it?").arg(existingFiles);
+        }
+        else {
+            title = tr("Overwrite Files? -- Imagine");
+            text = tr("The files called \n   %1\n already exist. "
+                "Do you want to overwrite them?").arg(existingFiles);
+        }
+        if (QMessageBox::question(this, title, text, tr("&Yes"), tr("&No"), QString(), 0, 1)) {
+            return;
+        }
+        else {
+            for (auto filename : filenames) {
+                if (QFile::exists(filename) && !QFile::remove(filename)) {
+                    unableToRemoveFiles.append(QString("%1 and ").arg(filename));
+                    unableToRemove++;
+                }
+            }
+            if (unableToRemove) {
+                unableToRemoveFiles.chop(5);
+                if (unableToRemove == 1)
+                    text = tr("Please check the file %1").arg(unableToRemoveFiles);
+                else
+                    text = tr("Please check the files %1").arg(unableToRemoveFiles);
+                QMessageBox::information(this, "Unable to overwrite", text);
+                return;
+            }
+        }//if, file exists and user don't want to overwrite it
+    }
     //warn user if there are params changes pending:
     if (modified &&
         QMessageBox::question(
@@ -3611,7 +3645,7 @@ bool Imagine::loadAiDiWavDataAndPlot(long long leftEnd, long long rightEnd, int 
     int curveDataSampleNum = 50000;
     int sampleNum = rightEnd - leftEnd + 1;
     int factor = sampleNum / curveDataSampleNum;
-    int amplitude, yoffset;
+    double amplitude, yoffset;
     QVector<int> dest;
     int ctrlIdx;
     CurveData *curveData = NULL;
@@ -3879,7 +3913,7 @@ void Imagine::updataSpeedData(CurveData *curveData, int newValue, int start, int
 }
 
 template<class Type> void Imagine::setCurveData(CurveData *curveData, QwtPlotCurve *curve,
-    QVector<Type> &wave, int start, int end, int factor, int amplitude, int yoffset)
+    QVector<Type> &wave, int start, int end, int factor, double amplitude, double yoffset)
 {
     for (int i = start; i <= end; i += factor)
         curveData->append(static_cast<double>(i), wave[(i - start) / factor] * amplitude + yoffset);
@@ -4035,9 +4069,13 @@ void Imagine::displayConWaveData()
 
     // GUI waveform y axis display value adjusting box setup
     Positioner *pos = dataAcqThread->pPositioner;
-    ui.sbWavDsplyTop->setValue(pos->maxPos() + 50);
-    ui.sbWavDsplyTop->setMinimum(0);
-    ui.sbWavDsplyTop->setMaximum(33000); // more than 32768
+//    ui.sbWavDsplyTop->setValue(pos->maxPos() + 50);
+    ui.sbWavDsplyTop->setValue(conWaveData->raw2Voltage(conWaveData->maxAnalogRaw) * 11); // max raw to 110mv
+    ui.sbWavDsplyTop->setMinimum(-110);
+    ui.sbWavDsplyTop->setMaximum(110); // more than 32768 if raw value
+    ui.sbWavDsplyBottom->setValue(conWaveData->raw2Voltage(conWaveData->minAnalogRaw) * 11);
+    ui.sbWavDsplyBottom->setMinimum(-110);
+    ui.sbWavDsplyBottom->setMaximum(110); // more than 32768 if raw value
     if (conWaveData->totalSampleNum>0)
         ui.sbWavDsplyRight->setMaximum(conWaveData->totalSampleNum - 1);
 
@@ -4056,7 +4094,7 @@ bool Imagine::loadConWavDataAndPlot(long long leftEnd, long long rightEnd, int c
     int curveDataSampleNum = 50000; //100000
     int sampleNum = rightEnd - leftEnd + 1;
     int factor = sampleNum / curveDataSampleNum;
-    int amplitude, yoffset;
+    double amplitude, yoffset;
     QVector<int> dest;
     int ctrlIdx;
     CurveData *curveData = NULL;
@@ -4078,12 +4116,12 @@ bool Imagine::loadConWavDataAndPlot(long long leftEnd, long long rightEnd, int c
     cBox = cbAoDo[curveIdx];
     // set curve position in the plot area
     if (curveIdx < numAoCurve) {
-        amplitude = 1;
+        amplitude = 100./ PIEZO_10V_UINT16_VALUE;
         yoffset = 0;
     }
     else if (curveIdx < numAoCurve + numDoCurve) {
-        amplitude = 10;
-        yoffset = (curveIdx - numAoCurve) * 15;
+        amplitude = 2;
+        yoffset = (curveIdx - numAoCurve) * 3;
     }
     if ((sigName == "") || (sigName == "empty"))
         return false;
@@ -4091,9 +4129,9 @@ bool Imagine::loadConWavDataAndPlot(long long leftEnd, long long rightEnd, int c
     dest.clear();
     ctrlIdx = conWaveData->getChannelIdxFromSig(sigName);
     if (conWaveData->getSignalName(ctrlIdx).right(5) == "piezo")
-        retVal = conWaveData->readControlWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor, PDT_Z_POSITION);
+        retVal = conWaveData->readControlWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor, PDT_RAW);
     else
-        retVal = conWaveData->readControlWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor); // TODO: for other analog signal, we need to display voltage?
+        retVal = conWaveData->readControlWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor, PDT_RAW); // TODO: for other analog signal, we need to display voltage?
     if (retVal) {
         curveData = new CurveData(conWaveData->totalSampleNum); // parameter should not be xpoint.size()
         setCurveData(curveData, curve, dest, leftEnd, rightEnd, factor, amplitude, yoffset);
@@ -4125,7 +4163,7 @@ void Imagine::updateControlWaveform(int leftEnd, int rightEnd)
     curveData = new CurveData(conWaveData->totalSampleNum);
     updataSpeedData(curveData, conWaveData->sampleRate, leftEnd, rightEnd);
     piezoSpeedCurve->setData(curveData);
-    conWavPlot->setAxisScale(QwtPlot::yLeft, 0, ui.sbWavDsplyTop->value());
+    conWavPlot->setAxisScale(QwtPlot::yLeft, ui.sbWavDsplyBottom->value(), ui.sbWavDsplyTop->value());
     conWavPlot->replot();
 
     // ui update
@@ -4308,7 +4346,15 @@ void Imagine::on_sbWavDsplyLeft_valueChanged(int value)
 
 void Imagine::on_sbWavDsplyTop_valueChanged(int value)
 {
-    conWavPlot->setAxisScale(QwtPlot::yLeft, 0, value);
+    int bottom = ui.sbWavDsplyBottom->value();
+    conWavPlot->setAxisScale(QwtPlot::yLeft, bottom, value);
+    conWavPlot->replot();
+}
+
+void Imagine::on_sbWavDsplyBottom_valueChanged(int value)
+{
+    int top = ui.sbWavDsplyTop->value();
+    conWavPlot->setAxisScale(QwtPlot::yLeft, value, top);
     conWavPlot->replot();
 }
 
@@ -4317,7 +4363,8 @@ void Imagine::on_btnWavDsplyReset_clicked()
     ui.sbWavDsplyLeft->setValue(0);
     ui.sbWavDsplyRight->setValue(conWaveData->totalSampleNum - 1);
     Positioner *pos = dataAcqThread->pPositioner;
-    ui.sbWavDsplyTop->setValue(pos->maxPos() + 50);
+    ui.sbWavDsplyTop->setValue(conWaveData->raw2Voltage(conWaveData->maxAnalogRaw) * 11); // max raw to 110mv
+    ui.sbWavDsplyBottom->setValue(conWaveData->raw2Voltage(conWaveData->minAnalogRaw) * 11);
 }
 
 void Imagine::on_btnConWavList_clicked()

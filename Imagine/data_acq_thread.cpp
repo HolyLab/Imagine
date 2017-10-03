@@ -618,6 +618,9 @@ void DataAcqThread::run_acq_and_save_wav()
             aiThread = new AiThread(ainame, 10000, 50000, scanRate, aiChanList,
                     sampleNum, pPositioner->getClkOut()); // TODO: set scanRate as the Maximum rate of external clock
             ofsAi = new ofstream(aiFilename.toStdString(), ios::binary | ios::out | ios::trunc);
+            if (ofsAi->fail()) {
+                emit newLogMsgReady("WARNING: unable to write ai file\n");
+            }
         }
         else {
             isAiEnable = false;
@@ -628,9 +631,13 @@ void DataAcqThread::run_acq_and_save_wav()
         QString diname = se->globalObject().property("diname").toString();
         vector<int> diChanList; // this list is not used for di channels
         int diBegin = p0InBegin - p0Begin;
+        isDiEnable = true;
         diThread = new DiThread(diname, 10000, 50000, scanRate, diChanList, diBegin,
                     sampleNum, pPositioner->getClkOut()); // TODO: set scanRate as the Maximum rate of external clock
         ofsDi = new ofstream(diFilename.toStdString(), ios::binary | ios::out | ios::trunc);
+        if (ofsDi->fail()) {
+            emit newLogMsgReady("WARNING: unable to write di file\n");
+        }
     }
     else {
         aiThread = nullptr;
@@ -750,17 +757,20 @@ nextStack:  //code below is repeated every stack
     this->setPriority(getDefaultPriority());
 
     if (hasPos && ownPos) {
-        while (!stopRequested && aiThread->isLeftToReadSamples()) { // wait until all daq samples are read
-            QThread::msleep(100);
+        if (!stopRequested && aiThread) { // wait until all daq samples are read
+            while(aiThread->isLeftToReadSamples())
+                QThread::msleep(100);
         }
-        if (isAiEnable) {
+        if (isAiEnable && aiThread) {
             aiThread->stopAcq();
             aiThread->save(*ofsAi);
             ofsAi->flush();
         }
-        diThread->stopAcq();
-        diThread->save(*ofsDi);
-        ofsDi->flush();
+        if (isDiEnable && diThread) {
+            diThread->stopAcq();
+            diThread->save(*ofsDi);
+            ofsDi->flush();
+        }
         pPositioner->abortCmd();
         //        pPositioner->resetDAQ();
         digOut->abortCmd();

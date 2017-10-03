@@ -153,6 +153,11 @@ using namespace std;
 #define STR_camera2_mon         "camera2 frame monitor"
 #define STR_camera_mon          "camera frame monitor"
 #define STR_stimuli_mon         "stimuli"
+#define STR_galvo               "galvo"
+#define STR_galvo1              "galvo1"
+#define STR_galvo2              "galvo2"
+#define STR_galvo1_mon          "galvo1 monitor"
+#define STR_galvo2_mon          "galvo2 monitor"
 
 enum CFErrorCode : unsigned int
 {
@@ -257,9 +262,13 @@ private:
         // Analog output (AO0 ~ AO3)                                // ctrlIdx
         { QString(STR_AOHEADER).append("0"), STR_axial_piezo },     // 0
         { QString(STR_AOHEADER).append("1"), STR_hor_piezo },
+        { QString(STR_AOHEADER).append("2"), STR_galvo1 },     // 0
+        { QString(STR_AOHEADER).append("3"), STR_galvo2 },
         // Analog input (AI0 ~ AI31)
         { QString(STR_AIHEADER).append("0"), STR_axial_piezo_mon }, // 4
         { QString(STR_AIHEADER).append("1"), STR_hor_piezo_mon },
+        { QString(STR_AIHEADER).append("2"), STR_galvo1_mon },
+        { QString(STR_AIHEADER).append("3"), STR_galvo2_mon },
         // Digital output (P0.0 ~ P0.23)
         { QString(STR_P0HEADER).append("4"), STR_all_lasers },      // 40
         { QString(STR_P0HEADER).append("5"), STR_camera1 },
@@ -298,6 +307,9 @@ public:
     int maxPiezoPos;
     int maxPiezoSpeed;
     int maxLaserFreq;
+    int minGalvoVol = 0;
+    int maxGalvoVol = 0;
+    int maxGalvoSpeed = 0;
     uInt32 laserTTLSig = 0;
     double laserIntensity[6] = {0, };
     int perStackSamples;
@@ -310,6 +322,7 @@ public:
     double idleTimeBwtnStacks;
     double piezoStartPosUm;
     double piezoStopPosUm;
+    double minAnalogRaw, maxAnalogRaw;
     bool applyStim;
     vector<pair<int, int> > *stimuli;
 
@@ -343,14 +356,17 @@ public:
     bool isPiezoWaveEmpty(void);
     bool isCameraPulseEmpty(void);
     bool isLaserPulseEmpty(void);
-    int raw2Zpos(int raw);
+    double raw2Zpos(int raw);
     int zpos2Raw(double pos);
     float64 raw2Voltage(int raw);
+    int voltage2Raw(float64 vol);
     // Waveform validity check
-    CFErrorCode positionerSpeedCheck(int maxPos, int maxSpeed, int ctrlIdx, int &dataSize);
-    CFErrorCode fullSpeedCheck(int maxPos, int maxSpeed, int ctrlIdx,
+    CFErrorCode positionerSpeedCheck(int maxPosSpeed, int minPos, int maxPos, int ctrlIdx, int &dataSize);
+    CFErrorCode galvoSpeedCheck(double maxVolSpeed, int minVol, int maxVol, int ctrlIdx, int &dataSize);
+    CFErrorCode analogSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx, int &dataSize);
+    CFErrorCode fullSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx,
         QVector <long long>&strt, QVector <long long>&stop, int &dataSize);
-    CFErrorCode fastSpeedCheck(int maxPos, int maxSpeed, int ctrlIdx, int &dataSize);
+    CFErrorCode fastSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx, int &dataSize);
     CFErrorCode laserSpeedCheck(double maxFreq, int ctrlIdx, int &dataSize);
     CFErrorCode cameraPulseNumCheck(int nTotalFrames, int ctrlIdx, int &nPulses, int &dataSize);
     CFErrorCode waveformValidityCheck();
