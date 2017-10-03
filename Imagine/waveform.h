@@ -348,6 +348,9 @@ public:
     float64 raw2Voltage(int raw);
     // Waveform validity check
     CFErrorCode positionerSpeedCheck(int maxPos, int maxSpeed, int ctrlIdx, int &dataSize);
+    CFErrorCode fullSpeedCheck(int maxPos, int maxSpeed, int ctrlIdx,
+        QVector <long long>&strt, QVector <long long>&stop, int &dataSize);
+    CFErrorCode fastSpeedCheck(int maxPos, int maxSpeed, int ctrlIdx, int &dataSize);
     CFErrorCode laserSpeedCheck(double maxFreq, int ctrlIdx, int &dataSize);
     CFErrorCode cameraPulseNumCheck(int nTotalFrames, int ctrlIdx, int &nPulses, int &dataSize);
     CFErrorCode waveformValidityCheck();

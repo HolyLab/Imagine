@@ -647,7 +647,7 @@ int findValuePos(QVector<int> *wav, QVector<int> *wav_p, long long begin, long l
     }
     else {
         if (sampleIdx >= wav->at(midIdx - 2)) {
-            return wav_p->at(midIdx / 2);
+            return wav_p->at(midIdx / 2 - 1);
         }
         else {
             x0 = begin;
@@ -675,7 +675,7 @@ float64 findValueVol(QVector<int> *wav, QVector<float64> *wav_v, long long begin
     }
     else {
         if (sampleIdx >= wav->at(midIdx - 2)) {
-            return wav_v->at(midIdx/2);
+            return wav_v->at(midIdx/2 - 1);
         }
         else {
             x0 = begin;
@@ -736,13 +736,83 @@ bool ControlWaveform::isLaserPulseEmpty(void)
 #define  SPEED_CHECK_INTERVAL 100
 CFErrorCode ControlWaveform::positionerSpeedCheck(int maxPos, int maxSpeed, int ctrlIdx, int &dataSize)
 {
+    int controlIdx, repeat, waveIdx;
+    long long idx = 0, idxStrt, idxStop;
+    bool isFullTest = false;
+    QVector <long long> shortWaveIdxStrt, shortWaveIdxStop;
+
+    dataSize = getCtrlSampleNum(ctrlIdx);
+    if (dataSize == 0)
+        return NO_CF_ERROR;
+
+    for (controlIdx = 0; controlIdx < controlList[ctrlIdx]->size(); controlIdx += 2) {
+        repeat = controlList[ctrlIdx]->at(controlIdx);
+        waveIdx = controlList[ctrlIdx]->at(controlIdx + 1);
+        int waveLength = getWaveSampleNum(waveIdx);
+        if (waveLength < SPEED_CHECK_INTERVAL) {
+            idxStrt = idx - SPEED_CHECK_INTERVAL;
+            if (idxStrt < 0) idxStrt = 0;
+            idxStop = idx + repeat*waveLength;
+            shortWaveIdxStrt.push_back(idxStrt);
+            shortWaveIdxStop.push_back(idxStop);
+        }
+        idx += repeat*waveLength;
+    }
+    CFErrorCode retVal = fastSpeedCheck(maxPos, maxSpeed, ctrlIdx, dataSize); // this is too slow
+    if ((retVal == NO_CF_ERROR) && !shortWaveIdxStrt.isEmpty())
+        return fullSpeedCheck(maxPos, maxSpeed, ctrlIdx, shortWaveIdxStrt, shortWaveIdxStop, dataSize);
+    else
+        return retVal;
+}
+
+CFErrorCode ControlWaveform::fullSpeedCheck(int maxPos, int maxSpeed, int ctrlIdx,
+    QVector <long long>&strt, QVector <long long>&stop, int &dataSize)
+{
+    qint16 rawWave0, rawWave1;
+    double distance, time, speed;
+    int wave0, wave1;
+
+    for (int i = 0; i < strt.size(); i++) {
+        // 1 Speed check : But, this cannot filter out periodic signal which has same period as 'interval'
+        long long end = (stop[i] < getCtrlSampleNum(ctrlIdx) - SPEED_CHECK_INTERVAL) ?
+            stop[i] : getCtrlSampleNum(ctrlIdx) - SPEED_CHECK_INTERVAL - 1;
+        for (long long j = strt[i]; j < end; j++) {
+            getCtrlSampleValue(ctrlIdx, j, rawWave0, PDT_RAW);
+            if (rawWave0 < 0) // Invalid position value
+                return ERR_PIEZO_VALUE_INVALID;
+            getCtrlSampleValue(ctrlIdx, j + SPEED_CHECK_INTERVAL, rawWave1, PDT_RAW);
+            distance = abs(rawWave1 - rawWave0); // original one was... abs(wave1 - wave0) - 1; Why '-1"?
+            if (distance > 1) {
+                speed = raw2Zpos((distance - 1) / time + 0.5); // piezostep/sec
+                if (speed > maxSpeed) {
+                    return ERR_PIEZO_SPEED_FAST;
+                }
+            }
+        }
+        // 2 Instantaneous change check : This will improve a defect of 1.
+        end = (stop[i] < getCtrlSampleNum(ctrlIdx) - 1) ?
+            stop[i] : getCtrlSampleNum(ctrlIdx) - 2;
+        getCtrlSampleValue(ctrlIdx, 0, wave0, PDT_Z_POSITION);
+        for (long long j = strt[i]; j < end; j++) {
+            getCtrlSampleValue(ctrlIdx, j, wave1, PDT_Z_POSITION);
+            if (abs(wave1 - wave0) >= 2)
+                return ERR_PIEZO_INSTANT_CHANGE;
+            wave0 = wave1;
+        }
+    }
+
+    return NO_CF_ERROR;
+}
+
+CFErrorCode ControlWaveform::fastSpeedCheck(int maxPos, int maxSpeed, int ctrlIdx, int &dataSize)
+{
     dataSize = getCtrlSampleNum(ctrlIdx);
     if (dataSize == 0)
         return NO_CF_ERROR;
     double distance, time, speed;
     int controlIdx, repeat, waveIdx;
     int sampleIdx, startSampleIdx = 0, prevStartSampleIdx, sampleIdxInWave;
-    QVector<bool> usedWaveIdx(waveList_Raw.size(),false);
+    QVector<bool> usedWaveIdx(waveList_Raw.size(), false);
     int wave0, wave1;
     qint16 rawWave0, rawWave1;
     int margin_interval, margin_instant;
@@ -753,8 +823,8 @@ CFErrorCode ControlWaveform::positionerSpeedCheck(int maxPos, int maxSpeed, int 
         repeat = controlList[ctrlIdx]->at(controlIdx);
         waveIdx = controlList[ctrlIdx]->at(controlIdx + 1);
         int waveLength = getWaveSampleNum(waveIdx);
-        if (waveLength < SPEED_CHECK_INTERVAL) // we don't allow short waveform
-            return ERR_SHORT_WAVEFORM;
+        if (waveLength < SPEED_CHECK_INTERVAL) // we skip short waveform
+            continue;
         if (usedWaveIdx[waveIdx] == false)
         {
             // 1. Check individual waveforms
@@ -775,7 +845,7 @@ CFErrorCode ControlWaveform::positionerSpeedCheck(int maxPos, int maxSpeed, int 
                     getWaveSampleValue(waveIdx, (i + SPEED_CHECK_INTERVAL) % getWaveSampleNum(waveIdx), rawWave1, PDT_RAW);
                     distance = abs(rawWave1 - rawWave0); // original one was... abs(wave1 - wave0) - 1; Why '-1"?
                     if (distance > 1) {
-                        speed = raw2Zpos((distance-1)/time + 0.5); // piezostep/sec
+                        speed = raw2Zpos((distance - 1) / time + 0.5); // piezostep/sec
                         if (speed > maxSpeed) {
                             return ERR_PIEZO_SPEED_FAST;
                         }
@@ -794,22 +864,25 @@ CFErrorCode ControlWaveform::positionerSpeedCheck(int maxPos, int maxSpeed, int 
         // 2. If control signal is compoused of several waveforms, we need to check connection points.
         if (controlIdx >= 2) {
             // 2.1 Speed check
-                // if we allow sort (if (waveLength < SPEED_CHECK_INTERVAL)) waveform
-                // TODO: just check actual point using readControlWaveform()
+            // if we allow sort (if (waveLength < SPEED_CHECK_INTERVAL)) waveform
+            // TODO: just check actual point using readControlWaveform()
             int oldWaveIdx = controlList[ctrlIdx]->at(controlIdx - 1);
+            int oldWaveLength = getWaveSampleNum(oldWaveIdx);
+            if (oldWaveLength < SPEED_CHECK_INTERVAL) // we skip short waveform
+                continue;
             for (int i = getWaveSampleNum(oldWaveIdx) - SPEED_CHECK_INTERVAL, j = 0; i < getWaveSampleNum(oldWaveIdx); i++, j++) {
                 getWaveSampleValue(oldWaveIdx, i, rawWave0, PDT_RAW);
                 getWaveSampleValue(waveIdx, j, rawWave1, PDT_RAW);
                 distance = abs(rawWave1 - rawWave0); // original one was... abs(wave1 - wave0) - 1; Why '-1"?
                 if (distance > 1) {
-                    speed = raw2Zpos((distance-1)/time + 0.5); // piezostep/sec
+                    speed = raw2Zpos((distance - 1) / time + 0.5); // piezostep/sec
                     if (speed > maxSpeed) {
                         return ERR_PIEZO_SPEED_FAST;
                     }
                 }
             }
             // 2.2 Instantaneous change check
-            getWaveSampleValue(oldWaveIdx, getWaveSampleNum(oldWaveIdx)-1, wave0, PDT_Z_POSITION);
+            getWaveSampleValue(oldWaveIdx, getWaveSampleNum(oldWaveIdx) - 1, wave0, PDT_Z_POSITION);
             getWaveSampleValue(waveIdx, 0, wave1, PDT_Z_POSITION);
             if (abs(wave1 - wave0) >= 2)
                 return ERR_PIEZO_INSTANT_CHANGE;
@@ -817,7 +890,6 @@ CFErrorCode ControlWaveform::positionerSpeedCheck(int maxPos, int maxSpeed, int 
     }
     return NO_CF_ERROR;
 }
-
 
 CFErrorCode ControlWaveform::cameraPulseNumCheck(int nTotalFrames, int ctrlIdx, int &nPulses, int &dataSize)
 {
