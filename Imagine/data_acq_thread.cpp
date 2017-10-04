@@ -568,7 +568,7 @@ void DataAcqThread::run_acq_and_save_wav()
     Timer_g gt;
     bool hasPos = pPositioner != NULL;
     bool useCam = true;
-    if (this->nStacks == 0) useCam = false;
+    if (this->nStacks == 0 && this->nStacksUser ==0) useCam = false;
 
     ///piezo feedback data file (only for PI piezo)
     string positionerFeedbackFile = replaceExtName(headerFilename, "pos").toStdString();
