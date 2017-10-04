@@ -101,6 +101,7 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     imagePlay->moveToThread(&imagePlayThread);
     connect(&imagePlayThread, &QThread::finished, imagePlay, &QObject::deleteLater);
     imagePlayThread.start(QThread::IdlePriority);
+    imagePlay->blockSignals(true);
     connect(this, &Imagine::startIndexRunning, imagePlay, &ImagePlay::indexRun);
     connect(imagePlay, &ImagePlay::nextIndexIsReady, this, &Imagine::readNextCamImages);
 
@@ -1994,11 +1995,21 @@ bool Imagine::applySetting()
 
     // if same filename .cam file is open, close it
     if (!dataAcqThread->camFilename.compare(img1.camFile.fileName(),Qt::CaseInsensitive))
-        if (img1.camFile.isOpen())
+        if (img1.camFile.isOpen()) {
+            setFrameIndexSpeed(0, 0);
+            setStackIndexSpeed(0, 0);
+            img1.valid = false;
+            img1.camValid = false;
             img1.camFile.close();
+        }
     if (!dataAcqThread->camFilename.compare(img2.camFile.fileName(),Qt::CaseInsensitive))
-        if (img2.camFile.isOpen())
+        if (img2.camFile.isOpen()) {
+            setFrameIndexSpeed(0, 0);
+            setStackIndexSpeed(0, 0);
+            img2.valid = false;
+            img2.camValid = false;
             img2.camFile.close();
+        }
 
     if (isApplyCommander) {
         if (otherImagine) {
@@ -4457,10 +4468,13 @@ bool Imagine::readImagineFile(QString filename, ImagineData &img)
 
 void Imagine::holdDisplayCamFile()
 {
+    imagePlay->blockSignals(true);
     ui.rbImgCameraEnable->setChecked(true);
     ui.cbImg1Enable->setChecked(true);
     img1.enable = false;
     img2.enable = false;
+    img1.camFile.close();
+    img2.camFile.close();
     reconfigDisplayTab();
 }
 
@@ -4501,6 +4515,7 @@ void Imagine::on_btnImg1LoadFile_clicked()
         return;
     }
     else {
+        minPixelValue = maxPixelValue = -1;
         ui.cbImg1Enable->setChecked(true);
         ui.lineEditImg1Filename->setText(filename);
         img1.enable = true;
@@ -4533,6 +4548,7 @@ void Imagine::on_btnImg2LoadFile_clicked()
         return;
     }
     else {
+        minPixelValue2 = maxPixelValue2 = -1;
         ui.cbImg2Enable->setChecked(true);
         ui.lineEditImg2Filename->setText(filename);
         img2.enable = true;
@@ -4679,8 +4695,6 @@ void Imagine::readCamFileImagesAndUpdate()
     if (succeed) {
         // update images with current zoom setting
         nUpdateImage = 0;
-        minPixelValue = maxPixelValue = -1;
-        minPixelValue2 = maxPixelValue2 = -1;
         if (img1.enable && img1.camValid && img2.enable && img2.camValid)
             updateDisplayColor(img1.camImage, img2.camImage, imgFrameIdx, imgWidth, imgHeight);
         else if (img1.enable && img1.camValid)
@@ -4815,7 +4829,7 @@ void Imagine::readNextCamImages(int stack1, int frameIdx1, int stack2, int frame
 
 void Imagine::setFrameIndexSpeed(int speed1, int speed2)
 {
-    if (img1.camValid) {
+    if (img1.valid&&img1.camValid) {
         img1.framePlaySpeed = speed1;
         imagePlay->framePlaySpeed1 = img1.framePlaySpeed;
         img1.stackPlaySpeed = 0;
@@ -4823,7 +4837,7 @@ void Imagine::setFrameIndexSpeed(int speed1, int speed2)
         imagePlay->stackPlaySpeed1 = 0;
         imagePlay->stackPlaySpeed2 = 0;
     }
-    if (img2.camValid) {
+    if (img2.valid&&img2.camValid) {
         img2.framePlaySpeed = speed2;
         imagePlay->framePlaySpeed2 = img2.framePlaySpeed;
         img1.stackPlaySpeed = 0;
@@ -4831,9 +4845,14 @@ void Imagine::setFrameIndexSpeed(int speed1, int speed2)
         imagePlay->stackPlaySpeed1 = 0;
         imagePlay->stackPlaySpeed2 = 0;
     }
-    if (!imagePlay->isRunning)
+    if (!imagePlay->isRunning) {
+        if(img1.stackPlaySpeed || img2.stackPlaySpeed || img1.framePlaySpeed || img2.framePlaySpeed)
+            imagePlay->blockSignals(false);
+        else
+            imagePlay->blockSignals(true);
         emit startIndexRunning(imgStackIdx, imgFrameIdx, img1.nStacks, img1.framesPerStack,
             imgStackIdx, imgFrameIdx, img2.nStacks, img2.framesPerStack);
+    }
 }
 
 void Imagine::on_pbFramePlayback_clicked()
@@ -4879,9 +4898,14 @@ void Imagine::setStackIndexSpeed(int speed1, int speed2)
         imagePlay->framePlaySpeed1 = 0;
         imagePlay->framePlaySpeed2 = 0;
     }
-    if(!imagePlay->isRunning)
+    if (!imagePlay->isRunning) {
+        if (img1.stackPlaySpeed || img2.stackPlaySpeed || img1.framePlaySpeed || img2.framePlaySpeed)
+            imagePlay->blockSignals(false);
+        else
+            imagePlay->blockSignals(true);
         emit startIndexRunning(imgStackIdx, imgFrameIdx, img1.nStacks, img1.framesPerStack,
             imgStackIdx, imgFrameIdx, img2.nStacks, img2.framesPerStack);
+    }
 }
 
 void Imagine::on_pbStackPlayback_clicked()
