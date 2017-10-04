@@ -40,6 +40,7 @@ bool ImagineScript::validityCheck(const QString &file1, const QString &file2)
 
 bool ImagineScript::record(const QString &file1, const QString &file2, long int timeout)
 {
+    recordStartTime = QTime::currentTime();
     long int elaspTime = 0;
     int sleepTimeInSec = 1;
     bool retVal;
@@ -58,18 +59,21 @@ bool ImagineScript::record(const QString &file1, const QString &file2, long int 
             elaspTime += sleepTimeInSec;
         }
 
+        recordEndTime = QTime::currentTime();
         if (shouldWait) {
             shouldWait = false;
-            // This can detect only masterImagine acq. error
+             // This can detect only masterImagine acq. error
             // TODO: Even when masterImagine acq. is ok, we need to detect
             // slaveImagine acq. and if it stuck we need to send stop recording signal to
-            // slaveImagine. Othewise, acq_and_save itself has to have timeout stop routine
+            // slaveImagine. Othewise, acq_and_save itself should have timeout stop routine
             return false;
         }
         return true;
     }
-    else
+    else {
+        recordEndTime = QTime::currentTime();
         return false;
+    }
 }
 
 bool ImagineScript::loadConfig(const QString &file1, const QString &file2)
@@ -115,6 +119,31 @@ bool ImagineScript::stopRecord()
     return retVal;
 }
 
+int ImagineScript::getTimeElapsed(DurationType dt)
+{
+    QTime now = QTime::currentTime();
+    int sec;
+    switch (dt)
+    {
+        case DT_RECORDSTRT_DAQSTRT:
+            sec = recordStartTime.secsTo(daqStartTime);
+            break;
+        case DT_DAQSTRT_DAQEND:
+            sec = daqStartTime.secsTo(daqEndTime);
+            break;
+        case DT_DAQEND_RECORDEND:
+            sec = daqEndTime.secsTo(recordEndTime);
+            break;
+        case DT_DAQEND_NOW:
+            sec = daqEndTime.secsTo(now);
+            break;
+        default:
+            sec = 0;
+            break;
+    }
+    return sec;
+}
+
 bool ImagineScript::sleep(long int time)
 {
     Sleep(time);
@@ -139,7 +168,6 @@ bool ImagineScript::setFilename(const QString &file1, const QString &file2)
 
     return retVal;
 }
-
 
 void readFilenames(QScriptContext *context, QString &file1, QString &file2)
 {
@@ -252,6 +280,14 @@ QScriptValue ImagineScript::stopRecordWrapper(QScriptContext *context, QScriptEn
     if (instance)
         return QScriptValue(engine, static_cast<ImagineScript*>(instance)->stopRecord());
 }
+
+QScriptValue ImagineScript::getTimeElapsedWrapper(QScriptContext *context, QScriptEngine *engine)
+{
+    DurationType durationType = (DurationType)context->argument(0).toUInt32();
+    if (instance)
+        return QScriptValue(engine, static_cast<ImagineScript*>(instance)->getTimeElapsed(durationType));
+}
+
 ImagineScript::ImagineScript(QString rig)
 {
     this->rig = rig;
@@ -276,6 +312,8 @@ ImagineScript::ImagineScript(QString rig)
     sEngine->globalObject().setProperty("getEstimatedRunTime", svEstimatedRunTime);
     QScriptValue svStopRecord = sEngine->newFunction(stopRecordWrapper);
     sEngine->globalObject().setProperty("stopRecord", svStopRecord);
+    QScriptValue svGetTimeElapsed = sEngine->newFunction(getTimeElapsedWrapper);
+    sEngine->globalObject().setProperty("getTimeElapsed", svGetTimeElapsed);
 }
 
 ImagineScript::~ImagineScript()

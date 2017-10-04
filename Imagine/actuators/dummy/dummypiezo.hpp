@@ -36,17 +36,20 @@ public:
    bool prepareCmd(bool useTrig);// { return true; }
    bool prepareCmdBuffered(ControlWaveform *conWaveData) { return true; }
    double zpos2voltage(double um);
-   bool runCmd(){ return true;}
+   bool runCmd() { daqStartTime = QTime::currentTime(); return true; }
    bool waitCmd(){ return true;}
    bool abortCmd(){ return true;}
    string getSyncOut() { return "";};
    string getClkOut() { return ""; };
    bool resetDAQ() { return true; }
+   QTime getDAQEndTime() { return QTime::currentTime(); };
+   QTime getDAQStartTime() { return daqStartTime; };
 
 private:
     int maxpos = 0;
     int maxspd = 0;
     QString setuptype;
+    QTime daqStartTime;
     void cleanup() { return; }
 
 };//class, DummyPiezo

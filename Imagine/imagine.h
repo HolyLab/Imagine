@@ -17,7 +17,7 @@
 #define IMAGINE_H
 
 #include <QtWidgets/QMainWindow>
-#include <QTimer>
+//#include <QTimer>
 #include <QThread>
 #include <QSettings>
 #include <QSplitter>
@@ -276,10 +276,10 @@ private:
     void changeLaserShuttersTTL(int line, bool onOff);
     // for laser control until this line
     void writeSettings(QString file);
-    void readSettings(QString file);
+    bool readSettings(QString file);
     void writeComments(QString file);
     void readComments(QString file);
-    void readControlWaveformFile(QString fn);
+    bool readControlWaveformFile(QString fn);
     void updateControlWaveform(int leftEnd, int rightEnd);
     void updateAiDiWaveform(int leftEnd, int rightEnd);
     void updataSpeedData(CurveData *curveData, int newValue, int start, int end);
@@ -308,10 +308,10 @@ private:
     void scriptStopRecord();
     void scriptApplyAndReport(bool preRetVal);
     void scriptJustReport(bool preRetVal);
-    void readConfigFiles(const QString &file1, const QString &file2);
+    bool readConfigFiles(const QString &file1, const QString &file2);
     bool outputFileValidCheck();
     void clearStimulus();
-    void readAndApplyStimulusFile(QString stimFilename);
+    bool readAndApplyStimulusFile(QString stimFilename);
     void clearConWavPlot();
     void rearrangeTabWindow();
     void displayConWaveData();
@@ -319,6 +319,7 @@ private:
     bool autoFindMismatchParameters(QByteArray &img1, QByteArray &img2, int width, int height);
     void displayImageUpdate(void);
     void calHomogeneousTramsformMatrix();
+    bool outputFileExistCheckNDelete(QVector<QString> &filenames);
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();

@@ -6,8 +6,10 @@
 
 DAQ_CALLBACK_FP NiDaqDo::nSampleCallback = nullptr;
 DAQ_CALLBACK_FP NiDaqAo::nSampleCallback = nullptr;
+DAQ_CALLBACK_FP NiDaqAo::doneCallback = nullptr;
 void* NiDaqDo::instance = nullptr;
 void* NiDaqAo::instance = nullptr;
+void* NiDaqAo::doneInstance = nullptr;
 
 double VolPiezo::zpos2voltage(double um)
 {
@@ -210,6 +212,22 @@ void VolPiezo::writeNextSamples(void)
     return;
 }
 
+void VolPiezo::writeCompleted(void)
+{
+    daqDoneTime = QTime::currentTime();
+    return;
+}
+
+QTime VolPiezo::getDAQEndTime(void)
+{
+    return daqDoneTime;
+}
+
+QTime VolPiezo::getDAQStartTime(void)
+{
+    return daqStartTime;
+}
+
 bool VolPiezo::prepareCmdBuffered(ControlWaveform *conWaveData)
 {
     if (ao) cleanup();
@@ -237,9 +255,13 @@ bool VolPiezo::prepareCmdBuffered(ControlWaveform *conWaveData)
     blockSize = ao->getBlockSize();
     ao->setNSampleCallback(CallbackWrapper, this);
     if (ao->isError()) goto error;
-    idx = 0;
-    ao->updateOutputBuf(readConWaveToBuffer(2 * blockSize));
+    ao->setTaskDoneCallback(taskDoneCallbackWrapper, this);
     if (ao->isError()) goto error;
+    idx = 0;
+    int readNum = readConWaveToBuffer(2 * blockSize);
+    ao->updateOutputBuf(readNum);
+    if (ao->isError()) goto error;
+    daqStartTime = QTime::currentTime();
 
     return true;
 

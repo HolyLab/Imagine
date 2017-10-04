@@ -23,7 +23,15 @@
 #include <QScriptProgram>
 #include <QScriptable>
 #include <QThread>
+#include <QTime>
 #include <string>
+
+typedef enum durationType {
+    DT_RECORDSTRT_DAQSTRT   = 0,
+    DT_DAQSTRT_DAQEND      = 1,
+    DT_DAQEND_RECORDEND   = 2,
+    DT_DAQEND_NOW          = 3
+} DurationType;
 
 class ImagineScript : public QObject
 {
@@ -40,7 +48,8 @@ private:
     bool sleep(long int time);
     bool setFilename(const QString &file1, const QString &file2);
     long int getEstimatedRunTime();
-
+    int getTimeElapsed(DurationType dt); // this returns elapsed time until this function
+                                     // is called after the last DAQ task was done
 public:
     static void *instance;
     QString errorMsg = "";
@@ -48,6 +57,10 @@ public:
     bool shouldWait = false;    // wait until Imagine function is done
     bool retVal;                // return value of Imagine function
     long int estimatedTime;
+    QTime recordStartTime;
+    QTime recordEndTime;
+    QTime daqStartTime;
+    QTime daqEndTime;
 
     ImagineScript(QString rig);
     ~ImagineScript();
@@ -75,6 +88,8 @@ public:
     static QScriptValue getEstimatedRunTimeWrapper(QScriptContext *context, QScriptEngine *engine);
     // stopRecord();
     static QScriptValue stopRecordWrapper(QScriptContext *context, QScriptEngine *engine);
+    // getTimeElapsedAfterDAQEnd();
+    static QScriptValue getTimeElapsedWrapper(QScriptContext *context, QScriptEngine *engine);
 
 public slots:
     bool scriptProgramEvaluate(void);

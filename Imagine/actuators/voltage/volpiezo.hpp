@@ -41,9 +41,15 @@ public:
     string getClkOut();
     int readConWaveToBuffer(int num);
     void writeNextSamples(void);
+    void writeCompleted(void);
     bool resetDAQ();
+    QTime getDAQEndTime(void);
+    QTime getDAQStartTime(void);
     static void CallbackWrapper(void* context) {
         static_cast<VolPiezo*>(context)->writeNextSamples();
+    }
+    static void taskDoneCallbackWrapper(void* context) {
+        static_cast<VolPiezo*>(context)->writeCompleted();
     }
 
 private:
@@ -59,6 +65,8 @@ private:
     int blockSize;
     ControlWaveform *conWaveData = NULL;
     int totalSample;
+    QTime daqStartTime; // to calculate overhead time around DAQ task
+    QTime daqDoneTime; // to calculate overhead time after DAQ task is done
 
     double zpos2voltage(double um);
     void cleanup();

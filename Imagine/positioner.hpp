@@ -80,6 +80,8 @@ public:
     virtual string getSyncOut() = 0;
     virtual string getClkOut() = 0;
     virtual bool resetDAQ() = 0;
+    virtual QTime getDAQEndTime() = 0;
+    virtual QTime getDAQStartTime() = 0;
 };//class, Positioner
 
 class DigitalControls { // camera shutter, laser on/off, stimuli on/off

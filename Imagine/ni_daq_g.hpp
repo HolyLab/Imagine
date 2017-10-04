@@ -131,7 +131,9 @@ class NiDaqAo: public NiDaq, public DaqAo {
 
 public:
    static DAQ_CALLBACK_FP nSampleCallback;
+   static DAQ_CALLBACK_FP doneCallback;
    static void *instance;
+   static void *doneInstance;
 
    //create ao channel and add the channel to task
    NiDaqAo(QString devstring, const vector<int> & chs): Daq(chs), NiDaq(chs), DaqAo(chs){
@@ -303,7 +305,7 @@ public:
     // To make this callback function be called for the first time,
     // DAQmxWriteDigitalU32 should be called from outside first.
     // When this DAQmxWriteDigitalU32 is called, two blocks of n samples should be written to the buffer.
-    // Once this callback is called, this function should call DAQmxWriteDigitalU32 repeatly.
+    // Once this callback is called, this function should call DAQmxWriteDigitalU32 repeatedly.
     // In these calls, one next block of n samples should be written to the buffer each time.
     // Actually, this is a wrapper for customized callback function (nSampleCallback).
     // This provide a required function format of this callback.
@@ -323,6 +325,22 @@ public:
        errorCode = DAQmxRegisterEveryNSamplesEvent(taskHandle,
            DAQmx_Val_Transferred_From_Buffer,
            blockSize, 0, aoEveryNCallback, dataF64);
+       return !isError();
+   }//setNSampleCallback
+
+   static int32 CVICALLBACK aoTaskDoneCallback(TaskHandle taskHandle, int32 status, void *callbackData)
+   {
+       if (doneCallback) {
+           doneCallback(doneInstance);
+       }
+       return 0;
+   }
+
+   // This registers aoEveryNCallback to every N sample event.
+   bool setTaskDoneCallback(DAQ_CALLBACK_FP callback, void* ins) {
+       doneCallback = callback;
+       doneInstance = ins;
+       errorCode = DAQmxRegisterDoneEvent(taskHandle, 0, aoTaskDoneCallback, dataF64);
        return !isError();
    }//setNSampleCallback
 

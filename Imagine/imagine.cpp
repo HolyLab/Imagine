@@ -994,6 +994,8 @@ void Imagine::updateStatus(const QString &str)
         if (reqFromScript) {
             reqFromScript = false;
             imagineScript->retVal = true;
+            imagineScript->daqStartTime = dataAcqThread->pPositioner->getDAQStartTime();
+            imagineScript->daqEndTime = dataAcqThread->pPositioner->getDAQEndTime();
             imagineScript->shouldWait = false;
         }
         return;
@@ -1284,50 +1286,13 @@ void Imagine::startAcqAndSave()
     }
 
     //warn user if overwrite file:
-    QString filenames[] = { dataAcqThread->headerFilename,
-                dataAcqThread->aiFilename , dataAcqThread->diFilename };
-    QString existingFiles, unableToRemoveFiles;
-    int exist = 0, unableToRemove = 0;
-    QString title, text;
-    for (auto filename : filenames) {
-        if (QFile::exists(filename)) {
-            existingFiles.append(QString("%1 and ").arg(filename));
-            exist++;
-        }
-    }
-    if (exist) {
-        existingFiles.chop(5);
-        if (exist == 1) {
-            title = tr("Overwrite File? -- Imagine");
-            text = tr("The file called \n   %1\n already exists. "
-                "Do you want to overwrite it?").arg(existingFiles);
-        }
-        else {
-            title = tr("Overwrite Files? -- Imagine");
-            text = tr("The files called \n   %1\n already exist. "
-                "Do you want to overwrite them?").arg(existingFiles);
-        }
-        if (QMessageBox::question(this, title, text, tr("&Yes"), tr("&No"), QString(), 0, 1)) {
-            return;
-        }
-        else {
-            for (auto filename : filenames) {
-                if (QFile::exists(filename) && !QFile::remove(filename)) {
-                    unableToRemoveFiles.append(QString("%1 and ").arg(filename));
-                    unableToRemove++;
-                }
-            }
-            if (unableToRemove) {
-                unableToRemoveFiles.chop(5);
-                if (unableToRemove == 1)
-                    text = tr("Please check the file %1").arg(unableToRemoveFiles);
-                else
-                    text = tr("Please check the files %1").arg(unableToRemoveFiles);
-                QMessageBox::information(this, "Unable to overwrite", text);
-                return;
-            }
-        }//if, file exists and user don't want to overwrite it
-    }
+    QVector<QString> filenames;
+    filenames.push_back(dataAcqThread->headerFilename);
+    filenames.push_back(dataAcqThread->aiFilename);
+    filenames.push_back(dataAcqThread->diFilename);
+    if (!outputFileExistCheckNDelete(filenames))
+        return;
+
     //warn user if there are params changes pending:
     if (modified &&
         QMessageBox::question(
@@ -2206,7 +2171,7 @@ void Imagine::on_btnOpenStimFile_clicked()
     readAndApplyStimulusFile(stimFilename);
 }
 
-void Imagine::readAndApplyStimulusFile(QString stimFilename)
+bool Imagine::readAndApplyStimulusFile(QString stimFilename)
 {
     QFile file(stimFilename);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
@@ -2214,7 +2179,7 @@ void Imagine::readAndApplyStimulusFile(QString stimFilename)
             tr("Cannot read file %1:\n%2.")
             .arg(stimFilename)
             .arg(file.errorString()));
-        return;
+        return false;
     }
     QTextStream in(&file);
     ui.textEditStimFileContent->setPlainText(in.readAll());
@@ -2223,7 +2188,7 @@ void Imagine::readAndApplyStimulusFile(QString stimFilename)
     vector<string> lines;
     if (!loadTextFile(stimFilename.toStdString(), lines)){
         //TODO: warn user file open failed.
-        return;
+        return false;
     }
 
     //TODO: remove Comments and handle other fields
@@ -2256,6 +2221,7 @@ void Imagine::readAndApplyStimulusFile(QString stimFilename)
     tableHeader.clear();
     tableHeader << "valve";
     ui.tableWidgetStimDisplay->setVerticalHeaderLabels(tableHeader);
+    return true;
 }
 
 void Imagine::clearStimulus()
@@ -3004,25 +2970,27 @@ void Imagine::writeSettings(QString file)
         WRITE_STRING_SETTING(prefs, lineEditConWaveFile);
         prefs.endGroup();
 
-        prefs.beginGroup("Laser");
-        WRITE_CHECKBOX_SETTING(prefs, cbLineTTL1);
-        WRITE_SETTING(prefs, doubleSpinBox_aotfLine1);
-        WRITE_CHECKBOX_SETTING(prefs, cbLineTTL2);
-        WRITE_SETTING(prefs, doubleSpinBox_aotfLine2);
-        WRITE_CHECKBOX_SETTING(prefs, cbLineTTL3);
-        WRITE_SETTING(prefs, doubleSpinBox_aotfLine3);
-        WRITE_CHECKBOX_SETTING(prefs, cbLineTTL4);
-        WRITE_SETTING(prefs, doubleSpinBox_aotfLine4);
-        WRITE_CHECKBOX_SETTING(prefs, cbLineTTL5);
-        WRITE_SETTING(prefs, doubleSpinBox_aotfLine5);
-        prefs.endGroup();
+        if ((rig == "ocpi-2") || (rig == "ocpi-lsk")) {
+            prefs.beginGroup("Laser");
+            WRITE_CHECKBOX_SETTING(prefs, cbLineTTL1);
+            WRITE_SETTING(prefs, doubleSpinBox_aotfLine1);
+            WRITE_CHECKBOX_SETTING(prefs, cbLineTTL2);
+            WRITE_SETTING(prefs, doubleSpinBox_aotfLine2);
+            WRITE_CHECKBOX_SETTING(prefs, cbLineTTL3);
+            WRITE_SETTING(prefs, doubleSpinBox_aotfLine3);
+            WRITE_CHECKBOX_SETTING(prefs, cbLineTTL4);
+            WRITE_SETTING(prefs, doubleSpinBox_aotfLine4);
+            WRITE_CHECKBOX_SETTING(prefs, cbLineTTL5);
+            WRITE_SETTING(prefs, doubleSpinBox_aotfLine5);
+            prefs.endGroup();
+        }
     }
 }
 
-void Imagine::readSettings(QString file)
+bool Imagine::readSettings(QString file)
 {
     QString val;
-    bool ok;
+    bool ok, retVal = true;
     qint32 i;
     double d;
 
@@ -3098,48 +3066,61 @@ void Imagine::readSettings(QString file)
         READ_STRING_SETTING(prefs, lineEditConWaveFile, "");
         prefs.endGroup();
 
-        prefs.beginGroup("Laser");
-        READ_CHECKBOX_SETTING(prefs, cbLineTTL1, true); // READ_CHECKBOX_SETTING
-        READ_SETTING(prefs, doubleSpinBox_aotfLine1, ok, d, 50.0, Double);
-        READ_CHECKBOX_SETTING(prefs, cbLineTTL2, true); // READ_CHECKBOX_SETTING
-        READ_SETTING(prefs, doubleSpinBox_aotfLine2, ok, d, 50.0, Double);
-        READ_CHECKBOX_SETTING(prefs, cbLineTTL3, false); // READ_CHECKBOX_SETTING
-        READ_SETTING(prefs, doubleSpinBox_aotfLine3, ok, d, 50.0, Double);
-        READ_CHECKBOX_SETTING(prefs, cbLineTTL4, false); // READ_CHECKBOX_SETTING
-        READ_SETTING(prefs, doubleSpinBox_aotfLine4, ok, d, 50.0, Double);
-        READ_CHECKBOX_SETTING(prefs, cbLineTTL5, false); // READ_CHECKBOX_SETTING
-        READ_SETTING(prefs, doubleSpinBox_aotfLine5, ok, d, 50.0, Double);
-        prefs.endGroup();
+        if ((rig == "ocpi-2") || (rig == "ocpi-lsk")) {
+            prefs.beginGroup("Laser");
+            READ_CHECKBOX_SETTING(prefs, cbLineTTL1, true); // READ_CHECKBOX_SETTING
+            READ_SETTING(prefs, doubleSpinBox_aotfLine1, ok, d, 50.0, Double);
+            READ_CHECKBOX_SETTING(prefs, cbLineTTL2, true); // READ_CHECKBOX_SETTING
+            READ_SETTING(prefs, doubleSpinBox_aotfLine2, ok, d, 50.0, Double);
+            READ_CHECKBOX_SETTING(prefs, cbLineTTL3, false); // READ_CHECKBOX_SETTING
+            READ_SETTING(prefs, doubleSpinBox_aotfLine3, ok, d, 50.0, Double);
+            READ_CHECKBOX_SETTING(prefs, cbLineTTL4, false); // READ_CHECKBOX_SETTING
+            READ_SETTING(prefs, doubleSpinBox_aotfLine4, ok, d, 50.0, Double);
+            READ_CHECKBOX_SETTING(prefs, cbLineTTL5, false); // READ_CHECKBOX_SETTING
+            READ_SETTING(prefs, doubleSpinBox_aotfLine5, ok, d, 50.0, Double);
+            prefs.endGroup();
+        }
     }
 
+    ok = true;
     if (masterImagine == NULL) {
         // stimulus file read
         QString stimulusFile = ui.lineEditStimFile->text();
         if (stimulusFile.isEmpty())
             clearStimulus();
         else
-            readAndApplyStimulusFile(stimulusFile);
+            ok = readAndApplyStimulusFile(stimulusFile);
+        if (!ui.cbWaveformEnable->isChecked()) {
+            retVal &= ok;
+        }
 
         // waveform file read
         QString conFileName = ui.lineEditConWaveFile->text();
-        if (conFileName != "")
-            readControlWaveformFile(conFileName);
-        if (!ui.cbWaveformEnable->isChecked())
+        if (conFileName != "") {
+            ok = readControlWaveformFile(conFileName);
+        }
+        if (ui.cbWaveformEnable->isChecked()) {
+            retVal &= ok;
+        }
+        else {
             on_cbWaveformEnable_clicked(false);
+        }
 
         // laser apply
-        ui.groupBoxLaser->setChecked(false);
         on_actionCloseShutter_triggered();
-        for (int i = 1; i <= 8; i++) changeLaserTrans(true, i);
-        //changeLaserShutters();
-        on_cbLineTTL1_clicked(ui.cbLineTTL1->isChecked());
-        on_cbLineTTL2_clicked(ui.cbLineTTL2->isChecked());
-        on_cbLineTTL3_clicked(ui.cbLineTTL3->isChecked());
-        on_cbLineTTL4_clicked(ui.cbLineTTL4->isChecked());
-        on_cbLineTTL5_clicked(ui.cbLineTTL5->isChecked());
+        if ((rig == "ocpi-2") || (rig == "ocpi-lsk")) {
+            ui.groupBoxLaser->setChecked(false);
+            for (int i = 1; i <= 8; i++) changeLaserTrans(true, i);
+            on_cbLineTTL1_clicked(ui.cbLineTTL1->isChecked());
+            on_cbLineTTL2_clicked(ui.cbLineTTL2->isChecked());
+            on_cbLineTTL3_clicked(ui.cbLineTTL3->isChecked());
+            on_cbLineTTL4_clicked(ui.cbLineTTL4->isChecked());
+            on_cbLineTTL5_clicked(ui.cbLineTTL5->isChecked());
+        }
     }
 //    if ((rig == "ocpi-1") || (rig == "ocpi-lsk"))
 //        ui.cbBothCamera->setChecked(false);
+    return retVal;
 }
 
 void Imagine::writeComments(QString file)
@@ -3931,7 +3912,7 @@ template<class Type> void Imagine::setCurveData(CurveData *curveData, QwtPlotCur
     curve->setData(curveData);
 }
 
-void Imagine::readControlWaveformFile(QString fn)
+bool Imagine::readControlWaveformFile(QString fn)
 {
     enum SaveFormat {
         Json, Binary
@@ -3965,13 +3946,13 @@ void Imagine::readControlWaveformFile(QString fn)
     else {
         QMessageBox::warning(this, tr("File name error."),
             tr("File extention is not 'json' nor 'bin'."));
-        return;
+        return false;
     }
     QFile loadFile(fn);
 
     if (!loadFile.open(QIODevice::ReadOnly)) {
         qWarning("Couldn't open save file.");
-        return;
+        return false;
     }
 
     QByteArray loadData = loadFile.readAll();
@@ -4006,7 +3987,9 @@ void Imagine::readControlWaveformFile(QString fn)
                     QMessageBox::Ok, QMessageBox::NoButton);
             }
         }
+        return false;
     }
+    return true;
 }
 
 void Imagine::clearConWavPlot()
@@ -5374,53 +5357,90 @@ void Imagine::scriptJustReport(bool preRetVal)
     imagineScript->shouldWait = false;
 }
 
-void Imagine::readConfigFiles(const QString &file1, const QString &file2)
+bool Imagine::readConfigFiles(const QString &file1, const QString &file2)
 {
+    bool retVal = true;
+
     if (!file1.isEmpty()) {
-        readSettings(file1);
+        retVal &= readSettings(file1);
         readComments(file1);
     }
     if (slaveImagine != NULL) {
         if (!file2.isEmpty()) {
-            slaveImagine->readSettings(file2);
+            retVal &= slaveImagine->readSettings(file2);
             slaveImagine->readComments(file2);
         }
-        duplicateParameters(&slaveImagine->ui);
+        retVal &= duplicateParameters(&slaveImagine->ui);
     }
     else {
         if (ui.cbBothCamera->isChecked())
             ui.cbBothCamera->setChecked(false);
     }
+    return retVal;
 }
 
 bool Imagine::outputFileValidCheck()
 {
-    //warn user if overwrite file:
-    if (QFile::exists(ui.lineEditFilename->text())) {
-        if (QMessageBox::question( this,
-            tr("Overwrite File? -- Imagine"),
-            tr("The file called \n   %1\n already exists. "
-                "Do you want to overwrite it?").arg(dataAcqThread->headerFilename),
-            tr("&Yes"), tr("&No"),
-            QString(), 0, 1)) {
-            return false;
-        }
-        else { // want overwrite
-            QFile::remove(ui.lineEditFilename->text());
+    QString headerFilename = ui.lineEditFilename->text();
+    QVector<QString> filenames;
+    filenames.push_back(headerFilename);
+    filenames.push_back(replaceExtName(headerFilename, "ai"));
+    filenames.push_back(replaceExtName(headerFilename, "di"));
+    return outputFileExistCheckNDelete(filenames);
+}
+
+bool Imagine::outputFileExistCheckNDelete(QVector<QString> &filenames)
+{
+    QString existingFiles, unableToRemoveFiles;
+    int exist = 0, unableToRemove = 0;
+    QString title, text;
+    QString filename;
+    for (auto filename : filenames) {
+        if (QFile::exists(filename)) {
+            existingFiles.append(QString("%1 and ").arg(filename));
+            exist++;
         }
     }
-    if (!CheckAndMakeFilePath(ui.lineEditFilename->text())) {
-        QMessageBox::information(this, "File creation error.",
-            "Unable to create the directory");
-        return false;
+    if (exist) {
+        existingFiles.chop(5);
+        if (exist == 1) {
+            title = tr("Overwrite File? -- Imagine");
+            text = tr("The file called \n   %1\n already exists. "
+                "Do you want to overwrite it?").arg(existingFiles);
+        }
+        else {
+            title = tr("Overwrite Files? -- Imagine");
+            text = tr("The files called \n   %1\n already exist. "
+                "Do you want to overwrite them?").arg(existingFiles);
+        }
+        if (QMessageBox::question(this, title, text, tr("&Yes"), tr("&No"), QString(), 0, 1)) {
+            return false;
+        }
+        else {
+            for (auto filename : filenames) {
+                if (QFile::exists(filename) && !QFile::remove(filename)) {
+                    unableToRemoveFiles.append(QString("%1 and ").arg(filename));
+                    unableToRemove++;
+                }
+            }
+            if (unableToRemove) {
+                unableToRemoveFiles.chop(5);
+                if (unableToRemove == 1)
+                    text = tr("Please check the file %1").arg(unableToRemoveFiles);
+                else
+                    text = tr("Please check the files %1").arg(unableToRemoveFiles);
+                QMessageBox::information(this, "Unable to overwrite", text);
+                return false;
+            }
+        }//if, file exists and user don't want to overwrite it
     }
     return true;
 }
 
 void Imagine::configValidityCheck(const QString &file1, const QString &file2)
 {
-    readConfigFiles(file1, file2);
-    bool retVal = outputFileValidCheck();
+    bool retVal = readConfigFiles(file1, file2);
+    retVal &= outputFileValidCheck();
     if(slaveImagine != NULL)
         retVal &= slaveImagine->outputFileValidCheck();
     scriptApplyAndReport(retVal);
@@ -5428,14 +5448,14 @@ void Imagine::configValidityCheck(const QString &file1, const QString &file2)
 
 void Imagine::loadConfig(const QString &file1, const QString &file2)
 {
-    readConfigFiles(file1, file2);
-    scriptJustReport(true);
+    bool retVal = readConfigFiles(file1, file2);
+    scriptJustReport(retVal);
 }
 
 void Imagine::loadWaveform(const QString &file)
 {
-    readControlWaveformFile(file);
-    scriptJustReport(true);
+    bool retVal = readControlWaveformFile(file);
+    scriptJustReport(retVal);
 }
 
 void Imagine::setFilename(const QString &file1, const QString &file2)
