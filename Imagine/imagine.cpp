@@ -306,6 +306,8 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
         // this, SLOT(updateDisplay(const QByteArray &, long, int, int)));
     connect(dataAcqThread, SIGNAL(resetActuatorPosReady()),
         this, SLOT(on_btnMoveToStartPos_clicked()));
+    connect(dataAcqThread, SIGNAL(reapplyLaserSettings()),
+        this, SLOT(applyLaserSettings()));
 
     //mouse events on image
     connect(ui.labelImage, SIGNAL(mousePressed(QMouseEvent*)),
@@ -3110,19 +3112,23 @@ bool Imagine::readSettings(QString file)
 
         // laser apply
         on_actionCloseShutter_triggered();
-        if ((rig == "ocpi-2") || (rig == "ocpi-lsk")) {
-            ui.groupBoxLaser->setChecked(false);
-            for (int i = 1; i <= 8; i++) changeLaserTrans(true, i);
-            on_cbLineTTL1_clicked(ui.cbLineTTL1->isChecked());
-            on_cbLineTTL2_clicked(ui.cbLineTTL2->isChecked());
-            on_cbLineTTL3_clicked(ui.cbLineTTL3->isChecked());
-            on_cbLineTTL4_clicked(ui.cbLineTTL4->isChecked());
-            on_cbLineTTL5_clicked(ui.cbLineTTL5->isChecked());
-        }
+        applyLaserSettings();
     }
 //    if ((rig == "ocpi-1") || (rig == "ocpi-lsk"))
 //        ui.cbBothCamera->setChecked(false);
     return retVal;
+}
+
+void Imagine::applyLaserSettings(void)
+{
+    if ((rig == "ocpi-2") || (rig == "dummy")) {
+        for (int i = 1; i <= 8; i++) changeLaserTrans(true, i);
+        on_cbLineTTL1_clicked(ui.cbLineTTL1->isChecked());
+        on_cbLineTTL2_clicked(ui.cbLineTTL2->isChecked());
+        on_cbLineTTL3_clicked(ui.cbLineTTL3->isChecked());
+        on_cbLineTTL4_clicked(ui.cbLineTTL4->isChecked());
+        on_cbLineTTL5_clicked(ui.cbLineTTL5->isChecked());
+    }
 }
 
 void Imagine::writeComments(QString file)

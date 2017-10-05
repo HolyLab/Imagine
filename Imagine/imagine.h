@@ -545,6 +545,7 @@ public slots:
     void loadWaveform(const QString &file);
     void setFilename(const QString &file1, const QString &file2);
     void loadConfig(const QString &file1, const QString &file2);
+    void applyLaserSettings(void);
 
 signals:
     void makePixmap(const QByteArray &ba, const int imageW, const int imageH,

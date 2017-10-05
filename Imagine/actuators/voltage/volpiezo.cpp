@@ -359,8 +359,8 @@ int DigitalOut::readConPulseToBuffer(int num)
     for (unsigned i = 0; i < readNum; ++i) {
         uInt32 data = 0; // If there is no specific signal on that channel,
                          // default value is 0 except individual laser TTL control;
-        if(idx + i < totalSample - 1) // we want to make all laser TTL output zero in the last sample
-            data |= laserTTLSig;      // except laser TTL shutters
+        if(idx + i < totalSample) // we want to make all laser TTL output zero in the last sample
+            data |= laserTTLSig;  // except laser TTL shutters
         for (int j = 0; j < numP0Channel; j++) {
             if (!waveData[j].isEmpty())
                 if (waveData[j][i]) data |= (0x01 << j);

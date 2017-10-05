@@ -780,6 +780,7 @@ nextStack:  //code below is repeated every stack
         emit newStatusMsgReady("Now resetting the actuator to its exact starting pos ...");
         //reset the actuator to its exact starting pos
         emit resetActuatorPosReady();
+        emit reapplyLaserSettings();
     }
 
     QString ttMsg = "Acquisition is done";
