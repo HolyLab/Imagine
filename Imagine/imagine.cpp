@@ -1853,7 +1853,7 @@ bool Imagine::applySetting()
         dataAcqThread->exposureTime = ui.doubleSpinBoxExpTime->value();
     }
     dataAcqThread->nFramesPerStack = dataAcqThread->nStacksUser*dataAcqThread->nFramesPerStackUser;
-    dataAcqThread->nStacks = 1;
+    dataAcqThread->nStacks = 0;
 
     if (expTriggerModeStr == "External Start") expTriggerMode = Camera::eExternalStart;
     else if (expTriggerModeStr == "External Control")  expTriggerMode = Camera::eExternalControl;
