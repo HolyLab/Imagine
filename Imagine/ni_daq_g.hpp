@@ -225,7 +225,7 @@ public:
 
    //write waveform to driver's buffer
    bool updateOutputBuf(){
-      cout<<"in  updateOutputBuf()"<<endl;
+//    cout<<"in  updateOutputBuf()"<<endl;
       int32 nScanWritten;
 	  char  errBuff[2048] = { '\0' };
 	  /*
@@ -252,12 +252,13 @@ public:
 		  &nScanWritten,
 		  NULL
 		  )))) goto Error;
+      goto Done;
 
 	  Error:
 		if (DAQmxFailed(errorCode))
 			DAQmxGetExtendedErrorInfo(errBuff, 2048);
-
-      cout<<"out updateOutputBuf()"<<endl;
+      Done:
+//      cout<<"out updateOutputBuf()"<<endl;
       return !isError();
    }//updateOutputBuf(),
 
@@ -345,7 +346,7 @@ public:
    }//setNSampleCallback
 
    bool updateOutputBuf(int numSample) {
-       cout << "in AO updateOutputBuf()" << endl;
+//       cout << "in AO updateOutputBuf()" << endl;
        int32 nScanWritten;
        char  errBuff[2048] = { '\0' };
        if (DAQmxFailed(errorCode = (DAQmxWriteAnalogF64(taskHandle,
@@ -357,12 +358,13 @@ public:
            &nScanWritten,
            NULL
        )))) goto Error;
+       goto Done;
 
    Error:
        if (DAQmxFailed(errorCode))
            DAQmxGetExtendedErrorInfo(errBuff, 2048);
-
-       cout << "out AO updateOutputBuf()" << endl;
+   Done:
+//       cout << "out AO updateOutputBuf()" << endl;
        return !isError();
    }//updateOutputBuf(int numSample),
 
@@ -632,7 +634,7 @@ public:
    }//getOutputBuf()
 
    bool updateOutputBuf() {
-       cout << "in DO updateOutputBuf()" << endl;
+//       cout << "in DO updateOutputBuf()" << endl;
        int32 nScanWritten;
        char  errBuff[2048] = { '\0' };
        if (DAQmxFailed(errorCode = (DAQmxWriteDigitalU32(taskHandle,
@@ -644,12 +646,12 @@ public:
            &nScanWritten,
            NULL
        )))) goto Error;
-
+       goto Done;
    Error:
        if (DAQmxFailed(errorCode))
            DAQmxGetExtendedErrorInfo(errBuff, 2048);
-
-       cout << "out DO updateOutputBuf()" << endl;
+   Done:
+//       cout << "out DO updateOutputBuf()" << endl;
        return !isError();
    }//updateOutputBuf(),
 
@@ -713,7 +715,7 @@ public:
    }//setNSampleCallback
 
    bool updateOutputBuf(int numSample) {
-       cout << "in DO updateOutputBuf()" << endl;
+//       cout << "in DO updateOutputBuf()" << endl;
        int32 nScanWritten;
        char  errBuff[2048] = { '\0' };
        if (DAQmxFailed(errorCode = (DAQmxWriteDigitalU32(taskHandle,
@@ -725,12 +727,13 @@ public:
            &nScanWritten,
            NULL
        )))) goto Error;
+       goto Done;
 
    Error:
        if (DAQmxFailed(errorCode))
            DAQmxGetExtendedErrorInfo(errBuff, 2048);
-
-       cout << "out DO updateOutputBuf()" << endl;
+   Done:
+//       cout << "out DO updateOutputBuf()" << endl;
        return !isError();
    }//updateOutputBuf(int numSample),
 

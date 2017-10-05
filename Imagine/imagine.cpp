@@ -1246,6 +1246,8 @@ void Imagine::on_actionDisplayFullImage_triggered()
 
 void Imagine::zoom_onMousePressed(QMouseEvent* event)
 {
+    if (masterImagine != NULL && masterImagine->ui.cbCam2Enable->isChecked())
+        return;
     appendLog("pressed");
     if (event->button() == Qt::LeftButton) {
         zoom_downPos = event->pos();
@@ -4690,10 +4692,11 @@ void Imagine::readCamFileImagesAndUpdate()
 
 void Imagine::updateLiveImagePlay(const QByteArray &data16, long idx, int imageW, int imageH)
 {
-    if (masterImagine != NULL) {
+    if (masterImagine != NULL) { // if slave(camera2) imagine
         if (masterImagine->ui.rbImgCameraEnable->isChecked()) {
-            if (masterImagine->ui.cbCam2Enable->isChecked()) {
-                masterImageReady = false;
+            if (masterImagine->ui.cbCam2Enable->isChecked()) { // If camera2 is checked in master(camera1) imagine
+                masterImageReady = false; // don't display came2 image in this slave window
+                                          // master image of camera2 window = camera2 image
                 return;
             }
             masterImageReady = true;
@@ -4771,6 +4774,10 @@ void Imagine::readCameraImagesAndUpdate()
         }
         else {// updateMethod == 3
             if (masterImageReady && slaveImageReady) { // ignore until both images are ready
+                if(!dataAcqThread->isUpdatingImage)
+                    dataAcqThread->isUpdatingImage = true;
+                if (!slaveImagine->dataAcqThread->isUpdatingImage)
+                    slaveImagine->dataAcqThread->isUpdatingImage = true;
                 updateDisplayColor(live1, live2, 0, width1, height1);
                 masterImageReady = false;
                 slaveImageReady = false;
