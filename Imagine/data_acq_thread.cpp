@@ -567,29 +567,28 @@ void DataAcqThread::run_acq_and_save_wav()
     Camera* camera = pCamera;
     Timer_g gt;
     bool hasPos = pPositioner != NULL;
+    bool useCam = true;
+    if (this->nStacks == 0 && this->nStacksUser ==0) useCam = false;
 
-    ////prepare for AO AI and camera:
-
-    ///prepare for camera:
-
-    camFilename = replaceExtName(headerFilename, "cam"); //NOTE: necessary if user overwrite files
-
-                                                         ///piezo feedback data file (only for PI piezo)
+    ///piezo feedback data file (only for PI piezo)
     string positionerFeedbackFile = replaceExtName(headerFilename, "pos").toStdString();
+    ///prepare for camera:
+    if (useCam) {
+        camFilename = replaceExtName(headerFilename, "cam"); //NOTE: necessary if user overwrite files
+        camera->setSpooling(camFilename.toStdString());
 
-    camera->setSpooling(camFilename.toStdString());
+        camera->setAcqModeAndTime(Camera::eAcqAndSave,
+            this->exposureTime,
+            this->nFramesPerStack*this->nStacks,
+            this->acqTriggerMode,
+            this->expTriggerMode);
+        emit newStatusMsgReady(QString("Camera: set acq mode and time: %1")
+            .arg(camera->getErrorMsg().c_str()));
 
-    camera->setAcqModeAndTime(Camera::eAcqAndSave,
-        this->exposureTime,
-        this->nFramesPerStack*this->nStacks,
-        this->acqTriggerMode,
-        this->expTriggerMode);
-    emit newStatusMsgReady(QString("Camera: set acq mode and time: %1")
-        .arg(camera->getErrorMsg().c_str()));
-
-    //get the real params used by the camera:
-    cycleTime = camera->getCycleTime();
-    double timePerStack = nFramesPerStack*cycleTime;
+        //get the real params used by the camera:
+        cycleTime = camera->getCycleTime();
+        double timePerStack = nFramesPerStack*cycleTime;
+    }
 
     if (hasPos && ownPos) pPositioner->setPCount();
 
@@ -669,11 +668,11 @@ void DataAcqThread::run_acq_and_save_wav()
     }
     isUpdatingImage = false;
 
-    Camera::PixelValue * frame = (Camera::PixelValue*)_aligned_malloc(sizeof(Camera::PixelValue*)*(camera->imageSizePixels), 4 * 1024);
-
-    idxCurStack = 0; //stack we are currently working on.  We will keep this in sync with camera->nAcquiredStacks
-
-    camera->prepCameraOnce();
+    if (useCam) {
+        Camera::PixelValue * frame = (Camera::PixelValue*)_aligned_malloc(sizeof(Camera::PixelValue*)*(camera->imageSizePixels), 4 * 1024);
+        idxCurStack = 0; //stack we are currently working on.  We will keep this in sync with camera->nAcquiredStacks
+        camera->prepCameraOnce();
+    }
     // start
 //    camera->nextStack(); // wait until next stack and begin to capture
 
@@ -681,7 +680,7 @@ void DataAcqThread::run_acq_and_save_wav()
 
     gt.start(); //seq's start time is 0, the new ref pt
 
-    camera->nextStack();
+    if (useCam) camera->nextStack();
     double curTime;
     double lastTime;
     double stackStartTime;
@@ -702,38 +701,39 @@ nextStack:  //code below is repeated every stack
     long tempNumStacks = 0;
     long tempNumFrames = 0;
 
-    while (!stopRequested) {
-        //to avoid "priority inversion" we temporarily elevate the priority
-        setPriority(QThread::TimeCriticalPriority);
-        if (pCamera->getModel() == "dummy") {
-            if (!((++nFramesGotForStack) % nFramesPerStack))
-                tempNumStacks++;
-        }
-        else {
-            nFramesGotForStack = camera->getNAcquiredFrames();
-            tempNumStacks = camera->getNAcquiredStacks();
-        }
-        setPriority(getDefaultPriority());
-        if (idxCurStack < tempNumStacks) {
-            idxCurStack = tempNumStacks;
-            OutputDebugStringW((wstring(L"Data acq thread finished stack #") + to_wstring(idxCurStack) + wstring(L"\n")).c_str());
-            break;
-        }
-        if (!isUpdatingImage && tempNumFrames != nFramesGotForStack) {
-            tempNumFrames = nFramesGotForStack;
-            QThread::msleep(10);
-            //copy latest frame to display buffer
-            if (!camera->updateLiveImage()) {
-                QThread::msleep(10);
-                continue;
+    if (useCam) {
+        while (!stopRequested) {
+            //to avoid "priority inversion" we temporarily elevate the priority
+            setPriority(QThread::TimeCriticalPriority);
+            if (pCamera->getModel() == "dummy") {
+                if (!((++nFramesGotForStack) % nFramesPerStack))
+                    tempNumStacks++;
             }
-            emit imageDataReady(camera->getLiveImage(), nFramesGotForStack - 1, camera->getImageWidth(), camera->getImageHeight()); //-1: due to 0-based indexing
-
-        }
-        else {
-            QThread::msleep(10);
-        }
-    }//while, camera is not idle
+            else {
+                nFramesGotForStack = camera->getNAcquiredFrames();
+                tempNumStacks = camera->getNAcquiredStacks();
+            }
+            setPriority(getDefaultPriority());
+            if (idxCurStack < tempNumStacks) {
+                idxCurStack = tempNumStacks;
+                OutputDebugStringW((wstring(L"Data acq thread finished stack #") + to_wstring(idxCurStack) + wstring(L"\n")).c_str());
+                break;
+            }
+            if (!isUpdatingImage && tempNumFrames != nFramesGotForStack) {
+                tempNumFrames = nFramesGotForStack;
+                QThread::msleep(10);
+                //copy latest frame to display buffer
+                if (!camera->updateLiveImage()) {
+                    QThread::msleep(10);
+                    continue;
+                }
+                emit imageDataReady(camera->getLiveImage(), nFramesGotForStack - 1, camera->getImageWidth(), camera->getImageHeight()); //-1: due to 0-based indexing
+            }
+            else {
+                QThread::msleep(10);
+            }
+        }//while, camera is not idle
+    }
 
     if (idxCurStack < this->nStacks && !stopRequested) {
 //        double stackEndingTime = gt.read();
@@ -752,10 +752,11 @@ nextStack:  //code below is repeated every stack
         if (!stopRequested) goto nextStack;
     }//if, there're more stacks and no stop requested
 
-    this->setPriority(QThread::TimeCriticalPriority);
-    camera->stopAcqFinal(); //priority inversion delays stopping, so we haave to elevate priority
-    this->setPriority(getDefaultPriority());
-
+    if (useCam) {
+        this->setPriority(QThread::TimeCriticalPriority);
+        camera->stopAcqFinal(); //priority inversion delays stopping, so we haave to elevate priority
+        this->setPriority(getDefaultPriority());
+    }
     if (hasPos && ownPos) {
         if (!stopRequested && aiThread) { // wait until all daq samples are read
             while(aiThread->isLeftToReadSamples())
