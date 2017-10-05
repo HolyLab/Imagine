@@ -4757,7 +4757,6 @@ void Imagine::readCameraImagesAndUpdate()
     }
 
     if (updateMethod) {
-        maxPixelValue = -1;
         if (updateMethod == 1) {
             dataAcqThread->isUpdatingImage = true;
             updateDisplay(live1, 0, width1, height1);
