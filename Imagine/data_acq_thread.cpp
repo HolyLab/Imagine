@@ -687,7 +687,7 @@ void DataAcqThread::run_acq_and_save_wav()
     bool isPiezo = hasPos && pPositioner->posType == PiezoControlPositioner;
     if (hasPos && ownPos) {
         digOut->runCmd();
-        pPositioner->runCmd(); //will wait on trigger pulse from camera
+        pPositioner->runCmd();
     }
 nextStack:  //code below is repeated every stack
     stackStartTime = gt.read();
@@ -735,7 +735,7 @@ nextStack:  //code below is repeated every stack
         }//while, camera is not idle
     }
 
-    if (idxCurStack < this->nStacks && !stopRequested) {
+    if (useCam && (idxCurStack < this->nStacks) && !stopRequested) {
 //        double stackEndingTime = gt.read();
 
 //        idleTimeBwtnStacks = 0.2; // currently just set (maxpos-minpos)/maxspeed = 400/2000 (but need to check again later)
