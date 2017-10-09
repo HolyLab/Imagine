@@ -61,37 +61,16 @@ private:
     int maxpos = 0;
     int maxspd = 0;
     QString setuptype;
-    int idx;
+    SampleIdx idx;
     int blockSize;
     ControlWaveform *conWaveData = NULL;
-    int totalSample;
+    SampleIdx totalSample;
     QTime daqStartTime; // to calculate overhead time around DAQ task
     QTime daqDoneTime; // to calculate overhead time after DAQ task is done
 
     double zpos2voltage(double um);
     void cleanup();
 };//class, VolPiezo
-
-/*
-typedef enum  {
-    doChannelForcamera1 = 5,
-    doChannelForcamera2 = 6,
-    doChannelForlaser1 = 4,
-    doChannelForlaser2 = 8,
-    doChannelForlaser3 = 9,
-    doChannelForlaser4 = 10,
-    doChannelForlaser5 = 11,
-    doChannelForStimulus1 = 0,// NI DAQ Digital port P0.0
-    doChannelForStimulus2 = 1,
-    doChannelForStimulus3 = 2,
-    doChannelForStimulus4 = 3,
-    doChannelForStimulus5 = 7,
-    doChannelForStimulus6 = 12,
-    doChannelForStimulus7 = 13,
-    doChannelForStimulus8 = 14,
-    doChannelForStimulus9 = 15,// P0.15
-}PortLayout;
-*/
 
 class DigitalOut : public DigitalControls {
 public:
@@ -117,9 +96,9 @@ private:
     QString doname;
     NiDaqDo* dout;
     void cleanup();
-    int idx;
+    SampleIdx idx;
     int blockSize;
-    int totalSample;
+    SampleIdx totalSample;
     ControlWaveform *conWaveData = NULL;
     uInt32 laserTTLSig;
 };//class, DigitalBurstOut

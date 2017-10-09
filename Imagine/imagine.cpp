@@ -150,7 +150,6 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
         comboBoxAiDi.push_back(combo2[i]);
     }
 
-    //ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabAI));
     //remove positioner tab from slave window
     //TODO: Give stimulus tab the same treatment (It's in position #3)
     if (masterImagine != NULL) { // Imagine(2)
@@ -221,7 +220,6 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     scrollArea->setWidget(ui.labelImage);
     setCentralWidget(scrollArea);
 
-    //
     //addDockWidget(Qt::LeftDockWidgetArea, ui.dwCfg);
     ui.dwCfg->show();
     ui.dwCfg->raise();
@@ -332,9 +330,6 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
         if (spinboxes[i]->accessibleDescription() != "no apply")
             connect(spinboxes[i], SIGNAL(valueChanged(const QString&)),
                 this, SLOT(onModified()));
-//        else
-//            disconnect(((QAbstractSpinBox*)(spinboxes[i]))->lineEdit(), SIGNAL(textChanged(const QString&)),
-//                this, SLOT(onModified()));
     }
 
     auto doublespinboxes = ui.tabWidgetCfg->findChildren<QDoubleSpinBox*>();
@@ -380,8 +375,6 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
         connect(this, SIGNAL(getLaserTransStatus(bool, int)), laserCtrlSerial, SLOT(getTransStatus(bool, int)));
         connect(this, SIGNAL(setLaserTrans(bool, int, int)), laserCtrlSerial, SLOT(setTrans(bool, int, int)));
         connect(this, SIGNAL(getLaserLineSetupStatus(void)), laserCtrlSerial, SLOT(getLaserLineSetup(void)));
-        //        connect(laserCtrlSerial, SIGNAL(getShutterStatusReady(int)), this, SLOT(displayShutterStatus(int)));
-        //        connect(laserCtrlSerial, SIGNAL(getTransStatusReady(bool, int, int)), this, SLOT(displayTransStatus(bool, int, int)));
         connect(laserCtrlSerial, SIGNAL(getLaserLineSetupReady(int, int *, int *)), this, SLOT(displayLaserGUI(int, int *, int *)));
         // run event handler
         laserCtrlThread.start(QThread::IdlePriority);
@@ -465,7 +458,6 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     ui.gbDontShowMe3->setVisible(false);
     ui.gbHorizontalShift->setVisible(false);
     ui.gbVerticalShift->setVisible(false);
-    //    ui.cbEnableMismatch->setVisible(false);
     ui.pbTestButton->setVisible(false);
 }
 
@@ -545,7 +537,6 @@ void Imagine::setROIMinMaxSize()
 }
 #pragma endregion
 
-
 #pragma region DRAWING
 
 void Imagine::updateImage(bool isColor, bool isForce)
@@ -581,7 +572,7 @@ void Imagine::updateImage(bool isColor, bool isForce)
             minPixelValue2, maxPixelValue2, colSat);
     else
         emit makePixmap(lastRawImg, lastImgW, lastImgH, factor, displayAreaSize,
-            L, T, W, H, xd, xc, yd, yc, minPixelValue, maxPixelValue, colSat);
+            L, T, W, H, xd, xc, yd, yc, *pMinPixelValue, *pMaxPixelValue, colSat);
 }
 
 void Imagine::handlePixmap(const QPixmap &pxmp, const QImage &img) {
@@ -811,14 +802,27 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
     lastRawImg = data16;
     lastImgH = imageH;
     lastImgW = imageW;
+    pMinPixelValue = &minPixelValue;
+    pMaxPixelValue = &maxPixelValue;
+    int* pMinPixelValueByUser = &minPixelValueByUser;
+    int* pMaxPixelValueByUser = &maxPixelValueByUser;
 
+    if (masterImagine == NULL) {
+        if ((ui.rbImgCameraEnable->isChecked() && ui.cbCam2Enable->isChecked()) ||
+            (ui.rbImgFileEnable->isChecked() && ui.cbImg2Enable->isChecked())) {
+            pMinPixelValue = &minPixelValue2;
+            pMaxPixelValue = &maxPixelValue2;
+            pMinPixelValueByUser = &minPixelValueByUser2;
+            pMaxPixelValueByUser = &maxPixelValueByUser2;
+        }
+    }
     Camera::PixelValue * frame = (Camera::PixelValue *)data16.constData();
     if (ui.actionFlickerControl->isChecked()){
-        int oldMax = maxPixelValue;
-        calcMinMaxValues(frame, imageW, imageH);
-        if (maxPixelValue == 0){
+        int oldMax = *pMaxPixelValue;
+        calcMinMaxValues(frame, pMinPixelValue, pMaxPixelValue, imageW, imageH);
+        if (*pMaxPixelValue == 0){
             if (++nContinousBlackFrames < 3){
-                maxPixelValue = oldMax;
+                *pMaxPixelValue = oldMax;
                 goto done;
             }
             else nContinousBlackFrames = 0;
@@ -826,7 +830,7 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
         else {
             nContinousBlackFrames = 0; //reset counter
         }
-        maxPixelValue = oldMax;
+        *pMaxPixelValue = oldMax;
     }
 
     //update histogram plot
@@ -861,26 +865,26 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
 
     //copy and scale data
     if (ui.actionNoAutoScale->isChecked()){
-        minPixelValue = 0;
-        maxPixelValue = (1 << 14)-1;
+        *pMinPixelValue = 0;
+        *pMaxPixelValue = (1 << 14)-1;
         factor = 1.0 / (1 << 6); //i.e. /(2^14)*(2^8). note: not >>8 b/c it's 14-bit camera. TODO: take care of 16 bit camera?
     }//if, no contrast adjustment
     else {
         if (ui.actionAutoScaleOnFirstFrame->isChecked()){
             //user can change the setting when acq. is running
-            if (maxPixelValue == -1 || maxPixelValue == 0){
-                calcMinMaxValues(frame, imageW, imageH);
+            if (*pMaxPixelValue == -1 || *pMaxPixelValue == 0){
+                calcMinMaxValues(frame, pMinPixelValue, pMaxPixelValue, imageW, imageH);
             }//if, need update min/max values.
         }//if, min/max are from the first frame
         else if (ui.actionAutoScaleOnAllFrames->isChecked()){
-            calcMinMaxValues(frame, imageW, imageH);
+            calcMinMaxValues(frame, pMinPixelValue, pMaxPixelValue, imageW, imageH);
         }//else if, min/max are from each frame's own data
         else {
-            minPixelValue = minPixelValueByUser;
-            maxPixelValue = maxPixelValueByUser;
+            *pMinPixelValue = *pMinPixelValueByUser;
+            *pMaxPixelValue = *pMaxPixelValueByUser;
         }//else, user supplied min/max
 
-        factor = 255.0 / (maxPixelValue - minPixelValue);
+        factor = 255.0 / (*pMaxPixelValue - *pMinPixelValue);
         if (ui.actionColorizeSaturatedPixels->isChecked()) factor *= 254 / 255.0;
     }//else, adjust contrast(i.e. scale data by min/max values)
 
@@ -1030,13 +1034,11 @@ QString addExtNameIfAbsent(QString filename, QString newExtname)
 
 #pragma endregion
 
-
 #pragma region UNSORTED
 
 void Imagine::appendLog(const QString& msg)
 {
     static int nAppendingLog = 0;
-    //if(nAppendingLog>=1000) {
     if (nAppendingLog >= ui.spinBoxMaxNumOfLinesInLog->value()) {
         ui.textEditLog->clear();
         nAppendingLog = 0;
@@ -1046,13 +1048,13 @@ void Imagine::appendLog(const QString& msg)
     nAppendingLog++;
 }
 
-void Imagine::calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH)
+void Imagine::calcMinMaxValues(Camera::PixelValue * frame, int *min, int *max, int imageW, int imageH)
 {
-    minPixelValue = maxPixelValue = frame[0];
+    *min = *max = frame[0];
     for (int i = 1; i<imageW*imageH; i++){
         if (frame[i] == (1 << 16) - 1) continue; //todo: this is a tmp fix for dead pixels
-        if (frame[i]>maxPixelValue) maxPixelValue = frame[i];
-        else if (frame[i] < minPixelValue) minPixelValue = frame[i];
+        if (frame[i]>*max) *max = frame[i];
+        else if (frame[i] < *min) *min = frame[i];
     }//for, each pixel
 }
 
@@ -1204,7 +1206,6 @@ void Imagine::readPiezoCurPos()
 
 #pragma endregion
 
-
 #pragma region UI_CALLBACKS
 
 void Imagine::zoom_onMouseReleased(QMouseEvent* event)
@@ -1351,7 +1352,7 @@ void Imagine::on_actionStartAcqAndSave_triggered()
     isRecordCommander = false;
 }
 
-void Imagine::on_actionStartLive_triggered()
+void Imagine::startLive()
 {
     if ((!paramOK) && (dataAcqThread->pCamera->getModel() != "dummy")) {
         QMessageBox::information(this, "Wrong parameters --- Imagine",
@@ -1380,6 +1381,23 @@ void Imagine::on_actionStartLive_triggered()
     dataAcqThread->isLive = true;
     dataAcqThread->startAcq();
     updateStatus(eRunning, eLive);
+}
+
+void Imagine::on_actionStartLive_triggered()
+{
+    Imagine *otherImagine = NULL;
+    if (ui.cbBothCamera->isChecked()) {
+        if (masterImagine != NULL)
+            otherImagine = masterImagine;
+        else
+            otherImagine = slaveImagine;
+    }
+    if (otherImagine != NULL) {
+        otherImagine->startLive();
+    }
+    isRecordCommander = true;
+    startLive();
+    isRecordCommander = false;
 }
 
 void Imagine::on_actionAutoScaleOnFirstFrame_triggered()
@@ -1419,10 +1437,27 @@ void Imagine::on_actionContrastMax2_triggered()
     displayImageUpdate();
 }
 
-void Imagine::on_actionStop_triggered()
+void Imagine::stopAcqOrLive()
 {
     dataAcqThread->stopAcq();
     updateStatus(eStopping, curAction);
+}
+
+void Imagine::on_actionStop_triggered()
+{
+    Imagine *otherImagine = NULL;
+    if (ui.cbBothCamera->isChecked()) {
+        if (masterImagine != NULL)
+            otherImagine = masterImagine;
+        else
+            otherImagine = slaveImagine;
+    }
+    if (otherImagine != NULL) {
+        otherImagine->stopAcqOrLive();
+    }
+    isRecordCommander = true;
+    stopAcqOrLive();
+    isRecordCommander = false;
 }
 
 void Imagine::on_actionViewHelp_triggered()
@@ -1457,16 +1492,6 @@ void Imagine::on_actionOpenShutter_triggered()
 
     //open laser shutter
     bool retVal = digOut->singleOut(4, true);
-/*
-    QString portName;
-    if (!(laserCtrlSerial->isPortOpen())) {
-       emit openLaserSerialPort(portName);
-    }
-
-    changeLaserShutters();
-    for (int i = 1; i <= 4; i++)
-        changeLaserTrans(true, i);
-*/
     QString str;
     if(retVal == true)
         str = QString("Open laser shutter");
@@ -1485,9 +1510,7 @@ void Imagine::on_actionCloseShutter_triggered()
 
     //open laser shutter
     bool retVal = digOut->singleOut(4, false);
-/*
-    emit setLaserShutters(0);
-*/
+
     QString str;
     if (retVal == true)
         str = QString("Close laser shutter");
@@ -1772,7 +1795,7 @@ void Imagine::on_btnApply_clicked()
         return;
 
     isApplyCommander = true;
-    applySetting();
+    bool retVal = applySetting();
     isApplyCommander = false;
 }
 
@@ -1823,6 +1846,9 @@ bool Imagine::applySetting()
     dataAcqThread->horShiftSpeed = ui.comboBoxHorReadoutRate->currentText();
     dataAcqThread->verShiftSpeed = ui.comboBoxVertShiftSpeed->currentText();
     dataAcqThread->angle = ui.spinBoxAngle->value();
+    dataAcqThread->mismatchRotation = ui.dsbRotationAngle->value();
+    dataAcqThread->mismatchXTranslation = ui.sbXTranslation->value();
+    dataAcqThread->mismatchYTranslation = ui.sbYTranslation->value();
 
     if ((*masterUi).cbWaveformEnable->isChecked()) { // waveform enabled
         dataAcqThread->sampleRate = conWaveDataUser->sampleRate;
@@ -1984,12 +2010,8 @@ bool Imagine::applySetting()
         if (otherImagine) {
             if (ui.cbBothCamera->isChecked())
                 otherImagine->applySetting();
-            else {
-                otherImagine->modified = true;
-                otherImagine->ui.btnApply->setEnabled(true);
-            }
         }
-        if (!(*masterUi).cbWaveformEnable->isChecked()) { // waveform disabled
+        if (!(*masterUi).cbWaveformEnable->isChecked()) { // custom waveform disabled
             if (conWaveDataParam)
                 delete conWaveDataParam;
             conWaveDataParam = new ControlWaveform(rig);
@@ -2056,12 +2078,7 @@ bool Imagine::applySetting()
             conWaveDataParam->idleTimeBwtnStacks = dataAcqThread->idleTimeBwtnStacks;
             conWaveDataParam->piezoStartPosUm = dataAcqThread->piezoStartPosUm;
             conWaveDataParam->piezoStopPosUm = dataAcqThread->piezoStopPosUm;
-//            if (masterImagine->ui.cbAutoSetPiezoTravelBackTime->isChecked())
-//                conWaveData->piezoTravelBackTime = abs(conWaveData->piezoStartPosUm - conWaveData->piezoStopPosUm)/
-//                                                    conWaveData->maxPiezoSpeed; // + 0.005sec
-//            else
-                conWaveDataParam->piezoTravelBackTime = dataAcqThread->piezoTravelBackTime;
-//            dataAcqThread->applyStim = masterImagine->ui.cbStim->isChecked();
+            conWaveDataParam->piezoTravelBackTime = dataAcqThread->piezoTravelBackTime;
             conWaveDataParam->applyStim = masterUi->cbStim->isChecked();
             conWaveDataParam->stimuli = &(masterDataAcqTh->stimuli);
             conWaveDataParam->genDefaultControl(headerFilename);
@@ -2096,10 +2113,6 @@ bool Imagine::applySetting()
                 slaveUi->labelPerStackTime->setText(QString("#time/stack(s) : %1(%2sample)")
                     .arg((double)perStackSamples2 / (double)conWaveDataParam->sampleRate).arg(perStackSamples2));
             }
-            if (ui.cbBothCamera->isChecked()) {
-                otherImagine->modified = false;
-                otherImagine->ui.btnApply->setEnabled(false);
-            }
             if (masterImagine != NULL) {
                 masterImagine->displayConWaveData();
             }
@@ -2110,10 +2123,10 @@ bool Imagine::applySetting()
                 QMessageBox::critical(this, "Imagine", conWaveData->getErrorMsg(),
                     QMessageBox::Ok, QMessageBox::NoButton);
             }
-        }
-        else {
+        }// custom waveform disabled
+        else {// custom waveform enabled
             conWaveData = conWaveDataUser;
-        }
+        }// custom waveform enabled
         if (!waveformValidityCheck()) // waveform is not valid
             goto skip;
         // setup default laser TTL output value
@@ -2145,6 +2158,19 @@ bool Imagine::applySetting()
 
     modified = false;
     ui.btnApply->setEnabled(modified);
+    if (otherImagine && isApplyCommander){
+        if (masterUi->cbBothCamera->isChecked()) {
+            otherImagine->modified = false;
+            otherImagine->ui.btnApply->setEnabled(modified);
+        }
+        else { // All acquisition parameters are set with this imagine window's setting only.
+               // ex) imagine(1) only generate camera1 pulse
+               // So, if we are to record in the other imagine window we need to apply parameters
+               // in that window again. (To generate camera2 pulse)
+            otherImagine->modified = true;
+            otherImagine->ui.btnApply->setEnabled(true);
+        }
+    }
     return true;
 
 skip:
@@ -2494,10 +2520,9 @@ void Imagine::on_actionHeatsinkFan_triggered()
     fanCtrlDialog->exec();
 }
 */
+#pragma endregion
 
-// -----------------------------------------------------------------------------
-// Laser control
-// -----------------------------------------------------------------------------
+#pragma region LASER_CONTROL
 void Imagine::displayShutterStatus(int status)
 {
     for (int i = 1; i <= 4; i++) {
@@ -2741,49 +2766,41 @@ void Imagine::on_cbLine8_clicked(bool checked)
 void Imagine::on_aotfLine1_valueChanged()
 {
     ui.doubleSpinBox_aotfLine1->setValue((double)(ui.aotfLine1->value()) / 10.);
-//    changeLaserTrans(true, 1);
 }
 
 void Imagine::on_aotfLine2_valueChanged()
 {
     ui.doubleSpinBox_aotfLine2->setValue((double)(ui.aotfLine2->value()) / 10.);
-//    changeLaserTrans(true, 2);
 }
 
 void Imagine::on_aotfLine3_valueChanged()
 {
     ui.doubleSpinBox_aotfLine3->setValue((double)(ui.aotfLine3->value()) / 10.);
-//    changeLaserTrans(true, 3);
 }
 
 void Imagine::on_aotfLine4_valueChanged()
 {
     ui.doubleSpinBox_aotfLine4->setValue((double)(ui.aotfLine4->value()) / 10.);
-//    changeLaserTrans(true, 4);
 }
 
 void Imagine::on_aotfLine5_valueChanged()
 {
     ui.doubleSpinBox_aotfLine5->setValue((double)(ui.aotfLine5->value()) / 10.);
-//    changeLaserTrans(true, 5);
 }
 
 void Imagine::on_aotfLine6_valueChanged()
 {
     ui.doubleSpinBox_aotfLine6->setValue((double)(ui.aotfLine6->value()) / 10.);
-//    changeLaserTrans(true, 6);
 }
 
 void Imagine::on_aotfLine7_valueChanged()
 {
     ui.doubleSpinBox_aotfLine7->setValue((double)(ui.aotfLine7->value()) / 10.);
-//    changeLaserTrans(true, 7);
 }
 
 void Imagine::on_aotfLine8_valueChanged()
 {
     ui.doubleSpinBox_aotfLine8->setValue((double)(ui.aotfLine8->value()) / 10.);
-//    changeLaserTrans(true, 8);
 }
 
 void Imagine::on_doubleSpinBox_aotfLine1_valueChanged()
@@ -2859,7 +2876,6 @@ void Imagine::on_cbLineTTL1_clicked(bool checked)
 void Imagine::on_cbLineTTL2_clicked(bool checked)
 {
     changeLaserShuttersTTL(5, checked);
-//    bool returnVal = digOut->singleOut(14, checked); // P0.8~P0.12
 }
 
 void Imagine::on_cbLineTTL3_clicked(bool checked)
@@ -2901,8 +2917,9 @@ void Imagine::on_cbDualOutSW2_clicked(bool checked)
 {
     changeLaserShuttersTTL(7, checked);
 }
+#pragma endregion
 
-
+#pragma region LOAD_SAVE_CONFIG
 // -----------------------------------------------------------------------------
 // Load and save configuration
 // -----------------------------------------------------------------------------
@@ -2921,17 +2938,11 @@ void Imagine::writeSettings(QString file)
     WRITE_SETTING(prefs, spinBoxFramesPerStack);
     WRITE_SETTING(prefs, doubleSpinBoxExpTime);
     WRITE_SETTING(prefs, doubleSpinBoxBoxIdleTimeBtwnStacks);
-//    WRITE_COMBO_SETTING(prefs, comboBoxAcqTriggerMode);
     WRITE_COMBO_SETTING(prefs, comboBoxExpTriggerMode);
     WRITE_CHECKBOX_SETTING(prefs, cbBidirectionalImaging);
     WRITE_SETTING(prefs, spinBoxAngle);
     WRITE_SETTING(prefs, sbObjectiveLens);
     WRITE_SETTING(prefs, doubleSpinBoxUmPerPxlXy);
-//    WRITE_COMBO_SETTING(prefs, comboBoxHorReadoutRate);
-//    WRITE_COMBO_SETTING(prefs, comboBoxPreAmpGains);
-//    WRITE_SETTING(prefs, spinBoxGain);
-//    WRITE_COMBO_SETTING(prefs, comboBoxVertShiftSpeed);
-//    WRITE_COMBO_SETTING(prefs, comboBoxVertClockVolAmp);
     WRITE_BOOL_SETTING(prefs, isUsingSoftROI);
     WRITE_SETTING(prefs, spinBoxHstart);
     WRITE_SETTING(prefs, spinBoxHend);
@@ -3037,17 +3048,11 @@ bool Imagine::readSettings(QString file)
     READ_SETTING(prefs, spinBoxFramesPerStack, ok, i, 100, Int);
     READ_SETTING(prefs, doubleSpinBoxExpTime, ok, d, 0.0107, Double);
     READ_SETTING(prefs, doubleSpinBoxBoxIdleTimeBtwnStacks, ok, d, 0.700, Double); // this should be loaded after doubleSpinBoxPiezoTravelBackTime
-    //    READ_COMBO_SETTING(prefs, comboBoxAcqTriggerMode, 1);
     READ_COMBO_SETTING(prefs, comboBoxExpTriggerMode, 0);
     READ_CHECKBOX_SETTING(prefs, cbBidirectionalImaging, false); // READ_CHECKBOX_SETTING
     READ_SETTING(prefs, spinBoxAngle, ok, i, 0, Int);
     READ_SETTING(prefs, sbObjectiveLens, ok, i, 20, Int);
     READ_SETTING(prefs, doubleSpinBoxUmPerPxlXy, ok, d, -1.0000, Double);
-//    READ_COMBO_SETTING(prefs, comboBoxHorReadoutRate, 0);
-//    READ_COMBO_SETTING(prefs, comboBoxPreAmpGains, 0);
-//    READ_SETTING(prefs, spinBoxGain, ok, i, 0, Int);
-//    READ_COMBO_SETTING(prefs, comboBoxVertShiftSpeed, 0);
-//    READ_COMBO_SETTING(prefs, comboBoxVertClockVolAmp, 0);
     READ_BOOL_SETTING(prefs, isUsingSoftROI, false);
     READ_SETTING(prefs, spinBoxHstart, ok, i, 1, Int);
     READ_SETTING(prefs, spinBoxHend, ok, i, maxROIHSize, Int);
@@ -3114,8 +3119,6 @@ bool Imagine::readSettings(QString file)
         on_actionCloseShutter_triggered();
         applyLaserSettings();
     }
-//    if ((rig == "ocpi-1") || (rig == "ocpi-lsk"))
-//        ui.cbBothCamera->setChecked(false);
     return retVal;
 }
 
@@ -3209,6 +3212,9 @@ void Imagine::on_actionLoad_Configuration_triggered()
     on_btnApply_clicked();
 }
 
+#pragma endregion
+
+#pragma region ADDITIONAL_PIEZO_SETTING
 void Imagine::displayPiezoCtrlStatus(QByteArray rx)
 {
     bool ok;
@@ -3373,7 +3379,9 @@ void Imagine::on_btnPzClosePort_clicked()
     ui.lineEditSerialCmd->setEnabled(false);
     ui.btnSendSerialCmd->setEnabled(false);
 }
+#pragma endregion
 
+#pragma region AI_DI_READ
 /**************************** AI and DI read ***********************/
 #define MIN_Y   -50
 bool seekSection(QString section, QTextStream &stream)
@@ -3492,26 +3500,6 @@ void Imagine::on_btnReadAiWavOpen_clicked()
     }
     file.close();
     QByteArray data;
-    /*
-    // read ai file
-    if (aiFilename != "NA") {
-        file.setFileName(aiFilename);
-        if (!file.open(QFile::ReadOnly)) {// if we are to use iostream, QIODevice
-            QMessageBox::warning(this, tr("Imagine"),
-                tr("Cannot read file %1:\n%2.")
-                .arg(aiFilename)
-                .arg(file.errorString()));
-            numAiCurveData = 0;
-        }
-        else {
-            //data.resize(1000000);
-            //QDataStream in(&file);
-            //in.readRawData(data.data(), 1000000);// skipRawData()
-            data = file.readAll();
-            file.close();
-        }
-    }
-    */
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     QApplication::processEvents(); // to make setOverrideCursor effect
     if (aiFilename != "NA") {
@@ -3619,12 +3607,6 @@ void Imagine::on_btnReadAiWavOpen_clicked()
             QMessageBox::critical(this, "Imagine", diWaveData->getErrorMsg(),
                 QMessageBox::Ok, QMessageBox::NoButton);
         }
-        //for (int i = 0; i < numAiCurve; i++) {
-        //    comboBoxAiDi[i]->blockSignals(false);
-        //}
-        //for (int i = 0; i < numDiCurve; i++) {
-        //    comboBoxAiDi[i + numAiCurve]->blockSignals(false);
-        //}
     }
     else {
         if (err & ERR_READ_AI) {
@@ -3639,11 +3621,11 @@ void Imagine::on_btnReadAiWavOpen_clicked()
     }
 }
 
-bool Imagine::loadAiDiWavDataAndPlot(long long leftEnd, long long rightEnd, int curveIdx)
+bool Imagine::loadAiDiWavDataAndPlot(SampleIdx leftEnd, SampleIdx rightEnd, int curveIdx)
 {
     int retVal;
     int curveDataSampleNum = 50000;
-    int sampleNum = rightEnd - leftEnd + 1;
+    SampleIdx sampleNum = rightEnd - leftEnd + 1;
     int factor = sampleNum / curveDataSampleNum;
     double amplitude, yoffset;
     QVector<int> dest;
@@ -3710,10 +3692,9 @@ bool Imagine::loadAiDiWavDataAndPlot(long long leftEnd, long long rightEnd, int 
 }
 
 // read jason data to waveform data
-void Imagine::updateAiDiWaveform(int leftEnd, int rightEnd)
+void Imagine::updateAiDiWaveform(SampleIdx leftEnd, SampleIdx rightEnd)
 {
     for (int i = 0; i < cbAiDi.size(); i++) {
-//        if(cbAiDi[i]->isChecked())
             loadAiDiWavDataAndPlot(leftEnd, rightEnd, i);
     }
 
@@ -3881,14 +3862,6 @@ void Imagine::on_sbAiDiDsplyBottom_valueChanged(int value)
 
 void Imagine::on_btnAiDiDsplyReload_clicked()
 {
-    /*
-    ui.sbAiDiDsplyLeft->setValue(0);
-    ui.sbAiDiDsplyRight->setValue(dsplyTotalSampleNum - 1);
-    if (numAiCurveData)
-        ui.sbAiDiDsplyTop->setValue(aiWaveData->getMaxyValue() + 50);
-    else
-        ui.sbAiDiDsplyTop->setValue(200);
-        */
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     int left = ui.sbAiDiDsplyLeft->value();
     int right = ui.sbAiDiDsplyRight->value();
@@ -3896,8 +3869,26 @@ void Imagine::on_btnAiDiDsplyReload_clicked()
     conReadWavPlot->replot();
 }
 
-/***************** Waveform control *************************/
+void Imagine::on_btnAiDiDsplyReset_clicked()
+{
+    int left = 0;
+    int right = dsplyTotalSampleNum - 1;
+    int maxy = aiWaveData->getMaxyValue();
+    int miny = aiWaveData->getMinyValue();
+    ui.sbAiDiDsplyTop->setValue(maxy + 50);
+    ui.sbAiDiDsplyBottom->setValue(miny - 50);
+    ui.sbAiDiDsplyLeft->setValue(left);
+    ui.sbAiDiDsplyRight->setValue(right);
 
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    updateAiDiWaveform(left, right);
+    conReadWavPlot->replot();
+}
+
+#pragma endregion
+
+#pragma region WAVEFORM_CONTROL
+/***************** Waveform control *************************/
 void Imagine::updataSpeedData(CurveData *curveData, int newValue, int start, int end)
 {
     double sampleRate = static_cast<double>(newValue);
@@ -4071,7 +4062,6 @@ void Imagine::displayConWaveData()
 
     // GUI waveform y axis display value adjusting box setup
     Positioner *pos = dataAcqThread->pPositioner;
-//    ui.sbWavDsplyTop->setValue(pos->maxPos() + 50);
     ui.sbWavDsplyTop->setValue(conWaveData->raw2Voltage(conWaveData->maxAnalogRaw) * 11); // max raw to 110mv
     ui.sbWavDsplyTop->setMinimum(-110);
     ui.sbWavDsplyTop->setMaximum(110); // more than 32768 if raw value
@@ -4088,13 +4078,20 @@ void Imagine::displayConWaveData()
         QMessageBox::critical(this, "Imagine", conWaveData->getErrorMsg(),
             QMessageBox::Ok, QMessageBox::NoButton);
     }
+
+    // Record both cameras setting
+    if (!conWaveData->isEmpty(STR_camera1) &&
+        !conWaveData->isEmpty(STR_camera2)) // both camera
+        ui.cbBothCamera->setChecked(true);
+    else
+        ui.cbBothCamera->setChecked(false);
 }
 
-bool Imagine::loadConWavDataAndPlot(long long leftEnd, long long rightEnd, int curveIdx)
+bool Imagine::loadConWavDataAndPlot(SampleIdx leftEnd, SampleIdx rightEnd, int curveIdx)
 {
     int retVal;
     int curveDataSampleNum = 50000; //100000
-    int sampleNum = rightEnd - leftEnd + 1;
+    SampleIdx sampleNum = rightEnd - leftEnd + 1;
     int factor = sampleNum / curveDataSampleNum;
     double amplitude, yoffset;
     QVector<int> dest;
@@ -4133,7 +4130,7 @@ bool Imagine::loadConWavDataAndPlot(long long leftEnd, long long rightEnd, int c
     if (conWaveData->getSignalName(ctrlIdx).right(5) == "piezo")
         retVal = conWaveData->readControlWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor, PDT_RAW);
     else
-        retVal = conWaveData->readControlWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor, PDT_RAW); // TODO: for other analog signal, we need to display voltage?
+        retVal = conWaveData->readControlWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor, PDT_RAW);
     if (retVal) {
         curveData = new CurveData(conWaveData->totalSampleNum); // parameter should not be xpoint.size()
         setCurveData(curveData, curve, dest, leftEnd, rightEnd, factor, amplitude, yoffset);
@@ -4153,10 +4150,9 @@ bool Imagine::loadConWavDataAndPlot(long long leftEnd, long long rightEnd, int c
 }
 
 // read jason data to waveform data
-void Imagine::updateControlWaveform(int leftEnd, int rightEnd)
+void Imagine::updateControlWaveform(SampleIdx leftEnd, SampleIdx rightEnd)
 {
     for (int i = 0; i < cbAoDo.size(); i++) {
-//        if (cbAoDo[i]->isChecked())
             loadConWavDataAndPlot(leftEnd, rightEnd, i);
     }
 
@@ -4196,7 +4192,7 @@ void Imagine::rearrangeTabWindow()
         ui.lineEditConWaveFile->setText(wavFilename);
         ui.tabPiezo->setEnabled(false);
         ui.tabStim->setEnabled(false);
-        ui.cbBothCamera->setEnabled(false);
+//        ui.cbBothCamera->setEnabled(false);
         ui.groupBoxTiming->setEnabled(false);
         if (slaveImagine != NULL)
             slaveImagine->ui.tabCamera->setEnabled(false);
@@ -4206,7 +4202,7 @@ void Imagine::rearrangeTabWindow()
         on_btnWavDsplyReset_clicked();
         ui.tabPiezo->setEnabled(true);
         ui.tabStim->setEnabled(true);
-        ui.cbBothCamera->setEnabled(true);
+//        ui.cbBothCamera->setEnabled(true);
         ui.groupBoxTiming->setEnabled(true);
         if (slaveImagine != NULL)
             slaveImagine->ui.tabCamera->setEnabled(true);
@@ -4393,6 +4389,9 @@ void Imagine::on_btnConWavList_clicked()
     QMessageBox::information(this, "Control signal list", msg, QMessageBox::Ok);
 
 }
+#pragma endregion
+
+#pragma region IMAGE_DISPLAY
 /****** Image Display *****************************************************/
 #define IMAGINE_VALID_CHECK(container)\
         if(line.contains("IMAGINE", Qt::CaseSensitive)){\
@@ -4471,8 +4470,6 @@ void Imagine::holdDisplayCamFile()
 
 void Imagine::stopDisplayCamFile()
 {
-//    ui.cbImg1Enable->setChecked(false);
-//    ui.cbImg2Enable->setChecked(false);
     img1.valid = false;
     img2.valid = false;
     img1.enable = false;
@@ -4732,7 +4729,6 @@ void Imagine::readCameraImagesAndUpdate()
     int updateMethod = 0;
     if ((masterImagine != NULL) && masterImageReady) // slave Imagine
     {
-//        dataAcqThread->isUpdatingImage = true;
         live1 = dataAcqThread->pCamera->getLiveImage();
         width1 = dataAcqThread->pCamera->getImageWidth();
         height1 = dataAcqThread->pCamera->getImageHeight();
@@ -5042,6 +5038,7 @@ void Imagine::on_cbCam1Enable_clicked(bool checked)
 {
     if (ui.rbImgCameraEnable->isChecked()) {
         reconfigDisplayTab();
+        minPixelValue = maxPixelValue = -1;
         readCameraImagesAndUpdate();
     }
 }
@@ -5050,6 +5047,7 @@ void Imagine::on_cbCam2Enable_clicked(bool checked)
 {
     if (ui.rbImgCameraEnable->isChecked()) {
         reconfigDisplayTab();
+        minPixelValue2 = maxPixelValue2 = -1;
         readCameraImagesAndUpdate();
     }
 }
@@ -5122,7 +5120,7 @@ void Imagine::calHomogeneousTramsformMatrix()
     double tcy = cy + param.ty;
     param.a[0][0] = c;
     param.a[0][1] = s;
-    param.a[0][2] = -c*tcx - s*tcy + cx;
+    param.a[0][2] = -c*tcx + -s*tcy + cx;
     param.a[1][0] = s;
     param.a[1][1] = -c;
     param.a[1][2] = -s*tcx + c*tcy + cy;
@@ -5246,7 +5244,9 @@ void Imagine::on_dsbRotationAngle_editingFinished()
 {
     updateImage(isUpdateImgColor, true);
 }
+#pragma endregion
 
+#pragma region SCRIPT_CONTROL
 /****** Script ************************************************************/
 void Imagine::on_btnOpenScriptFile_clicked()
 {
@@ -5280,7 +5280,6 @@ void Imagine::on_btnScriptExecute_clicked()
     imagineScript->moveToThread(&scriptThread);
     connect(&scriptThread, &QThread::finished, imagineScript, &QObject::deleteLater);
     connect(this, &Imagine::evaluateScript, imagineScript, &ImagineScript::scriptProgramEvaluate);
-//    connect(this, &Imagine::stopEvaluating, imagineScript, &ImagineScript::scriptAbortEvaluation);
     connect(imagineScript, &ImagineScript::newMsgReady, this, &Imagine::appendLog);
     connect(imagineScript, &ImagineScript::requestValidityCheck, this, &Imagine::configValidityCheck);
     connect(imagineScript, &ImagineScript::requestRecord, this, &Imagine::configRecord);
@@ -5303,7 +5302,7 @@ void Imagine::on_btnScriptStop_clicked()
 void Imagine::on_textEditScriptFileContent_cursorPositionChanged()
 {
     QTextCursor cursor = ui.textEditScriptFileContent->textCursor();
-    int block = cursor.blockNumber();// ui.textEditScriptFileContent->document()->blockCount();
+    int block = cursor.blockNumber();
     ui.labelScriptLineNum->setText(QString("%1").arg(block + 1));
     ui.labelScriptColumnNum->setText(QString("%1").arg(cursor.columnNumber() + 1));
 }

@@ -190,8 +190,8 @@ int VolPiezo::readConWaveToBuffer(int num)
     if (idx >= totalSample) return 0;
     float64 * bufAo = ao->getOutputBuf();
     float64 * buf = bufAo - 1;
-    int readNum = (idx + num < totalSample) ? num : totalSample - idx;
-    int end = idx + readNum;
+    SampleIdx readNum = (idx + num < totalSample) ? num : totalSample - idx;
+    SampleIdx end = idx + readNum;
     for (int i = 0; i < numAOChannel; i++) {
         if (!conWaveData->isEmpty(i)) {
             QVector<float> waveData;
@@ -348,8 +348,8 @@ int DigitalOut::readConPulseToBuffer(int num)
     if (idx >= totalSample) return 0;
     uInt32 * bufDo = dout->getOutputBuf();
     uInt32 * buf = bufDo - 1;
-    int readNum = (idx + num < totalSample) ? num : totalSample - idx;
-    int end = idx + readNum;
+    SampleIdx readNum = (idx + num < totalSample) ? num : totalSample - idx;
+    SampleIdx end = idx + readNum;
     int numP0Channel = conWaveData->getNumP0Channel();
     int p0Begin = conWaveData->getP0Begin();
     QVector<QVector<int>> waveData(numP0Channel);

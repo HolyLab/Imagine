@@ -34,6 +34,7 @@ template<typename T> string toString(T aValue) { //don't define as toString(T& r
 
 
 QString replaceExtName(QString filename, QString newExtname);
+QString addSuffixToBaseName(QString filename, QString suffix);
 bool CheckFileExtention(QString filename);
 bool CheckAndMakeFilePath(QString filename);
 

@@ -212,6 +212,8 @@ protected:
 
 private:
     QScrollArea* scrollArea;
+    int* pMinPixelValue;
+    int* pMaxPixelValue;
     int minPixelValue, maxPixelValue;
     int minPixelValue2, maxPixelValue2;
     int minPixelValueByUser, maxPixelValueByUser;
@@ -239,7 +241,7 @@ private:
     vector<PiezoUiParam> piezoUiParams;
     AiWaveform *aiWaveData = NULL;
     DiWaveform *diWaveData = NULL;
-    int dsplyTotalSampleNum;
+    SampleIdx dsplyTotalSampleNum;
     QString m_OpenDialogLastDirectory;
     QString m_OpenConWaveDialogLastDirectory;
     QString wavFilename;
@@ -255,7 +257,7 @@ private:
     uInt32 laserTTLSig = 0;
     QProcess *proc = NULL;
 
-    void calcMinMaxValues(Camera::PixelValue * frame, int imageW, int imageH);
+    void calcMinMaxValues(Camera::PixelValue * frame, int *min, int *max, int imageW, int imageH);
     void calcMinMaxValues(Camera::PixelValue * frame1, Camera::PixelValue * frame2, int imageW, int imageH);
     void updateStatus(ImagineStatus newStatus, ImagineAction newAction);
     void updateImage(bool isColor, bool isForce);
@@ -280,12 +282,12 @@ private:
     void writeComments(QString file);
     void readComments(QString file);
     bool readControlWaveformFile(QString fn);
-    void updateControlWaveform(int leftEnd, int rightEnd);
-    void updateAiDiWaveform(int leftEnd, int rightEnd);
+    void updateControlWaveform(SampleIdx leftEnd, SampleIdx rightEnd);
+    void updateAiDiWaveform(SampleIdx leftEnd, SampleIdx rightEnd);
     void updataSpeedData(CurveData *curveData, int newValue, int start, int end);
     bool waveformValidityCheck(void);
-    bool loadConWavDataAndPlot(long long leftEnd, long long rightEnd, int curveIdx);
-    bool loadAiDiWavDataAndPlot(long long leftEnd, long long rightEnd, int curveIdx);
+    bool loadConWavDataAndPlot(SampleIdx leftEnd, SampleIdx rightEnd, int curveIdx);
+    bool loadAiDiWavDataAndPlot(SampleIdx leftEnd, SampleIdx rightEnd, int curveIdx);
     bool readImagineFile(QString file, ImagineData &img);
     bool openAndReadCamFile(QString filename, ImagineData &img);
     bool setupPlayCamParam(ImagineData &img);
@@ -304,6 +306,8 @@ private:
     void showInCurve(int idx, bool checked);
     bool applySetting();
     void startAcqAndSave();
+    void startLive();
+    void stopAcqOrLive();
     bool duplicateParameters(Ui_ImagineClass* destUi);
     void scriptStopRecord();
     void scriptApplyAndReport(bool preRetVal);
@@ -479,6 +483,7 @@ private slots:
     void on_sbAiDiDsplyTop_valueChanged(int value);
     void on_sbAiDiDsplyBottom_valueChanged(int value);
     void on_btnAiDiDsplyReload_clicked();
+    void on_btnAiDiDsplyReset_clicked();
     void on_comboBoxAO0_currentIndexChanged(int index);
     void on_comboBoxAO1_currentIndexChanged(int index);
     void on_comboBoxDO0_currentIndexChanged(int index);

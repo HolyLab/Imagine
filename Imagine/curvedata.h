@@ -19,7 +19,6 @@
 #include <qwt_plot.h>
 #include <qwt_plot_grid.h>
 #include <qwt_plot_marker.h>
-//#include <qwt_interval_data.h>
 #include <qwt_scale_engine.h>
 #include <qwt_series_data.h>
 #include <qwt_symbol.h>

@@ -187,8 +187,6 @@ void DataAcqThread::run()
 {
     if (isLive)
         run_live();
-    else if(isUsingWav)
-        run_acq_and_save_wav();
     else
         run_acq_and_save();
 
@@ -264,305 +262,6 @@ void DataAcqThread::run_live()
 }//run_live()
 
 void DataAcqThread::run_acq_and_save()
-{
-    Camera* camera = pCamera;
-    Timer_g gt;
-    bool hasPos = pPositioner != NULL;
-
-    ////prepare for AO AI and camera:
-
-    ///prepare for camera:
-
-    camFilename = replaceExtName(headerFilename, "cam"); //NOTE: necessary if user overwrite files
-
-    ///piezo feedback data file (only for PI piezo)
-    string positionerFeedbackFile = replaceExtName(headerFilename, "pos").toStdString();
-
-    bool startCameraOnce = (acqTriggerMode == Camera::eExternal);
-
-    //int framefactor = startCameraOnce ? this->nStacks : 1;
-
-    camera->setSpooling(camFilename.toStdString());
-
-    ///camera->setAcqModeAndTime(AndorCamera::eKineticSeries,
-    camera->setAcqModeAndTime(Camera::eAcqAndSave,
-        this->exposureTime,
-        this->nFramesPerStack*this->nStacks,
-        this->acqTriggerMode,
-        this->expTriggerMode);
-    emit newStatusMsgReady(QString("Camera: set acq mode and time: %1")
-        .arg(camera->getErrorMsg().c_str()));
-
-    //get the real params used by the camera:
-    cycleTime = camera->getCycleTime();
-    double timePerStack = nFramesPerStack*cycleTime;
-
-    //TODO: fix this ugliness
-    string wTitle = (*parentImagine).windowTitle().toStdString();
-    string posOwner = "";
-    if ((*parentImagine).masterImagine != NULL) {
-        posOwner = (*parentImagine).masterImagine->ui.comboBoxPositionerOwner->currentText().toStdString();
-    }
-    else {
-        posOwner = (*parentImagine).ui.comboBoxPositionerOwner->currentText().toStdString();
-    }
-
-    if (!wTitle.compare("Imagine (2)") && !posOwner.compare("Camera 2")) {
-        ownPos = true;
-    }
-    else if (!wTitle.compare("Imagine (1)") && !posOwner.compare("Camera 1")) {
-        ownPos = true;
-    }
-    else if (!posOwner.compare("Either")) {
-        ownPos = true;
-    }
-    else if (!wTitle.compare("Imagine")) {
-        ownPos = true;
-    }
-
-    if (hasPos && ownPos) pPositioner->setPCount();
-    bool useTrig = true;
-    if (ownPos) preparePositioner(true, useTrig); //nec for volpiezo
-
-    //prepare for AI:
-    QString ainame = se->globalObject().property("ainame").toString();
-    //TODO: make channel recording list depend on who owns the piezo
-    vector<int> aiChanList;
-    //chanList.push_back(0);
-    for (int i = 0; i < 3; ++i) {
-        aiChanList.push_back(i);
-    }
-    aiThread = new AiThread(ainame, 10000, 50000, 10000, aiChanList, INFINITE_SAMPLE);
-    unique_ptr<AiThread> uniPtrAiThread(aiThread);
-
-    //after all devices are prepared, now we can save the file header:
-    QString stackDir = replaceExtName(camFilename, "stacks");
-
-    saveHeader(headerFilename, aiThread->ai);
-
-    ofstream *ofsAi = new ofstream(aiFilename.toStdString(), ios::binary | ios::out | ios::trunc);
-    unique_ptr<ofstream> uniPtrOfsAi(ofsAi);
-    aiThread->setOfstream(ofsAi);
-
-    isUpdatingImage = false;
-
-
-    Camera::PixelValue * frame = (Camera::PixelValue*)_aligned_malloc(sizeof(Camera::PixelValue*)*(camera->imageSizePixels), 4 * 1024);
-
-    idxCurStack = 0; //stack we are currently working on.  We will keep this in sync with camera->nAcquiredStacks
-
-    {
-        QScriptValue jsFunc = se->globalObject().property("onShutterInit");
-        if (jsFunc.isFunction()) jsFunc.call();
-    }
-
-    //start AI
-    if (ownPos) aiThread->startAcq();
-
-    camera->prepCameraOnce();
-
-    if (startCameraOnce)
-        camera->nextStack();
-
-    //start stimuli[0] if necessary
-    if (applyStim && stimuli[0].second == 0) {
-        curStimIndex = 0;
-        fireStimulus(stimuli[curStimIndex].first);
-    }//if, first stimulus should be fired before stack_0
-
-    int nOverrunStacks = 0;
-
-    gt.start(); //seq's start time is 0, the new ref pt
-
-    double curTime;
-    double lastTime;
-    double stackStartTime;
-
-nextStack:  //code below is repeated every stack
-    stackStartTime = gt.read();
-
-    //   below code caused an intermittent access violation write error
-    /*
-    {
-
-        QScriptValue jsFunc = se->globalObject().property("onShutterOpen");
-        if (jsFunc.isFunction()) {
-            
-               se->globalObject().setProperty("currentStackIndex", idxCurStack);
-               jsFunc.call();
-        }
-    }*/
-
-    //log messages like the below may bog down the GUI and cause overruns when taking stacks at a very high rate
-    /*
-    emit newLogMsgReady(QString("Acquiring stack (0-based)=%1 @time=%2 s")
-        .arg(idxCurStack)
-        .arg(stackStartTime, 10, 'f', 4) //width=10, fixed point, 4 decimal digits 
-        );
-    */
-    if (hasPos && ownPos) pPositioner->optimizeCmd(); //This function currently does nothing for voltage positioner.  Is this okay?
-
-    bool isPiezo = hasPos && pPositioner->posType == PiezoControlPositioner;
-    //open laser shutter
-    if (ownPos) {
-        digOut->singleOut(4, true);
-    }
-    //raise priority here to ensure that the camera and piezo begin (nearly) simultaneously
-    QThread::setPriority(QThread::TimeCriticalPriority);
-    if (hasPos && ownPos) pPositioner->runCmd(); //will wait on trigger pulse from camera
-    camera->nextStack();
-    //lower priority back to default
-    QThread::setPriority(getDefaultPriority());
-
-    //log messages like the below may bog down the GUI and cause overruns when taking stacks at a very high rate
-    /*
-    emit newStatusMsgReady(QString("Camera: started acq: %1")
-        .arg(camera->getErrorMsg().c_str()));
-    */
-
-    long nFramesGotForStack=0;
-    long tempNumStacks=0;
-    long tempNumFrames=0;
-
-    while (!stopRequested) {
-        //to avoid "priority inversion" we temporarily elevate the priority
-        this->setPriority(QThread::TimeCriticalPriority);
-
-        nFramesGotForStack = camera->getNAcquiredFrames();
-        tempNumStacks = camera->getNAcquiredStacks();
-        this->setPriority(getDefaultPriority());
-        if (idxCurStack < tempNumStacks) {
-            idxCurStack = tempNumStacks;
-            OutputDebugStringW((wstring(L"Data acq thread finished stack #") + to_wstring(idxCurStack) + wstring(L"\n")).c_str());
-            break;
-        }
-        if (!isUpdatingImage && tempNumFrames != nFramesGotForStack) {
-            tempNumFrames = nFramesGotForStack;
-            QThread::msleep(10);
-            //copy latest frame to display buffer            
-            if (!camera->updateLiveImage()) {
-                QThread::msleep(10);
-                continue;
-            }
-            emit imageDataReady(camera->getLiveImage(), nFramesGotForStack - 1,  camera->getImageWidth(), camera->getImageHeight()); //-1: due to 0-based indexing
-            
-        }
-        else {
-            QThread::msleep(10);
-        }
-    }//while, camera is not idle
-
-    //close laser shutter
-    if (ownPos) {
-        digOut->singleOut(4, false);
-    }
-
-    //below code also causes intermittent crashes
-    /*
-    {
-        QScriptValue jsFunc = se->globalObject().property("onShutterClose");
-        if (jsFunc.isFunction()) {
-            se->globalObject().setProperty("currentStackIndex", camera->nAcquiredStacks.load());
-            jsFunc.call();
-        }
-    }
-    */
-
-    //update stimulus if necessary:  idxCurStack
-    if (applyStim
-        && curStimIndex + 1 < stimuli.size()
-        && stimuli[curStimIndex + 1].second == idxCurStack) {
-        curStimIndex++;
-        fireStimulus(stimuli[curStimIndex].first);
-    }//if, should update stimulus
-
-    if (hasPos && ownPos) {
-        pPositioner->waitCmd();
-    }
-
-
-    if (idxCurStack < this->nStacks && !stopRequested){
-        if (isBiDirectionalImaging && ownPos){
-            preparePositioner(idxCurStack % 2 == 0, useTrig);
-        }
-
-        double stackEndingTime = gt.read();
-        double timeToWait;
-
-        if (expTriggerMode != Camera::eAuto && !ownPos) timeToWait = 0;
-        else timeToWait = (timePerStack + idleTimeBwtnStacks)*idxCurStack - stackEndingTime;
-
-        OutputDebugStringW((wstring(L"Waiting for ") + to_wstring(int(timeToWait*1000)) + wstring(L" milliseconds to start next stack\n")).c_str());
-
-        if ((timeToWait < 0) && ownPos) {
-            emit newLogMsgReady("WARNING: overrun(overall progress): idle time is too short.");
-        }
-        //TODO: warn user when the cycle time of the camera doesn't match the exposure time they ask for.
-        //the camera always returns the minimum cycle time when the user requests a shorter exposure than it can produce.
-        if ((stackEndingTime - stackStartTime > (timePerStack+idleTimeBwtnStacks)) && (expTriggerMode == Camera::eAuto || ownPos)) {
-            nOverrunStacks++;
-            emit newLogMsgReady("WARNING: overrun(current stack): Probably the positioner cannot keep up:\n");
-            QString temp = QString::fromStdString("      The stack was acquired " + to_string(int((stackEndingTime - stackStartTime- (timePerStack+idleTimeBwtnStacks)) * 1000000)) + " microseconds too slowly.\n");
-            emit newLogMsgReady(temp);
-        }
-
-        double maxWaitTime = 2; //in seconds. The frequency to check stop signal
-    repeatWait:
-        timeToWait = (timePerStack+idleTimeBwtnStacks)*idxCurStack - gt.read();
-        if (timeToWait > 0.01) {
-            QThread::msleep(min(maxWaitTime, timeToWait) * 1000); // *1000: sec -> ms
-        }//if, need wait more than 10ms
-        if (timeToWait > maxWaitTime && !stopRequested) goto repeatWait;
-
-        if (!stopRequested) goto nextStack;
-    }//if, there're more stacks and no stop requested
-
-    this->setPriority(QThread::TimeCriticalPriority);
-    camera->stopAcqFinal(); //priority inversion delays stopping, so we haave to elevate priority
-    this->setPriority(getDefaultPriority());
-
-
-    ///save ai data:
-    if (ownPos) {
-        aiThread->save(*ofsAi);
-        ofsAi->flush();
-    }
-
-    //fire post-seq stimulus:
-    if (applyStim) {
-        int postSeqStim = 0; //TODO: get this value from stim file header
-        fireStimulus(postSeqStim);
-    }
-
-    if (ownPos) {
-        aiThread->stopAcq();
-        aiThread->save(*ofsAi);
-    }   
-
-    {
-        QScriptValue jsFunc = se->globalObject().property("onShutterFini");
-        if (jsFunc.isFunction()) jsFunc.call();
-    }
-
-    ///reset the actuator to its exact starting pos
-    if (hasPos && ownPos) {
-        emit newStatusMsgReady("Now resetting the actuator to its exact starting pos ...");
-        emit resetActuatorPosReady();
-    }
-
-    QString ttMsg = "Acquisition is done";
-    if (stopRequested) ttMsg += " (User requested STOP)";
-    emit newStatusMsgReady(ttMsg);
-
-    if (!nOverrunStacks) ttMsg = "Idle time is OK (NO overrun).";
-    else {
-        ttMsg = QString("# of overrun stacks: %1").arg(nOverrunStacks);
-    }
-    emit newStatusMsgReady(ttMsg);
-
-}//run_acq_and_save()
-
-void DataAcqThread::run_acq_and_save_wav()
 {
     Camera* camera = pCamera;
     Timer_g gt;
@@ -687,7 +386,7 @@ void DataAcqThread::run_acq_and_save_wav()
     bool isPiezo = hasPos && pPositioner->posType == PiezoControlPositioner;
     if (hasPos && ownPos) {
         digOut->runCmd();
-        pPositioner->runCmd();
+        pPositioner->runCmd(); //will wait on trigger pulse from camera
     }
 nextStack:  //code below is repeated every stack
     stackStartTime = gt.read();
@@ -735,20 +434,7 @@ nextStack:  //code below is repeated every stack
         }//while, camera is not idle
     }
 
-    if (useCam && (idxCurStack < this->nStacks) && !stopRequested) {
-//        double stackEndingTime = gt.read();
-
-//        idleTimeBwtnStacks = 0.2; // currently just set (maxpos-minpos)/maxspeed = 400/2000 (but need to check again later)
-        //TODO: warn user when the cycle time of the camera doesn't match the exposure time they ask for.
-        //the camera always returns the minimum cycle time when the user requests a shorter exposure than it can produce.
-/*        if ((stackEndingTime - stackStartTime >(timePerStack + idleTimeBwtnStacks)) && (expTriggerMode == Camera::eAuto || ownPos)) {
-            nOverrunStacks++;
-            emit newLogMsgReady("WARNING: overrun(current stack): Probably the positioner cannot keep up:\n");
-            QString temp = QString::fromStdString("      The stack was acquired " + to_string(int((stackEndingTime - stackStartTime - (timePerStack + idleTimeBwtnStacks)) * 1000000)) + " microseconds too slowly.\n");
-            emit newLogMsgReady(temp);
-        }
-*/
-//        QThread::msleep(100); // ms
+    if (idxCurStack < this->nStacks && !stopRequested) {
         if (!stopRequested) goto nextStack;
     }//if, there're more stacks and no stop requested
 
@@ -838,66 +524,47 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, DaqDi* di, ControlWa
 
     header << "ai data file=" << aiFilename.toStdString() << endl
         << "image data file=" << camFilename.toStdString() << endl;
-    if (isUsingWav) {
-        if (conWaveData != NULL) {
-            header << "command file=" << commandFilename.toStdString() << endl
-                << "di data file=" << diFilename.toStdString() << endl;
-        }
-        else {
-            header << "command file=" << "NA" << endl
-                << "di data file=" << "NA" << endl;
-        }
-        header << "piezo=start position: " << conWaveData->piezoStartPosUm << " um"
-            << ";stop position: " << conWaveData->piezoStopPosUm << " um"
-            << ";output scan rate: " << conWaveData->sampleRate
-            << endl << endl;
+    if (conWaveData != NULL) {
+        header << "command file=" << commandFilename.toStdString() << endl
+            << "di data file=" << diFilename.toStdString() << endl;
     }
     else {
         header << "command file=" << "NA" << endl
-            << "di data file=" << "NA" << endl
-            << "piezo=start position: " << piezoStartPosUm << " um"
-            << ";stop position: " << piezoStopPosUm << " um"
-            << ";output scan rate: " << 10000 // TODO: hard coded
-            << ";bidirection: " << isBiDirectionalImaging
-            << endl << endl;
+            << "di data file=" << "NA" << endl;
     }
+    header << "piezo=start position: " << conWaveData->piezoStartPosUm << " um"
+        << ";stop position: " << conWaveData->piezoStopPosUm << " um"
+        << ";output scan rate: " << conWaveData->sampleRate
+        << endl << endl;
 
     //ai,di related:
     int aiBegin, p0Begin, p0InBegin, numChannel;
-    if (isUsingWav) {
-        if (conWaveData != NULL) {
-            aiBegin = conWaveData->getAIBegin();
-            p0Begin = conWaveData->getP0Begin();
-            p0InBegin = conWaveData->getP0InBegin();
-            numChannel = conWaveData->getNumChannel();
-        }
+    if (conWaveData != NULL) {
+        aiBegin = conWaveData->getAIBegin();
+        p0Begin = conWaveData->getP0Begin();
+        p0InBegin = conWaveData->getP0InBegin();
+        numChannel = conWaveData->getNumChannel();
     }
 
     if (ai != NULL) {
         header << "[ai]" << endl
             << "nscans=" << -1 << endl; //TODO: output nscans at the end
-        if (isUsingWav) {
-            if (conWaveData != NULL) {
-                header << "channel list=";
-                for (int i = aiBegin; i < p0Begin; i++) {
-                    if (conWaveData->getSignalName(i) != "") {
-                        header << i - aiBegin << " ";
-                    }
+        if (conWaveData != NULL) {
+            header << "channel list=";
+            for (int i = aiBegin; i < p0Begin; i++) {
+                if (conWaveData->getSignalName(i) != "") {
+                    header << i - aiBegin << " ";
                 }
-                header.seekp(-1, header.cur);
-                header << endl << "label list=";
-                for (int i = aiBegin; i < p0Begin; i++) {
-                    if (conWaveData->getSignalName(i) != "") {
-                        header << conWaveData->getSignalName(i).toStdString() << "$";
-                    }
-                }
-                header.seekp(-1, header.cur);
-                header << endl;
             }
-        }
-        else {
-            header << "channel list=0 1 2" << endl //TODO: this and label list shouldn't be hardcoded
-                << "label list=piezo$stimuli$camera frame TTL" << endl;
+            header.seekp(-1, header.cur);
+            header << endl << "label list=";
+            for (int i = aiBegin; i < p0Begin; i++) {
+                if (conWaveData->getSignalName(i) != "") {
+                    header << conWaveData->getSignalName(i).toStdString() << "$";
+                }
+            }
+            header.seekp(-1, header.cur);
+            header << endl;
         }
         header << "scan rate=" << ai->scanRate << endl
             << "min sample=" << ai->minDigitalValue << endl
@@ -906,29 +573,27 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, DaqDi* di, ControlWa
             << "max input=" << ai->maxPhyValue << endl << endl;
     }
     if (di != NULL) {
-        if (isUsingWav) {
-            if (conWaveData != NULL) {
-                header << "[di]" << endl
-                    << "di nscans=" << -1 << endl; //TODO: output nscans at the end
-                header << "di channel list=";
-                for (int i = p0InBegin; i < numChannel; i++) {
-                    header << i - p0Begin << " ";
-                }
-                header.seekp(-1, header.cur);
-//                header << endl << "di channel list base="
-//                    << conWaveData->getP0InBegin() - conWaveData->getP0Begin() << endl;
-                header << endl << "di label list=";
-                for (int i = p0InBegin; i < numChannel; i++) {
-                    if (conWaveData->getSignalName(i) != "") {
-                        header << conWaveData->getSignalName(i).toStdString() << "$";
-                    }
-                    else
-                        header << "unused" << "$";
-                }
-                header.seekp(-1, header.cur);
-                header << endl;
-                header << "di scan rate=" << di->scanRate << endl << endl;
+        if (conWaveData != NULL) {
+            header << "[di]" << endl
+                << "di nscans=" << -1 << endl; //TODO: output nscans at the end
+            header << "di channel list=";
+            for (int i = p0InBegin; i < numChannel; i++) {
+                header << i - p0Begin << " ";
             }
+            header.seekp(-1, header.cur);
+            //                header << endl << "di channel list base="
+            //                    << conWaveData->getP0InBegin() - conWaveData->getP0Begin() << endl;
+            header << endl << "di label list=";
+            for (int i = p0InBegin; i < numChannel; i++) {
+                if (conWaveData->getSignalName(i) != "") {
+                    header << conWaveData->getSignalName(i).toStdString() << "$";
+                }
+                else
+                    header << "unused" << "$";
+            }
+            header.seekp(-1, header.cur);
+            header << endl;
+            header << "di scan rate=" << di->scanRate << endl << endl;
         }
     }
 
@@ -959,14 +624,9 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, DaqDi* di, ControlWa
         << ";hend:" << camera.hend
         << ";vstart:" << camera.vstart
         << ";vend:" << camera.vend << endl
-        << "angle from horizontal (deg)=" << angle << endl;
-    if (isUsingWav) {
-        header << "bidirectional=" << isBiDirectionalImaging
-            << endl << endl;
-    }
-    else {
-        header << endl;
-    }
+        << "angle from horizontal (deg)=" << angle << endl
+        << "bidirectional=" << isBiDirectionalImaging
+        << endl << endl;
 
     header << "[laser]" << endl
         << "405nm on=" << conWaveData->getLaserDefaultTTL(1) << endl
@@ -978,7 +638,12 @@ bool DataAcqThread::saveHeader(QString filename, DaqAi* ai, DaqDi* di, ControlWa
         << "445nm percent intensity=" << conWaveData->laserIntensity[4] << endl
         << "488nm percent intensity=" << conWaveData->laserIntensity[1] << endl
         << "514nm percent intensity=" << conWaveData->laserIntensity[5] << endl
-        << "561nm percent intensity=" << conWaveData->laserIntensity[2] << endl;
+        << "561nm percent intensity=" << conWaveData->laserIntensity[2] << endl << endl;
+
+    header << "[mismatch correction]" << endl
+        << "x translation in pixels=" << mismatchXTranslation << endl
+        << "y translation in pixels=" << mismatchYTranslation << endl
+        << "rotation angle in degree=" << mismatchRotation << endl;
 
     header.close();
 

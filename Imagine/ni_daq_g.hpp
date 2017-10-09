@@ -137,7 +137,6 @@ public:
 
    //create ao channel and add the channel to task
    NiDaqAo(QString devstring, const vector<int> & chs): Daq(chs), NiDaq(chs), DaqAo(chs){
- //     dataU16=0;
 	  dataF64 = 0;
       dev = devstring.toStdString();
 //      trigOut.assign(dev).append("/StartTrigger");
@@ -179,7 +178,6 @@ public:
    //release mem
    virtual ~NiDaqAo(){
 	  if (dataF64) delete[] dataF64;
-//      if(dataU16) delete[] dataU16;
    }//dtor,
 
    //set rate and duration, and allocate output buffer
@@ -198,8 +196,6 @@ public:
          );
 
       //allocate output buffer
-//      if(dataU16)delete[] dataU16;
-//      dataU16=0;
       dataU16=new uInt16[nScans*channels.size()];
 	  if (dataF64)delete[] dataF64;
 	  dataF64 = 0;
@@ -234,15 +230,6 @@ public:
 		  dataF64[i] = 1.25;
 	  }
 	  */
-/*      errorCode=DAQmxWriteBinaryU16(taskHandle,
-         nScans, 
-         false,  //don't auto start
-         DAQmx_Val_WaitInfinitely,
-         DAQmx_Val_GroupByChannel, //data layout, all samples for a channel then for another channel
-         dataU16,
-         &nScanWritten,
-         NULL //reserved
-         ); */
 	  if (DAQmxFailed(errorCode = (DAQmxWriteAnalogF64(taskHandle,
 		  nScans,
 		  false,
@@ -288,8 +275,6 @@ public:
        );
 
        //allocate output buffer
-       //      if(dataU16)delete[] dataU16;
-       //      dataU16=0;
        dataU16 = new uInt16[nScans*channels.size()];
        if (dataF64)delete[] dataF64;
        dataF64 = 0;
@@ -375,7 +360,6 @@ public:
 
 //unlike AO, user need supply read buffer for AI
 class NiDaqAi: public NiDaq, public DaqAi {
-   //uInt16 *    dataU16; //it is better that user supplies the read buf
 public:
 	int32 numScalingCoeffs = 0;
 	float64* scalingCoeffs;
@@ -453,7 +437,6 @@ public:
    }//cfgTrigger
 
    //read input from driver
-   //bool read(int nScans, uInt16 * buf){
    bool read(int nScans, float64 * buf) {
 	  int32 nScansRead;
 	  errorCode=DAQmxReadAnalogF64(taskHandle,
@@ -466,16 +449,6 @@ public:
 		  NULL //reserved
 		  );
 
-      /*errorCode=DAQmxReadBinaryU16(taskHandle,
-         nScans,  //numSampsPerChan
-         DAQmx_Val_WaitInfinitely,    //timeToWait
-         DAQmx_Val_GroupByScanNumber, //data layout, here save all data in scan by scan
-         buf,
-         nScans*channels.size(), // #samples to read
-         &nScansReaded,
-         NULL  //reserved
-         );
-		 */
 #if defined(DEBUG_AI)
       if(isError()){
          getErrorMsg();
@@ -743,7 +716,6 @@ public:
 
 //unlike DO, user need supply read buffer for DI
 class NiDaqDi : public NiDaq, public DaqDi {
-    //uInt16 *    dataU16; //it is better that user supplies the read buf
 public:
     int32 numScalingCoeffs = 0;
     float64* scalingCoeffs;

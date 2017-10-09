@@ -233,7 +233,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>6</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -2481,7 +2481,7 @@
                     <string>right direction</string>
                    </property>
                    <property name="accessibleDescription">
-                    <string notr="true">no apply</string>
+                    <string notr="true"/>
                    </property>
                    <property name="wrapping">
                     <bool>true</bool>
@@ -2543,7 +2543,7 @@
                     <string>down direction</string>
                    </property>
                    <property name="accessibleDescription">
-                    <string notr="true">no apply</string>
+                    <string notr="true"/>
                    </property>
                    <property name="wrapping">
                     <bool>true</bool>
@@ -2606,7 +2606,7 @@
                     <string>clockwise</string>
                    </property>
                    <property name="accessibleDescription">
-                    <string notr="true">no apply</string>
+                    <string notr="true"/>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -5312,7 +5312,20 @@
                </size>
               </property>
               <property name="text">
-               <string>Reload</string>
+               <string>Redraw</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="4">
+             <widget class="QPushButton" name="btnAiDiDsplyReset">
+              <property name="maximumSize">
+               <size>
+                <width>50</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Reset</string>
               </property>
              </widget>
             </item>

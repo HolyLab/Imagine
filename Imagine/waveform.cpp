@@ -202,16 +202,12 @@ CFErrorCode ControlWaveform::lookUpWave(QString wn, QVector <QString> &wavName,
         if (dataType == 1) {// For the piezo data type, we will keep another waveform data as a voltage
                             // format(max 10.0V) and position format(max maxPiezoPos) for later use.
                             // This is just for display
-//            dwav->push_back(static_cast<float64>(sum));
             wav_p->push_back(raw2Zpos(value));
             wav_v->push_back(raw2Voltage(value));
         }
         sum += jsonWave[j].toInt();
     }
     wav->push_back(sum); // save total sample number to the last element
-//    if (dataType == 1) {
-//        dwav->push_back(static_cast<float64>(sum));
-//    }
     waveList_Raw.push_back(wav); // add this wav to waveList_Raw
     if (dataType != 0) { // analog
         waveList_Pos.push_back(wav_p);
@@ -626,11 +622,11 @@ bool ControlWaveform::getLaserDefaultTTL(int line)
 }
 
 // binary search recursive function
-int findValue(QVector<int> *wav, long long begin, long long end, int sampleIdx)
+int findValue(QVector<int> *wav, SampleIdx begin, SampleIdx end, int sampleIdx)
 {
-    long long mid =  (begin + end) / 2;
-    long long midIdx = mid*2;
-    long long x0, x1;
+    SampleIdx mid =  (begin + end) / 2;
+    SampleIdx midIdx = mid*2;
+    SampleIdx x0, x1;
 
     if (sampleIdx >= wav->at(midIdx)) {
         if (sampleIdx < wav->at(midIdx + 2)) {
@@ -654,11 +650,11 @@ int findValue(QVector<int> *wav, long long begin, long long end, int sampleIdx)
     }
 }
 
-int findValuePos(QVector<int> *wav, QVector<int> *wav_p, long long begin, long long end, int sampleIdx)
+int findValuePos(QVector<int> *wav, QVector<int> *wav_p, SampleIdx begin, SampleIdx end, int sampleIdx)
 {
-    long long mid = (begin + end) / 2;
-    long long midIdx = mid * 2;
-    long long x0, x1;
+    SampleIdx mid = (begin + end) / 2;
+    SampleIdx midIdx = mid * 2;
+    SampleIdx x0, x1;
 
     if (sampleIdx >= wav->at(midIdx)) {
         if (sampleIdx < wav->at(midIdx + 2)) {
@@ -682,11 +678,11 @@ int findValuePos(QVector<int> *wav, QVector<int> *wav_p, long long begin, long l
     }
 }
 
-float64 findValueVol(QVector<int> *wav, QVector<float64> *wav_v, long long begin, long long end, int sampleIdx)
+float64 findValueVol(QVector<int> *wav, QVector<float64> *wav_v, SampleIdx begin, SampleIdx end, int sampleIdx)
 {
-    long long mid = (begin + end) / 2;
-    long long midIdx = mid * 2;
-    long long x0, x1;
+    SampleIdx mid = (begin + end) / 2;
+    SampleIdx midIdx = mid * 2;
+    SampleIdx x0, x1;
 
     if (sampleIdx >= wav->at(midIdx)) {
         if (sampleIdx < wav->at(midIdx + 2)) {
@@ -780,9 +776,9 @@ CFErrorCode ControlWaveform::galvoSpeedCheck(double maxVolSpeed, int minVol, int
 CFErrorCode ControlWaveform::analogSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx, int &dataSize)
 {
     int controlIdx, repeat, waveIdx;
-    long long idx = 0, idxStrt, idxStop;
+    SampleIdx idx = 0, idxStrt, idxStop;
     bool isFullTest = false;
-    QVector <long long> shortWaveIdxStrt, shortWaveIdxStop;
+    QVector <SampleIdx> shortWaveIdxStrt, shortWaveIdxStop;
 
     dataSize = getCtrlSampleNum(ctrlIdx);
     if (dataSize == 0)
@@ -810,7 +806,7 @@ CFErrorCode ControlWaveform::analogSpeedCheck(int maxSpeed, int minRaw, int maxR
 }
 
 CFErrorCode ControlWaveform::fullSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx,
-    QVector <long long>&strt, QVector <long long>&stop, int &dataSize)
+    QVector <SampleIdx>&strt, QVector <SampleIdx>&stop, int &dataSize)
 {
     qint16 rawWave0, rawWave1;
     double distance, time, speed;
@@ -822,9 +818,9 @@ CFErrorCode ControlWaveform::fullSpeedCheck(int maxSpeed, int minRaw, int maxRaw
 
     for (int i = 0; i < strt.size(); i++) {
         // 1 Speed check : But, this cannot filter out periodic signal which has same period as 'interval'
-        long long end = (stop[i] < getCtrlSampleNum(ctrlIdx) - SPEED_CHECK_INTERVAL) ?
+        SampleIdx end = (stop[i] < getCtrlSampleNum(ctrlIdx) - SPEED_CHECK_INTERVAL) ?
             stop[i] : getCtrlSampleNum(ctrlIdx) - SPEED_CHECK_INTERVAL - 1;
-        for (long long j = strt[i]; j < end; j++) {
+        for (SampleIdx j = strt[i]; j < end; j++) {
             getCtrlSampleValue(ctrlIdx, j, rawWave0, PDT_RAW);
             if ((rawWave0 < minRaw)||(rawWave0 > maxRaw)) // Invalid value
                 return ERR_PIEZO_VALUE_INVALID;
@@ -841,7 +837,7 @@ CFErrorCode ControlWaveform::fullSpeedCheck(int maxSpeed, int minRaw, int maxRaw
         end = (stop[i] < getCtrlSampleNum(ctrlIdx) - 1) ?
             stop[i] : getCtrlSampleNum(ctrlIdx) - 2;
         getCtrlSampleValue(ctrlIdx, 0, wave0, PDT_RAW);
-        for (long long j = strt[i]; j < end; j++) {
+        for (SampleIdx j = strt[i]; j < end; j++) {
             getCtrlSampleValue(ctrlIdx, j, wave1, PDT_RAW);
             if (abs(wave1 - wave0) > instantChangeTh)
                 return ERR_PIEZO_INSTANT_CHANGE;
@@ -1419,33 +1415,6 @@ void genConstantWave(QVariantList &vlarray, int value, int duration)
     vlarray.push_back(value);
 }
 
-int ControlWaveform::genControlFileJSON(void)
-{
-    enum SaveFormat {
-        Json, Binary
-    };
-    enum WaveType {
-        Triangle, Triangle_bidirection, Sinusoidal
-    } wtype;
-    bool bidircection;
-
-    wtype = Triangle;
-
-    if (wtype == Triangle) {
-        bidircection = false;
-        genTriangle(bidircection);
-    }
-    else if (wtype == Triangle_bidirection) {
-        bidircection = true;
-        genTriangle(bidircection);
-    }
-    if (wtype == Sinusoidal) {
-        bidircection = true;
-        genSinusoidal(bidircection);
-    }
-    return 0;
-}
-
 CFErrorCode ControlWaveform::genDefaultControl(QString filename)
 {
     int nFrames, nStacks;
@@ -1472,13 +1441,20 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
 
     QVariantList buf1, buf2, buf3, buf4;
     QVariantList buf11, buf22, buf33, buf44;
+    double minPiezoTravelBackTime = (double)abs(piezoStopPosUm - piezoStartPosUm) / (double)maxPiezoSpeed;
     double frameTime = cycleTime + 0.001; // give a little more time to make fall down transition after exposure time (0.001)
     int eachShutterCtrlSamples = (int)(frameTime*sampleRate + 0.5);
 
     int piezoDelaySamples = 0;
     int piezoRisingSamples = nFrames*eachShutterCtrlSamples + 2*shutterControlMargin*sampleRate;
+    if (piezoRisingSamples < minPiezoTravelBackTime*sampleRate)
+    {
+        double piezoRisingTime = minPiezoTravelBackTime;
+        double cameraTime = piezoRisingTime - 2 * shutterControlMargin;
+        eachShutterCtrlSamples = (int)(cameraTime*sampleRate / nFrames + 0.5);
+        piezoRisingSamples = nFrames*eachShutterCtrlSamples + 2 * shutterControlMargin*sampleRate;
+    }
     //int piezoRisingSamples = (nFrames*frameTime + 2 * shutterControlMargin)*sampleRate;
-    double minPiezoTravelBackTime = (double)abs(piezoStopPosUm - piezoStartPosUm) / (double)maxPiezoSpeed;
     if (!bidirection1 && !bidirection2 && (piezoTravelBackTime < minPiezoTravelBackTime)) {
         errorMsg.append(QString("Piezo travel back time is too short\n"));
         err |= ERR_TRAVELBACKTIME_SHORT;
@@ -1797,7 +1773,7 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
             }
         }
     }
-    long long totalSamples = nStacks * perStackSamples;
+    SampleIdx totalSamples = nStacks * perStackSamples;
     // packing all
     QJsonObject metadata;
     QJsonObject cam1metadata;
@@ -1836,9 +1812,10 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
     };
     if (filename != "") {
         SaveFormat saveFormat = Json;// Binary;Json
+        QString newName = addSuffixToBaseName(filename, "_gui");
         QFile saveFile(saveFormat == Json
-            ? replaceExtName(filename, "json")
-            : replaceExtName(filename, "bin"));
+            ? replaceExtName(newName, "json")
+            : replaceExtName(newName, "bin"));
         if (saveFile.open(QIODevice::WriteOnly)) {
             QJsonDocument saveDoc(alldata);
             saveFile.write(saveFormat == Json
@@ -1856,286 +1833,6 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
     return err;
 }
 
-int ControlWaveform::genTriangle(bool bidir)
-{
-    enum SaveFormat {
-        Json, Binary
-    };
-    enum WaveType {
-        Triangle, Triangle_bidirection, Sinusoidal
-    } wtype;
-
-    qint16 piezo;
-    bool shutter, laser, ttl2;
-    double piezom1, piezo0, piezop1, piezoavg = 0.;
-
-    /* For metadata */
-    int sampleRate = 10000;     // This can be configurable in the GUI
-    long long totalSamples = 0; // this will be calculated later;
-    int nStacks = 10;           // number of stack
-    int nFrames = 20;           // frames per stack
-    double exposureTime = 0.01; // This can be configurable in the GUI
-    bool bidirection = bidir;   // Bi-directional capturing mode
-
-    /* Generating waveforms and pulses                            */
-    /* Refer to help menu in Imagine                              */
-
-    ////////  Generating subsequences of waveforms and pulses  ////////
-
-    ///  Piezo waveform  ///
-    QJsonArray piezo1_001;
-    //  paramters specified by user
-    int piezoDelaySamples = 100;
-    int piezoRisingSamples = 6000;
-    int piezoFallingSamples = 4000;
-    int piezoWaitSamples = 800;
-    double piezoStartPos = PIEZO_10V_UINT16_VALUE / 4.;// 100.;
-    double piezoStopPos = PIEZO_10V_UINT16_VALUE; // 400.;
-
-    /// initial delay ///
-    //  paramters specified by user
-    int initDelaySamples = 500;
-    // generating delay waveform
-    QVariantList buf1;
-    genConstantWave(buf1, piezoStartPos, initDelaySamples);
-    QJsonArray initDelay_wav = QJsonArray::fromVariantList(buf1);
-    // generating delay pulse
-    genConstantWave(buf1, 0, initDelaySamples);
-    QJsonArray initDelay_pulse = QJsonArray::fromVariantList(buf1);
-
-    // generating piezo waveform
-    int perStackSamples = piezoRisingSamples + piezoFallingSamples + piezoWaitSamples;
-    genWaveform(piezo1_001, piezoStartPos, piezoStopPos, piezoDelaySamples,
-        piezoRisingSamples, piezoFallingSamples, perStackSamples);
-
-    /// camera shutter pulse ///
-    QJsonArray camera1_001;
-    // paramters specified by user
-    int shutterControlMarginSamples = 500; // shutter control begin after piezo start and stop before piezo stop
-                                           // generating camera shutter pulse
-    int stakShutterCtrlSamples = piezoRisingSamples - 2 * shutterControlMarginSamples; // full stack period sample number
-    int eachShutterCtrlSamples = stakShutterCtrlSamples / nFrames;     // one frame sample number
-    int exposureSamples = static_cast<int>(exposureTime*static_cast<double>(sampleRate));  // (0.008~0.012sec)*(sampling rate) is optimal
-    if (exposureSamples > eachShutterCtrlSamples - 50 * (sampleRate / 10000))
-        return 1;
-    int eachShutterOnSamples = exposureSamples;
-    genPulse(camera1_001, piezoDelaySamples, piezoRisingSamples, piezoFallingSamples, perStackSamples,
-        shutterControlMarginSamples, eachShutterCtrlSamples, eachShutterOnSamples);
-
-    /// laser shutter pulse ///
-    QJsonArray laser1_001;
-    // paramters specified by user
-    int laserControlMarginSamples = 400; // laser control begin after piezo start and stop before piezo stop
-                                         // generating laser shutter pulse
-    stakShutterCtrlSamples = piezoRisingSamples - 2 * laserControlMarginSamples; // full stack period sample number
-    eachShutterCtrlSamples = stakShutterCtrlSamples / nFrames;     // one frame sample number
-    eachShutterOnSamples = eachShutterCtrlSamples; // all high (means just one pulse)
-    genPulse(laser1_001, piezoDelaySamples, piezoRisingSamples, piezoFallingSamples, perStackSamples,
-        shutterControlMarginSamples, eachShutterCtrlSamples, eachShutterOnSamples);
-
-    /// stimulus valve pulse ///
-    QJsonArray valve_on, valve_off;
-    // paramters specified by user
-    int valveDelaySamples = 0; // no delay
-    int valveOnSamples = piezoRisingSamples + 2 * piezoDelaySamples;
-    int valveOffSamples = piezoFallingSamples - piezoDelaySamples;
-    int valveControlMarginSamples = 50;
-    eachShutterCtrlSamples = valveOnSamples; // just one pulse
-    eachShutterOnSamples = valveOnSamples; // all high
-    // generating stimulus valve pulse
-    genConstantWave(buf1, 0, perStackSamples);
-    valve_off = QJsonArray::fromVariantList(buf1); // valve_off
-    genPulse(valve_on, valveDelaySamples, valveOnSamples, valveOffSamples, perStackSamples,
-        valveControlMarginSamples, eachShutterCtrlSamples, eachShutterOnSamples); // valve_on
-
-    // these values are calculated from user specified parameters
-    //piezoavg = piezoStartPos;
-    //ttl2 = false;
-
-    ///  Register subsequences to waveform list  ///
-    QJsonObject wavelist;
-    wavelist["delay_wave"] = initDelay_wav;
-    wavelist["delay_pulse"] = initDelay_pulse;
-    wavelist["positioner1_001"] = piezo1_001;
-    wavelist["camera1_001"] = camera1_001;
-    wavelist["laser1_001"] = laser1_001;
-    wavelist["valve_on"] = valve_on;
-    wavelist["valve_off"] = valve_off;
-
-
-    ////////  Generating full sequences of waveforms and pulses  ////////
-    QJsonObject analog, digital;
-    QJsonArray piezo1Seq, camera1Seq, laser1Seq, stimulus1Seq, stimulus2Seq;
-    QJsonObject piezo1, camera1, laser1, stimulus1, stimulus2;
-    QJsonObject piezo1Mon, piezo2Mon, camera1Mon, camera2Mon;
-    QJsonObject laser1Mon, stimulus1Mon, stimulus2Mon;
-
-    for (int i = 0; i < channelSignalList.size(); i++) {
-        QString port = channelSignalList[i][0];
-        QString sig = channelSignalList[i][1];
-        if (port == QString(STR_AOHEADER).append("0")) { // AO0
-            piezo1Seq = { 1, "delay_wave", nStacks, "positioner1_001" };
-            piezo1[STR_Channel] = port;
-            piezo1[STR_Seq] = piezo1Seq;
-            analog[sig] = piezo1; // secured port for piezo
-        }
-
-        if (port == QString(STR_AIHEADER).append("0")) { // AI0
-            piezo1Mon[STR_Channel] = port;
-            analog[sig] = piezo1Mon; // secured port for piezo monitor
-        }
-
-        if ((rig == "ocpi-1")|| (rig == "ocpi-lsk")) {
-            if (port == QString(STR_AIHEADER).append("1")) { // AI1
-                piezo2Mon[STR_Channel] = port;
-                analog["horizontal piezo monitor"] = piezo2Mon; // secured port for piezo monitor
-            }
-        }
-        else {
-            if (port == QString(STR_AIHEADER).append("1")) { // AI1
-                piezo2Mon[STR_Channel] = port;
-                analog[sig] = piezo2Mon; // secured port for piezo monitor
-            }
-        }
-
-        if (port == QString(STR_P0HEADER).append("5")) { // P0.5
-            camera1Seq = { 1, "delay_pulse", nStacks, "camera1_001" };
-            camera1[STR_Channel] = port;
-            camera1[STR_Seq] = camera1Seq;
-            digital[sig] = camera1; // secured port for camera1
-        }
-
-        if (port == QString(STR_P0HEADER).append("4")) { // P0.4
-            laser1Seq = { 1, "delay_pulse", nStacks, "laser1_001" };
-            laser1[STR_Channel] = port;
-            laser1[STR_Seq] = laser1Seq;
-            digital[sig] = laser1; // secured port for laser
-        }
-
-        if (port == QString(STR_P0HEADER).append("0")) { // P0.0
-            stimulus1Seq.append(1);
-            stimulus1Seq.append("delay_pulse");
-            stimulus1Seq.append(2); // stack 1, 2
-            stimulus1Seq.append("valve_off");
-            for (int i = 3; i <= nStacks; i++) { // stack 3 ~ nStack
-                int j = i % 4;
-                if (j == 0) {
-                    stimulus1Seq.append(2);
-                    stimulus1Seq.append("valve_on");
-                }
-                else if (j == 2) {
-                    stimulus1Seq.append(2);
-                    stimulus1Seq.append("valve_off");
-                }
-            }
-            stimulus1[STR_Channel] = port;
-            stimulus1[STR_Seq] = stimulus1Seq;
-            if (sig == "")  // custom port
-                digital["stimulus1"] = stimulus1;
-            else
-                qDebug("The port is already used as sequred signal\n");
-        }
-
-        if (port == QString(STR_P0HEADER).append("1")) { // P0.1
-            stimulus2Seq.append(1);
-            stimulus2Seq.append("delay_pulse");
-            stimulus2Seq.append(2);
-            stimulus2Seq.append("valve_off");
-            for (int i = 3; i <= nStacks; i++) { // stack 3 ~ nStack
-                int j = i % 4;
-                if (j == 0) {
-                    stimulus2Seq.append(2);
-                    stimulus2Seq.append("valve_off");
-                }
-                else if (j == 2) {
-                    stimulus2Seq.append(2);
-                    stimulus2Seq.append("valve_on");
-                }
-            }
-            stimulus2[STR_Channel] = port;
-            stimulus2[STR_Seq] = stimulus2Seq;
-            if (sig == "")  // custom port
-                digital["stimulus2"] = stimulus2;
-            else
-                qDebug("The port is already used as sequred signal\n");
-        }
-
-        QString camera1InPort, camera2InPort;
-        if (rig == "ocpi-1") {
-            camera1InPort = QString(STR_P0HEADER).append("7"); // P0.7
-            if (port == camera1InPort) {
-                camera1Mon[STR_Channel] = port;
-                digital[sig] = camera1Mon; // secured port for camera1 mon
-            }
-        }
-        else if (rig == "ocpi-lsk") {
-            camera1InPort = QString(STR_P0HEADER).append("24"); // P0.24
-            if (port == camera1InPort) {
-                camera1Mon[STR_Channel] = port;
-                digital[sig] = camera1Mon; // secured port for camera1 mon
-            }
-            camera2InPort = QString(STR_P0HEADER).append("25"); // P0.25
-            if (port == camera2InPort) {
-                camera2Mon[STR_Channel] = port;
-                digital["camera2 frame monitor"] = camera2Mon;
-            }
-            if (port == QString(STR_P0HEADER).append("26")) { // p0.26
-                stimulus1Mon[STR_Channel] = port;
-                digital["heart beat"] = stimulus1Mon;
-            }
-        }
-        else {
-            camera1InPort = QString(STR_P0HEADER).append("24"); // P0.24
-            if (port == camera1InPort) {
-                camera1Mon[STR_Channel] = port;
-                digital[sig] = camera1Mon; // secured port for camera1 mon
-            }
-            camera2InPort = QString(STR_P0HEADER).append("25"); // P0.25
-            if (port == camera2InPort) {
-                camera2Mon[STR_Channel] = port;
-                digital[sig] = camera2Mon; // secured port for camera2 mon
-            }
-            if (port == QString(STR_P0HEADER).append("26")) { // p0.26
-                stimulus1Mon[STR_Channel] = port;
-                digital["heart beat"] = stimulus1Mon;
-            }
-        }
-    }
-    totalSamples = initDelaySamples + nStacks * perStackSamples;
-
-    // packing all
-    QJsonObject metadata;
-
-    metadata[STR_SampleRate] = sampleRate;
-    metadata[STR_TotalSamples] = totalSamples;
-    metadata[STR_Exposure] = exposureTime;
-    metadata[STR_BiDir] = bidirection;
-    metadata[STR_Stacks] = nStacks;
-    metadata[STR_Frames] = nFrames;
-    metadata[STR_Rig] = rig;
-
-    alldata[STR_Metadata] = metadata;
-    alldata[STR_Analog] = analog;
-    alldata[STR_Digital] = digital;
-    alldata[STR_WaveList] = wavelist;
-    alldata[STR_Version] = CF_VERSION;
-
-    // save data
-    SaveFormat saveFormat = Json;// Binary;Json
-    QFile saveFile(saveFormat == Json
-        ? QStringLiteral("controls.json")
-        : QStringLiteral("controls.bin"));
-    if (!saveFile.open(QIODevice::WriteOnly)) {
-        qWarning("Couldn't open save file.");
-        return false;
-    }
-    QJsonDocument saveDoc(alldata);
-    saveFile.write(saveFormat == Json
-        ? saveDoc.toJson()
-        : saveDoc.toBinaryData());
-    return 0;
-}
-
 int ControlWaveform::genSinusoidal(bool bidir)
 {
     enum SaveFormat {
@@ -2151,7 +1848,7 @@ int ControlWaveform::genSinusoidal(bool bidir)
 
     /* For metadata */
     int sampleRate = 10000;     // This can be configurable in the GUI
-    long long totalSamples = 0; // this will be calculated later;
+    SampleIdx totalSamples = 0; // this will be calculated later;
     int nStacks = 10;           // number of stack (must be even!!)
     int nFrames = 20;           // frames per stack
     double exposureTime = 0.01; // This can be configurable in the GUI
@@ -2432,7 +2129,7 @@ bool AiWaveform::readStreamToWaveforms()
     return true;
 }
 
-bool AiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, long long end, int downSampleRate)
+bool AiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, SampleIdx begin, SampleIdx end, int downSampleRate)
 {
     if (!numAiCurveData)
         return true;
@@ -2441,7 +2138,7 @@ bool AiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, 
             return false;
         file.seek(0);
         stream.skipRawData(sizeof(short)*(begin*numAiCurveData + ctrlIdx));
-        for (long long i = begin; i <= end; i += downSampleRate) {
+        for (SampleIdx i = begin; i <= end; i += downSampleRate) {
             short us;
             stream >> us;
             double y = convertRawToVoltage(us);
@@ -2455,7 +2152,7 @@ bool AiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, 
     else {
         if (end >= aiData[ctrlIdx].size())
             return false;
-        for (long long i = begin; i <= end; i += downSampleRate) {
+        for (SampleIdx i = begin; i <= end; i += downSampleRate) {
             dest.push_back(aiData[ctrlIdx][i]);
 //            if (i >= end - downSampleRate + 1)
 //                return true;
@@ -2465,7 +2162,7 @@ bool AiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, 
     return false;
 }
 
-bool AiWaveform::getSampleValue(int ctrlIdx, long long idx, int &value)
+bool AiWaveform::getSampleValue(int ctrlIdx, SampleIdx idx, int &value)
 {
     if (!numAiCurveData)
         return true;
@@ -2558,7 +2255,7 @@ bool DiWaveform::readStreamToWaveforms()
     for (int i = 0; i < numDiCurveData; i++) {
         diData.push_back(QVector<int>()); // add empty vectors to rows
     }
-    for (long long i = 0; i < totalSampleNum; i++)
+    for (SampleIdx i = 0; i < totalSampleNum; i++)
     {
         uInt8 us;
         stream >> us;
@@ -2575,12 +2272,12 @@ bool DiWaveform::readStreamToWaveforms()
 bool DiWaveform::readStreamToCRLWaveforms()
 {
     uInt8 us;
-    QVector<long long> runLength(numDiCurveData,1);
+    QVector<SampleIdx> runLength(numDiCurveData,1);
     QVector<int> lastValue(numDiCurveData,0);
     int currentValue;
 
     for (int i = 0; i < numDiCurveData; i++) {
-        diCRLData.push_back(QVector<long long>()); // add empty vectors to rows
+        diCRLData.push_back(QVector<SampleIdx>()); // add empty vectors to rows
         diData.push_back(QVector<int>()); // add empty vectors to rows
     }
 
@@ -2589,7 +2286,7 @@ bool DiWaveform::readStreamToCRLWaveforms()
         currentValue = (us &(1 << chNumList[j]))? 1 : 0;
         lastValue[j] = currentValue;
     }
-    for (long long i = 0; i < totalSampleNum-1; i++)
+    for (SampleIdx i = 0; i < totalSampleNum-1; i++)
     {
         stream >> us;
         for (int j = 0; j < numDiCurveData; j++) {
@@ -2612,7 +2309,7 @@ bool DiWaveform::readStreamToCRLWaveforms()
     return true;
 }
 
-bool DiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, long long end, int downSampleRate)
+bool DiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, SampleIdx begin, SampleIdx end, int downSampleRate)
 {
     if (!numDiCurveData)
         return true;
@@ -2625,7 +2322,7 @@ bool DiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, 
             return false;
     }
     else {
-        for (long long i = begin; i <= end; i += downSampleRate) {
+        for (SampleIdx i = begin; i <= end; i += downSampleRate) {
             dest.push_back(diData[ctrlIdx][i]);
 //            if (i >= end - downSampleRate + 1)
 //                return true;
@@ -2635,14 +2332,14 @@ bool DiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, long long begin, 
     return false;
 }
 
-bool DiWaveform::readCRLWaveform(QVector<int> &dest, int ctrlIdx, long long begin, long long end, int downSampleRate)
+bool DiWaveform::readCRLWaveform(QVector<int> &dest, int ctrlIdx, SampleIdx begin, SampleIdx end, int downSampleRate)
 {
     if (!numDiCurveData)
         return true;
     if (end >= totalSampleNum)
         return false;
-    long long i = begin;
-    long long j;
+    SampleIdx i = begin;
+    SampleIdx j;
     for(j = 0; j < diCRLData[ctrlIdx].size(); j++) {
         while (i < diCRLData[ctrlIdx][j]) {
             dest.push_back(diData[ctrlIdx][j]);
@@ -2654,16 +2351,16 @@ bool DiWaveform::readCRLWaveform(QVector<int> &dest, int ctrlIdx, long long begi
     return false;
 }
 
-bool DiWaveform::getSampleValue(int ctrlIdx, long long idx, int &value)
+bool DiWaveform::getSampleValue(int ctrlIdx, SampleIdx idx, int &value)
 {
     if (!numDiCurveData)
         return true;
     if (isCRLEncoded) {
         if (idx >= totalSampleNum)
             return false;
-        long long j = -1;
-        while (idx < diCRLData[ctrlIdx][++j]);
-        value = diData[ctrlIdx][j];
+        SampleIdx j = 0;
+        while (idx < diCRLData[ctrlIdx][j++]);
+        value = diData[ctrlIdx][j--];
         return true;
     }
     else {

@@ -97,7 +97,7 @@ void Pixmapper::handleColorImg(const QByteArray &ba1, const QByteArray &ba2,
     const int maxPixVal2, bool colorizeSat)
 {
     QImage image = QImage(imageW, imageH, QImage::Format_RGB30); // 10,10,10 bits,  QImage::Format_RGB32 8,8,8 bits
-    /*
+    /* this block is for later use for 30bit RGB color mode
     //set to 30bit rgb color
     image.setColorCount((1<<10)*(1 << 10)*(1 << 10));
     for (int i = 0; i < 1024; i++) {
@@ -179,7 +179,6 @@ void Pixmapper::transform(const QByteArray &srcImg, QByteArray &destImg, int ima
                         int dLeft, int dTop, int dWidth, int dHeight)
 {
     Camera::PixelValue * tp1 = (Camera::PixelValue *)srcImg.constData();
-//    Camera::PixelValue * tp2 = (Camera::PixelValue *)destImg.constData();
     // full transform(imageW X imageH) or cropped one(dLeft, dTop, dWidth, dHeight)?
     for (int row = 0; row < imageH; ++row) {
         Camera::PixelValue inten;

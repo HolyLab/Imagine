@@ -34,6 +34,19 @@ QString replaceExtName(QString filename, QString newExtname)
     }
 }//replaceExtName()
 
+QString addSuffixToBaseName(QString filename, QString suffix)
+{
+    QFileInfo fi(filename);
+    QString ext = fi.suffix();
+    if (ext.isEmpty()) {
+        return filename + suffix;
+    }
+    else {
+        filename.chop(ext.size()+1);
+        return filename + suffix + "." + ext;
+    }
+}//addSuffixToBaseName()
+
 bool CheckFileExtention(QString filename)
 {
     QFileInfo fi(filename);
@@ -41,7 +54,7 @@ bool CheckFileExtention(QString filename)
     if (ext!="imagine")
         return false;
     return true;
-}//CheckFileName()
+}//CheckFileExtention()
 
 bool CheckAndMakeFilePath(QString filename)
 {
@@ -51,4 +64,4 @@ bool CheckAndMakeFilePath(QString filename)
     if (!dir.exists())
         retVal = dir.mkpath(fi.path());
     return retVal;
-}//CheckFileName()
+}//CheckAndMakeFilePath()

@@ -92,6 +92,9 @@ public:
     int hstart, hend, vstart, vend; //binning params
     int angle;
     double umPerPxlXy;
+    double mismatchRotation;
+    int mismatchXTranslation;
+    int mismatchYTranslation;
 
     QString preAmpGain, horShiftSpeed, verShiftSpeed; //for the purpose of saving in header only
 
@@ -136,7 +139,6 @@ signals:
 protected:
     void run();
     void run_acq_and_save();
-    void run_acq_and_save_wav();
     void run_live();
 
 private:
