@@ -568,7 +568,6 @@ signals:
     void startIndexRunning(int strtStackIdx1, int strtFrameIdx1, int nStacks1, int framesPerStack1,
         int strtStackIdx2, int strtFrameIdx2, int nStacks2, int framesPerStack2);
     void evaluateScript(void);
-    void stopEvaluating(void);
 
     // for laser control from this line
     void openLaserSerialPort(QString portName);

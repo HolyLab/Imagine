@@ -104,7 +104,6 @@ bool ImagineScript::loadWaveform(const QString &file)
     return retVal;
 }
 
-
 bool ImagineScript::stopRecord()
 {
     int sleepTime = 100; // 100msec
@@ -144,9 +143,9 @@ int ImagineScript::getTimeElapsed(DurationType dt)
     return sec;
 }
 
-bool ImagineScript::sleep(long int time)
+bool ImagineScript::sleepms(long int milisecond)
 {
-    Sleep(time);
+    Sleep(milisecond);
     return true;
 }
 
@@ -257,7 +256,7 @@ QScriptValue ImagineScript::sleepWrapper(QScriptContext *context, QScriptEngine 
         sleepTime = context->argument(0).toUInt32();
 
     if (instance)
-        return QScriptValue(engine, static_cast<ImagineScript*>(instance)->sleep(sleepTime));
+        return QScriptValue(engine, static_cast<ImagineScript*>(instance)->sleepms(sleepTime));
 }
 
 QScriptValue ImagineScript::setFilenameWrapper(QScriptContext *context, QScriptEngine *engine)
@@ -305,7 +304,7 @@ ImagineScript::ImagineScript(QString rig)
     QScriptValue svLoadWav = sEngine->newFunction(loadWaveformWrapper);
     sEngine->globalObject().setProperty("loadWaveform", svLoadWav);
     QScriptValue svSleep = sEngine->newFunction(sleepWrapper);
-    sEngine->globalObject().setProperty("sleep", svSleep);
+    sEngine->globalObject().setProperty("sleepms", svSleep);
     QScriptValue svSetFile = sEngine->newFunction(setFilenameWrapper);
     sEngine->globalObject().setProperty("setOutputFilename", svSetFile);
     QScriptValue svEstimatedRunTime = sEngine->newFunction(getEstimatedRunTimeWrapper);
@@ -318,11 +317,11 @@ ImagineScript::ImagineScript(QString rig)
 
 ImagineScript::~ImagineScript()
 {
+    if (scriptProgram)
+        delete scriptProgram;
     if(sEngine)
         delete sEngine;
     instance = nullptr;
-    if (scriptProgram != NULL)
-        delete scriptProgram;
 }
 
 void ImagineScript::loadImagineScript(QString code)
@@ -352,7 +351,7 @@ bool ImagineScript::scriptProgramEvaluate()
 bool ImagineScript::scriptAbortEvaluation()
 {
     if (sEngine == NULL)
-        return false;
+        return true;
     if (sEngine->isEvaluating()) {
         sEngine->abortEvaluation();
         newMsgReady("Enecution aborted\n");
@@ -360,3 +359,7 @@ bool ImagineScript::scriptAbortEvaluation()
     return true;
 }
 
+bool ImagineScript::isEvaluating()
+{
+    return sEngine->isEvaluating();
+}

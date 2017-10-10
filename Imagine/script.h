@@ -45,7 +45,7 @@ private:
     bool stopRecord();
     bool loadConfig(const QString &file1, const QString &file2);
     bool loadWaveform(const QString &file);
-    bool sleep(long int time);
+    bool sleepms(long int milisecond);
     bool setFilename(const QString &file1, const QString &file2);
     long int getEstimatedRunTime();
     int getTimeElapsed(DurationType dt); // this returns elapsed time until this function
@@ -69,6 +69,8 @@ public:
     };
 
     void loadImagineScript(QString code);
+    bool isEvaluating();
+    bool scriptAbortEvaluation(void);
 
     // print("Hello world!")
     static QScriptValue printWrapper(QScriptContext *context, QScriptEngine *engine);
@@ -80,7 +82,7 @@ public:
     static QScriptValue loadConfigWrapper(QScriptContext *context, QScriptEngine *engine);
     // loadWaveform("OCPI_waveform.json");
     static QScriptValue loadWaveformWrapper(QScriptContext *context, QScriptEngine *engine);
-    // sleep(1000); // sleep 1000msec
+    // sleepms(1000); // sleep 1000msec
     static QScriptValue sleepWrapper(QScriptContext *context, QScriptEngine *engine);
     // setOutputFilename("t1.imagine","t2.imagine");
     static QScriptValue setFilenameWrapper(QScriptContext *context, QScriptEngine *engine);
@@ -90,10 +92,8 @@ public:
     static QScriptValue stopRecordWrapper(QScriptContext *context, QScriptEngine *engine);
     // getTimeElapsedAfterDAQEnd();
     static QScriptValue getTimeElapsedWrapper(QScriptContext *context, QScriptEngine *engine);
-
 public slots:
     bool scriptProgramEvaluate(void);
-    bool scriptAbortEvaluation(void);
 
 signals:
     void newMsgReady(const QString &str);

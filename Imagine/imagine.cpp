@@ -999,10 +999,12 @@ void Imagine::updateStatus(const QString &str)
         updateStatus(eIdle, eNoAction);
         if (reqFromScript) {
             reqFromScript = false;
-            imagineScript->retVal = true;
-            imagineScript->daqStartTime = dataAcqThread->pPositioner->getDAQStartTime();
-            imagineScript->daqEndTime = dataAcqThread->pPositioner->getDAQEndTime();
-            imagineScript->shouldWait = false;
+            if (imagineScript) {
+                imagineScript->retVal = true;
+                imagineScript->daqStartTime = dataAcqThread->pPositioner->getDAQStartTime();
+                imagineScript->daqEndTime = dataAcqThread->pPositioner->getDAQEndTime();
+                imagineScript->shouldWait = false;
+            }
         }
         return;
     }
@@ -1439,8 +1441,10 @@ void Imagine::on_actionContrastMax2_triggered()
 
 void Imagine::stopAcqOrLive()
 {
-    dataAcqThread->stopAcq();
-    updateStatus(eStopping, curAction);
+    if (curStatus == eRunning) {
+        dataAcqThread->stopAcq();
+        updateStatus(eStopping, curAction);
+    }
 }
 
 void Imagine::on_actionStop_triggered()
@@ -5274,8 +5278,21 @@ void Imagine::on_btnOpenScriptFile_clicked()
 
 void Imagine::on_btnScriptExecute_clicked()
 {
-    if (imagineScript != NULL)
+    if (imagineScript != NULL) {
+        if (imagineScript->isEvaluating()) {
+            if (QMessageBox::question(this, "Stop execution? -- Imagine",
+                        "Script is running now.\n Do you want to stop it?",
+                        tr("&No"), tr("&Yes"), QString())) {
+                imagineScript->scriptAbortEvaluation();
+                scriptStopRecord();
+                return;
+            }
+        }
+        if(curStatus != eIdle)
+            return;
         delete imagineScript;
+        imagineScript = NULL;
+    }
     imagineScript = new ImagineScript(rig);
     imagineScript->moveToThread(&scriptThread);
     connect(&scriptThread, &QThread::finished, imagineScript, &QObject::deleteLater);
@@ -5295,8 +5312,10 @@ void Imagine::on_btnScriptExecute_clicked()
 
 void Imagine::on_btnScriptStop_clicked()
 {
-    if (imagineScript != NULL)
+    if (imagineScript != NULL) {
         imagineScript->scriptAbortEvaluation();
+        scriptStopRecord();
+    }
 }
 
 void Imagine::on_textEditScriptFileContent_cursorPositionChanged()

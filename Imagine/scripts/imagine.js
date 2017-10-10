@@ -2,7 +2,7 @@ if(rig=="dummy"){
     var camera = "dummy";
     var magnificationFactor = "1"
 	var positioner = "dummy";
-	var maxposition = "400"; // this value is for ocpi-2 positioner
+	var maxposition = "800"; // this value is for ocpi-2 positioner
 	var maxspeed = "2000"; // this value is for ocpi-2 positioner
 	var ctrlrsetup = "none" // no piezo controller setting
 	var daq = "dummy";
