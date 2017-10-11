@@ -652,7 +652,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="groupBox">
+           <widget class="QGroupBox" name="groupBoxObjective">
             <property name="title">
              <string>angle/pixel size</string>
             </property>

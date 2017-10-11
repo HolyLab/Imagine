@@ -459,6 +459,8 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     ui.gbHorizontalShift->setVisible(false);
     ui.gbVerticalShift->setVisible(false);
     ui.pbTestButton->setVisible(false);
+    if (masterImagine)
+        ui.groupBoxObjective->setVisible(false);
 }
 
 Imagine::~Imagine()
@@ -1766,6 +1768,7 @@ bool Imagine::duplicateParameters(Ui_ImagineClass* destUi)
             destUi->doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(ui.doubleSpinBoxBoxIdleTimeBtwnStacks->value());
             destUi->comboBoxExpTriggerMode->setCurrentIndex(ui.comboBoxExpTriggerMode->currentIndex());
             destUi->spinBoxAngle->setValue(ui.spinBoxAngle->value());
+            destUi->sbObjectiveLens->setValue(ui.sbObjectiveLens->value());
             destUi->doubleSpinBoxUmPerPxlXy->setValue(ui.doubleSpinBoxUmPerPxlXy->value());
             destUi->comboBoxHorReadoutRate->setCurrentIndex(ui.comboBoxHorReadoutRate->currentIndex());
             destUi->comboBoxPreAmpGains->setCurrentIndex(ui.comboBoxPreAmpGains->currentIndex());
@@ -2984,8 +2987,10 @@ void Imagine::writeSettings(QString file)
     if (masterImagine == NULL) {
         prefs.beginGroup("Waveform");
         WRITE_CHECKBOX_SETTING(prefs, cbWaveformEnable);
-//        WRITE_COMBO_SETTING(prefs, comboBoxExpTriggerModeWav);
-//        WRITE_SETTING(prefs, doubleSpinBoxExpTimeWav);
+        WRITE_COMBO_SETTING(prefs, comboBoxExpTriggerModeWav1);
+        WRITE_SETTING(prefs, doubleSpinBoxExpTimeWav1);
+        WRITE_COMBO_SETTING(prefs, comboBoxExpTriggerModeWav2);
+        WRITE_SETTING(prefs, doubleSpinBoxExpTimeWav2);
         WRITE_STRING_SETTING(prefs, lineEditConWaveFile);
         prefs.endGroup();
 
@@ -3074,8 +3079,10 @@ bool Imagine::readSettings(QString file)
     if (masterImagine == NULL) {
         prefs.beginGroup("Waveform");
         READ_CHECKBOX_SETTING(prefs, cbWaveformEnable, false);
-//        READ_COMBO_SETTING(prefs, comboBoxExpTriggerModeWav, 0);
-//        READ_SETTING(prefs, doubleSpinBoxExpTimeWav, ok, d, 0.0107, Double);
+        READ_COMBO_SETTING(prefs, comboBoxExpTriggerModeWav1, 0);
+        READ_SETTING(prefs, doubleSpinBoxExpTimeWav1, ok, d, 0.0107, Double);
+        READ_COMBO_SETTING(prefs, comboBoxExpTriggerModeWav2, 0);
+        READ_SETTING(prefs, doubleSpinBoxExpTimeWav2, ok, d, 0.0107, Double);
         READ_STRING_SETTING(prefs, lineEditConWaveFile, "");
         prefs.endGroup();
 
@@ -4198,8 +4205,9 @@ void Imagine::rearrangeTabWindow()
         ui.tabStim->setEnabled(false);
 //        ui.cbBothCamera->setEnabled(false);
         ui.groupBoxTiming->setEnabled(false);
-        if (slaveImagine != NULL)
-            slaveImagine->ui.tabCamera->setEnabled(false);
+        if (slaveImagine != NULL) {
+            slaveImagine->ui.groupBoxTiming->setEnabled(false);
+        }
     }
     else {
         ui.lineEditConWaveFile->setText("");
@@ -4208,8 +4216,9 @@ void Imagine::rearrangeTabWindow()
         ui.tabStim->setEnabled(true);
 //        ui.cbBothCamera->setEnabled(true);
         ui.groupBoxTiming->setEnabled(true);
-        if (slaveImagine != NULL)
-            slaveImagine->ui.tabCamera->setEnabled(true);
+        if (slaveImagine != NULL) {
+            slaveImagine->ui.groupBoxTiming->setEnabled(true);
+        }
     }
 }
 
