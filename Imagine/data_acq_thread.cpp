@@ -386,7 +386,7 @@ void DataAcqThread::run_acq_and_save()
     bool isPiezo = hasPos && pPositioner->posType == PiezoControlPositioner;
     if (hasPos && ownPos) {
         digOut->runCmd();
-        pPositioner->runCmd(); //will wait on trigger pulse from camera
+        pPositioner->runCmd();
     }
 nextStack:  //code below is repeated every stack
     stackStartTime = gt.read();
@@ -434,7 +434,7 @@ nextStack:  //code below is repeated every stack
         }//while, camera is not idle
     }
 
-    if (idxCurStack < this->nStacks && !stopRequested) {
+    if (useCam && (idxCurStack < this->nStacks) && !stopRequested) {
         if (!stopRequested) goto nextStack;
     }//if, there're more stacks and no stop requested
 
@@ -479,7 +479,7 @@ nextStack:  //code below is repeated every stack
     }
     emit newStatusMsgReady(ttMsg);
     ownPos = false;
-}//run_acq_and_save2()
+}//run_acq_and_save()
 
 #pragma endregion
 

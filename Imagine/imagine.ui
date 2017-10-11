@@ -233,7 +233,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -572,7 +572,7 @@
                <item>
                 <widget class="QSpinBox" name="spinBoxNumOfStacks">
                  <property name="minimum">
-                  <number>1</number>
+                  <number>0</number>
                  </property>
                  <property name="maximum">
                   <number>999999999</number>

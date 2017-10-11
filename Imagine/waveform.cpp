@@ -937,7 +937,7 @@ CFErrorCode ControlWaveform::fastSpeedCheck(int maxSpeed, int minRaw, int maxRaw
 CFErrorCode ControlWaveform::cameraPulseNumCheck(int nTotalFrames, int ctrlIdx, int &nPulses, int &dataSize)
 {
     dataSize = getCtrlSampleNum(ctrlIdx);
-    if (dataSize == 0)
+    if (dataSize == 0 || nTotalFrames == 0)
         return NO_CF_ERROR;
     int repeat, waveIdx, lastWaveIdx, controlIdx;
     nPulses = 0;
@@ -1417,7 +1417,7 @@ void genConstantWave(QVariantList &vlarray, int value, int duration)
 
 CFErrorCode ControlWaveform::genDefaultControl(QString filename)
 {
-    int nFrames, nStacks;
+    int nFramesOrg, nFrames, nStacks;
     if ((enableCam1)&& (enableCam2)) {
         nFrames = max(nFrames1, nFrames2);
         nStacks = max(nStacks1, nStacks2);
@@ -1430,6 +1430,9 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
         nFrames = nFrames2;
         nStacks = nStacks2;
     }
+    if (nStacks == 0)
+        nStacks = 10;
+
     CFErrorCode err = NO_CF_ERROR;
     errorMsg.clear();
     double shutterControlMargin = 0.01; // (sec) shutter control begin after piezo start and stop before piezo stop
