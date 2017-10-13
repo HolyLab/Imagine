@@ -60,7 +60,6 @@ using namespace std;
 #include "misc.hpp"
 using std::bitset;
 
-ImagineStatus curStatus;
 ImagineAction curAction;
 
 extern QScriptEngine* se;
@@ -1813,6 +1812,7 @@ bool Imagine::applySetting()
             "Please click 'apply' when the camera is idle.");
         return false;
     }
+    appendLog("Applying the current settings...");
 
     QString headerFilename;
     Ui_ImagineClass* masterUi = NULL;    // master window
@@ -2178,9 +2178,11 @@ bool Imagine::applySetting()
             otherImagine->ui.btnApply->setEnabled(true);
         }
     }
+    appendLog("Application succeeded");
     return true;
 
 skip:
+    appendLog("Application failed");
     return false;
 }
 
@@ -2656,7 +2658,7 @@ void Imagine::changeLaserTrans(bool isAotf, int line)
             emit setLaserTrans(false, line, slider->value());
             str = QString("Set laser ND wheel value as %1").arg(slider->value());
         }
-        appendLog(str);
+//        appendLog(str);
     }
     else {
         QString str = QString("laserCtrlSerial object is not defined");
@@ -2872,7 +2874,7 @@ void Imagine::changeLaserShuttersTTL(int line, bool onOff)
         str = QString("Open laser shutter 1 with TTL pulse");
     else
         str = QString("Close laser shutter 1 with TTL pulse");
-    appendLog(str);
+//    appendLog(str);
 }
 
 void Imagine::on_cbLineTTL1_clicked(bool checked)
@@ -3114,6 +3116,10 @@ bool Imagine::readSettings(QString file)
             retVal &= ok;
         }
 
+        // laser apply
+        on_actionCloseShutter_triggered();
+        applyLaserSettings();
+
         // waveform file read
         QString conFileName = ui.lineEditConWaveFile->text();
         if (conFileName != "") {
@@ -3125,10 +3131,6 @@ bool Imagine::readSettings(QString file)
         else {
             on_cbWaveformEnable_clicked(false);
         }
-
-        // laser apply
-        on_actionCloseShutter_triggered();
-        applyLaserSettings();
     }
     return retVal;
 }
@@ -3395,6 +3397,21 @@ void Imagine::on_btnPzClosePort_clicked()
 #pragma region AI_DI_READ
 /**************************** AI and DI read ***********************/
 #define MIN_Y   -50
+#define AIDI_YAXIS_UNIT 1 // 1: mV, 2: V, 3: Position
+#if AIDI_YAXIS_UNIT == 1
+#define AI_SCALE 1000.
+#define DI_AMPLITUDE 200.
+#define DI_OFFSET 250.
+#elif  AIDI_YAXIS_UNIT == 2
+#define AI_SCALE 1.
+#define DI_AMPLITUDE 0.004
+#define DI_OFFSET 0.005
+#else
+#define AI_SCALE 80.
+#define DI_AMPLITUDE 20.
+#define DI_OFFSET 25.
+#endif
+
 bool seekSection(QString section, QTextStream &stream)
 {
     bool found = false;
@@ -3585,14 +3602,24 @@ void Imagine::on_btnReadAiWavOpen_clicked()
 
         // GUI waveform y axis display value adjusting box setup
         if (numAiCurveData) {
-            int maxy = aiWaveData->getMaxyValue();
-            int miny = aiWaveData->getMinyValue();
-            ui.sbAiDiDsplyTop->setValue(maxy + 50);
-            ui.sbAiDiDsplyBottom->setValue(miny - 50);
-            ui.sbAiDiDsplyTop->setMinimum(-1500);
-            ui.sbAiDiDsplyTop->setMaximum(1500);
-            ui.sbAiDiDsplyBottom->setMinimum(-1500);
-            ui.sbAiDiDsplyBottom->setMaximum(1500);
+#if AIDI_YAXIS_UNIT == 3 // piezo position
+            aiAmplitude = pos->maxPos() * AI_SCALE / PIEZO_10V_UINT16_VALUE;
+#else
+            aiAmplitude = 10. * AI_SCALE / PIEZO_10V_UINT16_VALUE;
+#endif
+            aiAmplitude = 10. * AI_SCALE / PIEZO_10V_UINT16_VALUE;
+            aiDiMiny = -numDiCurveData * DI_OFFSET;
+            aiDiMaxy = aiWaveData->getMaxAiRaw() * aiAmplitude;
+            if (aiDiMaxy < 0)
+                aiDiMaxy = 0;
+            if(aiDiMiny > aiWaveData->getMinAiRaw() * aiAmplitude)
+                aiDiMiny = aiWaveData->getMinAiRaw() * aiAmplitude;
+            ui.sbAiDiDsplyTop->setValue(aiDiMaxy * 1.1);
+            ui.sbAiDiDsplyBottom->setValue(aiDiMiny * 1.1);
+            ui.sbAiDiDsplyTop->setMinimum(-AI_SCALE * 11);
+            ui.sbAiDiDsplyTop->setMaximum(AI_SCALE * 11);
+            ui.sbAiDiDsplyBottom->setMinimum(-AI_SCALE * 11);
+            ui.sbAiDiDsplyBottom->setMaximum(AI_SCALE * 11);
         }
         else {
             ui.sbAiDiDsplyTop->setValue(200);
@@ -3665,7 +3692,7 @@ bool Imagine::loadAiDiWavDataAndPlot(SampleIdx leftEnd, SampleIdx rightEnd, int 
     dest.clear();
     // set curve position in the plot area
     if (curveIdx < numAiCurve) {
-        amplitude = 1;
+        amplitude = aiAmplitude;
         yoffset = 0;
         if (!aiWaveData)
             return false;
@@ -3675,8 +3702,8 @@ bool Imagine::loadAiDiWavDataAndPlot(SampleIdx leftEnd, SampleIdx rightEnd, int 
         }
     }
     else if (curveIdx < numAiCurve + numDiCurve) {
-        amplitude = 10;
-        yoffset = (curveIdx- numAiCurve) * 15;
+        amplitude = DI_AMPLITUDE;
+        yoffset = - (curveIdx- numAiCurve + 1) * DI_OFFSET;
         if (!diWaveData)
             return false;
         retVal = diWaveData->readWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor);
@@ -3710,7 +3737,7 @@ void Imagine::updateAiDiWaveform(SampleIdx leftEnd, SampleIdx rightEnd)
     }
 
     // y axis setup and replot
-    conReadWavPlot->setAxisScale(QwtPlot::yLeft, MIN_Y, ui.sbAiDiDsplyTop->value());
+    conReadWavPlot->setAxisScale(QwtPlot::yLeft, ui.sbAiDiDsplyBottom->value(), ui.sbAiDiDsplyTop->value());
     conReadWavPlot->replot();
 
     // ui update
@@ -3884,10 +3911,8 @@ void Imagine::on_btnAiDiDsplyReset_clicked()
 {
     int left = 0;
     int right = dsplyTotalSampleNum - 1;
-    int maxy = aiWaveData->getMaxyValue();
-    int miny = aiWaveData->getMinyValue();
-    ui.sbAiDiDsplyTop->setValue(maxy + 50);
-    ui.sbAiDiDsplyBottom->setValue(miny - 50);
+    ui.sbAiDiDsplyTop->setValue(aiDiMaxy * 1.1);
+    ui.sbAiDiDsplyBottom->setValue(aiDiMiny * 1.1);
     ui.sbAiDiDsplyLeft->setValue(left);
     ui.sbAiDiDsplyRight->setValue(right);
 
@@ -3900,6 +3925,20 @@ void Imagine::on_btnAiDiDsplyReset_clicked()
 
 #pragma region WAVEFORM_CONTROL
 /***************** Waveform control *************************/
+#define AODO_YAXIS_UNIT 1 // 1: mV, 2: V, 3: Position
+#if AODO_YAXIS_UNIT == 1
+#define AO_SCALE 1000.
+#define DO_AMPLITUDE 200.
+#define DO_OFFSET 250.
+#elif  AODO_YAXIS_UNIT == 2
+#define AO_SCALE 1.
+#define DO_AMPLITUDE 0.04
+#define DO_OFFSET 0.05
+#else
+#define AO_SCALE 1.
+#define DO_AMPLITUDE 20.
+#define DO_OFFSET 25.
+#endif
 void Imagine::updataSpeedData(CurveData *curveData, int newValue, int start, int end)
 {
     double sampleRate = static_cast<double>(newValue);
@@ -3907,7 +3946,11 @@ void Imagine::updataSpeedData(CurveData *curveData, int newValue, int start, int
     double dEnd = static_cast<double>(end);
     double width = (dEnd - dStart);
     Positioner *pos = dataAcqThread->pPositioner;
-    double maxSpeed = pos->maxSpeed();
+#if AODO_YAXIS_UNIT == 3
+    double maxSpeed = pos->maxSpeed()*aoAmplitude;
+#else
+    double maxSpeed = conWaveData->zpos2Raw(pos->maxSpeed())*aoAmplitude;
+#endif
     double piezoSpeedCurveMax = maxSpeed / sampleRate * width;
     curveData->clear();
     curveData->append(dStart, 0.);
@@ -4073,12 +4116,24 @@ void Imagine::displayConWaveData()
 
     // GUI waveform y axis display value adjusting box setup
     Positioner *pos = dataAcqThread->pPositioner;
-    ui.sbWavDsplyTop->setValue(conWaveData->raw2Voltage(conWaveData->maxAnalogRaw) * 11); // max raw to 110mv
-    ui.sbWavDsplyTop->setMinimum(-110);
-    ui.sbWavDsplyTop->setMaximum(110); // more than 32768 if raw value
-    ui.sbWavDsplyBottom->setValue(conWaveData->raw2Voltage(conWaveData->minAnalogRaw) * 11);
-    ui.sbWavDsplyBottom->setMinimum(-110);
-    ui.sbWavDsplyBottom->setMaximum(110); // more than 32768 if raw value
+#if AODO_YAXIS_UNIT == 3 // piezo position
+    aoAmplitude = pos->maxPos() * AO_SCALE / PIEZO_10V_UINT16_VALUE;
+#else
+    aoAmplitude = 10 * AO_SCALE / PIEZO_10V_UINT16_VALUE;
+#endif
+    aoAmplitude = 10 * AO_SCALE / PIEZO_10V_UINT16_VALUE;
+    aoDoMiny = -numNonDOEmpty * DO_OFFSET;
+    aoDoMaxy = (double)conWaveData->getMaxAoRaw() * aoAmplitude;
+    if (aoDoMaxy < 0)
+        aoDoMaxy = 0;
+    if (aoDoMiny > (double)conWaveData->getMinAoRaw() * aoAmplitude)
+        aoDoMiny = (double)conWaveData->getMinAoRaw() * aoAmplitude;
+    ui.sbWavDsplyTop->setValue(aoDoMaxy * 1.1);
+    ui.sbWavDsplyBottom->setValue(aoDoMiny * 1.1);
+    ui.sbWavDsplyTop->setMinimum(-AO_SCALE * 11);
+    ui.sbWavDsplyTop->setMaximum(AO_SCALE * 11);
+    ui.sbWavDsplyBottom->setMinimum(-AO_SCALE * 11);
+    ui.sbWavDsplyBottom->setMaximum(AO_SCALE * 11);
     if (conWaveData->totalSampleNum>0)
         ui.sbWavDsplyRight->setMaximum(conWaveData->totalSampleNum - 1);
 
@@ -4126,12 +4181,12 @@ bool Imagine::loadConWavDataAndPlot(SampleIdx leftEnd, SampleIdx rightEnd, int c
     cBox = cbAoDo[curveIdx];
     // set curve position in the plot area
     if (curveIdx < numAoCurve) {
-        amplitude = 100./ PIEZO_10V_UINT16_VALUE;
+        amplitude = aoAmplitude;
         yoffset = 0;
     }
     else if (curveIdx < numAoCurve + numDoCurve) {
-        amplitude = 2;
-        yoffset = (curveIdx - numAoCurve) * 3;
+        amplitude = DO_AMPLITUDE;
+        yoffset = -(curveIdx - numAoCurve+1) * DO_OFFSET;
     }
     if ((sigName == "") || (sigName == "empty"))
         return false;
@@ -4374,8 +4429,8 @@ void Imagine::on_btnWavDsplyReset_clicked()
     ui.sbWavDsplyLeft->setValue(0);
     ui.sbWavDsplyRight->setValue(conWaveData->totalSampleNum - 1);
     Positioner *pos = dataAcqThread->pPositioner;
-    ui.sbWavDsplyTop->setValue(conWaveData->raw2Voltage(conWaveData->maxAnalogRaw) * 11); // max raw to 110mv
-    ui.sbWavDsplyBottom->setValue(conWaveData->raw2Voltage(conWaveData->minAnalogRaw) * 11);
+    ui.sbWavDsplyTop->setValue(aoDoMaxy * 1.1);
+    ui.sbWavDsplyBottom->setValue(aoDoMiny * 1.1);
 }
 
 void Imagine::on_btnConWavList_clicked()

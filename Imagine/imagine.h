@@ -191,6 +191,7 @@ public:
     int imgFrameIdx, imgStackIdx;
     QColor img1Color, img2Color;
     int alpha;
+    ImagineStatus curStatus;
 
     // for laser control
     LaserCtrlSerial *laserCtrlSerial = nullptr;
@@ -242,6 +243,12 @@ private:
     AiWaveform *aiWaveData = NULL;
     DiWaveform *diWaveData = NULL;
     SampleIdx dsplyTotalSampleNum;
+    double aiDiMaxy;
+    double aiDiMiny;
+    double aoDoMaxy;
+    double aoDoMiny;
+    double aiAmplitude;
+    double aoAmplitude;
     QString m_OpenDialogLastDirectory;
     QString m_OpenConWaveDialogLastDirectory;
     QString wavFilename;

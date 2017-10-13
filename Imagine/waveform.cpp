@@ -481,8 +481,8 @@ CFErrorCode ControlWaveform::parsing(void)
     //caluclate min max piezo value
     piezoStartPosUm = 1000000;
     piezoStopPosUm = -1000000;
-    minAnalogRaw = PIEZO_10V_UINT16_VALUE;
-    maxAnalogRaw = - (PIEZO_10V_UINT16_VALUE+1);
+    minAoRaw = PIEZO_10V_UINT16_VALUE;
+    maxAoRaw = - (PIEZO_10V_UINT16_VALUE+1);
     for (int i = 0; i < getAIBegin(); i++) {
         for (int j = 0; j < controlList[i]->size(); j += 2) {
             int waveIdx = controlList[i]->at(j + 1);
@@ -493,15 +493,27 @@ CFErrorCode ControlWaveform::parsing(void)
                     if (piezoStopPosUm < piezoPos) piezoStopPosUm = piezoPos;
                 }
             }
-            for (int sampleIdx = 0; sampleIdx < waveList_Raw[waveIdx]->size(); sampleIdx+=2) {
+            for (int sampleIdx = 1; sampleIdx < waveList_Raw[waveIdx]->size(); sampleIdx+=2) {
                 int analogRaw = waveList_Raw[waveIdx]->at(sampleIdx);
-                if (minAnalogRaw > analogRaw) minAnalogRaw = analogRaw;
-                if (maxAnalogRaw < analogRaw) maxAnalogRaw = analogRaw;
+                if (minAoRaw > analogRaw)
+                    minAoRaw = analogRaw;
+                if (maxAoRaw < analogRaw)
+                    maxAoRaw = analogRaw;
             }
         }
     }
 
     return err;
+}
+
+int ControlWaveform::getMinAoRaw()
+{
+    return minAoRaw;
+}
+
+int ControlWaveform::getMaxAoRaw()
+{
+    return maxAoRaw;
 }
 
 bool ControlWaveform::isEmpty(int ctrlIdx)
@@ -757,6 +769,7 @@ bool ControlWaveform::isLaserPulseEmpty(void)
 #define  SPEED_CHECK_INTERVAL 100
 CFErrorCode ControlWaveform::positionerSpeedCheck(int maxPosSpeed, int minPos, int maxPos, int ctrlIdx, int &dataSize)
 {
+//    return NO_CF_ERROR;
     int minRaw = zpos2Raw(minPos);
     int maxRaw = zpos2Raw(maxPos);
     int maxRawSpeed = zpos2Raw(maxPosSpeed); // change position speed to raw data speed
@@ -2094,8 +2107,8 @@ bool AiWaveform::readFile(QString filename)
         }
         else {
             isReadFromFile = true;
-            maxy = 1000;
-            miny = -100;
+            maxRaw = PIEZO_10V_UINT16_VALUE;
+            minRaw = -(PIEZO_10V_UINT16_VALUE+1)*0.1;
         }
     }
     return true;
@@ -2103,13 +2116,19 @@ bool AiWaveform::readFile(QString filename)
 
 double AiWaveform::convertRawToVoltage(short us)
 {
+    int wus = removeSomeWrapAround(us);
+    return static_cast<double>(wus)*1000. / PIEZO_10V_UINT16_VALUE; // int value to double(mV)
+}
+
+int AiWaveform::removeSomeWrapAround(short us)
+{
     int wus; // warp arounded value
     if (us < (int)MIN_VALUE) // if 'us' is too negative value then probably it was positive
-                             // value overflowed the maximum value so we wrap around
+                             // value overflowed the maximum value so we remove these wrap around
         wus = (int)us + 2 * (PIEZO_10V_UINT16_VALUE + 1);
     else
         wus = (int)us;
-    return static_cast<double>(wus)*1000. / PIEZO_10V_UINT16_VALUE; // int value to double(mV)
+    return wus;
 }
 
 bool AiWaveform::readStreamToWaveforms()
@@ -2123,9 +2142,9 @@ bool AiWaveform::readStreamToWaveforms()
         int wus; // warp arounded value
         for (int j = 0; j < numAiCurveData; j++) {
             stream >> us;
-            double y = convertRawToVoltage(us);
-            if (y > maxy) maxy = y;
-            if (y < miny) miny = y;
+            int y = removeSomeWrapAround(us);
+            if (y > maxRaw) maxRaw = y;
+            if (y < minRaw) minRaw = y;
             aiData[j].push_back(y);
         }
     }
@@ -2144,7 +2163,7 @@ bool AiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, SampleIdx begin, 
         for (SampleIdx i = begin; i <= end; i += downSampleRate) {
             short us;
             stream >> us;
-            double y = convertRawToVoltage(us);
+            int y = removeSomeWrapAround(us);
             dest.push_back(y);
             if (i >= end - downSampleRate + 1)
                 return true;
@@ -2157,8 +2176,6 @@ bool AiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, SampleIdx begin, 
             return false;
         for (SampleIdx i = begin; i <= end; i += downSampleRate) {
             dest.push_back(aiData[ctrlIdx][i]);
-//            if (i >= end - downSampleRate + 1)
-//                return true;
         }
         return true;
     }
@@ -2176,7 +2193,8 @@ bool AiWaveform::getSampleValue(int ctrlIdx, SampleIdx idx, int &value)
         stream.skipRawData(sizeof(short)*(idx*numAiCurveData + ctrlIdx));
         short us;
         stream >> us;
-        value = us; // short to int
+        int y = removeSomeWrapAround(us); // short to int
+        value = y;
     }
     else {
         if (idx >= aiData[ctrlIdx].size())
@@ -2188,14 +2206,14 @@ bool AiWaveform::getSampleValue(int ctrlIdx, SampleIdx idx, int &value)
     }
 }
 
-int AiWaveform::getMaxyValue()
+int AiWaveform::getMaxAiRaw()
 {
-    return maxy;
+    return maxRaw;
 }
 
-int AiWaveform::getMinyValue()
+int AiWaveform::getMinAiRaw()
 {
-    return miny;
+    return minRaw;
 }
 
 /***** DiWaveform class ******************************************************/
@@ -2327,8 +2345,6 @@ bool DiWaveform::readWaveform(QVector<int> &dest, int ctrlIdx, SampleIdx begin, 
     else {
         for (SampleIdx i = begin; i <= end; i += downSampleRate) {
             dest.push_back(diData[ctrlIdx][i]);
-//            if (i >= end - downSampleRate + 1)
-//                return true;
         }
         return true;
     }

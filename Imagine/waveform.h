@@ -328,7 +328,7 @@ public:
     double idleTimeBwtnStacks;
     double piezoStartPosUm;
     double piezoStopPosUm;
-    double minAnalogRaw, maxAnalogRaw;
+    int minAoRaw, maxAoRaw;
     bool applyStim;
     vector<pair<int, int> > *stimuli;
 
@@ -382,6 +382,8 @@ public:
     // Laser default output
     void setLaserIntensityValue(int line, double data);
     bool getLaserDefaultTTL(int line);
+    int getMinAoRaw();
+    int getMaxAoRaw();
 }; // ControlWaveform
 
 
@@ -393,10 +395,12 @@ private:
     QFile file;
     QVector<QVector<int>> aiData;
     int numAiCurveData;
-    double maxy = 0, miny = INFINITY;
+    int maxRaw = -(PIEZO_10V_UINT16_VALUE + 1);
+    int minRaw = PIEZO_10V_UINT16_VALUE;
     QDataStream stream;
     bool isReadFromFile = false;
     double convertRawToVoltage(short us);
+    int removeSomeWrapAround(short us);
 
 public:
     QVector<int> dest;
@@ -411,8 +415,8 @@ public:
     bool readStreamToWaveforms();
     // Read single value
     bool getSampleValue(int ctrlIdx, SampleIdx idx, int &value);
-    int getMaxyValue();
-    int getMinyValue();
+    int getMaxAiRaw();
+    int getMinAiRaw();
     // Close open file
     bool fileClose();
     // Read block

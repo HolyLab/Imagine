@@ -243,7 +243,7 @@ void CookeWorkerThread::run() {
     OutputDebugStringW((wstring(L"Dropped ") + to_wstring(nDroppedSpool) + wstring(L" frames total because spoolthread could not keep up\n")).c_str());
 
     #if defined(_DEBUG)
-    DataAcqThread::genSquareSpike(30);
+//    DataAcqThread::genSquareSpike(30);
         cerr << "black frame info:" << endl;
         for (unsigned i = 0; i < nBlackFrames.size(); ++i) {
             cerr << nBlackFrames[i] << "@" << blackFrameStartIndices[i] << " \t";
