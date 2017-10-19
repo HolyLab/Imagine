@@ -174,11 +174,8 @@ public:
     bool slaveImageReady = false;
     QPixmap pixmap;
     QImage image;
-    QByteArray lastRawImg;
-    QByteArray lastRawImg2;
-    bool isUpdateImgColor;
-    int lastImgH = 0;
-    int lastImgW = 0;
+    int updateMethod;
+    QByteArray* pLastRawImg;
     double factor = 0.0;
     double factor2 = 0.0;
     int maxROIHSize;
@@ -263,11 +260,12 @@ private:
     bool reqFromScript = false;
     uInt32 laserTTLSig = 0;
     QProcess *proc = NULL;
+    bool masterLaserShutter = false;
 
     void calcMinMaxValues(Camera::PixelValue * frame, int *min, int *max, int imageW, int imageH);
     void calcMinMaxValues(Camera::PixelValue * frame1, Camera::PixelValue * frame2, int imageW, int imageH);
     void updateStatus(ImagineStatus newStatus, ImagineAction newAction);
-    void updateImage(bool isColor, bool isForce);
+    void updateImage(int updateMethod, bool isForce);
     void updateHist(QwtPlotHistogram *histogram, const Camera::PixelValue * frame,
         const int imageW, const int imageH, double &maxcount, unsigned int &maxintensity);
     void updateIntenCurve(const Camera::PixelValue * frame,
@@ -290,6 +288,7 @@ private:
     void readComments(QString file);
     bool readControlWaveformFile(QString fn);
     void updateControlWaveform(SampleIdx leftEnd, SampleIdx rightEnd);
+    void updatePiezoSpeedCurve(SampleIdx leftEnd, SampleIdx rightEnd);
     void updateAiDiWaveform(SampleIdx leftEnd, SampleIdx rightEnd);
     void updataSpeedData(CurveData *curveData, int newValue, int start, int end);
     bool waveformValidityCheck(void);
@@ -300,7 +299,7 @@ private:
     bool setupPlayCamParam(ImagineData &img);
     bool readCamFileImages();
     void readCamFileImagesAndUpdate();
-    void readCameraImagesAndUpdate();
+    void updateCameraImage();
     void reconfigDisplayTab();
     void holdDisplayCamFile();
     void stopDisplayCamFile();
@@ -331,6 +330,7 @@ private:
     void displayImageUpdate(void);
     void calHomogeneousTramsformMatrix();
     bool outputFileExistCheckNDelete(QVector<QString> &filenames);
+    void applyIndividualLasers();
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();
@@ -392,8 +392,8 @@ private slots:
     void appendLog(const QString& msg);
     void updateLiveImagePlay(const QByteArray &data16, long idx, int imageW, int imageH);
     void updateSlaveLiveImagePlay(const QByteArray &data16, long idx, int imageW, int imageH);
-    void updateDisplay(const QByteArray &data16, long idx, int imageW, int imageH);
-    void updateDisplayColor(const QByteArray &data1, const QByteArray &data2, long idx, int imageW, int imageH);
+    void updateDisplay(long idx, int updateMethod);
+    void updateDisplayColor(long idx);
     void zoom_onMousePressed(QMouseEvent*);
     void zoom_onMouseMoved(QMouseEvent*);
     void zoom_onMouseReleased(QMouseEvent*);

@@ -128,6 +128,21 @@ public:
     int idxCurStack;  //the stack we are working on. Since it's 0-based it's also the number of stacks finished so far
     bool ownPos = false;
 
+    volatile int nEmittedSignal = 0;
+    QMutex mutex2;
+    void incEmittedSignal() {
+        mutex2.lock();
+        nEmittedSignal++;
+        mutex2.unlock();
+    }
+    void decEmittedSignal() {
+        mutex2.lock();
+        nEmittedSignal--;
+        mutex2.unlock();
+    }
+    QMutex mutex;
+    void setIsUpdatingImage(bool value);
+
 signals:
     void imageDisplayReady(const QImage &image, long idx);
     void newStatusMsgReady(const QString &str);

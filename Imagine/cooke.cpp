@@ -378,9 +378,30 @@ bool CookeCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
     if (errorCode != PCO_NOERROR) {
 		errorMsg = "failed to set exposure trigger mode";
 		return false;
-	}
-
-
+	}/*
+    DWORD* dwReserved;
+    WORD wReservedLen;
+    QVector<QTime> times;
+    times.push_back(QTime::currentTime());
+    errorCode = PCO_SetCmosLineTiming(
+        hCamera, //in
+        1, //in
+        1, //in
+        40, //in
+        dwReserved, //in
+        wReservedLen //in
+    );
+    for (int i = 0; i < 10; i++) {
+    times.push_back(QTime::currentTime());
+        errorCode = PCO_SetCmosLineExposureDelay(
+            hCamera, //in
+            5, //in
+            100, //in
+            dwReserved, //out
+            wReservedLen //in
+        );
+        times.push_back(QTime::currentTime());
+    }*/
     ///exposure time
     errorCode = PCO_SetDelayExposureTime(hCamera, // Timebase: 0-ns; 1-us; 2-ms  
 		(DWORD)(0),
@@ -679,15 +700,15 @@ void DummyCameraThread::run()
             for (int i = 0; i < 8; i++)
                 (*buffer++) = ((char *)frameCnt)[i];
 
-            msleep(30);
+            msleep(cycleTime*1000);
             if (!getCancel()) {
                 dummyImgIdx = dummyImgIdx % dummyImgDataSize;
                 *pStatus[idx] = 0; // don't care
-                qDebug("E%d %X", idx, buff[idx]);
+                //qDebug("E%d %X", idx, buff[idx]);
                 SetEvent(hEvent[idx]);
-                qDebug("G%d %X", idx, buff[idx]);
+                //qDebug("G%d %X", idx, buff[idx]);
                 get_idx = (++idx) % 2;
-                msleep(20);
+                //msleep(20);
             }
             else {
                 frameNum = 0;

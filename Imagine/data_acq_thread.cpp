@@ -169,6 +169,12 @@ bool DataAcqThread::prepareDaqBuffered()
 #pragma endregion
 
 #pragma region Acquisition
+void DataAcqThread::setIsUpdatingImage(bool value)
+{
+    mutex.lock();
+    isUpdatingImage = value;
+    mutex.unlock();
+}
 
 void DataAcqThread::startAcq()
 {
@@ -238,9 +244,9 @@ void DataAcqThread::run_live()
                 QThread::msleep(20);
                 continue;
             }
-
+            //incEmittedSignal();
+            setIsUpdatingImage(true);
             emit imageDataReady(camera->getLiveImage(), nFramesGot - 1, camera->getImageWidth(), camera->getImageHeight()); //-1: due to 0-based indexing
-
             nDisplayUpdating++;
             if (nDisplayUpdating % 10 == 0){
                 emit newStatusMsgReady(QString("Screen update frame rate: %1")
@@ -426,6 +432,7 @@ nextStack:  //code below is repeated every stack
                     QThread::msleep(10);
                     continue;
                 }
+                setIsUpdatingImage(true);
                 emit imageDataReady(camera->getLiveImage(), nFramesGotForStack - 1, camera->getImageWidth(), camera->getImageHeight()); //-1: due to 0-based indexing
             }
             else {

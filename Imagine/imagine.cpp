@@ -540,13 +540,23 @@ void Imagine::setROIMinMaxSize()
 
 #pragma region DRAWING
 
-void Imagine::updateImage(bool isColor, bool isForce)
+void Imagine::updateImage(int updateMethod, bool isForce)
 {
-    if (isColor) {
-        if (lastRawImg.isNull()|| lastRawImg2.isNull()) return;
+    int lastImgH = img1.imgHeight;
+    int lastImgW = img1.imgWidth;
+    if (updateMethod == 3) {
+        if (img1.camImage.isNull()|| img2.camImage.isNull())
+            return;
+    }
+    else if(updateMethod == 2) {
+        if (img2.camImage.isNull())
+            return;
+        lastImgH = img2.imgHeight;
+        lastImgW = img2.imgWidth;
     }
     else {
-        if (lastRawImg.isNull()) return;
+        if (img1.camImage.isNull())
+            return;
     }
     if (isPixmapping && !isForce) return;
     isPixmapping = true;
@@ -566,13 +576,16 @@ void Imagine::updateImage(bool isColor, bool isForce)
         L = T = 0; H = lastImgH; W = lastImgW;
     }
 
-    if(isColor)
-        emit makeColorPixmap(lastRawImg, lastRawImg2, img1Color, img2Color, alpha
-            , lastImgW, lastImgH, factor, factor2, displayAreaSize,
+    if(updateMethod == 3)
+        emit makeColorPixmap(img1.camImage, img2.camImage, img1Color, img2Color, alpha
+            , img1.imgWidth, img1.imgHeight, factor, factor2, displayAreaSize,
             L, T, W, H, xd, xc, yd, yc, minPixelValue, maxPixelValue,
             minPixelValue2, maxPixelValue2, colSat);
+    else if(updateMethod == 2)
+        emit makePixmap(img2.camImage, img2.imgWidth, img2.imgHeight, factor, displayAreaSize,
+            L, T, W, H, xd, xc, yd, yc, *pMinPixelValue, *pMaxPixelValue, colSat);
     else
-        emit makePixmap(lastRawImg, lastImgW, lastImgH, factor, displayAreaSize,
+        emit makePixmap(img1.camImage, img1.imgWidth, img1.imgHeight, factor, displayAreaSize,
             L, T, W, H, xd, xc, yd, yc, *pMinPixelValue, *pMaxPixelValue, colSat);
 }
 
@@ -797,30 +810,30 @@ QPoint Imagine::calcPos(const QPoint& pos)
 }
 
 //note: idx is 0-based
-void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int imageH)
+void Imagine::updateDisplay(long idx, int updateMethod)
 {
     // If something breaks... probably these units are wrong.
-    lastRawImg = data16;
-    lastImgH = imageH;
-    lastImgW = imageW;
+    ImagineData *pImg = &img1;
     pMinPixelValue = &minPixelValue;
     pMaxPixelValue = &maxPixelValue;
     int* pMinPixelValueByUser = &minPixelValueByUser;
     int* pMaxPixelValueByUser = &maxPixelValueByUser;
+    int nEmittedSignal = dataAcqThread->nEmittedSignal;
 
     if (masterImagine == NULL) {
-        if ((ui.rbImgCameraEnable->isChecked() && ui.cbCam2Enable->isChecked()) ||
-            (ui.rbImgFileEnable->isChecked() && ui.cbImg2Enable->isChecked())) {
+        if (updateMethod == 2) { // display camera2 or image2 on Imagine(1)
+            pImg = &img2;
+            nEmittedSignal = slaveImagine->dataAcqThread->nEmittedSignal;
             pMinPixelValue = &minPixelValue2;
             pMaxPixelValue = &maxPixelValue2;
             pMinPixelValueByUser = &minPixelValueByUser2;
             pMaxPixelValueByUser = &maxPixelValueByUser2;
         }
     }
-    Camera::PixelValue * frame = (Camera::PixelValue *)data16.constData();
+    Camera::PixelValue * frame = (Camera::PixelValue *)pImg->camImage.constData();
     if (ui.actionFlickerControl->isChecked()){
         int oldMax = *pMaxPixelValue;
-        calcMinMaxValues(frame, pMinPixelValue, pMaxPixelValue, imageW, imageH);
+        calcMinMaxValues(frame, pMinPixelValue, pMaxPixelValue, pImg->imgWidth, pImg->imgHeight);
         if (*pMaxPixelValue == 0){
             if (++nContinousBlackFrames < 3){
                 *pMaxPixelValue = oldMax;
@@ -841,11 +854,11 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
         double maxcount = 0;
         if ((ui.rbImgCameraEnable->isChecked()&& ui.cbCam1Enable->isChecked()) ||
             (ui.rbImgFileEnable->isChecked()&ui.cbImg1Enable->isChecked())) {
-            updateHist(histogram, frame, imageW, imageH, maxcount, maxintensity);
+            updateHist(histogram, frame, pImg->imgWidth, pImg->imgHeight, maxcount, maxintensity);
             histogram2->detach();
         }
         else {
-            updateHist(histogram2, frame, imageW, imageH, maxcount, maxintensity);
+            updateHist(histogram2, frame, pImg->imgWidth, pImg->imgHeight, maxcount, maxintensity);
             histogram->detach();
         }
         histPlot->setAxisScale(QwtPlot::yLeft, 1, maxcount);
@@ -856,12 +869,12 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
     //update intensity vs stack (or frame) curve
     //  --- live mode:
     if (nUpdateImage%histSamplingRate == 0 && curStatus == eRunning && curAction == eLive){
-        updateIntenCurve(frame, imageW, imageH, idx);
+        updateIntenCurve(frame, pImg->imgWidth, pImg->imgHeight, idx);
     }
     //  --- acq mode:
     if (curStatus == eRunning && curAction == eAcqAndSave
         && idx == dataAcqThread->nFramesPerStack - 1){
-        updateIntenCurve(frame, imageW, imageH, dataAcqThread->idxCurStack);
+        updateIntenCurve(frame, pImg->imgWidth, pImg->imgHeight, dataAcqThread->idxCurStack);
     }
 
     //copy and scale data
@@ -874,11 +887,11 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
         if (ui.actionAutoScaleOnFirstFrame->isChecked()){
             //user can change the setting when acq. is running
             if (*pMaxPixelValue == -1 || *pMaxPixelValue == 0){
-                calcMinMaxValues(frame, pMinPixelValue, pMaxPixelValue, imageW, imageH);
+                calcMinMaxValues(frame, pMinPixelValue, pMaxPixelValue, pImg->imgWidth, pImg->imgHeight);
             }//if, need update min/max values.
         }//if, min/max are from the first frame
         else if (ui.actionAutoScaleOnAllFrames->isChecked()){
-            calcMinMaxValues(frame, pMinPixelValue, pMaxPixelValue, imageW, imageH);
+            calcMinMaxValues(frame, pMinPixelValue, pMaxPixelValue, pImg->imgWidth, pImg->imgHeight);
         }//else if, min/max are from each frame's own data
         else {
             *pMinPixelValue = *pMinPixelValueByUser;
@@ -889,29 +902,23 @@ void Imagine::updateDisplay(const QByteArray &data16, long idx, int imageW, int 
         if (ui.actionColorizeSaturatedPixels->isChecked()) factor *= 254 / 255.0;
     }//else, adjust contrast(i.e. scale data by min/max values)
 
-    isUpdateImgColor = false;
-    updateImage(isUpdateImgColor, false);
+    updateImage(updateMethod, false);
 
     nUpdateImage++;
     appendLog(QString().setNum(nUpdateImage)
-        + "-th updated frame(0-based)=" + QString().setNum(idx));
+        + "-th updated frame(0-based)=" + QString().setNum(idx));//nEmittedSignal
 
 done:
     return;
 }//updateDisplay(),
 
-void Imagine::updateDisplayColor(const QByteArray &data1, const QByteArray &data2, long idx, int imageW, int imageH)
+void Imagine::updateDisplayColor(long idx)
 {
-    lastRawImg = data1;
-    lastRawImg2 = data2;
-    lastImgH = imageH;
-    lastImgW = imageW;
-
-    Camera::PixelValue * frame1 = (Camera::PixelValue *)data1.constData();
-    Camera::PixelValue * frame2 = (Camera::PixelValue *)data2.constData();
+    Camera::PixelValue * frame1 = (Camera::PixelValue *)img1.camImage.constData();
+    Camera::PixelValue * frame2 = (Camera::PixelValue *)img2.camImage.constData();
     if (ui.actionFlickerControl->isChecked()) {
         int oldMax = maxPixelValue;
-        calcMinMaxValues(frame1, frame2, imageW, imageH);
+        calcMinMaxValues(frame1, frame2, img1.imgWidth, img1.imgHeight);
         if (maxPixelValue == 0) {
             if (++nContinousBlackFrames < 3) {
                 maxPixelValue = oldMax;
@@ -928,12 +935,12 @@ void Imagine::updateDisplayColor(const QByteArray &data1, const QByteArray &data
     //update histogram plot
     int histSamplingRate = 3; //that is, calc histgram every 3 updating
     if (nUpdateImage%histSamplingRate == 0) {
-        unsigned int maxintensity, maxintensity2;
-        double maxcount = 0, maxcount2 = 0;
-        updateHist(histogram, frame1, imageW, imageH, maxcount, maxintensity);
-        updateHist(histogram2, frame2, imageW, imageH, maxcount2, maxintensity2);
-        histPlot->setAxisScale(QwtPlot::yLeft, 1, max(maxcount, maxcount2));
-        histPlot->setAxisScale(QwtPlot::xBottom, 0.0, max(maxintensity, maxintensity2));
+        unsigned int maxintensity1, maxintensity2;
+        double maxcount1 = 0, maxcount2 = 0;
+        updateHist(histogram, frame1, img1.imgWidth, img1.imgHeight, maxcount1, maxintensity1);
+        updateHist(histogram2, frame2, img2.imgWidth, img2.imgHeight, maxcount2, maxintensity2);
+        histPlot->setAxisScale(QwtPlot::yLeft, 1, max(maxcount1, maxcount2));
+        histPlot->setAxisScale(QwtPlot::xBottom, 0.0, max(maxintensity1, maxintensity2));
         histPlot->replot();
         histPlot->legend();
     }
@@ -941,12 +948,12 @@ void Imagine::updateDisplayColor(const QByteArray &data1, const QByteArray &data
     //update intensity vs stack (or frame) curve
     //  --- live mode:
     if (nUpdateImage%histSamplingRate == 0 && curStatus == eRunning && curAction == eLive) {
-        updateIntenCurve(frame1, imageW, imageH, idx);
+        updateIntenCurve(frame1, img1.imgWidth, img1.imgHeight, idx);
     }
     //  --- acq mode:
     if (curStatus == eRunning && curAction == eAcqAndSave
         && idx == dataAcqThread->nFramesPerStack - 1) {
-        updateIntenCurve(frame1, imageW, imageH, dataAcqThread->idxCurStack);
+        updateIntenCurve(frame1, img1.imgWidth, img1.imgHeight, dataAcqThread->idxCurStack);
     }
 
     //copy and scale data
@@ -962,11 +969,11 @@ void Imagine::updateDisplayColor(const QByteArray &data1, const QByteArray &data
             //user can change the setting when acq. is running
             if (maxPixelValue == -1 || maxPixelValue == 0
                 || maxPixelValue2 == -1 || maxPixelValue2 == 0) {
-                calcMinMaxValues(frame1, frame2, imageW, imageH);
+                calcMinMaxValues(frame1, frame2, img1.imgWidth, img1.imgHeight);
             }//if, need update min/max values.
         }//if, min/max are from the first frame
         else if (ui.actionAutoScaleOnAllFrames->isChecked()) {
-            calcMinMaxValues(frame1, frame2, imageW, imageH);
+            calcMinMaxValues(frame1, frame2, img1.imgWidth, img1.imgHeight);
         }//else if, min/max are from each frame's own data
         else {
             minPixelValue = minPixelValueByUser;
@@ -983,12 +990,12 @@ void Imagine::updateDisplayColor(const QByteArray &data1, const QByteArray &data
         }
     }//else, adjust contrast(i.e. scale data by min/max values)
 
-    isUpdateImgColor = true;
-    updateImage(isUpdateImgColor, false);
+    updateImage(3, false);
 
     nUpdateImage++;
     appendLog(QString().setNum(nUpdateImage)
         + "-th updated frame(0-based)=" + QString().setNum(idx));
+        // +" " + QString().setNum(slaveImagine->dataAcqThread->nEmittedSignal));
 
 done:
     return;
@@ -1239,14 +1246,14 @@ void Imagine::zoom_onMouseReleased(QMouseEvent* event)
         W = RB.x() - L; H = RB.y() - T;
     done:
         //refresh the image
-        updateImage(isUpdateImgColor, true);
+        updateImage(updateMethod, true);
     }//if, dragging
 }
 
 void Imagine::on_actionDisplayFullImage_triggered()
 {
     L = -1;
-    updateImage(isUpdateImgColor, true);
+    updateImage(updateMethod, true);
 
 }
 
@@ -1268,7 +1275,7 @@ void Imagine::zoom_onMouseMoved(QMouseEvent* event)
         zoom_curPos = event->pos();
 
         if (!pixmap.isNull()){ //TODO: if(pixmap && idle)
-            updateImage(isUpdateImgColor, false);
+            updateImage(updateMethod, false);
         }
     }
 }
@@ -1498,8 +1505,10 @@ void Imagine::on_actionOpenShutter_triggered()
     //open laser shutter
     bool retVal = digOut->singleOut(4, true);
     QString str;
-    if(retVal == true)
+    if (retVal == true) {
+        masterLaserShutter = true;
         str = QString("Open laser shutter");
+    }
     else
         str = QString("Open laser shutter error");
     appendLog(str);
@@ -1517,8 +1526,10 @@ void Imagine::on_actionCloseShutter_triggered()
     bool retVal = digOut->singleOut(4, false);
 
     QString str;
-    if (retVal == true)
+    if (retVal == true) {
+        masterLaserShutter = false;
         str = QString("Close laser shutter");
+    }
     else
         str = QString("Close laser shutter error");
     appendLog(str);
@@ -1774,10 +1785,10 @@ bool Imagine::duplicateParameters(Ui_ImagineClass* destUi)
             destUi->spinBoxGain->setValue(ui.spinBoxGain->value());
             destUi->comboBoxVertShiftSpeed->setCurrentIndex(ui.comboBoxVertShiftSpeed->currentIndex());
             destUi->comboBoxVertClockVolAmp->setCurrentIndex(ui.comboBoxVertClockVolAmp->currentIndex());
-            destUi->spinBoxHstart->setValue(ui.spinBoxHstart->value());
-            destUi->spinBoxHend->setValue(ui.spinBoxHend->value());
-            destUi->spinBoxVstart->setValue(ui.spinBoxVstart->value());
-            destUi->spinBoxVend->setValue(ui.spinBoxVend->value());
+            //destUi->spinBoxHstart->setValue(ui.spinBoxHstart->value());
+            //destUi->spinBoxHend->setValue(ui.spinBoxHend->value());
+            //destUi->spinBoxVstart->setValue(ui.spinBoxVstart->value());
+            //destUi->spinBoxVend->setValue(ui.spinBoxVend->value());
         }
         else {
             destUi->cbBothCamera->setChecked(false);
@@ -2150,6 +2161,9 @@ bool Imagine::applySetting()
         if (ok) pos->moveTo(um);
         // clear all digital output as low
         digOut->clearAllOutput();
+        // reapply laser setting
+        applyIndividualLasers();
+
 
         // if applicable, make sure positioner preparation went well...
         if (pos != NULL && !dataAcqThread->prepareDaqBuffered())
@@ -3137,14 +3151,24 @@ bool Imagine::readSettings(QString file)
 
 void Imagine::applyLaserSettings(void)
 {
+    masterLaserShutter = false;
+    applyIndividualLasers();
+}
+
+void Imagine::applyIndividualLasers(void)
+{
     if ((rig == "ocpi-2") || (rig == "dummy")) {
-        for (int i = 1; i <= 8; i++) changeLaserTrans(true, i);
+        //        for (int i = 1; i <= 8; i++) changeLaserTrans(true, i);
         on_cbLineTTL1_clicked(ui.cbLineTTL1->isChecked());
         on_cbLineTTL2_clicked(ui.cbLineTTL2->isChecked());
         on_cbLineTTL3_clicked(ui.cbLineTTL3->isChecked());
         on_cbLineTTL4_clicked(ui.cbLineTTL4->isChecked());
         on_cbLineTTL5_clicked(ui.cbLineTTL5->isChecked());
     }
+    if (masterLaserShutter)
+        on_actionOpenShutter_triggered();
+    else
+        on_actionCloseShutter_triggered();
 }
 
 void Imagine::writeComments(QString file)
@@ -3945,6 +3969,7 @@ void Imagine::updataSpeedData(CurveData *curveData, int newValue, int start, int
     double dStart = static_cast<double>(start);
     double dEnd = static_cast<double>(end);
     double width = (dEnd - dStart);
+    double bottom = (double)ui.sbWavDsplyBottom->value();
     Positioner *pos = dataAcqThread->pPositioner;
 #if AODO_YAXIS_UNIT == 3
     double maxSpeed = pos->maxSpeed()*aoAmplitude;
@@ -3953,8 +3978,8 @@ void Imagine::updataSpeedData(CurveData *curveData, int newValue, int start, int
 #endif
     double piezoSpeedCurveMax = maxSpeed / sampleRate * width;
     curveData->clear();
-    curveData->append(dStart, 0.);
-    curveData->append(dEnd, piezoSpeedCurveMax);
+    curveData->append(dStart, bottom);
+    curveData->append(dEnd, piezoSpeedCurveMax + bottom);
 }
 
 template<class Type> void Imagine::setCurveData(CurveData *curveData, QwtPlotCurve *curve,
@@ -4215,6 +4240,14 @@ bool Imagine::loadConWavDataAndPlot(SampleIdx leftEnd, SampleIdx rightEnd, int c
     }
 }
 
+void Imagine::updatePiezoSpeedCurve(SampleIdx leftEnd, SampleIdx rightEnd)
+{
+    // graph data for piezo speed
+    CurveData *curveData = new CurveData(conWaveData->totalSampleNum);
+    updataSpeedData(curveData, conWaveData->sampleRate, leftEnd, rightEnd);
+    piezoSpeedCurve->setData(curveData);
+}
+
 // read jason data to waveform data
 void Imagine::updateControlWaveform(SampleIdx leftEnd, SampleIdx rightEnd)
 {
@@ -4222,12 +4255,8 @@ void Imagine::updateControlWaveform(SampleIdx leftEnd, SampleIdx rightEnd)
             loadConWavDataAndPlot(leftEnd, rightEnd, i);
     }
 
-    // graph data for piezo speed
-    CurveData *curveData = NULL;
-    curveData = new CurveData(conWaveData->totalSampleNum);
-    updataSpeedData(curveData, conWaveData->sampleRate, leftEnd, rightEnd);
-    piezoSpeedCurve->setData(curveData);
-    conWavPlot->setAxisScale(QwtPlot::yLeft, ui.sbWavDsplyBottom->value(), ui.sbWavDsplyTop->value());
+    updatePiezoSpeedCurve(leftEnd, rightEnd);
+//    conWavPlot->setAxisScale(QwtPlot::yLeft, ui.sbWavDsplyBottom->value(), ui.sbWavDsplyTop->value());
     conWavPlot->replot();
 
     // ui update
@@ -4420,6 +4449,7 @@ void Imagine::on_sbWavDsplyTop_valueChanged(int value)
 void Imagine::on_sbWavDsplyBottom_valueChanged(int value)
 {
     int top = ui.sbWavDsplyTop->value();
+    updatePiezoSpeedCurve(ui.sbWavDsplyLeft->value(), ui.sbWavDsplyRight->value());
     conWavPlot->setAxisScale(QwtPlot::yLeft, value, top);
     conWavPlot->replot();
 }
@@ -4752,11 +4782,11 @@ void Imagine::readCamFileImagesAndUpdate()
         // update images with current zoom setting
         nUpdateImage = 0;
         if (img1.enable && img1.camValid && img2.enable && img2.camValid)
-            updateDisplayColor(img1.camImage, img2.camImage, imgFrameIdx, imgWidth, imgHeight);
+            updateDisplayColor(imgFrameIdx);
         else if (img1.enable && img1.camValid)
-            updateDisplay(img1.camImage, imgFrameIdx, img1.imgWidth, img1.imgHeight);
+            updateDisplay(imgFrameIdx, 1);
         else if (img2.enable && img2.valid)
-            updateDisplay(img2.camImage, imgFrameIdx, img2.imgWidth, img2.imgHeight);
+            updateDisplay(imgFrameIdx, 2);
     }
     isUpdatingDisplay = false;
 }
@@ -4770,96 +4800,86 @@ void Imagine::updateLiveImagePlay(const QByteArray &data16, long idx, int imageW
                                           // master image of camera2 window = camera2 image
                 return;
             }
-            masterImageReady = true;
-            readCameraImagesAndUpdate();
+            goto read_image_and_update;
         }
     }
     else {
         if (ui.rbImgCameraEnable->isChecked()) {
-            masterImageReady = true;
-            readCameraImagesAndUpdate();
+            goto read_image_and_update;
         }
     }
+    return;
+
+read_image_and_update:
+    masterImageReady = true;
+    img1.camImage = data16;
+//    dataAcqThread->decEmittedSignal();
+    img1.imgHeight = imageH;
+    img1.imgWidth = imageW;
+    updateCameraImage();
 }
 
 void Imagine::updateSlaveLiveImagePlay(const QByteArray &data16, long idx, int imageW, int imageH)
 {
     if (ui.rbImgCameraEnable->isChecked()) {
         slaveImageReady = true;
-        readCameraImagesAndUpdate();
+        img2.camImage = data16;
+//        slaveImagine->dataAcqThread->decEmittedSignal();
+        img2.imgHeight = imageH;
+        img2.imgWidth = imageW;
+        updateCameraImage();
     }
 }
 
-void Imagine::readCameraImagesAndUpdate()
+void Imagine::updateCameraImage()
 {
-    QByteArray live1, live2;
-    int width1, height1, width2, height2;
-    int updateMethod = 0;
+    updateMethod = 0;
     if ((masterImagine != NULL) && masterImageReady) // slave Imagine
     {
-        live1 = dataAcqThread->pCamera->getLiveImage();
-        width1 = dataAcqThread->pCamera->getImageWidth();
-        height1 = dataAcqThread->pCamera->getImageHeight();
-        if (live1.size() != 0) updateMethod = 1;
+        if (img1.camImage.size() != 0) updateMethod = 1;
     }
     else {
         if (ui.cbCam1Enable->isChecked()) {
-            live1 = dataAcqThread->pCamera->getLiveImage();
-            width1 = dataAcqThread->pCamera->getImageWidth();
-            height1 = dataAcqThread->pCamera->getImageHeight();
-            if (live1.size() != 0) updateMethod += 1;
+            if (img1.camImage.size() != 0) updateMethod += 1;
         }
         if (ui.cbCam2Enable->isChecked() && slaveImagine) {
-            live2 = slaveImagine->dataAcqThread->pCamera->getLiveImage();
-            width2 = slaveImagine->dataAcqThread->pCamera->getImageWidth();
-            height2 = slaveImagine->dataAcqThread->pCamera->getImageHeight();
-            if (live2.size() != 0) updateMethod += 2;
-        }
-        if (updateMethod == 3) {
-            if ((width1 != width2) || (height1 != height2)) {
-                QMessageBox::warning(this, tr("Imagine"),
-                    tr("Image size is different betwen camera 1 and camera 2"));
-                // only display camera1
-                ui.cbCam2Enable->setChecked(false);
-                updateMethod = 1;
-            }
+            if (img2.camImage.size() != 0) updateMethod += 2;
         }
     }
 
     if (updateMethod) {
         if (updateMethod == 1) {
-            dataAcqThread->isUpdatingImage = true;
-            updateDisplay(live1, 0, width1, height1);
+            updateDisplay(0, updateMethod);
             masterImageReady = false;
             slaveImageReady = false;
-            dataAcqThread->isUpdatingImage = false;
+            dataAcqThread->setIsUpdatingImage(false);
         }
         else if (updateMethod == 2) {
-            slaveImagine->dataAcqThread->isUpdatingImage = true;
-            updateDisplay(live2, 0, width2, height2);
+            updateDisplay(0, updateMethod);
             masterImageReady = false;
             slaveImageReady = false;
-            slaveImagine->dataAcqThread->isUpdatingImage = false;
+            slaveImagine->dataAcqThread->setIsUpdatingImage(false);
         }
         else {// updateMethod == 3
-            if (masterImageReady && slaveImageReady) { // ignore until both images are ready
-                if(!dataAcqThread->isUpdatingImage)
-                    dataAcqThread->isUpdatingImage = true;
-                if (!slaveImagine->dataAcqThread->isUpdatingImage)
-                    slaveImagine->dataAcqThread->isUpdatingImage = true;
-                updateDisplayColor(live1, live2, 0, width1, height1);
+            if ((curStatus == eRunning && masterImageReady && slaveImagine->curStatus == eRunning && slaveImageReady)||
+                (curStatus == eRunning && masterImageReady && slaveImagine->curStatus == eIdle)||
+                (curStatus == eIdle && slaveImagine->curStatus == eRunning && slaveImageReady) ||
+                (curStatus == eIdle && slaveImagine->curStatus == eIdle)) {
+                if ((img1.imgWidth != img2.imgWidth) || (img1.imgHeight != img2.imgHeight)) {
+                    slaveImageReady = false;
+                    ui.cbCam2Enable->setChecked(false);
+                    reconfigDisplayTab();
+                    QMessageBox::warning(this, tr("Imagine"),
+                        tr("Image size is different betwen camera 1 and camera 2"));
+                    // only display camera1
+                    dataAcqThread->setIsUpdatingImage(false);
+                    return;
+                }
+                updateDisplayColor(0);
                 masterImageReady = false;
                 slaveImageReady = false;
-                dataAcqThread->isUpdatingImage = false;
-                slaveImagine->dataAcqThread->isUpdatingImage = false;
-            }
-            else if (masterImageReady)
-            {
-                dataAcqThread->isUpdatingImage = true;
-            }
-            else if (slaveImageReady)
-            {
-                slaveImagine->dataAcqThread->isUpdatingImage = true;
+                dataAcqThread->setIsUpdatingImage(false);
+                slaveImagine->dataAcqThread->setIsUpdatingImage(false);
             }
         }
     }
@@ -5048,17 +5068,19 @@ void Imagine::reconfigDisplayTab()
         }
         if (slaveImagine) {
             if (ui.cbCam2Enable->isChecked()) {
+                disconnect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
+                    this, SLOT(updateSlaveLiveImagePlay(const QByteArray &, long, int, int)));
                 connect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
                     this, SLOT(updateSlaveLiveImagePlay(const QByteArray &, long, int, int)));
                 if (ui.cbCam1Enable->isChecked()) {
-                    dataAcqThread->isUpdatingImage = false;
-                    slaveImagine->dataAcqThread->isUpdatingImage = false;
+                    dataAcqThread->setIsUpdatingImage(false);
+                    slaveImagine->dataAcqThread->setIsUpdatingImage(false);
                 }
             }
             else {
                 disconnect(slaveImagine->dataAcqThread, SIGNAL(imageDataReady(const QByteArray &, long, int, int)),
                     this, SLOT(updateSlaveLiveImagePlay(const QByteArray &, long, int, int)));
-                slaveImagine->dataAcqThread->isUpdatingImage = false;
+                slaveImagine->dataAcqThread->setIsUpdatingImage(false);
             }
         }
     }
@@ -5107,7 +5129,7 @@ void Imagine::on_cbCam1Enable_clicked(bool checked)
     if (ui.rbImgCameraEnable->isChecked()) {
         reconfigDisplayTab();
         minPixelValue = maxPixelValue = -1;
-        readCameraImagesAndUpdate();
+        updateCameraImage();
     }
 }
 
@@ -5116,7 +5138,7 @@ void Imagine::on_cbCam2Enable_clicked(bool checked)
     if (ui.rbImgCameraEnable->isChecked()) {
         reconfigDisplayTab();
         minPixelValue2 = maxPixelValue2 = -1;
-        readCameraImagesAndUpdate();
+        updateCameraImage();
     }
 }
 
@@ -5125,7 +5147,7 @@ void Imagine::on_rbImgCameraEnable_toggled(bool checked)
     L = -1; // full image
     if (checked) { // camera
         reconfigDisplayTab();
-        readCameraImagesAndUpdate();
+        updateCameraImage();
     }
     else { // imagine file
         img1.enable = ui.cbImg1Enable->isChecked();
@@ -5148,17 +5170,17 @@ void Imagine::on_hsBlending_valueChanged()
 
 void Imagine::on_hsBlending_sliderReleased()
 {
-    updateImage(isUpdateImgColor, true);
+    updateImage(updateMethod, true);
 }
 
 void Imagine::on_hsFrameIdx_sliderReleased()
 {
-    updateImage(isUpdateImgColor, true);
+    updateImage(updateMethod, true);
 }
 
 void Imagine::on_hsStackIdx_sliderReleased()
 {
-    updateImage(isUpdateImgColor, true);
+    updateImage(updateMethod, true);
 }
 
 bool Imagine::autoFindMismatchParameters(QByteArray &img1, QByteArray &img2, int width, int height)
@@ -5269,7 +5291,7 @@ void Imagine::displayImageUpdate()
 {
     if (ui.rbImgCameraEnable->isChecked()) {
         if(!dataAcqThread->isUpdatingImage)
-            readCameraImagesAndUpdate();
+            updateCameraImage();
     }
     else {
         if (!isUpdatingDisplay)
@@ -5286,7 +5308,7 @@ void Imagine::on_sbXTranslation_valueChanged(int newValue)
 
 void Imagine::on_sbXTranslation_editingFinished()
 {
-    updateImage(isUpdateImgColor, true);
+    updateImage(updateMethod, true);
 }
 
 void Imagine::on_sbYTranslation_valueChanged(int newValue)
@@ -5298,7 +5320,7 @@ void Imagine::on_sbYTranslation_valueChanged(int newValue)
 
 void Imagine::on_sbYTranslation_editingFinished()
 {
-    updateImage(isUpdateImgColor, true);
+    updateImage(updateMethod, true);
 }
 
 void Imagine::on_dsbRotationAngle_valueChanged(double newValue)
@@ -5310,7 +5332,7 @@ void Imagine::on_dsbRotationAngle_valueChanged(double newValue)
 
 void Imagine::on_dsbRotationAngle_editingFinished()
 {
-    updateImage(isUpdateImgColor, true);
+    updateImage(updateMethod, true);
 }
 #pragma endregion
 

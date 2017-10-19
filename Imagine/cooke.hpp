@@ -112,6 +112,8 @@ private:
     QMutex mutex;
 
 public:
+    float cycleTime;
+
     DummyCameraThread(QThread::Priority defaultPriority, QString fn, QObject *parent = 0);
     ~DummyCameraThread();
     unsigned long extractFrameCounter(unsigned short* rawData);
@@ -212,6 +214,7 @@ public:
         }
         else
             this->cycleTime = exposure+0.000123456789;
+        sudoCamera->cycleTime = cycleTime;
         this->nFrames = anFrames;
         this->acqTriggerMode = acqTriggerMode;
         this->expTriggerMode = expTriggerMode;
