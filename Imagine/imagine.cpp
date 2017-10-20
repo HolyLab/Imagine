@@ -4781,12 +4781,18 @@ void Imagine::readCamFileImagesAndUpdate()
     if (succeed) {
         // update images with current zoom setting
         nUpdateImage = 0;
-        if (img1.enable && img1.camValid && img2.enable && img2.camValid)
+        if (img1.enable && img1.camValid && img2.enable && img2.camValid) {
+            updateMethod = 3;
             updateDisplayColor(imgFrameIdx);
-        else if (img1.enable && img1.camValid)
-            updateDisplay(imgFrameIdx, 1);
-        else if (img2.enable && img2.valid)
-            updateDisplay(imgFrameIdx, 2);
+        }
+        else if (img1.enable && img1.camValid) {
+            updateMethod = 1;
+            updateDisplay(imgFrameIdx, updateMethod);
+        }
+        else if (img2.enable && img2.valid) {
+            updateMethod = 2;
+            updateDisplay(imgFrameIdx, updateMethod);
+        }
     }
     isUpdatingDisplay = false;
 }
