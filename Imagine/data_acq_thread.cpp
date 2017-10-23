@@ -434,7 +434,9 @@ nextStack:  //code below is repeated every stack
                     continue;
                 }
                 setIsUpdatingImage(true);
-                int progress = aiThread->writeSampleNum / aiChanList.size() / (sampleNum / 100.);
+                int progress = 0;
+                if (aiThread)
+                    progress = aiThread->writeSampleNum / aiChanList.size() / (sampleNum / 100.);
                 emit imageDataReady(camera->getLiveImage(), nFramesGotForStack - 1,
                     camera->getImageWidth(), camera->getImageHeight(), progress); //-1: due to 0-based indexing
             }

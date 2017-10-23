@@ -319,6 +319,7 @@ public:
     uInt32 laserTTLSig = 0;
     double laserIntensity[6] = {0, };
     int perStackSamples;
+    CFErrorCode validity = NO_CF_ERROR;
 
     // for default control
     bool enableCam1, enableCam2;

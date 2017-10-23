@@ -1008,6 +1008,9 @@ void Imagine::updateStatus(const QString &str)
     if (str == "acq-thread-finish"){
         updateStatus(eIdle, eNoAction);
         ui.pBarRecordingProgress->setValue(100);
+        if (masterImagine)
+            if (!ui.cbBothCamera->isChecked())
+                masterImagine->ui.pBarRecordingProgress->setValue(100);
         if (reqFromScript) {
             reqFromScript = false;
             if (imagineScript) {
@@ -1332,6 +1335,7 @@ void Imagine::startAcqAndSave()
     if (!CheckAndMakeFilePath(dataAcqThread->headerFilename)) {
         QMessageBox::information(this, "File creation error.",
             "Unable to create the directory");
+        return;
     }
 
     nUpdateImage = 0;
@@ -4834,7 +4838,10 @@ read_image_and_update:
 //    dataAcqThread->decEmittedSignal();
     cam1.imgHeight = imageH;
     cam1.imgWidth = imageW;
-    ui.pBarRecordingProgress->setValue(progress);
+    if(masterImagine && !ui.cbBothCamera->isChecked())
+        masterImagine->ui.pBarRecordingProgress->setValue(progress);
+    else
+        ui.pBarRecordingProgress->setValue(progress);
     updateCameraImage();
 }
 
@@ -4846,7 +4853,8 @@ void Imagine::updateSlaveLiveImagePlay(const QByteArray &data16, long idx, int i
 //        slaveImagine->dataAcqThread->decEmittedSignal();
         cam2.imgHeight = imageH;
         cam2.imgWidth = imageW;
-        ui.pBarRecordingProgress->setValue(progress);
+        if (!ui.cbBothCamera->isChecked())
+            ui.pBarRecordingProgress->setValue(progress);
         updateCameraImage();
     }
 }

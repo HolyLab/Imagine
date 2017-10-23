@@ -1028,7 +1028,7 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
     bool piezoWaveEmpty;
     bool cameraWaveEmpty;
     bool laserWaveEmpty;
-    CFErrorCode errorCode = NO_CF_ERROR;
+    validity = NO_CF_ERROR;
     errorMsg.clear();
 
     piezoWaveEmpty  = isPiezoWaveEmpty();
@@ -1058,7 +1058,7 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
                     errorMsg.append(QString("'%1' control includes too short waveform\nWaveform should be at least %2 samples")
                         .arg(channelSignalList[i][1]).arg(SPEED_CHECK_INTERVAL));
                 }
-                errorCode |= err;
+                validity |= err;
             }
             // camera pulse number check
             else if (channelSignalList[i][1] == STR_camera1) {
@@ -1072,7 +1072,7 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
                     err |= ERR_SAMPLE_NUM_MISMATCHED;
                     errorMsg.append(QString("'%1' sample number is different from total sample number\n").arg(channelSignalList[i][1]));
                 }
-                errorCode |= err;
+                validity |= err;
             }
             else if (channelSignalList[i][1] == STR_camera2) {
                 int nPulses;
@@ -1085,7 +1085,7 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
                     err |= ERR_SAMPLE_NUM_MISMATCHED;
                     errorMsg.append(QString("'%1' sample number is different from total sample number\n").arg(channelSignalList[i][1]));
                 }
-                errorCode |= err;
+                validity |= err;
             }
             // laser speed check
             else if ((channelSignalList[i][1].right(5) == STR_laser)|| (channelSignalList[i][1] == STR_all_lasers)) {
@@ -1097,7 +1097,7 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
                     err |= ERR_SAMPLE_NUM_MISMATCHED;
                     errorMsg.append(QString("'%1' sample number is different from total sample number\n").arg(channelSignalList[i][1]));
                 }
-                errorCode |= err;
+                validity |= err;
             }
             // galvo control speed check
             if (channelSignalList[i][1].left(5) == STR_galvo) {
@@ -1117,19 +1117,19 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
                     errorMsg.append(QString("'%1' control includes too short waveform\nWaveform should be at least %2 samples")
                         .arg(channelSignalList[i][1]).arg(SPEED_CHECK_INTERVAL));
                 }
-                errorCode |= err;
+                validity |= err;
             }
             // For other signals, just check sample numbers.
             else {
                 sampleNum = getCtrlSampleNum(i);
                 if ((sampleNum != 0) && (sampleNum != totalSampleNum)) {
-                    errorCode |= ERR_SAMPLE_NUM_MISMATCHED;
+                    validity |= ERR_SAMPLE_NUM_MISMATCHED;
                     errorMsg.append(QString("'%1' sample number is different from total sample number\n").arg(channelSignalList[i][1]));
                 }
             }
         }
     }
-    return errorCode;
+    return validity;
 }
 
 /******* ControlWaveform class : Generate waveform *********************/
