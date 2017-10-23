@@ -49,6 +49,7 @@ public:
     void setOfstream(ofstream* ofs){ this->ofs = ofs; }
     bool setTrigger(string clkName);
     bool isLeftToReadSamples();
+    long long writeSampleNum;
 
 protected:
     void run();
@@ -62,7 +63,6 @@ private:
     vector<int> chanList;
     ofstream* ofs;
     long long totalSampleNum;
-    long long writeSampleNum;
 
     QMutex mutex;
     QWaitCondition condition;

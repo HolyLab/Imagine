@@ -246,7 +246,7 @@ void DataAcqThread::run_live()
             }
             //incEmittedSignal();
             setIsUpdatingImage(true);
-            emit imageDataReady(camera->getLiveImage(), nFramesGot - 1, camera->getImageWidth(), camera->getImageHeight()); //-1: due to 0-based indexing
+            emit imageDataReady(camera->getLiveImage(), nFramesGot - 1, camera->getImageWidth(), camera->getImageHeight(), 0); //-1: due to 0-based indexing
             nDisplayUpdating++;
             if (nDisplayUpdating % 10 == 0){
                 emit newStatusMsgReady(QString("Screen update frame rate: %1")
@@ -300,12 +300,13 @@ void DataAcqThread::run_acq_and_save()
     bool isAiEnable = false;
     bool isDiEnable = false;
     ofstream *ofsAi, *ofsDi;
+    SampleIdx sampleNum;
+    vector<int> aiChanList;
     if (ownPos) {
         prepareDaqBuffered(); //piezo, camera1 exp, camera2 exp, laser shutter, stimuli (waveform version of 'preparePositioner')
         //prepare for AI:
         QString ainame = se->globalObject().property("ainame").toString();
         //TODO: make channel recording list depend on who owns the piezo
-        vector<int> aiChanList;
         //chanList.push_back(0);
         int aiBegin = conWaveData->getAIBegin();
         int p0Begin = conWaveData->getP0Begin();
@@ -316,7 +317,7 @@ void DataAcqThread::run_acq_and_save()
                 aiChanList.push_back(i - aiBegin);
             }
         }
-        int sampleNum = conWaveData->totalSampleNum;
+        sampleNum = conWaveData->totalSampleNum;
         if (aiChanList.size() != 0) {
             isAiEnable = true;
             aiThread = new AiThread(ainame, 10000, 50000, scanRate, aiChanList,
@@ -433,7 +434,9 @@ nextStack:  //code below is repeated every stack
                     continue;
                 }
                 setIsUpdatingImage(true);
-                emit imageDataReady(camera->getLiveImage(), nFramesGotForStack - 1, camera->getImageWidth(), camera->getImageHeight()); //-1: due to 0-based indexing
+                int progress = aiThread->writeSampleNum / aiChanList.size() / (sampleNum / 100.);
+                emit imageDataReady(camera->getLiveImage(), nFramesGotForStack - 1,
+                    camera->getImageWidth(), camera->getImageHeight(), progress); //-1: due to 0-based indexing
             }
             else {
                 QThread::msleep(10);

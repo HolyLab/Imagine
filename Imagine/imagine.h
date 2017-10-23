@@ -106,7 +106,12 @@ struct PiezoUiParam {
     PiezoUiParam(){ valid = false; }
 };
 
-class ImagineData
+class CameraData
+{
+public:
+};
+
+class ImagineData: public CameraData
 {
 public:
     // data for cam file
@@ -182,7 +187,9 @@ public:
     int maxROIVSize;
     int roiStepsHor;
     bool isUsingSoftROI = false;
-    ImagineData img1, img2;
+    ImagineData file1, file2;
+    ImagineData cam1, cam2;
+    ImagineData *img1, *img2;
     int imgWidth, imgHeight;
     int imgFramesPerStack, imgNStacks;
     int imgFrameIdx, imgStackIdx;
@@ -251,6 +258,7 @@ private:
     QString wavFilename;
     bool modified;
     bool paramOK;
+    bool controlOK;
     int numLaserShutters = 0;
     int laserShutterIndex[8] = { 0, };
     QString file=""; // config file name
@@ -325,8 +333,8 @@ private:
     void clearConWavPlot();
     void rearrangeTabWindow();
     void displayConWaveData();
-    void enableMismatchCorrection(QByteArray &img1, QByteArray &img2, int width, int height);
-    bool autoFindMismatchParameters(QByteArray &img1, QByteArray &img2, int width, int height);
+    void enableMismatchCorrection(QByteArray *img1, QByteArray *img2, int width, int height);
+    bool autoFindMismatchParameters(QByteArray *img1, QByteArray *img2, int width, int height);
     void displayImageUpdate(void);
     void calHomogeneousTramsformMatrix();
     bool outputFileExistCheckNDelete(QVector<QString> &filenames);
@@ -390,8 +398,8 @@ private slots:
 
     void updateStatus(const QString &str);
     void appendLog(const QString& msg);
-    void updateLiveImagePlay(const QByteArray &data16, long idx, int imageW, int imageH);
-    void updateSlaveLiveImagePlay(const QByteArray &data16, long idx, int imageW, int imageH);
+    void updateLiveImagePlay(const QByteArray &data16, long idx, int imageW, int imageH, int progress);
+    void updateSlaveLiveImagePlay(const QByteArray &data16, long idx, int imageW, int imageH, int progress);
     void updateDisplay(long idx, int updateMethod);
     void updateDisplayColor(long idx);
     void zoom_onMousePressed(QMouseEvent*);

@@ -147,7 +147,7 @@ signals:
     void imageDisplayReady(const QImage &image, long idx);
     void newStatusMsgReady(const QString &str);
     void newLogMsgReady(const QString &str);
-    void imageDataReady(const QByteArray &data16, long idx, int imageW, int imageH);
+    void imageDataReady(const QByteArray &data16, long idx, int imageW, int imageH, int progress);
     void resetActuatorPosReady();
     void reapplyLaserSettings();
 
