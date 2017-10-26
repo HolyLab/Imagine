@@ -315,7 +315,7 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
 
     connect(ui.labelImage, SIGNAL(mouseReleased(QMouseEvent*)),
         this, SLOT(zoom_onMouseReleased(QMouseEvent*)));
-
+    /*
     //for detect param changes
     auto lineedits = ui.tabWidgetCfg->findChildren<QLineEdit*>();
     for (int i = 0; i < lineedits.size(); ++i){
@@ -351,7 +351,7 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
             connect(cb, SIGNAL(stateChanged(int)),
                 this, SLOT(onModified()));
     }
-
+    */
     on_spinBoxSpinboxSteps_valueChanged(ui.spinBoxSpinboxSteps->value());
 
     /* for laser control from this line */
@@ -504,6 +504,60 @@ Imagine::~Imagine()
     stopDisplayCamFile();
 }
 
+void Imagine::connectGuiSignalToModified()
+{
+    //for detect param changes
+    auto lineedits = ui.tabWidgetCfg->findChildren<QLineEdit*>();
+    for (int i = 0; i < lineedits.size(); ++i) {
+        if (lineedits[i]->accessibleDescription() != "no apply")
+            connect(lineedits[i], SIGNAL(textChanged(const QString&)),
+                this, SLOT(onModified()));
+        if (slaveImagine && lineedits[i]->accessibleDescription() == "shared")
+            connect(lineedits[i], SIGNAL(textChanged(const QString&)),
+                slaveImagine, SLOT(onModified()));
+    }
+
+    auto spinboxes = ui.tabWidgetCfg->findChildren<QSpinBox*>();
+    for (int i = 0; i < spinboxes.size(); ++i) {
+        if (spinboxes[i]->accessibleDescription() != "no apply")
+            connect(spinboxes[i], SIGNAL(valueChanged(const QString&)),
+                this, SLOT(onModified()));
+        if (slaveImagine && spinboxes[i]->accessibleDescription() == "shared")
+            connect(spinboxes[i], SIGNAL(valueChanged(const QString&)),
+                slaveImagine, SLOT(onModified()));
+    }
+
+    auto doublespinboxes = ui.tabWidgetCfg->findChildren<QDoubleSpinBox*>();
+    for (int i = 0; i < doublespinboxes.size(); ++i) {
+        if (doublespinboxes[i]->accessibleDescription() != "no apply")
+            connect(doublespinboxes[i], SIGNAL(valueChanged(const QString&)),
+                this, SLOT(onModified()));
+        if (slaveImagine && doublespinboxes[i]->accessibleDescription() == "shared")
+            connect(doublespinboxes[i], SIGNAL(valueChanged(const QString&)),
+                slaveImagine, SLOT(onModified()));
+    }
+
+    auto comboboxes = ui.tabWidgetCfg->findChildren<QComboBox*>();
+    for (int i = 0; i < comboboxes.size(); ++i) {
+        if (comboboxes[i]->accessibleDescription() != "no apply")
+            connect(comboboxes[i], SIGNAL(currentIndexChanged(const QString&)),
+                this, SLOT(onModified()));
+        if (slaveImagine && comboboxes[i]->accessibleDescription() == "shared")
+            connect(comboboxes[i], SIGNAL(currentIndexChanged(const QString&)),
+                slaveImagine, SLOT(onModified()));
+    }
+
+    auto checkboxes = ui.tabWidgetCfg->findChildren<QCheckBox*>();
+    for (auto cb : checkboxes) {
+        if (cb->accessibleDescription() != "no apply")
+            connect(cb, SIGNAL(stateChanged(int)),
+                this, SLOT(onModified()));
+        if (slaveImagine && cb->accessibleDescription() == "shared")
+            connect(cb, SIGNAL(stateChanged(int)),
+                slaveImagine, SLOT(onModified()));
+    }
+}
+
 void Imagine::setSlaveWindow(Imagine *sImagine)
 {
     slaveImagine = sImagine;
@@ -515,6 +569,7 @@ void Imagine::setSlaveWindow(Imagine *sImagine)
             ui.cbCam2Enable->setVisible(false);
         }
     }
+    connectGuiSignalToModified();
 }
 
 void Imagine::setROIMinMaxSize()
@@ -1791,9 +1846,9 @@ bool Imagine::duplicateParameters(Ui_ImagineClass* destUi)
             destUi->spinBoxFramesPerStack->setValue(ui.spinBoxFramesPerStack->value());
             destUi->doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(ui.doubleSpinBoxBoxIdleTimeBtwnStacks->value());
             destUi->comboBoxExpTriggerMode->setCurrentIndex(ui.comboBoxExpTriggerMode->currentIndex());
-            destUi->spinBoxAngle->setValue(ui.spinBoxAngle->value());
-            destUi->sbObjectiveLens->setValue(ui.sbObjectiveLens->value());
-            destUi->doubleSpinBoxUmPerPxlXy->setValue(ui.doubleSpinBoxUmPerPxlXy->value());
+            //destUi->spinBoxAngle->setValue(ui.spinBoxAngle->value());
+            //destUi->sbObjectiveLens->setValue(ui.sbObjectiveLens->value());
+            //destUi->doubleSpinBoxUmPerPxlXy->setValue(ui.doubleSpinBoxUmPerPxlXy->value());
             destUi->comboBoxHorReadoutRate->setCurrentIndex(ui.comboBoxHorReadoutRate->currentIndex());
             destUi->comboBoxPreAmpGains->setCurrentIndex(ui.comboBoxPreAmpGains->currentIndex());
             destUi->spinBoxGain->setValue(ui.spinBoxGain->value());
@@ -1877,10 +1932,11 @@ bool Imagine::applySetting()
     dataAcqThread->preAmpGain = ui.comboBoxPreAmpGains->currentText();
     dataAcqThread->horShiftSpeed = ui.comboBoxHorReadoutRate->currentText();
     dataAcqThread->verShiftSpeed = ui.comboBoxVertShiftSpeed->currentText();
-    dataAcqThread->angle = ui.spinBoxAngle->value();
-    dataAcqThread->mismatchRotation = ui.dsbRotationAngle->value();
-    dataAcqThread->mismatchXTranslation = ui.sbXTranslation->value();
-    dataAcqThread->mismatchYTranslation = ui.sbYTranslation->value();
+    dataAcqThread->mismatchRotation = (*masterUi).dsbRotationAngle->value();
+    dataAcqThread->mismatchXTranslation = (*masterUi).sbXTranslation->value();
+    dataAcqThread->mismatchYTranslation = (*masterUi).sbYTranslation->value();
+    dataAcqThread->umPerPxlXy = (*masterUi).doubleSpinBoxUmPerPxlXy->value();
+    dataAcqThread->angle = (*masterUi).spinBoxAngle->value();
 
     if ((*masterUi).cbWaveformEnable->isChecked()) { // waveform enabled
         dataAcqThread->sampleRate = conWaveDataUser->sampleRate;
@@ -1932,7 +1988,6 @@ bool Imagine::applySetting()
     dataAcqThread->hend = camera->hend = ui.spinBoxHend->value();
     dataAcqThread->vstart = camera->vstart = ui.spinBoxVstart->value();
     dataAcqThread->vend = camera->vend = ui.spinBoxVend->value();
-    dataAcqThread->umPerPxlXy = ui.doubleSpinBoxUmPerPxlXy->value();
 
     camera->updateImageParams(dataAcqThread->nStacks, dataAcqThread->nFramesPerStack); //transfer image params to camera object
 
@@ -2988,9 +3043,11 @@ void Imagine::writeSettings(QString file)
     WRITE_SETTING(prefs, doubleSpinBoxBoxIdleTimeBtwnStacks);
     WRITE_COMBO_SETTING(prefs, comboBoxExpTriggerMode);
     WRITE_CHECKBOX_SETTING(prefs, cbBidirectionalImaging);
-    WRITE_SETTING(prefs, spinBoxAngle);
-    WRITE_SETTING(prefs, sbObjectiveLens);
-    WRITE_SETTING(prefs, doubleSpinBoxUmPerPxlXy);
+    if (masterImagine == NULL) {
+        WRITE_SETTING(prefs, spinBoxAngle);
+        WRITE_SETTING(prefs, sbObjectiveLens);
+        WRITE_SETTING(prefs, doubleSpinBoxUmPerPxlXy);
+    }
     WRITE_BOOL_SETTING(prefs, isUsingSoftROI);
     WRITE_SETTING(prefs, spinBoxHstart);
     WRITE_SETTING(prefs, spinBoxHend);
@@ -3100,9 +3157,11 @@ bool Imagine::readSettings(QString file)
     READ_SETTING(prefs, doubleSpinBoxBoxIdleTimeBtwnStacks, ok, d, 0.700, Double); // this should be loaded after doubleSpinBoxPiezoTravelBackTime
     READ_COMBO_SETTING(prefs, comboBoxExpTriggerMode, 0);
     READ_CHECKBOX_SETTING(prefs, cbBidirectionalImaging, false); // READ_CHECKBOX_SETTING
-    READ_SETTING(prefs, spinBoxAngle, ok, i, 0, Int);
-    READ_SETTING(prefs, sbObjectiveLens, ok, i, 20, Int);
-    READ_SETTING(prefs, doubleSpinBoxUmPerPxlXy, ok, d, -1.0000, Double);
+    if (masterImagine == NULL) {
+        READ_SETTING(prefs, spinBoxAngle, ok, i, 0, Int);
+        READ_SETTING(prefs, sbObjectiveLens, ok, i, 20, Int);
+        READ_SETTING(prefs, doubleSpinBoxUmPerPxlXy, ok, d, -1.0000, Double);
+    }
     READ_BOOL_SETTING(prefs, isUsingSoftROI, false);
     READ_SETTING(prefs, spinBoxHstart, ok, i, 1, Int);
     READ_SETTING(prefs, spinBoxHend, ok, i, maxROIHSize, Int);

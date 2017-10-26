@@ -686,6 +686,9 @@
                  <property name="toolTip">
                   <string>-1 means n/a</string>
                  </property>
+                 <property name="accessibleDescription">
+                  <string>shared</string>
+                 </property>
                  <property name="minimum">
                   <number>-1</number>
                  </property>
@@ -725,6 +728,9 @@
                </item>
                <item>
                 <widget class="QSpinBox" name="sbObjectiveLens">
+                 <property name="accessibleDescription">
+                  <string>shared</string>
+                 </property>
                  <property name="suffix">
                   <string>X</string>
                  </property>
@@ -750,6 +756,9 @@
                 <widget class="QDoubleSpinBox" name="doubleSpinBoxUmPerPxlXy">
                  <property name="toolTip">
                   <string>-1 means n/a</string>
+                 </property>
+                 <property name="accessibleDescription">
+                  <string>shared</string>
                  </property>
                  <property name="decimals">
                   <number>3</number>
@@ -954,6 +963,9 @@
           </property>
           <item>
            <widget class="QCheckBox" name="cbStim">
+            <property name="accessibleDescription">
+             <string>shared</string>
+            </property>
             <property name="text">
              <string>Apply stimuli</string>
             </property>
@@ -1007,6 +1019,9 @@
           </item>
           <item>
            <widget class="QLineEdit" name="lineEditStimFile">
+            <property name="accessibleDescription">
+             <string>shared</string>
+            </property>
             <property name="readOnly">
              <bool>true</bool>
             </property>
@@ -1052,6 +1067,9 @@
             <width>100</width>
             <height>22</height>
            </rect>
+          </property>
+          <property name="accessibleDescription">
+           <string>shared</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1101,6 +1119,9 @@
             <height>22</height>
            </rect>
           </property>
+          <property name="accessibleDescription">
+           <string>shared</string>
+          </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
@@ -1125,6 +1146,9 @@
             <width>100</width>
             <height>22</height>
            </rect>
+          </property>
+          <property name="accessibleDescription">
+           <string>shared</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1301,6 +1325,9 @@
             <height>22</height>
            </rect>
           </property>
+          <property name="accessibleDescription">
+           <string>shared</string>
+          </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
@@ -1354,6 +1381,9 @@
             <width>100</width>
             <height>20</height>
            </rect>
+          </property>
+          <property name="accessibleDescription">
+           <string>shared</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1453,6 +1483,9 @@
             <width>101</width>
             <height>22</height>
            </rect>
+          </property>
+          <property name="accessibleDescription">
+           <string>shared</string>
           </property>
           <item>
            <property name="text">
@@ -1833,6 +1866,9 @@
                      <height>16777215</height>
                     </size>
                    </property>
+                   <property name="accessibleDescription">
+                    <string>no apply</string>
+                   </property>
                    <property name="text">
                     <string>Camera</string>
                    </property>
@@ -1870,6 +1906,9 @@
                      <width>70</width>
                      <height>16777215</height>
                     </size>
+                   </property>
+                   <property name="accessibleDescription">
+                    <string>no apply</string>
                    </property>
                    <property name="text">
                     <string>File</string>
@@ -2481,7 +2520,7 @@
                     <string>right direction</string>
                    </property>
                    <property name="accessibleDescription">
-                    <string notr="true"/>
+                    <string notr="true">no apply</string>
                    </property>
                    <property name="wrapping">
                     <bool>true</bool>
@@ -2543,7 +2582,7 @@
                     <string>down direction</string>
                    </property>
                    <property name="accessibleDescription">
-                    <string notr="true"/>
+                    <string notr="true">no apply</string>
                    </property>
                    <property name="wrapping">
                     <bool>true</bool>
@@ -2606,7 +2645,7 @@
                     <string>clockwise</string>
                    </property>
                    <property name="accessibleDescription">
-                    <string notr="true"/>
+                    <string notr="true">no apply</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -3168,7 +3207,7 @@
                <item row="2" column="0">
                 <widget class="QCheckBox" name="cbLineTTL3">
                  <property name="accessibleDescription">
-                  <string notr="true"/>
+                  <string notr="true">shared</string>
                  </property>
                  <property name="text">
                   <string>405nm</string>
@@ -3178,7 +3217,7 @@
                <item row="3" column="0">
                 <widget class="QCheckBox" name="cbLineTTL4">
                  <property name="accessibleDescription">
-                  <string notr="true"/>
+                  <string notr="true">shared</string>
                  </property>
                  <property name="text">
                   <string>445nm</string>
@@ -3188,7 +3227,7 @@
                <item row="5" column="0">
                 <widget class="QCheckBox" name="cbLineTTL5">
                  <property name="accessibleDescription">
-                  <string notr="true"/>
+                  <string notr="true">shared</string>
                  </property>
                  <property name="text">
                   <string>514nm</string>
@@ -3198,7 +3237,7 @@
                <item row="4" column="0">
                 <widget class="QCheckBox" name="cbLineTTL1">
                  <property name="accessibleDescription">
-                  <string notr="true"/>
+                  <string notr="true">shared</string>
                  </property>
                  <property name="text">
                   <string>488nm</string>
@@ -3208,7 +3247,7 @@
                <item row="6" column="0">
                 <widget class="QCheckBox" name="cbLineTTL2">
                  <property name="accessibleDescription">
-                  <string notr="true"/>
+                  <string notr="true">shared</string>
                  </property>
                  <property name="text">
                   <string>561nm</string>
@@ -3661,6 +3700,9 @@
             </item>
             <item row="9" column="4">
              <widget class="QDoubleSpinBox" name="doubleSpinBoxExpTimeWav2">
+              <property name="accessibleDescription">
+               <string>shared</string>
+              </property>
               <property name="suffix">
                <string> sec</string>
               </property>
@@ -3759,6 +3801,9 @@
                 <width>130</width>
                 <height>16777215</height>
                </size>
+              </property>
+              <property name="accessibleDescription">
+               <string>shared</string>
               </property>
               <property name="editable">
                <bool>false</bool>
@@ -3888,7 +3933,7 @@
               <property name="maximumSize">
                <size>
                 <width>130</width>
-                <height>16777215</height>
+                <height>13</height>
                </size>
               </property>
               <property name="value">

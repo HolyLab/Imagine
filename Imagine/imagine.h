@@ -339,6 +339,7 @@ private:
     void calHomogeneousTramsformMatrix();
     bool outputFileExistCheckNDelete(QVector<QString> &filenames);
     void applyIndividualLasers();
+    void connectGuiSignalToModified();
 
 private slots:
 //    void on_actionHeatsinkFan_triggered();
