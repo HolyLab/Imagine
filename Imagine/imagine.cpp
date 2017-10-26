@@ -450,9 +450,9 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     applyImgColor(ui.widgetImg1Color, img1Color);
     applyImgColor(ui.widgetImg2Color, img2Color);
     alpha = 50;
-    ui.hsBlending->setValue(alpha);
     img1 = &cam1;
     img2 = &cam2;
+    ui.hsBlending->setValue(alpha);
 
     ui.gbDontShowMe1->setVisible(false);
     ui.gbDontShowMe2->setVisible(false);
@@ -2163,12 +2163,22 @@ bool Imagine::applySetting()
             goto skip;
         }
         // setup default laser TTL output value
-        conWaveData->laserTTLSig = laserTTLSig;
-        conWaveData->setLaserIntensityValue(1, ui.doubleSpinBox_aotfLine1->value());
-        conWaveData->setLaserIntensityValue(2, ui.doubleSpinBox_aotfLine2->value());
-        conWaveData->setLaserIntensityValue(3, ui.doubleSpinBox_aotfLine3->value());
-        conWaveData->setLaserIntensityValue(4, ui.doubleSpinBox_aotfLine4->value());
-        conWaveData->setLaserIntensityValue(5, ui.doubleSpinBox_aotfLine5->value());
+        if (masterImagine) {
+            conWaveData->laserTTLSig = masterImagine->laserTTLSig;
+            conWaveData->setLaserIntensityValue(1, (*masterUi).doubleSpinBox_aotfLine1->value());
+            conWaveData->setLaserIntensityValue(2, (*masterUi).doubleSpinBox_aotfLine2->value());
+            conWaveData->setLaserIntensityValue(3, (*masterUi).doubleSpinBox_aotfLine3->value());
+            conWaveData->setLaserIntensityValue(4, (*masterUi).doubleSpinBox_aotfLine4->value());
+            conWaveData->setLaserIntensityValue(5, (*masterUi).doubleSpinBox_aotfLine5->value());
+        }
+        else {
+            conWaveData->laserTTLSig = laserTTLSig;
+            conWaveData->setLaserIntensityValue(1, ui.doubleSpinBox_aotfLine1->value());
+            conWaveData->setLaserIntensityValue(2, ui.doubleSpinBox_aotfLine2->value());
+            conWaveData->setLaserIntensityValue(3, ui.doubleSpinBox_aotfLine3->value());
+            conWaveData->setLaserIntensityValue(4, ui.doubleSpinBox_aotfLine4->value());
+            conWaveData->setLaserIntensityValue(5, ui.doubleSpinBox_aotfLine5->value());
+        }
         // move positioner to start position
         int chIdx = conWaveData->getChannelIdxFromSig(STR_axial_piezo);
         double um;
