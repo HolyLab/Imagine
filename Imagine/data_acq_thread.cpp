@@ -253,7 +253,6 @@ void DataAcqThread::run_live()
                     .arg(nDisplayUpdating / gt.read(), 5, 'f', 2) //width=5, fixed point, 2 decimal digits
                     );
             }
-
             //spare some time for gui thread's event handling:
             QApplication::instance()->processEvents();
             double timeToWait = 0.05;
@@ -456,8 +455,8 @@ nextStack:  //code below is repeated every stack
         this->setPriority(getDefaultPriority());
     }
     if (hasPos && ownPos) {
-        if (!stopRequested && aiThread) { // wait until all daq samples are read
-            while(aiThread->isLeftToReadSamples())
+        if (aiThread) { // wait until all daq samples are read
+            while(!stopRequested && aiThread->isLeftToReadSamples())
                 QThread::msleep(100);
         }
         if (isAiEnable && aiThread) {

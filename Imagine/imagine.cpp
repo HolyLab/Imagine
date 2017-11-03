@@ -58,6 +58,7 @@ using namespace std;
 #include "spoolthread.h"
 #include <bitset>
 #include "misc.hpp"
+
 using std::bitset;
 
 ImagineAction curAction;
@@ -315,43 +316,7 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
 
     connect(ui.labelImage, SIGNAL(mouseReleased(QMouseEvent*)),
         this, SLOT(zoom_onMouseReleased(QMouseEvent*)));
-    /*
-    //for detect param changes
-    auto lineedits = ui.tabWidgetCfg->findChildren<QLineEdit*>();
-    for (int i = 0; i < lineedits.size(); ++i){
-        if (lineedits[i]->accessibleDescription() != "no apply")
-            connect(lineedits[i], SIGNAL(textChanged(const QString&)),
-                this, SLOT(onModified()));
-    }
 
-    auto spinboxes = ui.tabWidgetCfg->findChildren<QSpinBox*>();
-    for (int i = 0; i < spinboxes.size(); ++i){
-        if (spinboxes[i]->accessibleDescription() != "no apply")
-            connect(spinboxes[i], SIGNAL(valueChanged(const QString&)),
-                this, SLOT(onModified()));
-    }
-
-    auto doublespinboxes = ui.tabWidgetCfg->findChildren<QDoubleSpinBox*>();
-    for (int i = 0; i < doublespinboxes.size(); ++i){
-        if (doublespinboxes[i]->accessibleDescription() != "no apply")
-            connect(doublespinboxes[i], SIGNAL(valueChanged(const QString&)),
-                this, SLOT(onModified()));
-    }
-
-    auto comboboxes = ui.tabWidgetCfg->findChildren<QComboBox*>();
-    for (int i = 0; i < comboboxes.size(); ++i){
-        if (comboboxes[i]->accessibleDescription() != "no apply")
-            connect(comboboxes[i], SIGNAL(currentIndexChanged(const QString&)),
-                this, SLOT(onModified()));
-    }
-
-    auto checkboxes = ui.tabWidgetCfg->findChildren<QCheckBox*>();
-    for (auto cb : checkboxes){
-        if (cb->accessibleDescription() != "no apply")
-            connect(cb, SIGNAL(stateChanged(int)),
-                this, SLOT(onModified()));
-    }
-    */
     on_spinBoxSpinboxSteps_valueChanged(ui.spinBoxSpinboxSteps->value());
 
     /* for laser control from this line */
@@ -436,6 +401,24 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     }
     /* for piezo setup until this line */
 
+    // Watchdog
+    if (masterImagine == NULL) {
+        if (launchWatchdog(2000)) {
+            QThread::msleep(100); // give time to ImagineWatchdog to prepare shared memory
+            sigWatchdog = new SigWatchdog(100); // signal to ImagineWatchdog for every 100ms
+            if (sigWatchdog->error) {
+                delete sigWatchdog;
+            }
+            else {
+                sigWatchdog->moveToThread(&sigWatchdogThread);
+                connect(&sigWatchdogThread, &QThread::finished, sigWatchdog, &QObject::deleteLater);
+                connect(this, &Imagine::runSigWatchdog, sigWatchdog, &SigWatchdog::signalToWatchdog);
+                sigWatchdogThread.start(QThread::IdlePriority);
+                emit runSigWatchdog();
+            }
+        }
+    }
+
     //center window:
     QRect rect = QApplication::desktop()->screenGeometry();
     int x = (rect.width() - this->width()) / 2;
@@ -459,7 +442,6 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     ui.gbDontShowMe3->setVisible(false);
     ui.gbHorizontalShift->setVisible(false);
     ui.gbVerticalShift->setVisible(false);
-    ui.pbTestButton->setVisible(false);
     if (masterImagine)
         ui.groupBoxObjective->setVisible(false);
 }
@@ -502,6 +484,29 @@ Imagine::~Imagine()
     // for piezo control until this line
 
     stopDisplayCamFile();
+}
+
+bool Imagine::launchWatchdog(int timeoutms)
+{
+    if (!wdProc)
+        wdProc = new QProcess();
+
+    if (wdProc->state() != QProcess::Running) {
+        //QString app = QLibraryInfo::location(QLibraryInfo::BinariesPath) + QDir::separator();
+        //app += QLatin1String("watchdog");
+        QString app = QLatin1String("ImagineWatchdog");
+
+        QStringList args;
+        args << QString("%1").arg(timeoutms);
+        wdProc->start(app, args);
+
+        if (!wdProc->waitForStarted()) {
+            QMessageBox::critical(0, QObject::tr("ImagineWatchdog"),
+                QObject::tr("Unable to launch watchdog (%1)").arg(app));
+            return false;
+        }
+    }
+    return true;
 }
 
 void Imagine::connectGuiSignalToModified()
@@ -1692,6 +1697,7 @@ void Imagine::on_btnUseZoomWindow_clicked()
         return;
     }//if, full image
     else {
+        correctZoomSize(); // correct zoom size as image size be multiples of 16
         isUsingSoftROI = true;
         setROIMinMaxSize();
         ui.spinBoxHstart->setValue(L + 1);  //NOTE: hstart is 1-based
@@ -1701,6 +1707,20 @@ void Imagine::on_btnUseZoomWindow_clicked()
 
     }//else,
 
+}
+
+void Imagine::correctZoomSize()
+{
+    if (W > 3)
+        while (W % 4) W--;
+    else
+        while (W % 4) W++;
+    while (L + W > maxROIHSize) L--;
+    if (H > 3)
+        while (H % 4) H--;
+    else
+        while (H % 4) H++;
+    while (T + H > maxROIVSize) T--;
 }
 
 bool Imagine::checkRoi()
@@ -5701,5 +5721,11 @@ void Imagine::configRecord()
 {
     reqFromScript = true;
     on_actionStartAcqAndSave_triggered();
+}
+
+void Imagine::on_pbTestButton_pressed()
+{
+    char *crash;
+    crash[2] = 1;
 }
 #pragma endregion

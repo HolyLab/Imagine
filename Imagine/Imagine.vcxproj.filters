@@ -131,6 +131,13 @@
     <ClCompile Include="GeneratedFiles\qrc_imagine.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="sigwatchdog.cpp" />
+    <ClCompile Include="GeneratedFiles\Release\moc_sigwatchdog.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_sigwatchdog.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_imagine.h">
@@ -185,6 +192,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="camera_g.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="watchdog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

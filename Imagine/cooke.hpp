@@ -96,9 +96,13 @@ private:
     int chipHeight;
     int bytesPerPixel = 2;
     int framesPerStack;
-    long long dummyImgDataSize;
+    int hstart, hend, vstart, vend;
+    long long dummyImgDataSize; // camera source data file size
     long imageSizePixels;
-    long imageSizeBytes;
+    long imageSizeBytes; // full image size
+    long roiImageSizeBytes; // image size counting ROI
+    int fullLineImageBytes; // full one line size
+    int lineImageBytes; // one line size counting ROI
     char *dummyImg = nullptr;
     char *buff[2];
     HANDLE hEvent[2];
@@ -131,8 +135,8 @@ public:
     bool getCancel(void) { return cancel;}
     int getPut_idx(void) { return put_idx;}
     int getGet_idx(void) { return get_idx;}
-
- };//class, DummyCameraThread
+    void setROI(int hs, int he, int vs, int ve);
+};//class, DummyCameraThread
 
 
 class DummyCamera : public Camera {
@@ -162,7 +166,7 @@ private:
     char* mRingBuf[2]; //m_pic12
 
     int bufferIdx;
-    DummyCameraThread *sudoCamera = nullptr;
+    DummyCameraThread *sudoCamera = nullptr; // this is a replacement of actual camera
     float cycleTime;
 
 public:
@@ -197,6 +201,7 @@ public:
         int verShiftSpeedIdx,
         int verClockVolAmp
     ) {
+        sudoCamera->setROI(hstart, hend, vstart, vend);
         return true;
     }
 

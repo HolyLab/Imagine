@@ -595,11 +595,13 @@ DummyCameraThread::DummyCameraThread(QThread::Priority defaultPriority, QString 
     dummyImg = (char*)_aligned_malloc(dummyImgDataSize, 1024 * 64);
     assert((unsigned long long)(dummyImg) % (1024 * 64) == 0);
     file.read(dummyImg, dummyImgDataSize);
+    /*
     for (int j = 0; j < 3; j++) {
         unsigned short *rawData = (unsigned short *)(dummyImg + j*imageSizeBytes);
         unsigned long result = extractFrameCounter(rawData);
         qDebug("%d ", result);
     }
+    */
     recording = false;
 }
 
@@ -637,6 +639,7 @@ bool DummyCameraThread::getImageDataSize(QString filename)
     if (ok1&&ok2) {
         imageSizePixels = chipHeight * chipWidth;
         imageSizeBytes = imageSizePixels * bytesPerPixel;
+        fullLineImageBytes = chipWidth * bytesPerPixel;
         return true;
     }
     else
@@ -657,11 +660,19 @@ void DummyCameraThread::CancelImages()
     mutex.unlock();
 }
 
+void DummyCameraThread::setROI(int hs, int he, int vs, int ve)
+{
+    hstart = hs;
+    hend = he;
+    vstart = vs;
+    vend = ve;
+}
+
 void DummyCameraThread::AddBufferExtern(HANDLE evnt, char* ringBuf, long size, DWORD *status)
 {
     int idx = getPut_idx();
     buff[idx] = ringBuf;
-    imageSizeBytes = size;
+    roiImageSizeBytes = size;
     pStatus[idx] = status;
     hEvent[idx] = evnt;
     qDebug("P%d %X", idx, buff[idx]);
@@ -672,7 +683,8 @@ void DummyCameraThread::AddBufferExtern(HANDLE evnt, char* ringBuf, long size, D
 void DummyCameraThread::resetDummyCamera(void)
 {
     recording = false;
-    dummyImgIdx = 0;
+    lineImageBytes = (hend - hstart + 1)*bytesPerPixel;
+    dummyImgIdx = (vstart-1)*fullLineImageBytes;
     put_idx = 0;
     get_idx = 0;
     frameNum = 0;
@@ -695,8 +707,15 @@ void DummyCameraThread::run()
                 num = num / 100;
                 frameCnt[i] = (rem / 10) * 16 + (rem % 10);
             }
-            memcpy(buffer, &(dummyImg[dummyImgIdx]), imageSizeBytes);
+            int bytesWritten = 0;
+            long int dummyHStart = dummyImgIdx + (hstart-1)*bytesPerPixel;
+            for (int i = vstart; i <= vend; i++) {
+                memcpy(buffer + bytesWritten, &(dummyImg[dummyHStart]), lineImageBytes);
+                dummyHStart += fullLineImageBytes;
+                bytesWritten += lineImageBytes;
+            }
             dummyImgIdx += imageSizeBytes;
+            // this inscribes frame count on the image
             for (int i = 0; i < 8; i++)
                 (*buffer++) = ((char *)frameCnt)[i];
 

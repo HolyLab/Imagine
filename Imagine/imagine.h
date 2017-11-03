@@ -40,6 +40,7 @@ class CurveData;
 #include "piezoctrl.h"
 #include "waveform.h"
 #include "script.h"
+#include "sigwatchdog.h"
 
 #define READ_STRING_SETTING(prefs, var, emptyValue)\
   ui.##var->setText( prefs.value(#var).toString() );\
@@ -160,6 +161,7 @@ class Imagine : public QMainWindow
     QThread piezoCtrlThread;
     QThread imagePlayThread;
     QThread scriptThread;
+    QThread sigWatchdogThread;
 public:
     Imagine(QString rig, Camera *cam, Positioner *pos = NULL, Laser *laser = NULL,
         Imagine *mImagine = NULL, QWidget *parent = 0, Qt::WindowFlags flags = 0);
@@ -269,6 +271,8 @@ private:
     uInt32 laserTTLSig = 0;
     QProcess *proc = NULL;
     bool masterLaserShutter = false;
+    QProcess *wdProc = NULL;
+    SigWatchdog *sigWatchdog;
 
     void calcMinMaxValues(Camera::PixelValue * frame, int *min, int *max, int imageW, int imageH);
     void calcMinMaxValues(Camera::PixelValue * frame1, Camera::PixelValue * frame2, int imageW, int imageH);
@@ -281,9 +285,11 @@ private:
     template<class Type> void setCurveData(CurveData *curveData, QwtPlotCurve *curve,
         QVector<Type> &wave, int start, int end, int factor, double amplitude, double yoffset);
     bool checkRoi();
+    void correctZoomSize();
     bool loadPreset();
     void preparePlots();
     QPoint calcPos(const QPoint& pos);
+    bool launchWatchdog(int timeoutms);
 
     // for laser control from this line
     void changeLaserShutters(void);
@@ -555,6 +561,7 @@ private slots:
     void on_btnScriptUndo_clicked();
     void on_btnScriptRedo_clicked();
     void on_btnScriptSave_clicked();
+    void on_pbTestButton_pressed();
 
 public slots:
     // handle pixmap of recently acquired frame
@@ -585,7 +592,7 @@ signals:
         int strtStackIdx2, int strtFrameIdx2, int nStacks2, int framesPerStack2);
     void evaluateScript(void);
 
-    // for laser control from this line
+    // laser control
     void openLaserSerialPort(QString portName);
     void closeLaserSerialPort(void);
     void getLaserShutterStatus(void);
@@ -594,11 +601,11 @@ signals:
     void getLaserTransStatus(bool isAotf, int line);
     void setLaserTrans(bool isAotf, int line, int value);
     void getLaserLineSetupStatus(void);
-    // for laser control until this line
-    // for piezo controller setup from this line
+    // piezo controller setup
     void openPiezoCtrlSerialPort(QString portName);
     void closePiezoCtrlSerialPort(void);
     void sendPiezoCtrlCmd(QString cmd);
-    // for piezo controller setup until this line
+    // signal to sigWatchdog worker
+    void runSigWatchdog(void);
 };
 #endif // IMAGINE_H
