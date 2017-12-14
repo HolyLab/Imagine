@@ -1831,6 +1831,8 @@ void Imagine::on_spinBoxVend_valueChanged(int newValue)
 
 bool Imagine::waveformValidityCheck(void)
 {
+    return true;
+    /*
     CFErrorCode err = conWaveData->waveformValidityCheck();
     if (conWaveData->getErrorMsg() != "") {
         QMessageBox::critical(this, "Imagine", conWaveData->getErrorMsg(), QMessageBox::Ok, QMessageBox::NoButton);
@@ -1839,6 +1841,7 @@ bool Imagine::waveformValidityCheck(void)
         return true;
     else
         return false;
+    */
 }
 
 void Imagine::on_sbObjectiveLens_valueChanged(int newValue)

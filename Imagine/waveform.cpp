@@ -1041,6 +1041,8 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
     else {
         for (int i = 0; i < channelSignalList.size(); i++) {
             // piezo speed check
+            if (false) {}
+            /*
             if (channelSignalList[i][1].right(5) == STR_piezo) {
                 CFErrorCode err = positionerSpeedCheck(maxPiezoSpeed, 0, maxPiezoPos, i, sampleNum);
                 if (err & (ERR_PIEZO_SPEED_FAST | ERR_PIEZO_INSTANT_CHANGE)) {
@@ -1060,6 +1062,7 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
                 }
                 validity |= err;
             }
+            */
             // camera pulse number check
             else if (channelSignalList[i][1] == STR_camera1) {
                 int nPulses;

@@ -412,7 +412,8 @@ bool CookeCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
         errorMsg = "failed to set exposure time";
         return false;
     }
-
+    strTiming.wSize = sizeof(strTiming);
+    errorCode = PCO_GetImageTiming(hCamera, &strImageTiming); //This gives some garbage resuilts for system delay
     ///arm the camera again
     errorCode = PCO_ArmCamera(hCamera);
     if (errorCode != PCO_NOERROR) {
