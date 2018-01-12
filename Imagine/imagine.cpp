@@ -1697,7 +1697,9 @@ void Imagine::on_btnUseZoomWindow_clicked()
         return;
     }//if, full image
     else {
-        correctZoomSize(); // correct zoom size as image size be multiples of 16
+        // correct zoom size for image size to be multiples of 8
+        // because memcpy_g needs 16bytes allignment and bytesPerPixel = 2
+        correctZoomSize();
         isUsingSoftROI = true;
         setROIMinMaxSize();
         ui.spinBoxHstart->setValue(L + 1);  //NOTE: hstart is 1-based
@@ -1711,16 +1713,16 @@ void Imagine::on_btnUseZoomWindow_clicked()
 
 void Imagine::correctZoomSize()
 {
-    if (W > 3)
+    if (W > 3) // W should be multiples of 4
         while (W % 4) W--;
     else
         while (W % 4) W++;
     while (L + W > maxROIHSize) L--;
-    if (H > 3)
-        while (H % 4) H--;
+    if (H > 1) // H should be even number
+        if (H % 2) H--;
     else
-        while (H % 4) H++;
-    while (T + H > maxROIVSize) T--;
+        if (H % 2) H++;
+    if (T + H > maxROIVSize) T--;
 }
 
 bool Imagine::checkRoi()
@@ -2011,14 +2013,14 @@ bool Imagine::applySetting()
 
     camera->updateImageParams(dataAcqThread->nStacks, dataAcqThread->nFramesPerStack); //transfer image params to camera object
 
-    if (!isUsingSoftROI) {
-        //enforce #imageSizeBytes is x times of 16
-        if (camera->imageSizeBytes % 16) {
-            QMessageBox::critical(this, "Imagine", "ROI spec is wrong (#pixels per frame is not x times of 8)."
-                , QMessageBox::Ok, QMessageBox::NoButton);
+    //enforce #imageSizeBytes is x times of 16
+    if (camera->imageSizeBytes % 16) {
+        QMessageBox::critical(this, "Imagine", "ROI spec is wrong (#pixels per frame is not x times of 8)."
+            , QMessageBox::Ok, QMessageBox::NoButton);
 
-            goto skip;
-        }
+        goto skip;
+    }
+    if (!isUsingSoftROI) {
 
         if (!checkRoi()) {
             QMessageBox::critical(this, "Imagine", "ROI spec is wrong."

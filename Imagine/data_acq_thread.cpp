@@ -472,6 +472,7 @@ nextStack:  //code below is repeated every stack
         pPositioner->abortCmd();
         //        pPositioner->resetDAQ();
         digOut->abortCmd();
+        digOut->clearAllOutput();
         // reset for On Demend digital output
         // digOut->resetDAQ(); // need to do this every time we output single value to dout
         emit newStatusMsgReady("Now resetting the actuator to its exact starting pos ...");
