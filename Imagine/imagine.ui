@@ -233,7 +233,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>6</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -515,7 +515,7 @@
              <item row="6" column="1">
               <widget class="QDoubleSpinBox" name="doubleSpinBoxExpTime">
                <property name="decimals">
-                <number>4</number>
+                <number>5</number>
                </property>
                <property name="maximum">
                 <double>999999999.000000000000000</double>
@@ -3678,7 +3678,7 @@
                <string> sec</string>
               </property>
               <property name="decimals">
-               <number>4</number>
+               <number>5</number>
               </property>
               <property name="singleStep">
                <double>0.001000000000000</double>
@@ -3707,7 +3707,7 @@
                <string> sec</string>
               </property>
               <property name="decimals">
-               <number>4</number>
+               <number>5</number>
               </property>
               <property name="singleStep">
                <double>0.001000000000000</double>
