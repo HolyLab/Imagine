@@ -363,6 +363,8 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
         ui.tabWidgetCfg->removeTab(ui.tabWidgetCfg->indexOf(ui.tabLaser));
         ui.actionOpenShutter->setEnabled(true);
         ui.actionCloseShutter->setEnabled(false);
+        if (masterImagine != NULL)
+            ui.toolBar_2->setVisible(false);
     }
     /* for laser control until this line */
     /* for piezo setup from this line */
