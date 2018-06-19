@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Camera tab</title>
+</head>
+
+<body>
+
+<h1>Camera tab </h1>
+
+<ul>
+<li> Record both cameras : eables to record both cameras.</li>
+<li> #stacks : sets the number of stacks. </li>
+<li> #frames/stack : sets the number of frames in a stack. </li>
+<li> exposure time(s) : set exposure time. This value is valid only for "External Start" mode in exposure trigger mode.</li>
+<li> exposure trigger mode : selects exposure trigger mode. Refer to the explanation in the <a href="hardware.html#expmode">exposure trigger mode</a> section. </li>
+<li id="idletime"> idle time between stacks(s) : sets <a href="menu_positioner.html#waveform">idle time between stacks</a>. </li>
+<li id="bidir"> bi-directional imaging : makes an acquition enable during the positioner travel back time also. Refer to the <a href="menu_camera.html#bidir_wav">bi-directional imaging waveform</a> below.</li>
+<li> angle from horizontal(deg) : specifies angle between objective lens and horizontal plain. This is just used as an information.</li>
+<li> objective lens : secifies zoom factor of the objective lens. This is just used as an information. </li>
+<li> um per pixel (xy plane) : secifies pixel size. This can be also calculated from the zoom factor. This is just used as an information.</li>
+<li> hor. start : sets the horizontal start of the sensor ROI or displays horizontal start of the soft ROI when we press "use zoom window value" button. Refer to the <a href="hardware.html#ROI">ROI</a> section.</li>
+<li> hor. end : sets the horizontal end of the sensor ROI or displays horizontal end of the soft ROI when we press "use zoom window value" button. </li>
+<li> ver. start : sets the vertical start of the sensor ROI or displays vertical start of the soft ROI when we press "use zoom window value" button. </li>
+<li> ver. end : sets the vertical end of the sensor ROI or displays vertical end of the soft ROI when we press "use zoom window value" button. </li>
+<li> use zoom window value : enables soft ROI with the region selected by zoom window.</li>
+<li> full chip size : enable full size imaging.</li>
+</ul><br>
+
+<img src="images/menu02_camera.png" width="500" height="500" alt=""/>
+
+<br>
+<br>
+
+<h3 id="bidir_wav"> Positioner control wavefrom and camera control pulse for bi-directional imaging</h3><br>
+<img src="images/waveform_bidir.png" width="800" height="500" alt=""/>
+
+</body>
+
+
+</html>

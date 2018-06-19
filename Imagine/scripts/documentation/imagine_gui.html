@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Graphical User Interface</title>
+</head>
+
+<body>
+<h1>Graphic User Interface</h1><br>
+
+<img src="images/menu_all.png" width="500" height="400" alt=""/>
+<p> Imagine GUI is composed with several sections as listed below with numbers corresponding the numbers in the above image.</p>
+
+<ul>
+<li> 1: Parameters and display control window </li>
+<li> 2: Display window </li>
+<li> 3: Log window </li>
+<li id="stimuli_win"> 4: Stimuli window</li>
+<li> 5: Main menu</li>
+</ul>
+ 
+<p> Typical work flow is as follows. </p>
+<ol type="a">
+<li> Prepare sepecimen </li>
+<li> Caputure full live image with a "live" button </li>
+<li> Set parameters of display : intensity scale, zoom region, etc</li>
+<li> Set parameters for an experiment : camera, positioner, laser, stimuli, output filename, etc</li>
+<li> Press "Apply all" button : This varifies if the setting parameters are valid. If not, Imagine rejects the settings</li>
+<li> Start acquisition : If the parameters are valid, we can start acquistion by clicking a "record" button. </li>
+<li> Inspect the acquired data : Once the acquisition is end, we can varify the acquisition if it is ended normally or interrupted by some errors, Using "display" tab and "AI and DI" tab, we can varify that and also briefly check if we got the desired data. </li>
+</ol>
+
+<h3>1. Parameters and display control window </h3>
+<p> This window is designed for setting overall parameters for the microscope operation and display.
+This window consists of tree main sections which  are "Config and control", "Histogram" and "Intensity". 
+Currently, "Intensity" tab is not used. "Histogram" section displays histogram of an image displayed in "Display window".
+"Config and control" tab is designed for setting overall parameters such as camera control, postioner control, laser control and stimuli control which are used to config an experiment. Also, it provides some basic tools for the following inspection of acquired data.</p>
+
+<h3>2. Display window </h3>
+<p> This window displays live images from the cameras attaced to the microscope or captured images during the acqusition or after the acquisition by loading the '.imagine' file at the "Display" tab. In this window, we can zoom the image. This zoomed region can be set as a <a href="hardware.html#ROI">soft ROI region</a> at the "camera" tab.</p>
+
+<h3>3. Log window </h3>
+<p> This window displays log messages.</p>
+
+<h3>4. Stimuli window </h3>
+<p> This window makes a list of stimulus numbers according to the stack numbers when we load stimuli file. Details are explained in the explanation of <a href="menu_stimuli.html">"Stimuli" tab</a>. </p>
+
+<h3>5. Main menu </h3>
+<p> Details are explained in the explanation of <a href="main_menu.html">main menu</a> page.</p>.
+
+</body>
+
+
+</html>

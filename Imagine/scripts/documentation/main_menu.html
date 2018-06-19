@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Main Menu</title>
+</head>
+
+<body>
+<h1>Main Menu</h1><br>
+
+<h3 id="file">1. File menu </h3><br>
+<img src="images/menu_dd01.png" width="350" height="190" alt=""/><br>
+<p> We can save a current configuration and load it later using this menu.</p>
+
+<h3>2. Acquisition menu </h3><br>
+<img src="images/menu_dd02.png" width="350" height="190" alt=""/><br>
+<p> We can start aquisition or live displaying the images from the cameras.</p>
+
+<h3 id="hardware">3. Hardware menu </h3><br>
+<img src="images/menu_dd03.png" width="350" height="190" alt=""/><br>
+<p> We can open and close a laser shutter of laser. "Heatsink Fan" and "Temperature" menus are not usable currently.</p>
+
+<h3>4. View menu </h3><br>
+<img src="images/menu_dd04.png" width="480" height="570" alt=""/><br>
+<p> 
+<ul>
+<li> Display Full Image : this menu make the camera ROI as full resion.</li>
+<li> No Auto Scale : does not apply auto scale to the intensity of the captured images in displaying them.</li>
+<li> Auto Scale On First Frame : applies auto scale to the first frame image of a stack. And following frames are scaled with the scale factor of the first frame of the stack which they are belonged.</li>
+<li> Auto Scale On All Frames : apllies auto scale to the every frame of the capture images.</li>
+<li> Manual : enables users to set the scale manually. Intensity from "min" value and "max" value will be scaled to 0 to 255. If we overlap the camera1 iamge with the camera2 iamge, "cam2 min" and "cam2 max" can be used to set the minimum and maximum intensity value of the camera2 image. </li>
+<li> Colorize Saturated Pixels : enables display to indicate the saturated pixel with some colors. Blue color pixels indicates pixels which have minus intensity value after scaling. Red is for pixels having intensity over 256.</li>
+<li> Flicker control : reduces the flicker caused by abnormal black frames between normal frames. </li>
+</ul>
+</p>
+
+</body>
+
+
+</html>

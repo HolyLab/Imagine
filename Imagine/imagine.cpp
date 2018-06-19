@@ -1644,10 +1644,10 @@ void Imagine::closeEvent(QCloseEvent *event)
 
     if (slaveImagine != NULL) {
         Ui_ImagineClass* slaveUi = &slaveImagine->ui;    // master window
-        QWidget *masterTab[5] = { ui.tabStim, ui.tabPiezo, ui.tabLaser, ui.tabWaveform, ui.tabAI };
-        QWidget *slaveTab[5] = { (*slaveUi).tabStim, (*slaveUi).tabPiezo, (*slaveUi).tabLaser,
-                                (*slaveUi).tabWaveform, (*slaveUi).tabAI };
-        for (int i = 0; i < 5; i++) {
+        QWidget *masterTab[6] = { ui.tabStim, ui.tabPiezo, ui.tabLaser, ui.tabWaveform, ui.tabAI, ui.tabScript };
+        QWidget *slaveTab[6] = { (*slaveUi).tabStim, (*slaveUi).tabPiezo, (*slaveUi).tabLaser,
+                                (*slaveUi).tabWaveform, (*slaveUi).tabAI, (*slaveUi).tabScript };
+        for (int i = 0; i < 6; i++) {
             int index = ui.tabWidgetCfg->indexOf(masterTab[i]);
             QString tabName = ui.tabWidgetCfg->tabText(index);
             slaveImagine->ui.tabWidgetCfg->insertTab(index, slaveTab[i], tabName);

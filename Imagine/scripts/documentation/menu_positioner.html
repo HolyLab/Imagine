@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Positioner tab</title>
+</head>
+
+<body>
+
+<h1>Positioner tab </h1>
+
+<p> This tab is for setting the start position and stop position of positioner and also positioner moving back time.</p>
+<ul>
+<li> Axis : is not used</li>
+<li> min distance(um) : is not used</li>
+<li> max distance(um) : is not used</li>
+<li> start position(um) : sets the start postion of the positioner(refer to the positioner control waveform below). </li>
+<li> move to position(um) : moves postioner to the specified position by clicking the 'move' button. </li>
+<li> stop position(um) : sets the stop postion of the positioner</li>
+<li> Refresh button : captures the current position of the positioner.</li>
+<li> time for moving back(s) : Refer to the positioner control waveform below. This time should be longer than (stop position - start position)/(maximum positioner speed) and shorter than <a href="menu_camera.html#idletime">idle time between stacks</a> when we don't use <a href="menu_camera.html#bidir">bi-directional imaging</a> mode. Imagine can set the shortest time valid automatically by checking the 'Auto' checkbox.</li>
+</ul>
+<br>
+<img src="images/menu04_positioner.png" width="500" height="500" alt=""/>
+<br>
+<br>
+
+<h3> Positioner control wavefrom and camera control pulse </h3>
+<img src="images/waveform.png" id="waveform" width="800" height="500" alt=""/>
+
+
+</body>
+
+
+</html>

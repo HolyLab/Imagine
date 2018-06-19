@@ -1,0 +1,142 @@
+﻿<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>OCPI operation modes</title>
+</head>
+
+<body>
+<style>
+p {
+    text-indent: 20px;
+}
+pre{
+  font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;
+  margin-bottom: 10px;
+  overflow: auto;
+  width: auto;
+  padding: 5px;
+  background-color: #eee;
+  width: 650px!ie7;
+  padding-bottom: 20px!ie7;
+  max-height: 1200px;
+}
+</style>
+<h1>Waveform Control Mode</h1>
+
+<h3> JSON format</h3>
+To specify the control waveform, we use JSON format file as a below example. We have 5 main fields such as "version", "metadata", "analog waveform", "digital waveform" and "wave list". Addtional fields beside them will be ignored. Each field can have several sub-fields. 
+ImagineInterface julia package is designed to help generating this control file. We can donwload the package at the link below. Even when we use a parameter control mode, Imagine internally generates a corresponding control file which has a same path and base name specified in 'file name' field in 'General' tab with a "_gui.json" extension.<br>
+<br>
+* ImagineInterface julia package<br>
+- Link : <a href="http://github.com/HolyLab/ImagineInterface" target="new">http://github.com/HolyLab/ImagineInterface</a><br>
+- Examples : <a href="http://github.com/HolyLab/ImagineInterface/blob/master/examples/workflow.jl" target="new">http://github.com/HolyLab/ImagineInterface/blob/master/examples/workflow.jl</a>
+
+
+
+<h4> Example </h4>
+<pre>
+  <code>
+{
+    "version": "v1.1",
+    "metadata": {
+        "camera1": {
+            "bidirectional": false,
+            "exposure time in seconds": 0.03,
+            "exposure trigger mode": "External Start",
+            "frames per stack": 20,
+            "stacks": 5
+        },
+        "generated from": "Imagine",
+        "rig": "ocpi-2",
+        "sample num": 335595,
+        "samples per second": 50000
+    },
+    "analog waveform": {
+        "AI4": {
+            "daq channel": "AI4"
+        },
+        "AI5": {
+            "daq channel": "AI5"
+        },
+        "axial piezo": {
+            "daq channel": "AO0",
+            "sequence": [ 5, "positioner1_001"]
+        },
+        "axial piezo monitor": {
+            "daq channel": "AI0"
+        },
+        "horizontal piezo monitor": {
+            "daq channel": "AI1"
+        }
+    },
+    "digital pulse": {
+        "all lasers": {
+            "daq channel": "P0.4",
+            "sequence": [ 5, "laser1_001"]
+        },
+        "camera1": {
+            "daq channel": "P0.5",
+            "sequence": [ 5, "camera1_001"]
+        },
+        "camera1 frame monitor": {
+            "daq channel": "P0.24"
+        }
+    },
+    "wave list": {
+        "camera1_001": [ 500, 0, 1501, 1, ..... 1501, 1, 35554, 0],
+        "laser1_001": [ 250, 0, 31620, 1, 35249, 0],
+        "positioner1_001": [1, 8192, 2, 8193, ..... 1, 8194, 27500, 8191]
+    }
+}
+  </code>
+</pre>
+
+<li><h4> version </h4></li>
+Our latest control format has a vesion number v1.1.
+
+<li><h4> metadata </h4></li>
+This field specifies some control parameters.
+<p> "camera1", "camera2"(optional only for ocpi-2) : These fields describe camera exposure mode, exposure value and stack number and frame per stack number.</p>
+<p> "generated from": This field is just used as a debugging infromation about by whom this control file is generated.</p>
+<p> "rig": specifies the target rig for this control file. ex) "ocpi-2", "ocpi-1", "ocpi-lsk"</p>
+<p> "sample num": specifies total sample number</p>
+<p> "samples per second": specifies sample number per second</p>
+
+<li><h4> analog wavefrom </h4></li>
+This field specifies several controls for analog channels in DAQ board.
+<pre>
+  <code>
+        "axial piezo": {
+            "daq channel": "AO0",
+            "sequence": [ 5, "positioner1_001"]
+        },
+        "axial piezo monitor": {
+            "daq channel": "AI0"
+        },
+  </code>
+</pre>
+Here, "axial piezo" and "axial piezo monitor" are names of each control. "daq channel" specifies which channel in DAQ board is used to output or capture this control signal. "axial piezo" uses "AO0" that is output channel. So, we need to specify wavefrom for this output channel in the "sequence" field. Here, [ 5, "positioner1_001"] means that we use small patch of waveform named "positioner_001" five times repeatedly. We can add more waveforms such as [ 5, "positioner1_001", 10, "positioner1_002"] but total cumulated number of samples should be same as the "sample num" in "metadata" field. 
+The small patch of waveform used in this field should be decribed in "wave list" field. <br> 
+<br>
+On the other hand, "axial piezo monitor" uses "AI0" channel which is input channel. For the input channel, we don't need to write "sequence" filed. If we define this input signal here, Imagine will capture the input signal through the input channel and save the data to the '.ai' file. <br>
+<br>
+The total DAQ channel list and their input output directions are listed in <a href="signal_connection.html">DAQ port assignment</a>. Some channels are already assigned to the system with given names. Users can not change the name and the port assignment and should specify controls for these channels. Names and port assignments for the system channels are also listed in the table.
+
+<li><h4> digital pulse </h4></li>
+This field specifies several controls for digital channels in DAQ board. Format describing the control is almost same as "analog waveform" field. Among digital channels of OCPI-2, only P0.24 ~ P0.31 are used as input channels. Imagine will capture the input signal through those input channels and save the data to the '.di' file. 
+
+<li><h4> wave list </h4></li>
+This field decribes small patches of waveform used for analog and digital controls. Basically, the run length code is used to reduce the data size. 
+<pre>
+  <code>
+        "laser1_001": [ 250, 0, 31620, 1, 35249, 0],
+        "positioner1_001": [1, 8192, 2, 8193, 1, 8194, 27500, 8191]
+  </code>
+</pre>
+Here, laser1_001" and "positioner1_001" are names of waveforms. In "laser1_001" waveform, 250 is a run length and 0 is a value. Again, 31620 is a run length and 1 a value. This continues until the end. For the "positioner1_001" waveform, 1, 2, 1 and 27500 are run lengths and 8192, 8193, 8194 and 8191 are values.
+
+</body>
+
+
+</html>

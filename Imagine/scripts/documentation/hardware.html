@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>OCPI Hardware</title>
+</head>
+
+<body>
+<h1>OCPI Hardware</h1><br>
+
+<img src="images/ocpi.png" width="350" height="400" alt=""/>
+
+<h3>1. Objective lens</h3><br>
+<h3>2. Laser light sheet</h3><br>
+<h3>3. Integrated Laser Engine (ILE)</h3><br>
+<img src="images/ILE.png" width="200" height="400" alt=""/>
+</p><h3>4. Piezo controller</h3><br>
+<img src="images/piezo_controller.png" width="300" height="200" alt=""/>
+<h3>5. Camera 1 and camera 2</h3><br>
+<img src="images/camera_back.png" width="280" height="200" alt=""/>
+<h4>A. Exposure Trigger Input</h4>
+<p>A signal for External Exp. Start or External Exp. Ctrl trigger mode is connected.</p>
+<h4>B. Acquire Enable Input</h4>
+<p>A signal for Acquire Mode or Sequence Trigger Mode is connected.</p>
+<h4>C. Status Busy</h4>
+<p>A signal indicating busy status is given at the status busy output. Once an acceptable trigger edge is received, busy will go on status high. As soon as busy goes low again, a new trigger edge is accepted.</p>
+<h4>D. Status Expose</h4>
+<p> A signal indicating exposure status is given at the status output. Status Expos indicates the actual exposure window for one frame.</p>
+<h4 id="expmode">Exposure control modes</h4><br>
+<img src="images/exposure_start.png" width="500" height="480" alt=""/><br>
+<img src="images/exposure_control.png" width="500" height="400" alt=""/><br>
+<h4>Sensor ROI VS Soft ROI</h4><br>
+<img src="images/roi.png" width="350" height="280" alt=""/><br>
+<br>
+<p id="ROI"> The senor ROI is limited with some rules to increase capturing speed. For the OCPI-2 camera, H start and H stop has step size of 160 pixels. And V start and V stop should be symmetric across the center horizontal line. Soft ROI is more free to set but the capturing speed is limited as the same speed of the smallest sensor ROI which can include the soft ROI.</p>
+
+</body>
+
+
+</html>

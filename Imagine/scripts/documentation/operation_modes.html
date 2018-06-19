@@ -1,0 +1,195 @@
+﻿<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>OCPI operation modes</title>
+</head>
+
+<body>
+<style>
+p {
+    text-indent: 20px;
+}
+pre{
+  font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;
+  margin-bottom: 10px;
+  overflow: auto;
+  width: auto;
+  padding: 5px;
+  background-color: #eee;
+  padding-bottom: 20px!ie7;
+  height: 2000px;
+  max-height: auto; %2000px;
+}
+</style>
+<h1>OCPI Operation Modes</h1>
+<li>Parameter control mode</li>
+<li>Waveform control mode</li>
+<li>Script control mode</li>
+
+<h3 id="oper_modes"> 1. Parameter and waveform control modes</h3>
+<img src="images/acq_modes.png" width="889" height="477" alt=""/><br>
+
+<h3 id="script_mode"> 2. Script control mode</h3>
+<p>In the script control mode, we can execute a java script code in the Imagine. In addition, Imagine provides several java functions for user to access some essential operations which are used to record data. Thereby, we can execute several experiments according to the control flow specified with java script code by one execution without intervention.</p>
+
+<p>In the Imagine GUI, general settings, parameter control settings and .json file name for waveform control can be saved in an configuration file with a ‘save configuration’ command in file menu. In script control mode, we can load, verify and record with this configuration file. </p>
+
+<h4> (1) System functions provided by the Imagine</h4>
+
+<li><strong>print()</strong></li>
+<p>prints string to the log terminal.</p>
+<p> ex) print("Hello world!"); </p>
+
+<li><strong>validityCheck()</strong></li>
+<p>applies loaded configuration to data acquisition task and checks the validity of config files. This works as if we press a ‘Apply all’ button in the Imagine GUI after loading configuration files if these files are specified.</p>
+<p> ex) var isOK = validityCheck("OCPI_cfg1.txt", "OCPI_cfg2.txt"); var isOK = validityCheck(); </p>
+
+<li><strong>applyConfiguration()</strong></li>
+<p>This works same as validityCheck() function.</p>
+<p>ex) applyConfiguration();</p>
+
+<li><strong>record()</strong></li>
+<p>begins to record. This works as if we press a ‘Record’ button in the Imagine GUI after loading configuration files if these are specifies. If configuration files are not specified, this just records according to the current configuration. This function return ‘false’ if execution time passes ‘timeout’ time, otherwise return ‘true.</p>
+<p>ex) var isSucceed = record("OCPI_cfg1.txt", "OCPI_cfg2.txt", timeout); var isSucceed = record(timeout);</p>
+    
+<li><strong>loadConfig()</strong></li>
+<p>loads configuration files.</p>
+	<p>ex) loadConfig("OCPI_cfg1.txt", "OCPI_cfg2.txt"); loadConfig("OCPI_cfg1.txt“);</p>
+    
+<li><strong>loadWaveform()</strong></li>
+<p>loads a waveform file.</p>
+	<p>ex) loadWaveform("OCPI_waveform.json");</p>
+    
+<li><strong>sleepms()</strong></li>
+<p>makes the script execution sleep specified times in milisecond.</p>
+	<p>ex) sleepms(1000); // sleep 1000msec</p>
+    
+<li><strong>setOutputFilename()</strong></li>
+<p>changes output file names with specified file names.</p>
+<p>ex) setOutputFilename("t1.imagine","t2.imagine"); setOutputFilename("t1.imagine"); </p>
+    
+<li><strong>getEstimatedRunTime()</strong></li>
+<p>returns estimated recording time in second. This time is calculated from total sample number of waveform signal. Therefore, it would take more time in actual acquisition which requires additional preparing and finishing times. These overhead times are less than 30sec in total.</p>
+<p>ex) var time = getEstimatedRunTime();</p>
+    
+<li><strong>stopRecord()</strong></li>
+<p>stop recording. This function is useful to get a control again when the Imagine lose a control after record() is fail.</p>
+<p>ex) stopRecord();</p>
+
+<li><strong>getTimeElapsed(int dt)</strong></li>
+<p>return various elapsed times according to 'dt' value.</p>
+<p>  0: record start to DAQ pulses output start</p>
+<p>  1: DAQ pulses output start to DAQ pulses output end</p>
+<p>  2: DAQ pulses output end to recording end</p>
+<p>  3: current time</p>
+<p>ex) total_elapsed_time = getTimeElapsed(0) + getTimeElapsed(1) + getTimeElapsed(2);</p>
+<p>ex) function current_time() {return getTimeElapsed(3);}</p>
+
+<h4> (2) Javascript objects</strong></h4>
+<p> We can also use existing javascript objects.</p>
+<p>ex) print(Math.sqrt(64)+Math.abs(-1)+Math.log(10));</p>
+
+     
+<h4> (3) Example </h4>
+<pre>
+  <code>
+var ret1, ret2, ret3, ret11, ret22, ret33;
+
+// output filename
+var paramCam1ConfigFile = "d:/test/OCPI_cfg1.txt";
+var paramCam2ConfigFile = "d:/test/OCPI_cfg1.txt"
+var waveCam1ConfigFile = "d:/test/OCPI_cfg1_wav.txt"
+var waveCam2ConfigFile = "d:/test/OCPI_cfg1_wav.txt"
+var test1Cam1File = "d:/test/test1_cam1.imagine";
+var test1Cam2File = "f:/test/test1_cam2.imagine";
+var test2Cam1File = "d:/test/test2_cam1.imagine";
+var test2Cam2File = "f:/test/test2_cam2.imagine";
+var test3Cam1File = "d:/test/test3_cam1.imagine";
+var test3Cam2File = "f:/test/test3_cam2.imagine";
+var test3WaveformFile = "d:/test/t_script_wav2.json";
+
+// setup recording timeout time
+var timeout = 30; // 30sec
+var timeoutMargin = 20;
+
+/* Check all the configurations before running them */
+print("Checking the validity of all three configurations");
+// loard OCPI_cfg1.txt (this is parameter control config file)
+loadConfig(paramCam1ConfigFile, paramCam2ConfigFile);
+setOutputFilename(test1Cam1File, test1Cam2File);
+// check the 1st configuration
+ret1 = validityCheck();
+
+// OCPI_cfg1_wav.txt (waveform control : t_script_wav.json is specified in)
+loadConfig(waveCam1ConfigFile, waveCam2ConfigFile); 
+setOutputFilename(test2Cam1File, test2Cam2File);
+// check the 2nd configuration
+ret2 = validityCheck();
+
+// replace t_script_wav.json with t_script_wav2.json
+ret3 = loadWaveform(test3WaveformFile);
+setOutputFilename(test3Cam1File, test3Cam2File);
+// check the 3rd configuration
+ret3 = validityCheck();
+
+/* Execute all the configurations */
+if(ret1 && ret2 && ret3) { // If all the configurations are valid 
+
+    var estimatedRunTime;
+    // setup the 1st configuration
+    print("Recoding the 1st configuration");
+    loadConfig(paramCam1ConfigFile, paramCam2ConfigFile);
+    setOutputFilename(test1Cam1File, test1Cam2File);
+    applyConfiguration(); // this can be also used to apply this configuation to the system
+    estimatedRunTime = getEstimatedRunTime();
+    // Recording
+    timeout = estimatedRunTime + timeoutMargin;
+    ret11 =  record(timeout);
+    if (!ret11) stopRecord();
+
+    // sleep 3000 msec
+    print("Waiting 3 seconds");
+    sleepms(3000);
+
+    // 2nd configuration
+    print("Recoding the 2nd configuration");
+    loadConfig(waveCam1ConfigFile, waveCam2ConfigFile); 
+    setOutputFilename(test2Cam1File, test2Cam2File);
+    applyConfiguration();
+    estimatedRunTime = getEstimatedRunTime();
+    timeout = estimatedRunTime + timeoutMargin;
+    ret22 = record(timeout);
+    if (!ret22) stopRecord();
+
+    // sleep 100000 msec
+    print("Waiting 10 seconds");
+    sleepms(10000);
+
+    // 3rd configuration
+    // If we are here, we already loaded OCPI_cfg1_wav.txt.
+    // So, we just replace waveform file
+    print("Recoding the 3rd configuration");
+    ret3 = loadWaveform(test3WaveformFile) ;
+    setOutputFilename(test3Cam1File, test3Cam2File);
+    applyConfiguration();
+    estimatedRunTime = getEstimatedRunTime();
+    timeout = estimatedRunTime + timeoutMargin;
+    ret33 = record(timeout);
+    if (!ret33) stopRecord();
+}
+
+// Display execution results
+print("All the recodings are finished");
+var msg1 = "configuration 1 validity: "+ ret1 +", recording: " + ret11;
+print(msg1);
+var msg2 = "configuration 2 validity: "+ ret2 +", recording: " + ret22;
+print(msg2);
+var msg3 = "configuration 3 validity: "+ ret3 +", recording: " + ret33;
+print(msg3);
+
+  </code>
+</pre>
+</body>
+
+</html>

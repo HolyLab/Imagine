@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<QtHelpProject version="1.0">
+    <namespace>ImagineHelp</namespace>
+    <virtualFolder>doc</virtualFolder>
+    <filterSection>
+        <toc>
+            <section title="OCPI microscope" ref="index.html">
+                <section title="Principle of OCPI-2 microscope operation" ref="ocpi_stack_frame.html"></section>
+                <section title="OCPI hardware" ref="hardware.html"></section>
+                <section title="OCPI blockdiagram and signal connections" ref="signal_connection.html"></section>
+                <section title="Operation modes" ref="operation_modes.html">
+                	<section title="Waveform control mode" ref="waveform_ctrl_mode.html"></section>
+                	<section title="Graphical User Interface" ref="imagine_gui.html">
+						<section title="Main menu" ref="main_menu.html"></section>
+						<section title="General tab" ref="menu_general.html"></section>
+						<section title="Camera tab" ref="menu_camera.html"></section>
+						<section title="Stimuli tab" ref="menu_stimuli.html"></section>
+						<section title="Positioner tab" ref="menu_positioner.html"></section>
+						<section title="Display tab" ref="menu_display.html"></section>
+						<section title="Laser tab" ref="menu_laser.html"></section>
+						<section title="Waveform tab" ref="menu_waveform.html"></section>
+						<section title="AI and DI tab" ref="menu_aidi.html"></section>
+						<section title="Script tab" ref="menu_script.html"></section>
+					</section>
+				</section>
+            </section>
+        </toc>
+        <keywords>
+            <keyword name="Principle of OCPI" ref="ocpi_stack_frame.html"/>
+            <keyword name="OCPI hardware" ref="hardware.html"/>
+            <keyword name="blockdiagram" ref="signal_connection.html"/>
+            <keyword name="Operation modes" ref="operation_modes.html"/>
+            <keyword name="Waveform control mode" ref="waveform_ctrl_mode.html"/>
+            <keyword name="Graphical User Interface" ref="imagine_gui.html"/>
+            <keyword name="Main menu" ref="main_menu.html"/>
+            <keyword name="Config and control" ref="config_and_control.html"/>
+        </keywords>
+        <files>
+            <file>index.html</file>
+            <file>ocpi_stack_frame.html</file>
+            <file>hardware.html</file>
+            <file>signal_connection.html</file>
+            <file>operation_modes.html</file>
+            <file>waveform_ctrl_mode.html</file>
+            <file>imagine_gui.html</file>
+            <file>main_menu.html</file>
+            <file>menu_general.html</file>
+            <file>menu_camera.html</file>
+            <file>menu_stimuli.html</file>
+            <file>menu_positioner.html</file>
+            <file>menu_display.html</file>
+            <file>menu_laser.html</file>
+            <file>menu_waveform.html</file>
+            <file>menu_aidi.html</file>
+            <file>menu_script.html</file>
+            <file>HR_test.txt</file>
+            <file>scriptControlTest.js</file>
+            <file>images/OCPI_principle.png</file>
+            <file>images/stack_and_frame.png</file>
+            <file>images/signal_connection.png</file>
+            <file>images/ocpi.png</file>
+            <file>images/ILE.png</file>
+            <file>images/camera_back.png</file>
+            <file>images/piezo_controller.png</file>
+            <file>images/acq_modes.png</file>
+            <file>images/exposure_start.png</file>
+            <file>images/exposure_control.png</file>
+            <file>images/roi.png</file>
+            <file>images/menu_all.png</file>
+            <file>images/menu_side02.png</file>
+            <file>images/menu_dd01.png</file>
+            <file>images/menu_dd02.png</file>
+            <file>images/menu_dd03.png</file>
+            <file>images/menu_dd04.png</file>
+            <file>images/menu01_general.png</file>
+            <file>images/menu02_camera.png</file>
+            <file>images/menu03_stimuli.png</file>
+            <file>images/menu04_positioner.png</file>
+            <file>images/menu05_display.png</file>
+            <file>images/menu06_laser.png</file>
+            <file>images/menu07_waveform.png</file>
+            <file>images/menu08_ai_and_di.png</file>
+            <file>images/menu09_script.png</file>
+            <file>images/waveform.png</file>
+            <file>images/waveform_bidir.png</file>
+        </files>
+    </filterSection>
+</QtHelpProject>
