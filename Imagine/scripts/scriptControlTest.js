@@ -54,7 +54,7 @@ if(ret1 && ret2 && ret3) { // If all the configurations are valid
 
     // sleep 3000 msec
     print("Waiting 3 seconds");
-    sleep(3000);
+    sleepms(3000);
 
     // 2nd configuration
     print("Recoding the 2nd configuration");
@@ -68,7 +68,7 @@ if(ret1 && ret2 && ret3) { // If all the configurations are valid
 
     // sleep 100000 msec
     print("Waiting 10 seconds");
-    sleep(10000);
+    sleepms(10000);
 
     // 3rd configuration
     // If we are here, we already loaded OCPI_cfg1_wav.txt.

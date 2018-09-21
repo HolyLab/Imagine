@@ -849,7 +849,8 @@ CFErrorCode ControlWaveform::fullSpeedCheck(int maxSpeed, int minRaw, int maxRaw
         // 2 Instantaneous change check : This will improve a defect of 1.
         end = (stop[i] < getCtrlSampleNum(ctrlIdx) - 1) ?
             stop[i] : getCtrlSampleNum(ctrlIdx) - 2;
-        getCtrlSampleValue(ctrlIdx, 0, wave0, PDT_RAW);
+        strt[i] == 0? getCtrlSampleValue(ctrlIdx, 0, wave0, PDT_RAW):
+                      getCtrlSampleValue(ctrlIdx, strt[i]-1, wave0, PDT_RAW);
         for (SampleIdx j = strt[i]; j < end; j++) {
             getCtrlSampleValue(ctrlIdx, j, wave1, PDT_RAW);
             if (abs(wave1 - wave0) > instantChangeTh)
