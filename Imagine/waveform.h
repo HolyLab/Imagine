@@ -289,7 +289,20 @@ private:
         { QString(STR_P0HEADER).append("25"), STR_camera2_mon }
     };
 
-    CFErrorCode lookUpWave(QString wn, QVector <QString> &wavName,
+	QVector<QVector<QString>> realmSecured = { // secured signal name for realm
+		// Analog output (AO0 ~ AO1)								// ctrlIdx
+		{ QString(STR_AOHEADER).append("0"), STR_axial_piezo },     // 0
+		// Analog input (AI0 ~ AI15)
+		{ QString(STR_AIHEADER).append("0"), STR_axial_piezo_mon }, // 2
+		{ QString(STR_AIHEADER).append("1"), STR_stimuli_mon }, // 3
+		// Digital output (P0.0 ~ P0.6)
+		{ QString(STR_P0HEADER).append("4"), STR_488nm_laser_str }, // 18
+		{ QString(STR_P0HEADER).append("5"), STR_camera1 },
+		// Digital input (P0.7)                                     // 25
+		{ QString(STR_P0HEADER).append("7"), STR_camera1_mon }
+	};
+
+	CFErrorCode lookUpWave(QString wn, QVector <QString> &wavName,
         QJsonObject wavelist, int &waveIdx, int dataType);
     int getWaveSampleNum(int waveIdx);
     template<class Typ> bool getWaveSampleValue(int waveIdx, SampleIdx sampleIdx,

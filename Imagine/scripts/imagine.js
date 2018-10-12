@@ -99,3 +99,18 @@ if (rig == "ocpi-lsk") {
     var ainame = "Dev2/ai";
     var maxlaserfreq = "1000"; // this shutter is fast but temporally set as 1000
 }
+
+if (rig == "realm") {
+    var camera = "cooke";
+    var magnificationFactor = "1"
+    var positioner = "volpiezo";
+    var maxposition = "800"; // this value is for ocpi-2 positioner
+    var maxspeed = "2000"; // this value is for ocpi-2 positioner
+    var ctrlrsetup = "none" // no piezo controller setting
+    var daq = "ni";
+    var doname = "Dev2/port0/line0:6";
+    var diname = "Dev2/port0/line7";
+    var aoname = "Dev2/ao";
+    var ainame = "Dev2/ai";
+    var maxlaserfreq = "25";
+}

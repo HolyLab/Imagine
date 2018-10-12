@@ -134,7 +134,7 @@ bool CookeCamera::init()
     //model
     this->model = strCamType.strHardwareVersion.Board[0].szName;
     // serial number -> camera ID
-    // ocpi-2(cam1:60100056, cam2:60100067), ocpi-1(813), ocpi-lsk(1128)
+    // ocpi-2(cam1:60100056, cam2:60100067), ocpi-1(813), ocpi-lsk(1128), realm (61005797)
     if(strCamType.dwSerialNumber == 60100067) // ocpi-2 camera2
         this->cameraID = 2;
     else
@@ -199,8 +199,8 @@ bool CookeCamera::setAcqParams(int emGain,
         safe_pco(PCO_SetROI(hCamera, hstart, vstart, hend, vend), "failed to set ROI");
         // frame trigger mode (0 for auto)
         safe_pco(PCO_SetTriggerMode(hCamera, 0), "failed to set frame trigger mode");
-        // storage mode (1 for FIFO)
-        safe_pco(PCO_SetStorageMode(hCamera, 1), "failed to set storage mode");
+        // storage mode (1 for FIFO) - not supported by pco.edge
+		// safe_pco(PCO_SetStorageMode(hCamera, 1), "failed to set storage mode");
         // acquisition mode (0 for auto)
         safe_pco(PCO_SetAcquireMode(hCamera, 0), "failed to set acquisition mode");
         // timestamp mode (1: bcd; 2: bcd+ascii)

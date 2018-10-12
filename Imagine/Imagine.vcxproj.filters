@@ -194,9 +194,6 @@
     <ClInclude Include="camera_g.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="watchdog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="piezoctrl.h">
@@ -254,6 +251,9 @@
       <Filter>GUI Files</Filter>
     </CustomBuild>
     <CustomBuild Include="imagine.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="sigwatchdog.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
 {
     ImgApplication a(argc, argv);
 
-    rig = "ocpi-2";
+    rig = "realm";
     //rig = string("dummy");
     if (argc == 2) {
         rig = argv[1];
@@ -284,7 +284,8 @@ int main(int argc, char *argv[])
     maxLaserFreq = se->globalObject().property("maxlaserfreq").toNumber();
     if (rig == "ocpi-2") laser = new Laser("COM", maxLaserFreq);
     else if (rig == "ocpi-1") laser = new Laser("nidaq", maxLaserFreq);
-    else if (rig == "ocpi-lsk") laser = new Laser("nidaq", maxLaserFreq);
+	else if (rig == "realm") laser = new Laser("nidaq", maxLaserFreq);
+	else if (rig == "ocpi-lsk") laser = new Laser("nidaq", maxLaserFreq);
     else laser = new Laser("dummy", maxLaserFreq);
 
     // get rid of the status message

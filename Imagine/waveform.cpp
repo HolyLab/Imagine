@@ -74,7 +74,13 @@ void ControlWaveform::initControlWaveform(QString rig)
             numP0Channel = 8;
             numP0InChannel = 1;
         }
-        else { // ocpi-2, ocpi-lsk
+		else if (rig == "realm") {
+			numAOChannel = 2; // originaly 4 but we set as ocpi-1 for the time being
+			numAIChannel = 16; // originaly 32 but we set as ocpi-1 for the time being 
+			numP0Channel = 8; // originaly 32 but we set as ocpi-1 for the time being
+			numP0InChannel = 1; // originaly 8 but we set as ocpi-1 for the time being
+		}
+		else { // ocpi-2, ocpi-lsk
             numAOChannel = 4;
             numAIChannel = 32;
             numP0Channel = 32;
@@ -99,6 +105,10 @@ void ControlWaveform::initControlWaveform(QString rig)
         secured = &ocpilskSecured;
         piezo10Vint16Value = PIEZO_10V_UINT16_VALUE;
     }
+	else if (rig == "realm") {
+		secured = &realmSecured;
+		piezo10Vint16Value = PIEZO_10V_UINT16_VALUE;
+	}
     else {// including "ocpi-2" and "dummy" ocpi
         secured = &ocpi2Secured;
         piezo10Vint16Value = PIEZO_10V_UINT16_VALUE;
@@ -721,7 +731,7 @@ float64 findValueVol(QVector<int> *wav, QVector<float64> *wav_v, SampleIdx begin
 bool ControlWaveform::isPiezoWaveEmpty(void)
 {
     bool empty = true;
-    if((rig=="ocpi-1")|| (rig == "ocpi-lsk")) {
+    if((rig=="ocpi-1")|| (rig == "ocpi-lsk") || (rig == "realm")) {
         empty &= isEmpty(STR_axial_piezo);
     }
     else {
@@ -734,7 +744,7 @@ bool ControlWaveform::isPiezoWaveEmpty(void)
 bool ControlWaveform::isCameraPulseEmpty(void)
 {
     bool empty = true;
-    if ((rig == "ocpi-1") || (rig == "ocpi-lsk")) {
+    if ((rig == "ocpi-1") || (rig == "ocpi-lsk") || (rig == "realm")) {
         empty &= isEmpty(STR_camera1);
     }
     else {
@@ -747,7 +757,7 @@ bool ControlWaveform::isCameraPulseEmpty(void)
 bool ControlWaveform::isLaserPulseEmpty(void)
 {
     bool empty = true;
-    if (rig == "ocpi-1") {
+    if ((rig == "ocpi-1") || (rig == "realm")) {
         empty &= isEmpty(STR_488nm_laser_str);
     }
     else if (rig == "ocpi-lsk") {
@@ -1601,7 +1611,7 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
             stimulusName.append({ "stimulus1", "stimulus2", "stimulus3", "stimulus4" });
         }
         else { // for Haoyang (5bits)
-            if(rig=="ocpi-1")
+            if((rig=="ocpi-1") || (rig == "realm"))
                 stimuliPortMap.append({ "P0.0", "P0.1", "P0.2", "P0.3", "P0.6" });
             else
                 stimuliPortMap.append({ "P0.0", "P0.1", "P0.2", "P0.3", "P0.18" });
@@ -1660,7 +1670,7 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
             piezo1Mon[STR_Channel] = port;
             analog[sig] = piezo1Mon; // secured port for piezo monitor
         }
-        if ((rig == "ocpi-1") || (rig == "ocpi-lsk")) {
+        if ((rig == "ocpi-1") || (rig == "ocpi-lsk") || (rig == "realm")) {
             if (port == QString(STR_AIHEADER).append("1")) { // AI1
                 stimulus1Mon[STR_Channel] = port;
                 analog[sig] = stimulus1Mon; // secured port for stimulus monitor
@@ -1677,7 +1687,7 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
             ai4Mon[STR_Channel] = port;
             analog["AI4"] = ai4Mon; // for compatibility with old Imainge HW configuration
         }
-        if (rig != "ocpi-1") {
+        if ((rig != "ocpi-1") || (rig == "realm")) {
             if (port == QString(STR_AIHEADER).append("5")) { // AI5
                 ai5Mon[STR_Channel] = port;
                 analog["AI5"] = ai5Mon; // for compatibility with old Imainge HW configuration
@@ -1709,7 +1719,7 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
         }
 
         QString camera1InPort, camera2InPort;
-        if (rig == "ocpi-1") {
+        if ((rig == "ocpi-1") || (rig == "realm")) {
             camera1InPort = QString(STR_P0HEADER).append("7"); // P0.7
             if (port == camera1InPort) {
                 camera1Mon[STR_Channel] = port;
