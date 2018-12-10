@@ -3,6 +3,7 @@ if(rig=="dummy"){
     var magnificationFactor = "1"
 	var positioner = "dummy";
 	var maxposition = "800"; // this value is for ocpi-2 positioner
+	var minposition = "0"; // this value is for ocpi-2 positioner
 	var maxspeed = "2000"; // this value is for ocpi-2 positioner
 	var ctrlrsetup = "none" // no piezo controller setting
 	var daq = "dummy";
@@ -51,6 +52,7 @@ if(rig=="ocpi-1"){
 	var magnificationFactor = "0.5"
 	var positioner = "volpiezo"; //NOTE: requires daq=="ni"
 	var maxposition = "400"; // this value is for ocpi-1 positioner
+	var minposition = "0"; // this value is for ocpi-1 positioner
 	var maxspeed = "2000"; // this value is for ocpi-2 positioner
 	var ctrlrsetup = "none" // piezo controller set by offline setup
 	var daq = "ni";
@@ -66,6 +68,7 @@ if(rig=="ocpi-2"){
 	var magnificationFactor = "1"
 	var positioner = "volpiezo"; //NOTE: requires daq=="ni"
 	var maxposition = "800"; // this value is for ocpi-2 positioner
+	var minposition = "0"; // this value is for ocpi-2 positioner
 	var maxspeed = "2000"; // this value is for ocpi-2 positioner
 	var ctrlrsetup = "none" // no piezo controller setting
 //	var ctrlrsetup = "COM3" // piezo controller set by serial comm. through COM3
@@ -91,6 +94,7 @@ if (rig == "ocpi-lsk") {
     var magnificationFactor = "1"
     var positioner = "volpiezo"; //NOTE: requires daq=="ni"
     var maxposition = "400"; // this value is for ocpi-2 positioner
+    var minposition = "0"; // this value is for ocpi-2 positioner
     var maxspeed = "2000"; // this value is for ocpi-2 positioner
     var daq = "ni";
     var doname = "Dev2/port0/line0:23";
@@ -105,6 +109,7 @@ if (rig == "realm") {
     var magnificationFactor = "1"
     var positioner = "volpiezo";
     var maxposition = "800"; // this value is for ocpi-2 positioner
+    var minposition = "-800";
     var maxspeed = "2000"; // this value is for ocpi-2 positioner
     var ctrlrsetup = "none" // no piezo controller setting
     var daq = "ni";

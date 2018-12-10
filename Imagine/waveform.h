@@ -323,6 +323,7 @@ public:
     QString expTriggerModeStr2 = "External Start";
     bool bidirection1 = false;
     bool bidirection2 = false;
+    int minPiezoPos;
     int maxPiezoPos;
     int maxPiezoSpeed;
     int maxLaserFreq;

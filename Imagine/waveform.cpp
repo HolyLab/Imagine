@@ -55,6 +55,7 @@ void ControlWaveform::initControlWaveform(QString rig)
     QString jscode = in.readAll();
     QScriptProgram sp(jscode);
     QScriptValue jsobj = seTmp->evaluate(sp);
+    minPiezoPos = seTmp->globalObject().property("minposition").toNumber();
     maxPiezoPos = seTmp->globalObject().property("maxposition").toNumber();
     maxPiezoSpeed = seTmp->globalObject().property("maxspeed").toNumber();
     maxLaserFreq = seTmp->globalObject().property("maxlaserfreq").toNumber();
@@ -1053,12 +1054,12 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
         for (int i = 0; i < channelSignalList.size(); i++) {
             // piezo speed check
             if (channelSignalList[i][1].right(5) == STR_piezo) {
-                CFErrorCode err = positionerSpeedCheck(maxPiezoSpeed, 0, maxPiezoPos, i, sampleNum);
+                CFErrorCode err = positionerSpeedCheck(maxPiezoSpeed, minPiezoPos, maxPiezoPos, i, sampleNum);
                 if (err & (ERR_PIEZO_SPEED_FAST | ERR_PIEZO_INSTANT_CHANGE)) {
                     errorMsg.append(QString("'%1' control is too fast\n").arg(channelSignalList[i][1]));
                 }
                 if (err & (ERR_PIEZO_VALUE_INVALID)) {
-                    errorMsg.append(QString("'%1' control value should not be negative\n")
+                    errorMsg.append(QString("'%1' control value is out of range\n")
                     .arg(channelSignalList[i][1]));//.arg(maxPos));
                 }
                 if ((sampleNum != 0) && (sampleNum != totalSampleNum)) {

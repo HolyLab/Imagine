@@ -233,7 +233,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>6</number>
+         <number>3</number>
         </property>
         <widget class="QWidget" name="tabGeneral">
          <attribute name="title">
@@ -1132,7 +1132,7 @@
            <number>0</number>
           </property>
           <property name="minimum">
-           <double>0.000000000000000</double>
+           <double>-1000000.000000000000000</double>
           </property>
           <property name="maximum">
            <double>1000000.000000000000000</double>
@@ -1158,6 +1158,9 @@
           </property>
           <property name="decimals">
            <number>0</number>
+          </property>
+          <property name="minimum">
+           <double>-1000000.000000000000000</double>
           </property>
           <property name="maximum">
            <double>1000000.000000000000000</double>
@@ -1236,7 +1239,7 @@
            <number>0</number>
           </property>
           <property name="minimum">
-           <double>-1.000000000000000</double>
+           <double>-1000000.000000000000000</double>
           </property>
           <property name="maximum">
            <double>1000000.000000000000000</double>
