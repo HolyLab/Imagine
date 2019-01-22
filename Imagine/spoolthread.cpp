@@ -1,9 +1,6 @@
 #include "imagine.h"
 
 #include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "fast_ofstream.hpp"
 #include "circbuf.hpp"
@@ -29,7 +26,7 @@ SpoolThread::~SpoolThread(){}//dtor
 
 void SpoolThread::run() {
     #if defined(_DEBUG)
-        cerr << "enter cooke spooling thread run()" << endl;
+        std::cerr << "enter cooke spooling thread run()" << std::endl;
     #endif
 
     long long timerReading;
@@ -72,6 +69,6 @@ finishup:
     this->setPriority(getDefaultPriority());
 
 #if defined(_DEBUG)
-    cerr << "leave cooke spooling thread run()" << endl;
+    std::cerr << "leave cooke spooling thread run()" << std::endl;
 #endif
 }//run(),

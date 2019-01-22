@@ -76,7 +76,7 @@ bool CookeCamera::init()
     if (errorCode != PCO_NOERROR){
         char msg[16384];
         PCO_GetErrorText(errorCode, msg, 16384);
-        cout << msg << endl;
+        std::cout << msg << std::endl;
         errorMsg += "call PCO_OpenCamera";
         return false;
     }
@@ -420,7 +420,7 @@ bool CookeCamera::setAcqModeAndTime(GenericAcqMode genericAcqMode,
         return false;
     }
 
-    cout << "frame rate is: " << 1 / getCycleTime() << endl;
+    std::cout << "frame rate is: " << 1 / getCycleTime() << std::endl;
 
     return true;
 }
@@ -488,7 +488,7 @@ void CookeCamera::printPcoError(int errCode) {
     std::string msgs = string(msg);
     std::wstring msgw;
     msgw.assign(msgs.begin(), msgs.end());
-    cout << msg << endl;
+    std::cout << msg << std::endl;
     OutputDebugStringW((wstring(L"\nPCO error text: ") + msgw).c_str());
 }
 

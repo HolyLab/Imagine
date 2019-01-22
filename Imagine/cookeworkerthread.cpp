@@ -1,8 +1,4 @@
 #include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
-
 #include <assert.h>
 
 #include "data_acq_thread.hpp"
@@ -39,7 +35,7 @@ void CookeWorkerThread::run() {
     #if defined(_DEBUG)
         vector<int> nBlackFrames, blackFrameStartIndices, curFrameIndices;
         curFrameIndices.reserve(camera->nFrames);
-        cerr << "enter cooke worker thread run()" << endl;
+        std::cerr << "enter cooke worker thread run()" << std::endl;
     #endif
     WORD wActSeg = 0;
     int negIndices = 0;
@@ -244,12 +240,12 @@ void CookeWorkerThread::run() {
 
     #if defined(_DEBUG)
 //    DataAcqThread::genSquareSpike(30);
-        cerr << "black frame info:" << endl;
+        std::cerr << "black frame info:" << std::endl;
         for (unsigned i = 0; i < nBlackFrames.size(); ++i) {
             cerr << nBlackFrames[i] << "@" << blackFrameStartIndices[i] << " \t";
-            if (i % 8 == 7) cerr << endl;
+            if (i % 8 == 7) std::cerr << std::endl;
         }
-        cerr << "end of black frame info" << endl;
+        std::cerr << "end of black frame info" << std::endl;
     #endif
 }//run(),
 
@@ -276,7 +272,7 @@ void DummyWorkerThread::run() {
 #if defined(_DEBUG)
     vector<int> nBlackFrames, blackFrameStartIndices, curFrameIndices;
     curFrameIndices.reserve(camera->nFrames);
-    cerr << "enter dummy worker thread run()" << endl;
+    std::cerr << "enter dummy worker thread run()" << std::endl;
 #endif
     int negIndices = 0;
     int eventIdx = 1;
@@ -470,11 +466,11 @@ void DummyWorkerThread::run() {
 
 #if defined(_DEBUG)
     DataAcqThread::genSquareSpike(30);
-    cerr << "black frame info:" << endl;
+    std::cerr << "black frame info:" << std::endl;
     for (unsigned i = 0; i < nBlackFrames.size(); ++i) {
         cerr << nBlackFrames[i] << "@" << blackFrameStartIndices[i] << " \t";
-        if (i % 8 == 7) cerr << endl;
+        if (i % 8 == 7) std::cerr << std::endl;
     }
-    cerr << "end of black frame info" << endl;
+    std::cerr << "end of black frame info" << std::endl;
 #endif
 }//run(),

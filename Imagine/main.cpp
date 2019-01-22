@@ -14,8 +14,6 @@
 **-------------------------------------------------------------------------*/
 
 #include <filesystem>
-using namespace std;
-
 #include <QtWidgets/QApplication>
 #include <QSplashScreen>
 #include <QMessageBox>
@@ -103,7 +101,7 @@ void getCamCount(int *camCount) {
     if (tErr != PCO_NOERROR) {
         /*char msg[16384];
         PCO_GetErrorText(tErr, msg, 16384);
-        cout << msg << endl;*/
+        std::cout << msg << std::endl;*/
         return;
     }
     // before closing the camera, see how many other cameras you can open (ugh)
@@ -123,10 +121,11 @@ int main(int argc, char *argv[])
     //rig = string("dummy");
     if (argc == 2) {
         rig = argv[1];
-        cout << "The rig is: " << rig << endl;
+        std::cout << "The rig is: " << rig << std::endl;
+        std::cout << std::endl;
     }
     else {
-        cout << "The rig is default to: " << rig << endl;
+        std::cout << "The rig is default to: " << rig << std::endl;
     }
 
     se = new QScriptEngine();
@@ -181,7 +180,7 @@ int main(int argc, char *argv[])
     if (!tr2::sys::exists(tr2::sys::path(filename))){
         filename = string("preset.js");
     }
-    cout << "preset file is: " << string(filename) << endl;
+    std::cout << "preset file is: " << string(filename) << std::endl;
     if (!loadScript(QString::fromStdString(filename),se)){
         return 1;
     }
@@ -284,8 +283,8 @@ int main(int argc, char *argv[])
     maxLaserFreq = se->globalObject().property("maxlaserfreq").toNumber();
     if (rig == "ocpi-2") laser = new Laser("COM", maxLaserFreq);
     else if (rig == "ocpi-1") laser = new Laser("nidaq", maxLaserFreq);
-	else if (rig == "realm") laser = new Laser("nidaq", maxLaserFreq);
-	else if (rig == "ocpi-lsk") laser = new Laser("nidaq", maxLaserFreq);
+    else if (rig == "realm") laser = new Laser("nidaq", maxLaserFreq);
+    else if (rig == "ocpi-lsk") laser = new Laser("nidaq", maxLaserFreq);
     else laser = new Laser("dummy", maxLaserFreq);
 
     // get rid of the status message

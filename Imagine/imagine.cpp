@@ -710,8 +710,8 @@ void Imagine::updateHist(QwtPlotHistogram *histogram, const Camera::PixelValue *
             maxcount = value;
         intervals[i] = QwtIntervalSample(value, start, end);
     }//for, each inten
-    //cout << "Last interval: (" << intervals[nBins-1].minValue() << "," << intervals[nBins-1].maxValue() << ")";
-    //cout << "; Last value: " << values[nBins-1] << endl;
+    //std::cout << "Last interval: (" << intervals[nBins-1].minValue() << "," << intervals[nBins-1].maxValue() << ")";
+    //std::cout << "; Last value: " << values[nBins-1] << std::endl;
 
     histogram->setSamples(intervals);
     histogram->attach(histPlot);
@@ -2073,7 +2073,7 @@ bool Imagine::applySetting()
     }
     else
         dataAcqThread->cycleTime = camera->getCycleTime();
-    cout << "cycle time is: " << dataAcqThread->cycleTime << endl;
+    std::cout << "cycle time is: " << dataAcqThread->cycleTime << std::endl;
 
     //set filenames:
     headerFilename = ui.lineEditFilename->text();

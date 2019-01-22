@@ -25,8 +25,6 @@
 
 using std::string;
 using std::vector;
-using std::cout;
-using std::endl;
 
 #include "NIDAQmx.h"
 
@@ -142,7 +140,7 @@ public:
 //      trigOut.assign(dev).append("/StartTrigger");
       trigOut="/"+dev+"/StartTrigger";
       clkOut = "/" + dev + "/SampleClock";
-      cout << "About to initialize AO device " << dev << endl;
+      std::cout << "About to initialize AO device " << dev  << std::endl;
       //string dev="Dev1/ao";
       string chanList=dev+toString(channels[0]);
       for(unsigned int i=1; i<channels.size(); ++i){
@@ -221,7 +219,7 @@ public:
 
    //write waveform to driver's buffer
    bool updateOutputBuf(){
-//    cout<<"in  updateOutputBuf()"<<endl;
+//    std::cout<<"in  updateOutputBuf()"<<std::endl;
       int32 nScanWritten;
 	  char  errBuff[2048] = { '\0' };
 	  /*
@@ -245,7 +243,7 @@ public:
 		if (DAQmxFailed(errorCode))
 			DAQmxGetExtendedErrorInfo(errBuff, 2048);
       Done:
-//      cout<<"out updateOutputBuf()"<<endl;
+//    std::cout<<"out updateOutputBuf()"<<std::endl;
       return !isError();
    }//updateOutputBuf(),
 
@@ -332,7 +330,7 @@ public:
    }//setNSampleCallback
 
    bool updateOutputBuf(int numSample) {
-//       cout << "in AO updateOutputBuf()" << endl;
+//     std::cout << "in AO updateOutputBuf()" << std::endl;
        int32 nScanWritten;
        char  errBuff[2048] = { '\0' };
        if (DAQmxFailed(errorCode = (DAQmxWriteAnalogF64(taskHandle,
@@ -350,7 +348,7 @@ public:
        if (DAQmxFailed(errorCode))
            DAQmxGetExtendedErrorInfo(errBuff, 2048);
    Done:
-//       cout << "out AO updateOutputBuf()" << endl;
+//     std::cout << "out AO updateOutputBuf()" << std::endl;
        return !isError();
    }//updateOutputBuf(int numSample),
 
@@ -369,7 +367,7 @@ public:
       //todo: next line is unnecessary?
       //DAQmxErrChk(DAQmxCfgInputBuffer(taskHandle, buf_size) ); //jason: this change DEFAULT(?) input buffer size
       string dev = devstring.toStdString();
-      cout << "About to initialize AI device " << dev << endl;
+      std::cout << "About to initialize AI device " << dev << std::endl;
       //string dev="Dev1/ai";
       string chanList=dev+toString(channels[0]);
       for(unsigned int i=1; i<channels.size(); ++i){
@@ -489,7 +487,7 @@ public:
    NiDaqDo(QString devstring): Daq(vector<int>()), NiDaq(vector<int>()){
       dataU32 = nullptr;
       string dev = devstring.toStdString();
-      cout << "About to initialize DO device with " << dev << endl;
+      std::cout << "About to initialize DO device with " << dev << std::endl;
       errorCode=DAQmxCreateDOChan(taskHandle,dev.c_str(),"",DAQmx_Val_ChanForAllLines);
       if(isError()){
          throw EInitDevice("exception when call DAQmxCreateDOChan()");
@@ -608,7 +606,7 @@ public:
    }//getOutputBuf()
 
    bool updateOutputBuf() {
-//       cout << "in DO updateOutputBuf()" << endl;
+//     std::cout << "in DO updateOutputBuf()" << std::endl;
        int32 nScanWritten;
        char  errBuff[2048] = { '\0' };
        if (DAQmxFailed(errorCode = (DAQmxWriteDigitalU32(taskHandle,
@@ -625,7 +623,7 @@ public:
        if (DAQmxFailed(errorCode))
            DAQmxGetExtendedErrorInfo(errBuff, 2048);
    Done:
-//       cout << "out DO updateOutputBuf()" << endl;
+//     std::cout << "out DO updateOutputBuf()" << std::endl;
        return !isError();
    }//updateOutputBuf(),
 
@@ -690,7 +688,7 @@ public:
    }//setNSampleCallback
 
    bool updateOutputBuf(int numSample) {
-//       cout << "in DO updateOutputBuf()" << endl;
+//     std::cout << "in DO updateOutputBuf()" << std::endl;
        int32 nScanWritten;
        char  errBuff[2048] = { '\0' };
        if (DAQmxFailed(errorCode = (DAQmxWriteDigitalU32(taskHandle,
@@ -708,7 +706,7 @@ public:
        if (DAQmxFailed(errorCode))
            DAQmxGetExtendedErrorInfo(errBuff, 2048);
    Done:
-//       cout << "out DO updateOutputBuf()" << endl;
+//     std::cout << "out DO updateOutputBuf()" << std::endl;
        return !isError();
    }//updateOutputBuf(int numSample),
 
@@ -724,7 +722,7 @@ public:
     //create DI channels and add the channels to the task
     NiDaqDi(QString devstring, const vector<int> & chs) : Daq(chs), NiDaq(chs), DaqDi(chs) {
         string dev = devstring.toStdString();
-        cout << "About to initialize DI device with " << dev << endl;
+        std::cout << "About to initialize DI device with " << dev << std::endl;
         errorCode = DAQmxCreateDIChan(taskHandle,
             dev.c_str(),  //channels to acquire
             "",          //nameToAssignToChannel
@@ -841,20 +839,20 @@ public:
 
    //return true if success
    bool writeOne(int valueToOutput){
-      cout<<"in  writeOne()"<<endl;
+      std::cout<<"in  writeOne()"<< std::endl;
       //uInt16* buf=ao->getOutputBuf();
 	  float64* buf = ao->getOutputBuf();
       buf[0]=float64(valueToOutput);
       buf[1]=buf[0];
       if(!ao->updateOutputBuf()) {
-         cout<<ao->getErrorMsg()<<endl;
+         std::cout<<ao->getErrorMsg()<< std::endl;
          return false;
       }
       if(!ao->start()) return false;
       if(!ao->wait(-1)) return false; //wait forever
       if(!ao->stop()) return false;
 
-      cout<<"out writeOne()"<<endl;
+      std::cout<<"out writeOne()"<< std::endl;
       return true;
    }//writeOne(),
 
