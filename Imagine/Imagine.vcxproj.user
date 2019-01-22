@@ -2,16 +2,16 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <QTDIR>C:\Qt\Qt5.7.0\5.7\msvc2015_64</QTDIR>
-    <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin%3b"$(QTDIR)\bin%3b$(QTDIR)\bin%3b"$(QTDIR)\bin%3b$(QTDIR)\bin%3b$(QWTDIR)\lib%3bC:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\bin64%3b$(PATH)</LocalDebuggerEnvironment>
+    <QTDIR>C:\Qt\5.11.2\msvc2017_64</QTDIR>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)/scripts</LocalDebuggerWorkingDirectory>
     <LocalDebuggerDebuggerType>Mixed</LocalDebuggerDebuggerType>
+    <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin%3b"$(QTDIR)\bin%3b$(QTDIR)\bin%3b"$(QTDIR)\bin%3b$(QTDIR)\bin%3b$(QWTDIR)\lib%3bC:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\bin64%3b$(PATH)</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <QTDIR>C:\Qt\Qt5.7.0\5.7\msvc2015_64</QTDIR>
-    <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin%3b"$(QTDIR)\bin%3b$(QTDIR)\bin%3b"$(QTDIR)\bin%3b$(QTDIR)\bin%3b$(QWTDIR)\lib%3bC:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\bin64%3b$(PATH)</LocalDebuggerEnvironment>
+    <QTDIR>C:\Qt\5.11.2\msvc2017_64</QTDIR>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)/scripts</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin%3b"$(QTDIR)\bin%3b$(QTDIR)\bin%3b"$(QTDIR)\bin%3b$(QTDIR)\bin%3b$(QWTDIR)\lib%3bC:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\bin64%3b$(PATH)</LocalDebuggerEnvironment>
   </PropertyGroup>
 </Project>

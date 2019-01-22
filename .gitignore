@@ -6,6 +6,7 @@
 /_UpgradeReport_Files
 /ipch
 /.stacks
+.vs/*
 *~
 *.suo
 *.*sdf
@@ -16,7 +17,6 @@ qrc_*.cpp
 ui_*.h
 imagine.VC.db
 imagine.VC.VC.opendb
-Imagine/Imagine.vcxproj.user
 /x64/Debug
 Imagine/x64
 Imagine/scripts/*.bin
@@ -28,3 +28,5 @@ Imagine/Debug
 *.ui.*
 Imagine/scripts/documentation/*.qch
 Imagine/scripts/documentation/*.qhc
+Imagine/scripts/testfiles/*
+Imagine/.vs/*
