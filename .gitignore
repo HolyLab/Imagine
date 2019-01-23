@@ -28,5 +28,6 @@ Imagine/Debug
 *.ui.*
 Imagine/scripts/documentation/*.qch
 Imagine/scripts/documentation/*.qhc
-Imagine/scripts/testfiles/*
-Imagine/.vs/*
+Imagine/scripts/testfiles
+Imagine/.vs
+*.dll
