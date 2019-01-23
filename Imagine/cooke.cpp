@@ -17,6 +17,7 @@
 
 int const COOKE_EXCEPTION = 47;
 const int CookeCamera::nBufs = 2;
+extern string rig;
 
 CookeCamera::CookeCamera() : Camera()
 {
@@ -200,7 +201,8 @@ bool CookeCamera::setAcqParams(int emGain,
         // frame trigger mode (0 for auto)
         safe_pco(PCO_SetTriggerMode(hCamera, 0), "failed to set frame trigger mode");
         // storage mode (1 for FIFO) - not supported by pco.edge
-		// safe_pco(PCO_SetStorageMode(hCamera, 1), "failed to set storage mode");
+        if (rig != "realm") // Camera in realm rig (pco.edge.CLHS 4.2) does not support storage mode
+            safe_pco(PCO_SetStorageMode(hCamera, 1), "failed to set storage mode");
         // acquisition mode (0 for auto)
         safe_pco(PCO_SetAcquireMode(hCamera, 0), "failed to set acquisition mode");
         // timestamp mode (1: bcd; 2: bcd+ascii)
