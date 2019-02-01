@@ -136,15 +136,19 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
         ui.cbDO1Wav, ui.cbDO2Wav, ui.cbDO3Wav, ui.cbDO4Wav, ui.cbDO5Wav };
     QComboBox* combo1[] = { ui.comboBoxAO0, ui.comboBoxAO1, ui.comboBoxDO0,
         ui.comboBoxDO1, ui.comboBoxDO2, ui.comboBoxDO3, ui.comboBoxDO4, ui.comboBoxDO5 };
+    numAoCurve = 2; // ui.cbAO0Wav, ui.cbAO1Wav
+    numDoCurve = 6; // the others
     for (int i = 0; i < sizeof(cb1) / sizeof(QCheckBox*); i++) {
         cbAoDo.push_back(cb1[i]);
         comboBoxAoDo.push_back(combo1[i]);
     }
-    ui.lableConWavRigname->setText(rig);
+    ui.labelConWavRigname->setText(rig);
     QCheckBox* cb2[] = { ui.cbAI0Wav, ui.cbAI1Wav, ui.cbDI0Wav, ui.cbDI1Wav,
         ui.cbDI2Wav, ui.cbDI3Wav, ui.cbDI4Wav, ui.cbDI5Wav, ui.cbDI6Wav };
     QComboBox* combo2[] = { ui.comboBoxAI0, ui.comboBoxAI1, ui.comboBoxDI0, ui.comboBoxDI1,
         ui.comboBoxDI2, ui.comboBoxDI3, ui.comboBoxDI4, ui.comboBoxDI5, ui.comboBoxDI6 };
+    numAiCurve = 2; // ui.cbAI0Wav, ui.cbAI1Wav
+    numDiCurve = 7; // the others
     for (int i = 0; i < sizeof(cb2) / sizeof(QCheckBox*); i++) {
         cbAiDi.push_back(cb2[i]);
         comboBoxAiDi.push_back(combo2[i]);
@@ -442,6 +446,7 @@ Imagine::Imagine(QString rig, Camera *cam, Positioner *pos, Laser *laser,
     ui.gbDontShowMe1->setVisible(false);
     ui.gbDontShowMe2->setVisible(false);
     ui.gbDontShowMe3->setVisible(false);
+    ui.gbDontShowMe4->setVisible(false);
     ui.gbHorizontalShift->setVisible(false);
     ui.gbVerticalShift->setVisible(false);
     if (masterImagine)
@@ -841,9 +846,10 @@ void Imagine::preparePlots()
     QColor curveColor[9] = { Qt::red,  Qt::green,  Qt::blue,  Qt::black,
                 Qt::darkGreen,  Qt::magenta,  Qt::darkYellow, Qt::darkMagenta, Qt::cyan };
     QwtText xTitle("Sample index");
-    QwtText yTitle("Position");
+    QwtText xFreqTitle("Frequency");
     QwtText aoDoyTitle("Voltage(mV)");
     QwtText aiDiyTitle("Voltage(mV)");
+    QwtText aoyFreqTitle("Amplitude");
     //the control waveform
     conWavPlot = new QwtPlot;// (ui.frameConWav);
     for (int i = 0; i < numAoCurve + numDoCurve; i++) {
@@ -853,6 +859,14 @@ void Imagine::preparePlots()
     piezoSpeedCurve = new QwtPlotCurve("Positioner max speed");
     prepareCurve(piezoSpeedCurve, conWavPlot, xTitle, aoDoyTitle, Qt::cyan);
     ui.conWavLayout->addWidget(conWavPlot);
+
+    //the control frequency
+    conFreqPlot = new QwtPlot;
+    for (int i = 0; i < numAoCurve; i++) {
+        outFreqCurve.push_back(new QwtPlotCurve(QString("Signal out frequency component %1").arg(i)));
+        prepareCurve(outFreqCurve[i], conFreqPlot, xFreqTitle, aoyFreqTitle, curveColor[i]);
+    }
+    ui.conFreqLayout->addWidget(conFreqPlot);
 
     //the read out waveform
     conReadWavPlot = new QwtPlot;// (ui.frameConWav);
@@ -2193,6 +2207,7 @@ bool Imagine::applySetting()
             conWaveDataParam->applyStim = masterUi->cbStim->isChecked();
             conWaveDataParam->stimuli = &(masterDataAcqTh->stimuli);
             conWaveDataParam->genDefaultControl(headerFilename);
+            conWaveDataParam->freqAnalysis();
             dataAcqThread->conWaveData = conWaveDataParam;
             conWaveData = conWaveDataParam;
             double additionalIdleTime1, additionalIdleTime2;
@@ -3845,7 +3860,7 @@ bool Imagine::loadAiDiWavDataAndPlot(SampleIdx leftEnd, SampleIdx rightEnd, int 
     }
 
     if (retVal) {
-        setCurveData(curveData, curve, dest, leftEnd, rightEnd, factor, amplitude, yoffset);
+        setCurveData(curveData, curve, dest, leftEnd, rightEnd, factor, amplitude, yoffset, 1);
         conReadWavPlot->setAxisScale(QwtPlot::xBottom, curveData->left(), curveData->right());
         if (cBox->isChecked())
             curve->show();
@@ -4091,10 +4106,10 @@ void Imagine::updataSpeedData(CurveData *curveData, int newValue, int start, int
 }
 
 template<class Type> void Imagine::setCurveData(CurveData *curveData, QwtPlotCurve *curve,
-    QVector<Type> &wave, int start, int end, int factor, double amplitude, double yoffset)
+    QVector<Type> &wave, int start, int end, int factor, double amplitude, double yoffset, double res)
 {
     for (int i = start; i <= end; i += factor)
-        curveData->append(static_cast<double>(i), wave[(i - start) / factor] * amplitude + yoffset);
+        curveData->append(static_cast<double>(i)*res, wave[(i - start) / factor] * amplitude + yoffset);
     curve->setData(curveData);
 }
 
@@ -4186,16 +4201,21 @@ void Imagine::clearConWavPlot()
     conWavPlot->replot();
 }
 
+
+void Imagine::clearConFreqPlot()
+{
+    // clear the previous plot
+    for (int i = 0; i < numAoCurve; i++)
+        outFreqCurve[i]->setData(0);
+    conFreqPlot->replot();
+}
+
 void Imagine::displayConWaveData()
 {
     // GUI metadata display
+/*
     ui.lableConWavRigname->setText(QString("rig : %1").arg(conWaveData->rig));
     ui.labelPiezoSampleRate->setText(QString("%1").arg(conWaveData->sampleRate));
-    int sec = conWaveData->totalSampleNum / conWaveData->sampleRate;
-    int min = sec / 60; sec -= min * 60;
-    int hour = min / 60; min -= hour * 60;
-    ui.labelSampleNumber->setText(QString("%1 (%2h %3m %4s)")
-        .arg(conWaveData->totalSampleNum).arg(hour).arg(min).arg(sec));
     ui.doubleSpinBoxExpTimeWav1->setValue(conWaveData->exposureTime1);
     ui.labelNumOfStacksWav1->setText(QString("%1").arg(conWaveData->nStacks1));
     ui.labelFramesPerStackWav1->setText(QString("%1").arg(conWaveData->nFrames1));
@@ -4206,6 +4226,12 @@ void Imagine::displayConWaveData()
         ui.labelFramesPerStackWav2->setText(QString("%1").arg(conWaveData->nFrames2));
         ui.comboBoxExpTriggerModeWav2->setCurrentText(conWaveData->expTriggerModeStr2);
     }
+*/
+    int sec = conWaveData->totalSampleNum / conWaveData->sampleRate;
+    int min = sec / 60; sec -= min * 60;
+    int hour = min / 60; min -= hour * 60;
+    ui.labelSampleNumber->setText(QString("%1h %2m %3s")
+        .arg(hour).arg(min).arg(sec));
     ui.pBarRecordingProgress->setValue(0);
 
     // Waveform selection combobox setup
@@ -4270,9 +4296,15 @@ void Imagine::displayConWaveData()
     ui.sbWavDsplyBottom->setMaximum(AO_SCALE * 11);
     if (conWaveData->totalSampleNum>0)
         ui.sbWavDsplyRight->setMaximum(conWaveData->totalSampleNum - 1);
-
+    aoFreqMiny = 0;
+    aoFreqMaxy = (double)conWaveData->getMaxAoFreqAmplitude() * 1.1;
+    ui.sbFreqDsplyTop->setValue(aoFreqMaxy * 1.1);
+    ui.sbFreqDsplyBottom->setValue(aoFreqMiny * 1.1);
+    if (conWaveData->freqCompLength > 0)
+        ui.sbFreqDsplyRight->setMaximum(conWaveData->freqCompLength * conWaveData->freqResolution);
     // GUI waveform display
     updateControlWaveform(0, conWaveData->totalSampleNum - 1);
+    updateControlFrequency(0, conWaveData->freqCompLength * conWaveData->freqResolution);
     // Even though there is no error, if there are some warnings, we show them.
     if (conWaveData->getErrorMsg() != "") {
         QMessageBox::critical(this, "Imagine", conWaveData->getErrorMsg(),
@@ -4333,9 +4365,68 @@ bool Imagine::loadConWavDataAndPlot(SampleIdx leftEnd, SampleIdx rightEnd, int c
         retVal = conWaveData->readControlWaveform(dest, ctrlIdx, leftEnd, rightEnd, factor, PDT_RAW);
     if (retVal) {
         curveData = new CurveData(conWaveData->totalSampleNum); // parameter should not be xpoint.size()
-        setCurveData(curveData, curve, dest, leftEnd, rightEnd, factor, amplitude, yoffset);
+        setCurveData(curveData, curve, dest, leftEnd, rightEnd, factor, amplitude, yoffset, 1);
         conWavPlot->setAxisScale(QwtPlot::xBottom, curveData->left(), curveData->right());
         if(cBox->isChecked())
+            curve->show();
+        else
+            curve->hide();
+        return true;
+    }
+    else {
+        curve->setData(NULL);
+        cBox->setChecked(false);
+        curve->hide();
+        return false;
+    }
+}
+
+bool Imagine::loadConFreqDataAndPlot(SampleIdx leftEnd, SampleIdx rightEnd, int curveIdx)
+{
+    int retVal;
+    int curveDataSampleNum = 50000; //100000
+    double resolution = conWaveData->freqResolution;
+    rightEnd /= resolution;
+    leftEnd /= resolution;
+    SampleIdx sampleNum = rightEnd - leftEnd + 1;
+    int factor = sampleNum / curveDataSampleNum;
+    double amplitude, yoffset;
+    QVector<double> dest;
+    int ctrlIdx;
+    CurveData *curveData = NULL;
+    QwtPlotCurve *curve;
+    QCheckBox *cBox;
+    QString sigName;
+
+    int p0Begin = conWaveData->getP0Begin();
+
+    if (factor == 0) {
+        curveDataSampleNum = sampleNum;
+        factor = 1;
+    }
+    else
+        curveDataSampleNum = sampleNum / factor;
+
+    sigName = comboBoxAoDo[curveIdx]->currentText();
+    curve = outFreqCurve[curveIdx];
+    curve->setData(0);
+    cBox = cbAoDo[curveIdx];
+    // set curve position in the plot area
+    if (curveIdx < numAoCurve) {
+        amplitude = 1;
+        yoffset = 0;
+    }
+    if ((sigName == "") || (sigName == "empty"))
+        return false;
+
+    dest.clear();
+    ctrlIdx = conWaveData->getChannelIdxFromSig(sigName);
+    retVal = conWaveData->readControlFrequency(dest, ctrlIdx, leftEnd, rightEnd, factor);
+    if (retVal) {
+        curveData = new CurveData(conWaveData->freqCompLength*resolution); // parameter should not be xpoint.size()
+        setCurveData(curveData, curve, dest, leftEnd, rightEnd, factor, amplitude, yoffset, resolution); // freq. version still can use setCurveData
+        conFreqPlot->setAxisScale(QwtPlot::xBottom, curveData->left(), curveData->right());
+        if (cBox->isChecked())
             curve->show();
         else
             curve->hide();
@@ -4374,6 +4465,24 @@ void Imagine::updateControlWaveform(SampleIdx leftEnd, SampleIdx rightEnd)
     ui.sbWavDsplyLeft->setMinimum(0);
     ui.sbWavDsplyLeft->setMaximum(rightEnd);
     ui.sbWavDsplyRight->setMinimum(leftEnd);
+}
+
+// read frequency component data
+void Imagine::updateControlFrequency(SampleIdx leftEnd, SampleIdx rightEnd)
+{
+    for (int i = 0; i < numAoCurve; i++) {
+        loadConFreqDataAndPlot(leftEnd, rightEnd, i);
+    }
+
+    // updateResonanceFrequencyCurve(leftEnd, rightEnd);
+    conFreqPlot->replot();
+
+    // ui update
+    ui.sbFreqDsplyLeft->setValue(leftEnd);
+    ui.sbFreqDsplyRight->setValue(rightEnd);
+    ui.sbFreqDsplyLeft->setMinimum(0);
+    ui.sbFreqDsplyLeft->setMaximum(rightEnd);
+    ui.sbFreqDsplyRight->setMinimum(leftEnd);
 }
 
 void Imagine::on_btnConWavOpen_clicked()
@@ -4436,14 +4545,27 @@ void Imagine::showOutCurve(int idx, bool checked)
     }
 }
 
+void Imagine::showOutFreqCurve(int idx, bool checked)
+{
+    if (outFreqCurve[idx]) {
+        if (checked)
+            outFreqCurve[idx]->show();
+        else
+            outFreqCurve[idx]->hide();
+        conFreqPlot->replot();
+    }
+}
+
 void Imagine::on_cbAO0Wav_clicked(bool checked)
 {
     showOutCurve(0, checked);
+    showOutFreqCurve(0, checked);
 }
 
 void Imagine::on_cbAO1Wav_clicked(bool checked)
 {
     showOutCurve(1, checked);
+    showOutFreqCurve(1, checked);
 }
 
 void Imagine::on_cbDO0Wav_clicked(bool checked)
@@ -4480,6 +4602,8 @@ void Imagine::on_comboBoxAO0_currentIndexChanged(int index)
 {
     loadConWavDataAndPlot(ui.sbWavDsplyLeft->value(),
         ui.sbWavDsplyRight->value(), 0);
+    loadConFreqDataAndPlot(ui.sbFreqDsplyLeft->value(),
+        ui.sbFreqDsplyRight->value(), 0);
     on_cbAO0Wav_clicked(ui.cbAO0Wav->isChecked());
 }
 
@@ -4487,6 +4611,8 @@ void Imagine::on_comboBoxAO1_currentIndexChanged(int index)
 {
     loadConWavDataAndPlot(ui.sbWavDsplyLeft->value(),
         ui.sbWavDsplyRight->value(), 1);
+    loadConFreqDataAndPlot(ui.sbFreqDsplyLeft->value(),
+        ui.sbFreqDsplyRight->value(), 1);
     on_cbAO1Wav_clicked(ui.cbAO1Wav->isChecked());
 }
 
@@ -4572,20 +4698,87 @@ void Imagine::on_btnWavDsplyReset_clicked()
     ui.sbWavDsplyBottom->setValue(aoDoMiny * 1.1);
 }
 
+void Imagine::on_sbFreqDsplyRight_valueChanged(int value)
+{
+    int left = ui.sbFreqDsplyLeft->value();
+    ui.sbFreqDsplyLeft->setMaximum(value);
+    updateControlFrequency(left, value);
+    conFreqPlot->replot();
+}
+
+void Imagine::on_sbFreqDsplyLeft_valueChanged(int value)
+{
+    int right = ui.sbFreqDsplyRight->value();
+    ui.sbFreqDsplyRight->setMinimum(value);
+    updateControlFrequency(value, right);
+    conFreqPlot->replot();
+}
+
+void Imagine::on_sbFreqDsplyTop_valueChanged(int value)
+{
+    int bottom = ui.sbFreqDsplyBottom->value();
+    conFreqPlot->setAxisScale(QwtPlot::yLeft, bottom, value);
+    conFreqPlot->replot();
+}
+
+void Imagine::on_sbFreqDsplyBottom_valueChanged(int value)
+{
+    int top = ui.sbFreqDsplyTop->value();
+    // updateResonanceFrequencyCurve(ui.sbFreqDsplyLeft->value(), ui.sbFreqDsplyRight->value());
+    conFreqPlot->setAxisScale(QwtPlot::yLeft, value, top);
+    conFreqPlot->replot();
+}
+
+void Imagine::on_btnFreqDsplyReset_clicked()
+{
+    ui.sbFreqDsplyLeft->setValue(0);
+    ui.sbFreqDsplyRight->setValue(conWaveData->freqCompLength * conWaveData->freqResolution);
+    Positioner *pos = dataAcqThread->pPositioner;
+    ui.sbFreqDsplyTop->setValue(aoFreqMaxy * 1.1);
+    ui.sbFreqDsplyBottom->setValue(aoFreqMiny * 1.1);
+}
+
 void Imagine::on_btnConWavList_clicked()
 {
     QString msg = "";
-    msg.append(QString("rig : %1\n")
+    msg.append(QString("Rig : %1\n")
         .arg(conWaveData->rig));
-    msg.append(QString("version : %1\n")
+    msg.append(QString("Version : %1\n")
         .arg(conWaveData->version));
-    msg.append(QString("generated from : %1\n\n")
+    msg.append(QString("Generated from : %1\n")
         .arg(conWaveData->generatedFrom));
-    msg.append(QString("bidirectional(camera1) : %1\n")
+    msg.append(QString("Sample rate : %1\n")
+        .arg(conWaveData->sampleRate));
+    msg.append(QString("Number of samples : %1\n\n")
+        .arg(conWaveData->totalSampleNum));
+
+    msg.append(QString("<camera1>\n"));
+    msg.append(QString("Number of stacks : %1\n")
+        .arg(conWaveData->nStacks1));
+    msg.append(QString("Number of frames per stack : %1\n")
+        .arg(conWaveData->nFrames1));
+    msg.append(QString("Exposure trigger mode : %1\n")
+        .arg(conWaveData->expTriggerModeStr1));
+    msg.append(QString("Exposure time : %1 sec\n")
+        .arg(conWaveData->exposureTime1));
+    msg.append(QString("Bidirectional : %1\n\n")
         .arg(conWaveData->bidirection1 ? "true" : "false"));
-    if((rig=="ocpi-2")|| (rig == "dummy"))
-        msg.append(QString("bidirectional(camera2) : %1\n\n")
+
+    if ((rig == "ocpi-2") || (rig == "dummy"))
+    {
+        msg.append(QString("<camera2>\n"));
+        msg.append(QString("Number of stacks : %1\n")
+            .arg(conWaveData->nStacks2));
+        msg.append(QString("Number of frames per stack : %1\n")
+            .arg(conWaveData->nFrames2));
+        msg.append(QString("Exposure trigger mode : %1\n")
+            .arg(conWaveData->expTriggerModeStr2));
+        msg.append(QString("Exposure time : %1 sec\n")
+            .arg(conWaveData->exposureTime2));
+        msg.append(QString("Bidirectional : %1\n\n")
             .arg(conWaveData->bidirection2 ? "true" : "false"));
+    }
+
     for (int i = 0; i < conWaveData->getNumChannel(); i++) {
         QString sigName = conWaveData->getSignalName(i);
         if (sigName != "") {
@@ -4593,7 +4786,7 @@ void Imagine::on_btnConWavList_clicked()
                 .arg(conWaveData->getChannelName(i)).arg(sigName));
         }
     }
-    QMessageBox::information(this, "Control signal list", msg, QMessageBox::Ok);
+    QMessageBox::information(this, "Control signal info.", msg, QMessageBox::Ok);
 
 }
 #pragma endregion

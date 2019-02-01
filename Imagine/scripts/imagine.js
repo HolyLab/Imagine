@@ -5,6 +5,7 @@ if(rig=="dummy"){
 	var maxposition = "800"; // this value is for ocpi-2 positioner
 	var minposition = "0"; // this value is for ocpi-2 positioner
 	var maxspeed = "2000"; // this value is for ocpi-2 positioner
+	var f_res = "5000"; // this value is for ocpi-2 positioner
 	var ctrlrsetup = "none" // no piezo controller setting
 	var daq = "dummy";
 	var doname = "Dev2/port0/line0:6";
@@ -54,6 +55,7 @@ if(rig=="ocpi-1"){
 	var maxposition = "400"; // this value is for ocpi-1 positioner
 	var minposition = "0"; // this value is for ocpi-1 positioner
 	var maxspeed = "2000"; // this value is for ocpi-2 positioner
+	var f_res = "5000"; // this value is for ocpi-2 positioner
 	var ctrlrsetup = "none" // piezo controller set by offline setup
 	var daq = "ni";
 	var doname = "Dev2/port0/line0:6";
@@ -70,6 +72,7 @@ if(rig=="ocpi-2"){
 	var maxposition = "800"; // this value is for ocpi-2 positioner
 	var minposition = "0"; // this value is for ocpi-2 positioner
 	var maxspeed = "2000"; // this value is for ocpi-2 positioner
+	var f_res = "5000"; // resonance frequency of positioner
 	var ctrlrsetup = "none" // no piezo controller setting
 //	var ctrlrsetup = "COM3" // piezo controller set by serial comm. through COM3
 	var daq = "ni";
@@ -96,6 +99,7 @@ if (rig == "ocpi-lsk") {
     var maxposition = "400"; // this value is for ocpi-2 positioner
     var minposition = "0"; // this value is for ocpi-2 positioner
     var maxspeed = "2000"; // this value is for ocpi-2 positioner
+    var f_res = "5000"; // this value is for ocpi-2 positioner
     var daq = "ni";
     var doname = "Dev2/port0/line0:23";
     var diname = "Dev2/port0/line24:31";
@@ -111,6 +115,7 @@ if (rig == "realm") {
     var maxposition = "800"; // this value is for ocpi-2 positioner
     var minposition = "-800";
     var maxspeed = "2000"; // this value is for ocpi-2 positioner
+    var f_res = "5000"; // this value is for ocpi-2 positioner
     var ctrlrsetup = "none" // no piezo controller setting
     var daq = "ni";
     var doname = "Dev2/port0/line0:6";

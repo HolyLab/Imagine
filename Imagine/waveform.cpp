@@ -30,6 +30,10 @@ constexpr CFErrorCode operator&(CFErrorCode X, CFErrorCode Y) {
     return static_cast<CFErrorCode>(static_cast<unsigned int>(X) & static_cast<unsigned int>(Y));
 }
 
+constexpr CFErrorCode operator~(CFErrorCode X) {
+    return static_cast<CFErrorCode>(~static_cast<unsigned int>(X));
+}
+
 CFErrorCode& operator|=(CFErrorCode& X, CFErrorCode Y) {
     X = X | Y; return X;
 }
@@ -37,7 +41,6 @@ CFErrorCode& operator|=(CFErrorCode& X, CFErrorCode Y) {
 CFErrorCode& operator&=(CFErrorCode& X, CFErrorCode Y) {
     X = X & Y; return X;
 }
-
 /***** ControlWaveform class : Read command file ****************************/
 ControlWaveform::ControlWaveform(QString rig)
 {
@@ -59,6 +62,7 @@ void ControlWaveform::initControlWaveform(QString rig)
     maxPiezoPos = seTmp->globalObject().property("maxposition").toNumber();
     maxPiezoSpeed = seTmp->globalObject().property("maxspeed").toNumber();
     maxLaserFreq = seTmp->globalObject().property("maxlaserfreq").toNumber();
+    resonanceFreq = seTmp->globalObject().property("f_res").toNumber();
     if ((rig == "ocpi-2") || (rig == "dummy")) {
         minGalvoVol = seTmp->globalObject().property("mingalvovoltage").toNumber();
         maxGalvoVol = seTmp->globalObject().property("maxgalvovoltage").toNumber();
@@ -129,6 +133,11 @@ void ControlWaveform::initControlWaveform(QString rig)
             if ((*secured)[j][0] == channelSignalList[i][0])
                 channelSignalList[i][1] = (*secured)[j][1];
         }
+    }
+
+    for (int i = 0; i < getAIBegin(); i++) {
+        QVector<double> fc;
+        waveList_FC.push_back(fc);
     }
 }
 
@@ -232,7 +241,11 @@ CFErrorCode ControlWaveform::lookUpWave(QString wn, QVector <QString> &wavName,
 CFErrorCode ControlWaveform::loadJsonDocument(QJsonDocument &loadDoc)
 {
     alldata = loadDoc.object();
-    return parsing();
+    CFErrorCode err = parsing();
+    if (err == NO_CF_ERROR)
+        return freqAnalysis();
+    else
+        return err;
 }
 
 CFErrorCode ControlWaveform::parsing(void)
@@ -517,6 +530,135 @@ CFErrorCode ControlWaveform::parsing(void)
     return err;
 }
 
+CFErrorCode ControlWaveform::freqAnalysis(void)
+{
+    maxAoFreqAmplitude = 0.;
+    for (int i = 0; i < getAIBegin(); i++) {
+        if (generatedFrom == "Imagine")
+            freqAnalysisOfAnalogSignal(i, TRUE);
+        else
+            freqAnalysisOfAnalogSignal(i, FALSE);
+
+        for (int j = 0.; j < waveList_FC[i].size(); j++)
+            if (waveList_FC[i][j] > maxAoFreqAmplitude) maxAoFreqAmplitude = waveList_FC[i][j];
+    }
+    return NO_CF_ERROR;
+}
+
+CFErrorCode ControlWaveform::freqAnalysisOfAnalogSignal(int ctrlIdx, bool periodic)
+{
+    QVector<double> cfc; // cumulative frequency components
+    if (channelSignalList[ctrlIdx][1] == "") {
+        waveList_FC[ctrlIdx] = cfc;
+        return NO_CF_ERROR;
+    }
+
+    double *in_stride_r, *in_residual_r;
+    fftw_complex *out_stride_c, *out_residual_c;
+    fftw_plan pstride, presidual;
+    QVector<int> dest;
+    unsigned long long leftEnd = 0;
+    unsigned long long rightEnd = FFT_SAMPLE_NUM;
+    unsigned int stride = FFT_SAMPLE_NUM / 2; // stride
+    unsigned long long size = totalSampleNum;
+    unsigned int repeat = 1;
+    fftSampleLength = FFT_SAMPLE_NUM;
+    freqCompLength = fftSampleLength / 2 + 1;
+
+    if (periodic) {
+        repeat = controlList[ctrlIdx]->at(0);
+        int waveIdx = controlList[ctrlIdx]->at(1);
+        fftSampleLength = getWaveSampleNum(waveIdx);
+        size = fftSampleLength;
+        rightEnd = fftSampleLength;
+        stride = fftSampleLength / 2;
+        freqCompLength = fftSampleLength / 2 + 1;
+        freqResolution;
+    }
+    freqResolution = (double)sampleRate / (double)fftSampleLength;
+
+    // prepare stride phase
+    int stride_r2c_rsize = fftSampleLength;
+    int stride_r2c_csize = freqCompLength; // real fft output size for stride phase
+    in_stride_r = (double*)fftw_malloc(sizeof(double) * stride_r2c_rsize);
+    out_stride_c = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * stride_r2c_csize);
+    pstride = fftw_plan_dft_r2c_1d(stride_r2c_rsize, in_stride_r, out_stride_c, FFTW_ESTIMATE);
+
+    // fft for stride phase
+    cfc.fill(0., stride_r2c_rsize);
+    while (rightEnd <= size)
+    {
+        readControlWaveform(dest, ctrlIdx, leftEnd, rightEnd, 1, PDT_VOLTAGE);
+        for (int i=0; i < stride_r2c_rsize; i++)
+            in_stride_r[i] = (double)dest[i];
+        fftw_execute(pstride);
+        for (int i=0; i < stride_r2c_csize; i++) {
+            cfc[i] += sqrt(out_stride_c[i][0] * out_stride_c[i][0] +
+                out_stride_c[i][1] * out_stride_c[i][1]);
+        }
+        leftEnd += stride;
+        rightEnd += stride;
+        dest.clear();
+    }
+
+    if (!periodic) {
+        // prepare residual phase
+        int residual_r2c_rsize = size % stride + stride; // residual at the waveform end
+        int residual_r2c_csize = residual_r2c_rsize / 2 + 1; // real fft output size for residual phase
+        in_residual_r = (double*)fftw_malloc(sizeof(double) * residual_r2c_rsize);
+        out_residual_c = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * residual_r2c_csize);
+        presidual = fftw_plan_dft_r2c_1d(residual_r2c_rsize, in_residual_r, out_residual_c, FFTW_ESTIMATE);
+
+        // fft for residual phase
+        readControlWaveform(dest, ctrlIdx, leftEnd, size - 1, 1, PDT_VOLTAGE);
+        for (int i = 0; i < residual_r2c_rsize; i++)
+            in_residual_r[i] = (double)dest[i];
+        fftw_execute(presidual);
+        double factor = (double)stride_r2c_rsize / (double)residual_r2c_rsize;
+        for (int i = 0; i < residual_r2c_csize; i++) {
+            int j = (int)(factor * (double)i + 0.5);
+            if (j < stride_r2c_csize) {
+                cfc[j] += sqrt(out_residual_c[i][0] * out_residual_c[i][0] +
+                    out_residual_c[i][1] * out_residual_c[i][1]);
+            }
+        }
+        fftw_destroy_plan(presidual);
+        fftw_free(in_residual_r);
+        fftw_free(out_residual_c);
+    }
+    else {
+        for (int i = 0; i < size; i++) {
+            cfc[i] *= repeat;
+        }
+    }
+
+    waveList_FC[ctrlIdx] = cfc;
+
+    fftw_destroy_plan(pstride);
+    fftw_free(in_stride_r);
+    fftw_free(out_stride_c);
+
+    // return ERR_FREQUENCY_ANALYSIS_ERR;
+    return NO_CF_ERROR;
+}
+
+// Read control frequcy analysis data from index 'begin' to 'end' with downsample rate 'downSampleRate' to 'dest' vector
+bool ControlWaveform::readControlFrequency(QVector<double> &dest, int ctrlIdx, SampleIdx begin, SampleIdx end, int downSampleRate)
+{
+    if (ctrlIdx >= waveList_FC.size())
+        return false;
+    int size = waveList_FC[ctrlIdx].size();
+    if (size <= 0)
+        return false;
+    if (begin >= size || end >= size || begin > end)
+        return false;
+
+    for (int sampleIdx = begin; sampleIdx <= end; sampleIdx += downSampleRate)
+        dest.push_back(waveList_FC[ctrlIdx][sampleIdx]);
+
+    return true;
+}
+
 int ControlWaveform::getMinAoRaw()
 {
     return minAoRaw;
@@ -525,6 +667,11 @@ int ControlWaveform::getMinAoRaw()
 int ControlWaveform::getMaxAoRaw()
 {
     return maxAoRaw;
+}
+
+double ControlWaveform::getMaxAoFreqAmplitude()
+{
+    return maxAoFreqAmplitude;
 }
 
 bool ControlWaveform::isEmpty(int ctrlIdx)
@@ -829,6 +976,31 @@ CFErrorCode ControlWaveform::analogSpeedCheck(int maxSpeed, int minRaw, int maxR
         return retVal;
 }
 
+CFErrorCode ControlWaveform::analogResonanceFreqCheck(int ctrlIdx, double resonanceFreq, double bandwidth, double threshold, double *ratio)
+{
+    int dataSize = waveList_FC[ctrlIdx].size();
+    if (dataSize == 0)
+        return NO_CF_ERROR;
+    int leftend = max(0, (int)((resonanceFreq - bandwidth / 2)/ freqResolution));
+    int rightend = min(dataSize-1, (int)((resonanceFreq + bandwidth / 2)/ freqResolution));
+    double totalPower = 0., resonancePower = 0.;
+
+    // Total power
+    for (int i = 0; i < dataSize; i++) {
+        totalPower += waveList_FC[ctrlIdx][i];
+    }
+    // Power around resonance frequency
+    for (int i = leftend; i <= rightend; i++) {
+        resonancePower += waveList_FC[ctrlIdx][i];
+    }
+
+    *ratio = resonancePower / totalPower;
+    if ( *ratio > threshold)
+        return ERR_FREQUENCY_ANALYSIS_ERR;
+    else
+        return NO_CF_ERROR;
+}
+
 CFErrorCode ControlWaveform::fullSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx,
     QVector <SampleIdx>&strt, QVector <SampleIdx>&stop, int &dataSize)
 {
@@ -1056,7 +1228,9 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
             if (channelSignalList[i][1].right(5) == STR_piezo) {
                 CFErrorCode err = positionerSpeedCheck(maxPiezoSpeed, minPiezoPos, maxPiezoPos, i, sampleNum);
                 if (err & (ERR_PIEZO_SPEED_FAST | ERR_PIEZO_INSTANT_CHANGE)) {
-                    errorMsg.append(QString("'%1' control is too fast\n").arg(channelSignalList[i][1]));
+                    // speed check is deprecated. Instead, we need to check frequency components around a resonance frequency.
+                    // errorMsg.append(QString("'%1' control is too fast\n").arg(channelSignalList[i][1]));
+                    err &= ~(ERR_PIEZO_SPEED_FAST | ERR_PIEZO_INSTANT_CHANGE); // remove these errors
                 }
                 if (err & (ERR_PIEZO_VALUE_INVALID)) {
                     errorMsg.append(QString("'%1' control value is out of range\n")
@@ -1069,6 +1243,12 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
                 if (err & (ERR_SHORT_WAVEFORM)) {
                     errorMsg.append(QString("'%1' control includes too short waveform\nWaveform should be at least %2 samples")
                         .arg(channelSignalList[i][1]).arg(SPEED_CHECK_INTERVAL));
+                }
+                double ratio;
+                err |= analogResonanceFreqCheck(i, resonanceFreq, bandwidth, threshold, &ratio);
+                if (err & (ERR_FREQUENCY_ANALYSIS_ERR)) {
+                    errorMsg.append(QString("'%1' control has excessive frequency components (%2% > Threshold = %3%) around resonance frequency (%4Hz). Please check 'Frequency component spectrum'.\n")
+                        .arg(channelSignalList[i][1]).arg(ratio*100).arg(threshold*100).arg(resonanceFreq));
                 }
                 validity |= err;
             }

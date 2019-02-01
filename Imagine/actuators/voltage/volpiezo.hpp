@@ -10,13 +10,14 @@
 class VolPiezo : public Positioner {
     string clkName;// use AO as trigger for DO and AI
 public:
-    VolPiezo(QString aistring, QString aostring, int maxposition, int maxspeed, QString ctrlrsetup){
+    VolPiezo(QString aistring, QString aostring, int maxposition, int maxspeed, double fres, QString ctrlrsetup){
         ainame = aistring;
         aoname = aostring;
         aoOnce = nullptr;
         ao = nullptr;
         maxpos = maxposition;
         maxspd = maxspeed;
+        resonanceFreq = fres;
         posType = VolPiezoPositioner;
         setuptype = ctrlrsetup; // piezo controller setup method (none, COM port, ...)
     }
@@ -67,6 +68,7 @@ private:
     SampleIdx totalSample;
     QTime daqStartTime; // to calculate overhead time around DAQ task
     QTime daqDoneTime; // to calculate overhead time after DAQ task is done
+    double resonanceFreq; // resonsance frequency
 
     double zpos2voltage(double um);
     void cleanup();

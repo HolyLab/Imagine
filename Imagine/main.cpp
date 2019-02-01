@@ -41,8 +41,6 @@
 #include "sc2_camexport.h"
 #include "laserctrl.h"
 
-#include <fftw3.h>
-
 extern QScriptEngine* se;
 extern DigitalControls* digOut;
 extern QString daq;
@@ -115,56 +113,19 @@ void getCamCount(int *camCount) {
     tErr = PCO_CloseCamera(tCam);
 }
 
-void fft_test()
-{
-    fftw_complex *in, *out;
-    fftw_plan p;
-
-    int N = 32;
-
-    in = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * N);
-    out = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * N);
-    p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
-
-    for (int i = 0; i < N; i++)
-    {
-        in[i][0] = 0;
-        in[i][1] = 0;
-    }
-    in[0][0] = 1.;
-    in[0][1] = 0.;
-    in[1][0] = 1.;
-    in[1][1] = 0.;
-    in[2][0] = 1.;
-    in[2][1] = 0.;
-
-    fftw_execute(p); /* repeat as needed */
-
-    for (int i = 0; i < N; i++)
-    {
-        printf("%f, %f\n", out[i][0], out[i][1]);
-    }
-
-    fftw_destroy_plan(p);
-    fftw_free(in); fftw_free(out);
-}
-
 int main(int argc, char *argv[])
 {
     ImgApplication a(argc, argv);
 
-    rig = "realm";
+    rig = "ocpi-2";
     //rig = string("dummy");
     if (argc == 2) {
         rig = argv[1];
         std::cout << "The rig is: " << rig << std::endl;
-        std::cout << std::endl;
     }
     else {
         std::cout << "The rig is default to: " << rig << std::endl;
     }
-
-    fft_test();
 
     se = new QScriptEngine();
 
@@ -235,12 +196,13 @@ int main(int argc, char *argv[])
     Positioner *pos = nullptr;
     int maxposition = se->globalObject().property("maxposition").toNumber();
     int maxspeed = se->globalObject().property("maxspeed").toNumber();
+    double f_res = se->globalObject().property("f_res").toNumber();
     QString ctrlrsetup = se->globalObject().property("ctrlrsetup").toString();
     if (positionerType == "volpiezo") {
-        pos = new VolPiezo(ainame, aoname, maxposition, maxspeed, ctrlrsetup);
+        pos = new VolPiezo(ainame, aoname, maxposition, maxspeed, f_res, ctrlrsetup);
     }
     else if (positionerType == "dummy") {
-        pos = new DummyPiezo(maxposition, maxspeed, ctrlrsetup);
+        pos = new DummyPiezo(maxposition, maxspeed, f_res, ctrlrsetup);
     }
     else {
         QMessageBox::critical(0, "Imagine", "Unsupported positioner."

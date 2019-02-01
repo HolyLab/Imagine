@@ -95,12 +95,15 @@
 #include <QString>
 #include <QObject>
 #include <QtCore>
+#include <fftw3.h>
 #include "ni_daq_g.hpp"
 
 using namespace std;
 
 #define INFINITE_SAMPLE         0
 #define PIEZO_10V_UINT16_VALUE  32767.   // max value of uint16 (double constant)
+#define FFT_SAMPLE_NUM          8192 // res. = sampleRate/FFT_SAMPLE_NUM will be a resolution in frequency domain.
+                                     // So, res. should be small enough.
 
 #define CF_V1P0                 "v1.0"
 #define CF_V1P1                 "v1.1"
@@ -190,7 +193,9 @@ enum CFErrorCode : unsigned int
     // waveform generation error
     ERR_TRAVELBACKTIME_SHORT    = 1 << 16,
     ERR_IDLETIME_SHORT          = 1 << 17,
-    ERR_FILE_OPEN               = 1 << 18
+    ERR_FILE_OPEN               = 1 << 18,
+    // frequency analysis error
+    ERR_FREQUENCY_ANALYSIS_ERR  = 1 << 19
 }; // ai, di and command file error code
 
 enum PiezoDataType
@@ -302,12 +307,15 @@ private:
 		{ QString(STR_P0HEADER).append("7"), STR_camera1_mon }
 	};
 
-	CFErrorCode lookUpWave(QString wn, QVector <QString> &wavName,
+    QVector<QVector<double>> waveList_FC;   // Frequency components
+
+    CFErrorCode lookUpWave(QString wn, QVector <QString> &wavName,
         QJsonObject wavelist, int &waveIdx, int dataType);
     int getWaveSampleNum(int waveIdx);
     template<class Typ> bool getWaveSampleValue(int waveIdx, SampleIdx sampleIdx,
             Typ &value, PiezoDataType dataType = PDT_RAW);
     CFErrorCode parsing(void);
+    CFErrorCode freqAnalysisOfAnalogSignal(int ctrlIdx, bool periodic);
 
 public:
     QString version;
@@ -330,10 +338,16 @@ public:
     int minGalvoVol = 0;
     int maxGalvoVol = 0;
     int maxGalvoSpeed = 0;
+    double resonanceFreq;  // this value comes from imagine.js
+    double bandwidth = 100.; // bandwidth around resonance frequency to check safety
+    double threshold = 0.01; // threshold(%) for power around resonance frequency
     uInt32 laserTTLSig = 0;
     double laserIntensity[6] = {0, };
     int perStackSamples;
     CFErrorCode validity = NO_CF_ERROR;
+    int fftSampleLength;
+    int freqCompLength;
+    double freqResolution;
 
     // for default control
     bool enableCam1, enableCam2;
@@ -344,6 +358,7 @@ public:
     double piezoStartPosUm;
     double piezoStopPosUm;
     int minAoRaw, maxAoRaw;
+    double maxAoFreqAmplitude;
     bool applyStim;
     vector<pair<int, int> > *stimuli;
 
@@ -355,6 +370,8 @@ public:
     // Read block
     template<class Typ> bool readControlWaveform(QVector<Typ> &dest, int ctrlIdx,
         SampleIdx begin, SampleIdx end, int downSampleRate, PiezoDataType dataType = PDT_RAW);
+    bool readControlFrequency(QVector<double> &dest, int ctrlIdx, SampleIdx begin,
+        SampleIdx end, int downSampleRate);
     // Read single value
     template<class Typ> bool getCtrlSampleValue(int ctrlIdx, SampleIdx idx, Typ &value,
             PiezoDataType dataType = PDT_RAW);
@@ -385,6 +402,8 @@ public:
     CFErrorCode positionerSpeedCheck(int maxPosSpeed, int minPos, int maxPos, int ctrlIdx, int &dataSize);
     CFErrorCode galvoSpeedCheck(double maxVolSpeed, int minVol, int maxVol, int ctrlIdx, int &dataSize);
     CFErrorCode analogSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx, int &dataSize);
+    CFErrorCode analogResonanceFreqCheck(int ctrlIdx, double resonancefreq, double bandwidth,
+                                double threshold, double *ratio);
     CFErrorCode fullSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx,
                                 QVector <SampleIdx>&strt, QVector <SampleIdx>&stop, int &dataSize);
     CFErrorCode fastSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx, int &dataSize);
@@ -399,6 +418,8 @@ public:
     bool getLaserDefaultTTL(int line);
     int getMinAoRaw();
     int getMaxAoRaw();
+    double getMaxAoFreqAmplitude();
+    CFErrorCode freqAnalysis(void);
 }; // ControlWaveform
 
 

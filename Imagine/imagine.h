@@ -232,11 +232,14 @@ private:
     QwtPlotCurve *intenCurve;
     CurveData *intenCurveData;
     QwtPlot *conWavPlot;
+    QwtPlot *conFreqPlot;
     QwtPlotCurve *piezoSpeedCurve;
     QwtPlot *conReadWavPlot;
     int numAoCurve = 2, numDoCurve = 6;
     QVector<QwtPlotCurve *> outCurve;
     QVector<CurveData *> outCurveData;
+    QVector<QwtPlotCurve *> outFreqCurve;
+    QVector<CurveData *> outFreqCurveData;
     QVector<QCheckBox*> cbAoDo;
     QVector<QComboBox*> comboBoxAoDo;
     int numAiCurve = 2, numDiCurve = 7;
@@ -253,6 +256,8 @@ private:
     double aiDiMiny;
     double aoDoMaxy;
     double aoDoMiny;
+    double aoFreqMaxy;
+    double aoFreqMiny;
     double aiAmplitude;
     double aoAmplitude;
     QString m_OpenDialogLastDirectory;
@@ -283,7 +288,7 @@ private:
     void updateIntenCurve(const Camera::PixelValue * frame,
         const int imageW, const int imageH, const int frameIdx);
     template<class Type> void setCurveData(CurveData *curveData, QwtPlotCurve *curve,
-        QVector<Type> &wave, int start, int end, int factor, double amplitude, double yoffset);
+        QVector<Type> &wave, int start, int end, int factor, double amplitude, double yoffset, double res);
     bool checkRoi();
     void correctZoomSize();
     bool loadPreset();
@@ -302,11 +307,13 @@ private:
     void readComments(QString file);
     bool readControlWaveformFile(QString fn);
     void updateControlWaveform(SampleIdx leftEnd, SampleIdx rightEnd);
+    void updateControlFrequency(SampleIdx leftEnd, SampleIdx rightEnd);
     void updatePiezoSpeedCurve(SampleIdx leftEnd, SampleIdx rightEnd);
     void updateAiDiWaveform(SampleIdx leftEnd, SampleIdx rightEnd);
     void updataSpeedData(CurveData *curveData, int newValue, int start, int end);
     bool waveformValidityCheck(void);
     bool loadConWavDataAndPlot(SampleIdx leftEnd, SampleIdx rightEnd, int curveIdx);
+    bool loadConFreqDataAndPlot(SampleIdx leftEnd, SampleIdx rightEnd, int curveIdx);
     bool loadAiDiWavDataAndPlot(SampleIdx leftEnd, SampleIdx rightEnd, int curveIdx);
     bool readImagineFile(QString file, ImagineData &img);
     bool openAndReadCamFile(QString filename, ImagineData &img);
@@ -323,6 +330,7 @@ private:
     bool compareDimensions();
     void setupDimensions(int stacks, int frames, int width, int height);
     void showOutCurve(int idx, bool checked);
+    void showOutFreqCurve(int idx, bool checked);
     void showInCurve(int idx, bool checked);
     bool applySetting();
     void startAcqAndSave();
@@ -337,6 +345,7 @@ private:
     void clearStimulus();
     bool readAndApplyStimulusFile(QString stimFilename);
     void clearConWavPlot();
+    void clearConFreqPlot();
     void rearrangeTabWindow();
     void displayConWaveData();
     void enableMismatchCorrection(QByteArray *img1, QByteArray *img2, int width, int height);
@@ -499,6 +508,11 @@ private slots:
     void on_sbWavDsplyTop_valueChanged(int value);
     void on_sbWavDsplyBottom_valueChanged(int value);
     void on_btnWavDsplyReset_clicked();
+    void on_sbFreqDsplyRight_valueChanged(int value);
+    void on_sbFreqDsplyLeft_valueChanged(int value);
+    void on_sbFreqDsplyTop_valueChanged(int value);
+    void on_sbFreqDsplyBottom_valueChanged(int value);
+    void on_btnFreqDsplyReset_clicked();
     void on_btnConWavList_clicked();
     void on_sbAiDiDsplyRight_valueChanged(int value);
     void on_sbAiDiDsplyLeft_valueChanged(int value);
