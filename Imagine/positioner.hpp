@@ -52,6 +52,7 @@ public:
     virtual int minPos() = 0; // the min value of the position
     virtual int maxPos() = 0; // the max value of the position. NOTE: the unit is macro
     virtual int maxSpeed() = 0; // maximum speed to allow the piezo to travel, in um per second
+    virtual double resonanceFrequency() = 0;
     virtual QString getCtrlrSetupType() { return 0; }
     virtual bool curPos(double* pos) = 0; // current position in um
     virtual bool moveTo(double to) = 0; //move at maximum safe speed

@@ -308,14 +308,29 @@ private:
 	};
 
     QVector<QVector<double>> waveList_FC;   // Frequency components
-
+    QVector<QVector<double>> waveList_ratio;
+    QVector<QVector<double>> waveList_AC_PWR;
     CFErrorCode lookUpWave(QString wn, QVector <QString> &wavName,
         QJsonObject wavelist, int &waveIdx, int dataType);
     int getWaveSampleNum(int waveIdx);
     template<class Typ> bool getWaveSampleValue(int waveIdx, SampleIdx sampleIdx,
             Typ &value, PiezoDataType dataType = PDT_RAW);
     CFErrorCode parsing(void);
+    // Waveform validity check
     CFErrorCode freqAnalysisOfAnalogSignal(int ctrlIdx, bool periodic);
+    CFErrorCode analogResonanceFreqCheck(int ctrlIdx, double &ratio, SampleIdx &strt, SampleIdx &stop);
+    double resonanceFreq_ratio(QVector<double> fc, int dataSize, double *ac_power);
+    CFErrorCode positionerSpeedCheck(int maxPosSpeed, int minPos, int maxPos, int ctrlIdx,
+        SampleIdx &dataSize, SampleIdx &strt, SampleIdx &stop);
+    CFErrorCode galvoSpeedCheck(double maxVolSpeed, int minVol, int maxVol, int ctrlIdx,
+        SampleIdx &dataSize, SampleIdx &strt, SampleIdx &stop);
+    CFErrorCode analogSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx, SampleIdx &dataSize,
+        SampleIdx &strt, SampleIdx &stop);
+    CFErrorCode fullSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx,
+        QVector <SampleIdx>&swstrt, QVector <SampleIdx>&swstop, SampleIdx &dataSize, SampleIdx &strt, SampleIdx &stop);
+    CFErrorCode fastSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx, SampleIdx &dataSize);
+    CFErrorCode laserSpeedCheck(double maxFreq, int ctrlIdx, SampleIdx &dataSize);
+    CFErrorCode cameraPulseNumCheck(int nTotalFrames, int ctrlIdx, int &nPulses, SampleIdx &dataSize);
 
 public:
     QString version;
@@ -339,8 +354,9 @@ public:
     int maxGalvoVol = 0;
     int maxGalvoSpeed = 0;
     double resonanceFreq;  // this value comes from imagine.js
-    double bandwidth = 100.; // bandwidth around resonance frequency to check safety
-    double threshold = 0.01; // threshold(%) for power around resonance frequency
+    double bandwidth = 20.; // bandwidth around resonance frequency to check safety
+    double threshold = 0.02; // threshold(%) for power around resonance frequency
+    double min_pwr_th = 100; // minimum AC power threshold
     uInt32 laserTTLSig = 0;
     double laserIntensity[6] = {0, };
     int perStackSamples;
@@ -377,7 +393,7 @@ public:
             PiezoDataType dataType = PDT_RAW);
     bool isEmpty(int ctrlIdx);
     bool isEmpty(QString signalName);
-    int getCtrlSampleNum(int ctrlIdx);
+    SampleIdx getCtrlSampleNum(int ctrlIdx);
     QString getSignalName(int ctrlIdx);
     QString getChannelName(int ctrlIdx);
     QString getSignalName(QString channelName);
@@ -399,16 +415,6 @@ public:
     float64 raw2Voltage(int raw);
     int voltage2Raw(float64 vol);
     // Waveform validity check
-    CFErrorCode positionerSpeedCheck(int maxPosSpeed, int minPos, int maxPos, int ctrlIdx, int &dataSize);
-    CFErrorCode galvoSpeedCheck(double maxVolSpeed, int minVol, int maxVol, int ctrlIdx, int &dataSize);
-    CFErrorCode analogSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx, int &dataSize);
-    CFErrorCode analogResonanceFreqCheck(int ctrlIdx, double resonancefreq, double bandwidth,
-                                double threshold, double *ratio);
-    CFErrorCode fullSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx,
-                                QVector <SampleIdx>&strt, QVector <SampleIdx>&stop, int &dataSize);
-    CFErrorCode fastSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx, int &dataSize);
-    CFErrorCode laserSpeedCheck(double maxFreq, int ctrlIdx, int &dataSize);
-    CFErrorCode cameraPulseNumCheck(int nTotalFrames, int ctrlIdx, int &nPulses, int &dataSize);
     CFErrorCode waveformValidityCheck();
     // Generate control waveform and command file
     CFErrorCode genDefaultControl(QString filename = "");

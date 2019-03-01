@@ -134,11 +134,6 @@ void ControlWaveform::initControlWaveform(QString rig)
                 channelSignalList[i][1] = (*secured)[j][1];
         }
     }
-
-    for (int i = 0; i < getAIBegin(); i++) {
-        QVector<double> fc;
-        waveList_FC.push_back(fc);
-    }
 }
 
 ControlWaveform::~ControlWaveform()
@@ -533,6 +528,11 @@ CFErrorCode ControlWaveform::parsing(void)
 CFErrorCode ControlWaveform::freqAnalysis(void)
 {
     maxAoFreqAmplitude = 0.;
+    QVector<double> d;
+    waveList_FC.fill(d, getAIBegin());
+    waveList_ratio.fill(d, getAIBegin());
+    waveList_AC_PWR.fill(d, getAIBegin());
+
     for (int i = 0; i < getAIBegin(); i++) {
         if (generatedFrom == "Imagine")
             freqAnalysisOfAnalogSignal(i, TRUE);
@@ -545,36 +545,63 @@ CFErrorCode ControlWaveform::freqAnalysis(void)
     return NO_CF_ERROR;
 }
 
+double ControlWaveform::resonanceFreq_ratio(QVector<double> fc, int dataSize, double *ac_power)
+{
+    int leftend = max(0, (int)((resonanceFreq - bandwidth / 2) / freqResolution));
+    int rightend = min(dataSize - 1, (int)((resonanceFreq + bandwidth / 2) / freqResolution));
+    double totalACPower = 0., resonancePower = 0.;
+
+    // Total power
+    for (int i = 1; i < dataSize; i++) { // except DC component
+        totalACPower += fc[i];
+    }
+    // Power around resonance frequency
+    for (int i = leftend; i <= rightend; i++) {
+        resonancePower += fc[i];
+    }
+    *ac_power = totalACPower;
+    return resonancePower / totalACPower;
+}
+
 CFErrorCode ControlWaveform::freqAnalysisOfAnalogSignal(int ctrlIdx, bool periodic)
 {
+    QVector<double> fc;
     QVector<double> cfc; // cumulative frequency components
+    QVector<double> ratio; // resonance frequency power/AC power
+    QVector<double> ac_power; // ac_power
     if (channelSignalList[ctrlIdx][1] == "") {
         waveList_FC[ctrlIdx] = cfc;
+        waveList_ratio[ctrlIdx] = ratio;
+        waveList_AC_PWR[ctrlIdx] = ac_power;
         return NO_CF_ERROR;
     }
 
     double *in_stride_r, *in_residual_r;
     fftw_complex *out_stride_c, *out_residual_c;
     fftw_plan pstride, presidual;
-    QVector<int> dest;
-    unsigned long long leftEnd = 0;
-    unsigned long long rightEnd = FFT_SAMPLE_NUM;
-    unsigned int stride = FFT_SAMPLE_NUM / 2; // stride
-    unsigned long long size = totalSampleNum;
+    QVector<double> dest;
+    SampleIdx leftEnd = 0;
+    SampleIdx rightEnd;
+    unsigned int stride; // stride
+    SampleIdx size = totalSampleNum;
     unsigned int repeat = 1;
-    fftSampleLength = FFT_SAMPLE_NUM;
-    freqCompLength = fftSampleLength / 2 + 1;
+    int numPulseCheck;
 
     if (periodic) {
         repeat = controlList[ctrlIdx]->at(0);
         int waveIdx = controlList[ctrlIdx]->at(1);
-        fftSampleLength = getWaveSampleNum(waveIdx);
+        int wavNum = getWaveSampleNum(waveIdx);
+        numPulseCheck = max(1,min((int)repeat, sampleRate/wavNum));
+        fftSampleLength = getWaveSampleNum(waveIdx)*numPulseCheck;
         size = fftSampleLength;
-        rightEnd = fftSampleLength;
-        stride = fftSampleLength / 2;
-        freqCompLength = fftSampleLength / 2 + 1;
-        freqResolution;
     }
+    else {
+        //fftSampleLength = min((long long)FFT_SAMPLE_NUM, (long long)totalSampleNum);
+        fftSampleLength = min((long long)sampleRate, (long long)totalSampleNum);
+    }
+    rightEnd = fftSampleLength;
+    stride = fftSampleLength / 2;
+    freqCompLength = fftSampleLength / 2 + 1;
     freqResolution = (double)sampleRate / (double)fftSampleLength;
 
     // prepare stride phase
@@ -585,22 +612,29 @@ CFErrorCode ControlWaveform::freqAnalysisOfAnalogSignal(int ctrlIdx, bool period
     pstride = fftw_plan_dft_r2c_1d(stride_r2c_rsize, in_stride_r, out_stride_c, FFTW_ESTIMATE);
 
     // fft for stride phase
+    fc.fill(0., stride_r2c_rsize);
     cfc.fill(0., stride_r2c_rsize);
     while (rightEnd <= size)
     {
         readControlWaveform(dest, ctrlIdx, leftEnd, rightEnd, 1, PDT_VOLTAGE);
         for (int i=0; i < stride_r2c_rsize; i++)
-            in_stride_r[i] = (double)dest[i];
+            in_stride_r[i] = dest[i];
         fftw_execute(pstride);
         for (int i=0; i < stride_r2c_csize; i++) {
-            cfc[i] += sqrt(out_stride_c[i][0] * out_stride_c[i][0] +
+            fc[i] = sqrt(out_stride_c[i][0] * out_stride_c[i][0] +
                 out_stride_c[i][1] * out_stride_c[i][1]);
+            cfc[i] += fc[i];
         }
+        double acpwr;
+        double r = resonanceFreq_ratio(fc, stride_r2c_rsize, &acpwr);
+        ratio.push_back(r);
+        ac_power.push_back(acpwr);
         leftEnd += stride;
         rightEnd += stride;
         dest.clear();
     }
 
+    fc.fill(0., stride_r2c_rsize);
     if (!periodic) {
         // prepare residual phase
         int residual_r2c_rsize = size % stride + stride; // residual at the waveform end
@@ -612,27 +646,33 @@ CFErrorCode ControlWaveform::freqAnalysisOfAnalogSignal(int ctrlIdx, bool period
         // fft for residual phase
         readControlWaveform(dest, ctrlIdx, leftEnd, size - 1, 1, PDT_VOLTAGE);
         for (int i = 0; i < residual_r2c_rsize; i++)
-            in_residual_r[i] = (double)dest[i];
+            in_residual_r[i] = dest[i];
         fftw_execute(presidual);
         double factor = (double)stride_r2c_rsize / (double)residual_r2c_rsize;
         for (int i = 0; i < residual_r2c_csize; i++) {
             int j = (int)(factor * (double)i + 0.5);
             if (j < stride_r2c_csize) {
-                cfc[j] += sqrt(out_residual_c[i][0] * out_residual_c[i][0] +
+                fc[j] = sqrt(out_residual_c[i][0] * out_residual_c[i][0] +
                     out_residual_c[i][1] * out_residual_c[i][1]);
+                cfc[j] += fc[j];
             }
         }
+        // skip in residual period because residual_r2c_rsize could be too small to calculate ratio
+        // double r = resonanceFreq_ratio(fc, residual_r2c_rsize);
+        // ratio.push_back(r);
         fftw_destroy_plan(presidual);
         fftw_free(in_residual_r);
         fftw_free(out_residual_c);
     }
     else {
         for (int i = 0; i < size; i++) {
-            cfc[i] *= repeat;
+            cfc[i] *= ((double)repeat/(double)numPulseCheck);
         }
     }
 
     waveList_FC[ctrlIdx] = cfc;
+    waveList_ratio[ctrlIdx] = ratio;
+    waveList_AC_PWR[ctrlIdx] = ac_power;
 
     fftw_destroy_plan(pstride);
     fftw_free(in_stride_r);
@@ -692,11 +732,11 @@ int ControlWaveform::getWaveSampleNum(int waveIdx)
 {
     if (waveList_Raw.isEmpty())
         return 0;
-    int  sampleNum = waveList_Raw[waveIdx]->last();
+    int  sampleNum = waveList_Raw[waveIdx]->last(); // last element is a sample number
     return sampleNum;
 }
 
-int ControlWaveform::getCtrlSampleNum(int ctrlIdx)
+SampleIdx ControlWaveform::getCtrlSampleNum(int ctrlIdx) // total sample number actually specified in control waveform
 {
     if (controlList.isEmpty())
         return 0;
@@ -707,7 +747,7 @@ int ControlWaveform::getCtrlSampleNum(int ctrlIdx)
     {
         repeat = controlList[ctrlIdx]->at(controlIdx);
         waveIdx = controlList[ctrlIdx]->at(controlIdx + 1);
-        sum += repeat*waveList_Raw[waveIdx]->last();
+        sum += repeat*waveList_Raw[waveIdx]->last(); // last element is a sample number
     }
     return sum;
 }
@@ -925,36 +965,41 @@ bool ControlWaveform::isLaserPulseEmpty(void)
 }
 
 #define  SPEED_CHECK_INTERVAL 100
-CFErrorCode ControlWaveform::positionerSpeedCheck(int maxPosSpeed, int minPos, int maxPos, int ctrlIdx, int &dataSize)
+CFErrorCode ControlWaveform::positionerSpeedCheck(int maxPosSpeed, int minPos, int maxPos, int ctrlIdx,
+    SampleIdx &dataSize, SampleIdx &strt, SampleIdx &stop)
 {
 //    return NO_CF_ERROR;
     int minRaw = zpos2Raw(minPos);
     int maxRaw = zpos2Raw(maxPos);
     int maxRawSpeed = zpos2Raw(maxPosSpeed); // change position speed to raw data speed
-    CFErrorCode retVal = analogSpeedCheck(maxRawSpeed, minRaw, maxRaw, ctrlIdx, dataSize);
+    CFErrorCode retVal = analogSpeedCheck(maxRawSpeed, minRaw, maxRaw, ctrlIdx, dataSize, strt, stop);
     return retVal;
 }
 
-CFErrorCode ControlWaveform::galvoSpeedCheck(double maxVolSpeed, int minVol, int maxVol, int ctrlIdx, int &dataSize)
+CFErrorCode ControlWaveform::galvoSpeedCheck(double maxVolSpeed, int minVol, int maxVol, int ctrlIdx,
+    SampleIdx &dataSize, SampleIdx &strt, SampleIdx &stop)
 {
     int minRaw = voltage2Raw(minVol);
     int maxRaw = voltage2Raw(maxVol);
     int maxRawSpeed = voltage2Raw(maxVolSpeed); // change voltage speed to raw data speed
-    CFErrorCode retVal = analogSpeedCheck(maxRawSpeed, minRaw, maxRaw, ctrlIdx, dataSize);
+    CFErrorCode retVal = analogSpeedCheck(maxRawSpeed, minRaw, maxRaw, ctrlIdx, dataSize, strt, stop);
     return retVal;
 }
 
-CFErrorCode ControlWaveform::analogSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx, int &dataSize)
+CFErrorCode ControlWaveform::analogSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx,
+    SampleIdx &dataSize, SampleIdx &strt, SampleIdx &stop)
 {
     int controlIdx, repeat, waveIdx;
     SampleIdx idx = 0, idxStrt, idxStop;
     bool isFullTest = false;
     QVector <SampleIdx> shortWaveIdxStrt, shortWaveIdxStop;
+    CFErrorCode retVal;
 
     dataSize = getCtrlSampleNum(ctrlIdx);
     if (dataSize == 0)
         return NO_CF_ERROR;
 
+    // collect points that include short waveform
     for (controlIdx = 0; controlIdx < controlList[ctrlIdx]->size(); controlIdx += 2) {
         repeat = controlList[ctrlIdx]->at(controlIdx);
         waveIdx = controlList[ctrlIdx]->at(controlIdx + 1);
@@ -969,40 +1014,27 @@ CFErrorCode ControlWaveform::analogSpeedCheck(int maxSpeed, int minRaw, int maxR
         idx += repeat*waveLength;
     }
 
-    CFErrorCode retVal = fastSpeedCheck(maxSpeed, minRaw, maxRaw, ctrlIdx, dataSize); // this is too slow
-    if ((retVal == NO_CF_ERROR) && !shortWaveIdxStrt.isEmpty())
-        return fullSpeedCheck(maxSpeed, minRaw, maxRaw, ctrlIdx, shortWaveIdxStrt, shortWaveIdxStop, dataSize);
-    else
-        return retVal;
-}
+    // fastSpeedCheck first.
+    // If there are some short wavefroms, this function leaves the parts to fullSpeedCheck.
+    // TODO: still this is a little bit slow
+    retVal = fastSpeedCheck(maxSpeed, minRaw, maxRaw, ctrlIdx, dataSize);
 
-CFErrorCode ControlWaveform::analogResonanceFreqCheck(int ctrlIdx, double resonanceFreq, double bandwidth, double threshold, double *ratio)
-{
-    int dataSize = waveList_FC[ctrlIdx].size();
-    if (dataSize == 0)
-        return NO_CF_ERROR;
-    int leftend = max(0, (int)((resonanceFreq - bandwidth / 2)/ freqResolution));
-    int rightend = min(dataSize-1, (int)((resonanceFreq + bandwidth / 2)/ freqResolution));
-    double totalPower = 0., resonancePower = 0.;
-
-    // Total power
-    for (int i = 0; i < dataSize; i++) {
-        totalPower += waveList_FC[ctrlIdx][i];
+    if ((retVal == NO_CF_ERROR)&&(!shortWaveIdxStrt.isEmpty())) // If there are some short wavefroms
+                                                                // need to check the position where using the waveforms
+        return fullSpeedCheck(maxSpeed, minRaw, maxRaw, ctrlIdx, shortWaveIdxStrt, shortWaveIdxStop, dataSize, strt, stop);
+    else if(retVal != NO_CF_ERROR) {
+        // If there is an error in fastSpeedCheck, need fullSpeedCheck to get strt and stop positions that cause the error
+        shortWaveIdxStrt.clear();
+        shortWaveIdxStop.clear();
+        shortWaveIdxStrt.push_back(0);
+        shortWaveIdxStop.push_back(dataSize - 1);
+        return fullSpeedCheck(maxSpeed, minRaw, maxRaw, ctrlIdx, shortWaveIdxStrt, shortWaveIdxStop, dataSize, strt, stop);
     }
-    // Power around resonance frequency
-    for (int i = leftend; i <= rightend; i++) {
-        resonancePower += waveList_FC[ctrlIdx][i];
-    }
-
-    *ratio = resonancePower / totalPower;
-    if ( *ratio > threshold)
-        return ERR_FREQUENCY_ANALYSIS_ERR;
-    else
-        return NO_CF_ERROR;
+    return retVal;
 }
 
 CFErrorCode ControlWaveform::fullSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx,
-    QVector <SampleIdx>&strt, QVector <SampleIdx>&stop, int &dataSize)
+    QVector <SampleIdx>&swstrt, QVector <SampleIdx>&swstop, SampleIdx &dataSize, SampleIdx &strt, SampleIdx &stop)
 {
     qint16 rawWave0, rawWave1;
     double distance, time, speed;
@@ -1012,39 +1044,48 @@ CFErrorCode ControlWaveform::fullSpeedCheck(int maxSpeed, int minRaw, int maxRaw
     instantChangeTh = maxSpeed / sampleRate + 1;
     time = static_cast<double>(SPEED_CHECK_INTERVAL) / static_cast<double>(sampleRate); // sec
 
-    for (int i = 0; i < strt.size(); i++) {
+    for (int i = 0; i < swstrt.size(); i++) {
         // 1 Speed check : But, this cannot filter out periodic signal which has same period as 'interval'
-        SampleIdx end = (stop[i] < getCtrlSampleNum(ctrlIdx) - SPEED_CHECK_INTERVAL) ?
-            stop[i] : getCtrlSampleNum(ctrlIdx) - SPEED_CHECK_INTERVAL - 1;
-        for (SampleIdx j = strt[i]; j < end; j++) {
+        SampleIdx ctrlSampleNum = getCtrlSampleNum(ctrlIdx);
+        SampleIdx end = (swstop[i] < ctrlSampleNum - SPEED_CHECK_INTERVAL) ?
+            swstop[i] : ctrlSampleNum - SPEED_CHECK_INTERVAL - 1;
+        for (SampleIdx j = swstrt[i]; j < end; j++) {
             getCtrlSampleValue(ctrlIdx, j, rawWave0, PDT_RAW);
-            if ((rawWave0 < minRaw)||(rawWave0 > maxRaw)) // Invalid value
+            if ((rawWave0 < minRaw) || (rawWave0 > maxRaw)) { // Invalid value
+                strt = j;
+                stop = j;
                 return ERR_PIEZO_VALUE_INVALID;
+            }
             getCtrlSampleValue(ctrlIdx, j + SPEED_CHECK_INTERVAL, rawWave1, PDT_RAW); //PDT_RAW
             distance = abs(rawWave1 - rawWave0);
             if (distance > 1) {
                 speed = (distance - 1) / time;// -1 -> to account quantization noise
                 if (speed > maxSpeed) {
+                    strt = j;
+                    stop = j + SPEED_CHECK_INTERVAL;
                     return ERR_PIEZO_SPEED_FAST;
                 }
             }
         }
         // 2 Instantaneous change check : This will improve a defect of 1.
-        end = (stop[i] < getCtrlSampleNum(ctrlIdx) - 1) ?
-            stop[i] : getCtrlSampleNum(ctrlIdx) - 2;
-        strt[i] == 0? getCtrlSampleValue(ctrlIdx, 0, wave0, PDT_RAW):
-                      getCtrlSampleValue(ctrlIdx, strt[i]-1, wave0, PDT_RAW);
-        for (SampleIdx j = strt[i]; j < end; j++) {
+        end = (swstop[i] < getCtrlSampleNum(ctrlIdx) - 1) ?
+            swstop[i] : getCtrlSampleNum(ctrlIdx) - 2;
+        swstrt[i] == 0? getCtrlSampleValue(ctrlIdx, 0, wave0, PDT_RAW):
+                      getCtrlSampleValue(ctrlIdx, swstrt[i]-1, wave0, PDT_RAW);
+        for (SampleIdx j = swstrt[i]; j < end; j++) {
             getCtrlSampleValue(ctrlIdx, j, wave1, PDT_RAW);
-            if (abs(wave1 - wave0) > instantChangeTh)
+            if (abs(wave1 - wave0) > instantChangeTh) {
+                strt = j;
+                stop = strt == 0 ? 0 : j + 1;
                 return ERR_PIEZO_INSTANT_CHANGE;
+            }
             wave0 = wave1;
         }
     }
     return NO_CF_ERROR;
 }
 
-CFErrorCode ControlWaveform::fastSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx, int &dataSize)
+CFErrorCode ControlWaveform::fastSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx, SampleIdx &dataSize)
 {
     dataSize = getCtrlSampleNum(ctrlIdx);
     if (dataSize == 0)
@@ -1131,7 +1172,37 @@ CFErrorCode ControlWaveform::fastSpeedCheck(int maxSpeed, int minRaw, int maxRaw
     return NO_CF_ERROR;
 }
 
-CFErrorCode ControlWaveform::cameraPulseNumCheck(int nTotalFrames, int ctrlIdx, int &nPulses, int &dataSize)
+CFErrorCode ControlWaveform::analogResonanceFreqCheck(int ctrlIdx, double &ratio, SampleIdx &strt, SampleIdx &stop)
+{
+    QVector<double> ratios, ac_powers;
+    ratios = waveList_ratio[ctrlIdx];
+    ac_powers = waveList_AC_PWR[ctrlIdx];
+    if (generatedFrom == "Imagine")
+    {
+        ratio = ratios[0];
+        double ac_power = ac_powers[0];
+        if ((ac_power > min_pwr_th) && (ratio > threshold)) {
+            strt = 0;
+            stop = fftSampleLength;
+            return ERR_FREQUENCY_ANALYSIS_ERR;
+        }
+    }
+    else {
+        for (int i = 0; i < ratios.size(); i++)
+        {
+            ratio = ratios[i];
+            double ac_power = ac_powers[i];
+            if ((ac_power > min_pwr_th) && (ratio > threshold)) {
+                strt = (long long)(i * fftSampleLength);
+                stop = (long long)((i + 1) * fftSampleLength);
+                return ERR_FREQUENCY_ANALYSIS_ERR;
+            }
+        }
+    }
+    return NO_CF_ERROR;
+}
+
+CFErrorCode ControlWaveform::cameraPulseNumCheck(int nTotalFrames, int ctrlIdx, int &nPulses, SampleIdx &dataSize)
 {
     dataSize = getCtrlSampleNum(ctrlIdx);
     if (dataSize == 0 || nTotalFrames == 0)
@@ -1175,7 +1246,7 @@ CFErrorCode ControlWaveform::cameraPulseNumCheck(int nTotalFrames, int ctrlIdx, 
     return NO_CF_ERROR;
 }
 
-CFErrorCode ControlWaveform::laserSpeedCheck(double maxFreq, int ctrlIdx, int &dataSize)
+CFErrorCode ControlWaveform::laserSpeedCheck(double maxFreq, int ctrlIdx, SampleIdx &dataSize)
 {
     dataSize = getCtrlSampleNum(ctrlIdx);
     if (dataSize == 0)
@@ -1208,10 +1279,11 @@ CFErrorCode ControlWaveform::laserSpeedCheck(double maxFreq, int ctrlIdx, int &d
 
 CFErrorCode ControlWaveform::waveformValidityCheck()
 {
-    int sampleNum;
+    SampleIdx sampleNum;
     bool piezoWaveEmpty;
     bool cameraWaveEmpty;
     bool laserWaveEmpty;
+    SampleIdx strt = 0, stop = 0;
     validity = NO_CF_ERROR;
     errorMsg.clear();
 
@@ -1226,29 +1298,29 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
         for (int i = 0; i < channelSignalList.size(); i++) {
             // piezo speed check
             if (channelSignalList[i][1].right(5) == STR_piezo) {
-                CFErrorCode err = positionerSpeedCheck(maxPiezoSpeed, minPiezoPos, maxPiezoPos, i, sampleNum);
+                CFErrorCode err = positionerSpeedCheck(maxPiezoSpeed, minPiezoPos, maxPiezoPos, i, sampleNum, strt, stop);
                 if (err & (ERR_PIEZO_SPEED_FAST | ERR_PIEZO_INSTANT_CHANGE)) {
-                    // speed check is deprecated. Instead, we need to check frequency components around a resonance frequency.
-                    // errorMsg.append(QString("'%1' control is too fast\n").arg(channelSignalList[i][1]));
-                    err &= ~(ERR_PIEZO_SPEED_FAST | ERR_PIEZO_INSTANT_CHANGE); // remove these errors
+                    errorMsg.append(QString("'%1' control is too fast in between sample index %2 and %3.\n")
+                        .arg(channelSignalList[i][1]).arg(strt).arg(stop));
+                    err &= ~(ERR_PIEZO_SPEED_FAST | ERR_PIEZO_INSTANT_CHANGE);
                 }
                 if (err & (ERR_PIEZO_VALUE_INVALID)) {
-                    errorMsg.append(QString("'%1' control value is out of range\n")
-                    .arg(channelSignalList[i][1]));//.arg(maxPos));
+                    errorMsg.append(QString("'%1' control value is out of range in sample index %2.\n")
+                    .arg(channelSignalList[i][1]).arg(strt));//.arg(maxPos));
                 }
                 if ((sampleNum != 0) && (sampleNum != totalSampleNum)) {
                     err |= ERR_SAMPLE_NUM_MISMATCHED;
-                    errorMsg.append(QString("'%1' sample number is different from total sample number\n").arg(channelSignalList[i][1]));
+                    errorMsg.append(QString("'%1' sample number is different from total sample number.\n").arg(channelSignalList[i][1]));
                 }
                 if (err & (ERR_SHORT_WAVEFORM)) {
-                    errorMsg.append(QString("'%1' control includes too short waveform\nWaveform should be at least %2 samples")
+                    errorMsg.append(QString("'%1' control includes too short waveform\nWaveform should be at least %2 samples.")
                         .arg(channelSignalList[i][1]).arg(SPEED_CHECK_INTERVAL));
                 }
                 double ratio;
-                err |= analogResonanceFreqCheck(i, resonanceFreq, bandwidth, threshold, &ratio);
+                err |= analogResonanceFreqCheck(i, ratio, strt, stop);
                 if (err & (ERR_FREQUENCY_ANALYSIS_ERR)) {
-                    errorMsg.append(QString("'%1' control has excessive frequency components (%2% > Threshold = %3%) around resonance frequency (%4Hz). Please check 'Frequency component spectrum'.\n")
-                        .arg(channelSignalList[i][1]).arg(ratio*100).arg(threshold*100).arg(resonanceFreq));
+                    errorMsg.append(QString("'%1' control has excessive frequency components (%2% > Threshold = %3%) around resonance frequency (%4Hz) in between sample index %5 and %6. Please check 'Frequency component spectrum'.\n")
+                        .arg(channelSignalList[i][1]).arg(ratio*100).arg(threshold*100).arg(resonanceFreq).arg(strt).arg(stop));
                 }
                 validity |= err;
             }
@@ -1257,12 +1329,12 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
                 int nPulses;
                 CFErrorCode err = cameraPulseNumCheck(nStacks1*nFrames1, i, nPulses, sampleNum);
                 if (err & ERR_CAMERA_PULSE_NUM_ERR) {
-                    errorMsg.append(QString("'%1' pulse number %2 is not consistent with stack and frame number\n")
+                    errorMsg.append(QString("'%1' pulse number %2 is not consistent with stack and frame number.\n")
                         .arg(channelSignalList[i][1]).arg(nPulses));
                 }
                 if ((sampleNum != 0) && (sampleNum != totalSampleNum)) {
                     err |= ERR_SAMPLE_NUM_MISMATCHED;
-                    errorMsg.append(QString("'%1' sample number is different from total sample number\n").arg(channelSignalList[i][1]));
+                    errorMsg.append(QString("'%1' sample number is different from total sample number.\n").arg(channelSignalList[i][1]));
                 }
                 validity |= err;
             }
@@ -1270,12 +1342,12 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
                 int nPulses;
                 CFErrorCode err = cameraPulseNumCheck(nStacks2*nFrames2, i, nPulses, sampleNum);
                 if (err & ERR_CAMERA_PULSE_NUM_ERR) {
-                    errorMsg.append(QString("'%1' pulse number %2 is not consistent with stack and frame number\n")
+                    errorMsg.append(QString("'%1' pulse number %2 is not consistent with stack and frame number.\n")
                         .arg(channelSignalList[i][1]).arg(nPulses));
                 }
                 if ((sampleNum != 0) && (sampleNum != totalSampleNum)) {
                     err |= ERR_SAMPLE_NUM_MISMATCHED;
-                    errorMsg.append(QString("'%1' sample number is different from total sample number\n").arg(channelSignalList[i][1]));
+                    errorMsg.append(QString("'%1' sample number is different from total sample number.\n").arg(channelSignalList[i][1]));
                 }
                 validity |= err;
             }
@@ -1287,26 +1359,26 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
                 }
                 if ((sampleNum != 0) && (sampleNum != totalSampleNum)) {
                     err |= ERR_SAMPLE_NUM_MISMATCHED;
-                    errorMsg.append(QString("'%1' sample number is different from total sample number\n").arg(channelSignalList[i][1]));
+                    errorMsg.append(QString("'%1' sample number is different from total sample number.\n").arg(channelSignalList[i][1]));
                 }
                 validity |= err;
             }
             // galvo control speed check
             if (channelSignalList[i][1].left(5) == STR_galvo) {
-                CFErrorCode err = galvoSpeedCheck(maxGalvoSpeed, minGalvoVol, maxGalvoVol, i, sampleNum);
+                CFErrorCode err = galvoSpeedCheck(maxGalvoSpeed, minGalvoVol, maxGalvoVol, i, sampleNum, strt, stop);
                 if (err & (ERR_PIEZO_SPEED_FAST | ERR_PIEZO_INSTANT_CHANGE)) {
                     errorMsg.append(QString("'%1' control is too fast\n").arg(channelSignalList[i][1]));
                 }
                 if (err & (ERR_PIEZO_VALUE_INVALID)) {
-                    errorMsg.append(QString("'%1' control value should not be negative\n")
+                    errorMsg.append(QString("'%1' control value should not be negative.\n")
                         .arg(channelSignalList[i][1]));//.arg(maxPos));
                 }
                 if ((sampleNum != 0) && (sampleNum != totalSampleNum)) {
                     err |= ERR_SAMPLE_NUM_MISMATCHED;
-                    errorMsg.append(QString("'%1' sample number is different from total sample number\n").arg(channelSignalList[i][1]));
+                    errorMsg.append(QString("'%1' sample number is different from total sample number.\n").arg(channelSignalList[i][1]));
                 }
                 if (err & (ERR_SHORT_WAVEFORM)) {
-                    errorMsg.append(QString("'%1' control includes too short waveform\nWaveform should be at least %2 samples")
+                    errorMsg.append(QString("'%1' control includes too short waveform\nWaveform should be at least %2 samples.")
                         .arg(channelSignalList[i][1]).arg(SPEED_CHECK_INTERVAL));
                 }
                 validity |= err;
@@ -1316,7 +1388,7 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
                 sampleNum = getCtrlSampleNum(i);
                 if ((sampleNum != 0) && (sampleNum != totalSampleNum)) {
                     validity |= ERR_SAMPLE_NUM_MISMATCHED;
-                    errorMsg.append(QString("'%1' sample number is different from total sample number\n").arg(channelSignalList[i][1]));
+                    errorMsg.append(QString("'%1' sample number is different from total sample number.\n").arg(channelSignalList[i][1]));
                 }
             }
         }
@@ -1623,7 +1695,7 @@ void genConstantWave(QVariantList &vlarray, int value, int duration)
 CFErrorCode ControlWaveform::genDefaultControl(QString filename)
 {
     int nFramesOrg, nFrames, nStacks;
-    if ((enableCam1)&& (enableCam2)) {
+    if ((enableCam1) && (enableCam2)) {
         nFrames = max(nFrames1, nFrames2);
         nStacks = max(nStacks1, nStacks2);
     }
@@ -1640,8 +1712,8 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
 
     CFErrorCode err = NO_CF_ERROR;
     errorMsg.clear();
-    double shutterControlMargin = 0.01; // (sec) shutter control begin after piezo start and stop before piezo stop
-    double laserControlMargin = 0.005;  // (sec) laser control begin after piezo start and stop before piezo stop
+    double shutterControlMargin = 0.01; // 0.01(sec) shutter control begin after piezo start and stop before piezo stop
+    double laserControlMargin = 0.005;  // 0.005(sec) laser control begin after piezo start and stop before piezo stop
                                         // This value should be less than shutterControlMargin
     double valveControlMargin = 0.0;    // (sec) stimulus control begin after piezo start and stop before piezo stop
                                         // This value should be less than shutterControlMargin
@@ -1654,25 +1726,27 @@ CFErrorCode ControlWaveform::genDefaultControl(QString filename)
     int eachShutterCtrlSamples = (int)(frameTime*sampleRate + 0.5);
 
     int piezoDelaySamples = 0;
-    int piezoRisingSamples = nFrames*eachShutterCtrlSamples + 2*shutterControlMargin*sampleRate;
+    int piezoRisingSamples = nFrames * eachShutterCtrlSamples + 2 * shutterControlMargin*sampleRate;
     if (piezoRisingSamples < minPiezoTravelBackTime*sampleRate)
     {
         double piezoRisingTime = minPiezoTravelBackTime;
         double cameraTime = piezoRisingTime - 2 * shutterControlMargin;
         eachShutterCtrlSamples = (int)(cameraTime*sampleRate / nFrames + 0.5);
-        piezoRisingSamples = nFrames*eachShutterCtrlSamples + 2 * shutterControlMargin*sampleRate;
+        piezoRisingSamples = nFrames * eachShutterCtrlSamples + 2 * shutterControlMargin*sampleRate;
     }
     //int piezoRisingSamples = (nFrames*frameTime + 2 * shutterControlMargin)*sampleRate;
     if (!bidirection1 && !bidirection2 && (piezoTravelBackTime < minPiezoTravelBackTime)) {
         errorMsg.append(QString("Piezo travel back time is too short\n"));
         err |= ERR_TRAVELBACKTIME_SHORT;
-        return err;
+        //return err;
     }
-    int piezoFallingSamples = piezoTravelBackTime*sampleRate;
-    int idleTimeSamples = idleTimeBwtnStacks*sampleRate;
+    int piezoFallingSamples = piezoTravelBackTime * sampleRate;
+    int idleTimeSamples = idleTimeBwtnStacks * sampleRate;
     int piezoWaitSamples = (idleTimeBwtnStacks - piezoTravelBackTime)*sampleRate;
-    if (idleTimeBwtnStacks < piezoTravelBackTime)
+    if (idleTimeBwtnStacks < piezoTravelBackTime) {
+        errorMsg.append(QString("Idle time is too short\n"));
         err |= ERR_IDLETIME_SHORT;
+    }
     perStackSamples = piezoRisingSamples + piezoFallingSamples + piezoWaitSamples;
     genWaveform(buf1, zpos2Raw(piezoStartPosUm), zpos2Raw(piezoStopPosUm), piezoDelaySamples,
         piezoRisingSamples, piezoFallingSamples, perStackSamples);

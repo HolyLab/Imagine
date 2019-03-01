@@ -27,6 +27,7 @@ public:
     int minPos(){ return 0; }
     int maxPos(){ return maxpos; }
     int maxSpeed(){ return maxspd; } //microns per second
+    double resonanceFrequency() { return resonanceFreq; }
     QString getCtrlrSetupType() { return setuptype; }
     bool curPos(double* pos);
     bool moveTo(double to);

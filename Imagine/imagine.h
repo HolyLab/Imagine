@@ -234,6 +234,9 @@ private:
     QwtPlot *conWavPlot;
     QwtPlot *conFreqPlot;
     QwtPlotCurve *piezoSpeedCurve;
+    QwtPlotCurve *piezoResFreqCurve;
+    QwtPlotCurve *piezoResFreqCurveBWL;
+    QwtPlotCurve *piezoResFreqCurveBWR;
     QwtPlot *conReadWavPlot;
     int numAoCurve = 2, numDoCurve = 6;
     QVector<QwtPlotCurve *> outCurve;
@@ -309,6 +312,7 @@ private:
     void updateControlWaveform(SampleIdx leftEnd, SampleIdx rightEnd);
     void updateControlFrequency(SampleIdx leftEnd, SampleIdx rightEnd);
     void updatePiezoSpeedCurve(SampleIdx leftEnd, SampleIdx rightEnd);
+    void updateResonanceFrequencyCurve(SampleIdx leftEnd, SampleIdx rightEnd);
     void updateAiDiWaveform(SampleIdx leftEnd, SampleIdx rightEnd);
     void updataSpeedData(CurveData *curveData, int newValue, int start, int end);
     bool waveformValidityCheck(void);
@@ -576,6 +580,7 @@ private slots:
     void on_btnScriptRedo_clicked();
     void on_btnScriptSave_clicked();
     void on_pbTestButton_pressed();
+    void on_tabWavDisplay_currentChanged(int index);
 
 public slots:
     // handle pixmap of recently acquired frame

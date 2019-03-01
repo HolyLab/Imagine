@@ -741,7 +741,7 @@ void Imagine::updateIntenCurve(const Camera::PixelValue * frame,
 }//updateIntenCurve(),
 
 void prepareCurve(QwtPlotCurve *curve, QwtPlot *plot,
-    QwtText &xTitle, QwtText &yTitle, QColor color)
+    QwtText &xTitle, QwtText &yTitle, QColor color, double width = 1.0, Qt::PenStyle s = Qt::SolidLine)
 {
     xTitle.setFont(QFont("Helvetica", 10));
     yTitle.setFont(QFont("Helvetica", 10));
@@ -760,7 +760,7 @@ void prepareCurve(QwtPlotCurve *curve, QwtPlot *plot,
     sym->setSize(5);
     curve->setSymbol(sym);
     curve->setRenderHint(QwtPlotItem::RenderAntialiased);
-    curve->setPen(QPen(color));
+    curve->setPen(QPen(color, width, s));
     curve->attach(plot);
 }
 
@@ -866,6 +866,12 @@ void Imagine::preparePlots()
         outFreqCurve.push_back(new QwtPlotCurve(QString("Signal out frequency component %1").arg(i)));
         prepareCurve(outFreqCurve[i], conFreqPlot, xFreqTitle, aoyFreqTitle, curveColor[i]);
     }
+    piezoResFreqCurve = new QwtPlotCurve("Positioner resonance frequency");
+    prepareCurve(piezoResFreqCurve, conFreqPlot, xFreqTitle, aoyFreqTitle, Qt::cyan);
+    piezoResFreqCurveBWL = new QwtPlotCurve("Positioner resonance frequency bandwidth lower bound");
+    prepareCurve(piezoResFreqCurveBWL, conFreqPlot, xFreqTitle, aoyFreqTitle, Qt::cyan, 1.0, Qt::DashLine);
+    piezoResFreqCurveBWR = new QwtPlotCurve("Positioner resonance frequency bandwidth upper bound");
+    prepareCurve(piezoResFreqCurveBWR, conFreqPlot, xFreqTitle, aoyFreqTitle, Qt::cyan, 1.0, Qt::DashLine);
     ui.conFreqLayout->addWidget(conFreqPlot);
 
     //the read out waveform
@@ -2206,7 +2212,7 @@ bool Imagine::applySetting()
             conWaveDataParam->piezoTravelBackTime = dataAcqThread->piezoTravelBackTime;
             conWaveDataParam->applyStim = masterUi->cbStim->isChecked();
             conWaveDataParam->stimuli = &(masterDataAcqTh->stimuli);
-            conWaveDataParam->genDefaultControl(headerFilename);
+            CFErrorCode err = conWaveDataParam->genDefaultControl(headerFilename);
             conWaveDataParam->freqAnalysis();
             dataAcqThread->conWaveData = conWaveDataParam;
             conWaveData = conWaveDataParam;
@@ -2229,15 +2235,17 @@ bool Imagine::applySetting()
             }
             if (conWaveDataParam->enableCam1) {
                 double lastIdleTime = masterUi->doubleSpinBoxBoxIdleTimeBtwnStacks->value();
+                double stackTime = (double)perStackSamples1 / (double)conWaveDataParam->sampleRate;
                 masterUi->doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(lastIdleTime + additionalIdleTime1);
-                masterUi->labelPerStackTime->setText(QString("#time/stack(s) : %1(%2sample)")
-                    .arg((double)perStackSamples1 / (double)conWaveDataParam->sampleRate).arg(perStackSamples1));
+                masterUi->labelPerStackTime->setText(QString("#time/stack(s) : %1(%2hz)")
+                    .arg(stackTime).arg(1/stackTime).arg(perStackSamples1)); // %3samples,
             }
             if ((conWaveDataParam->enableCam2)&&slaveUi){
                 double lastIdleTime = slaveUi->doubleSpinBoxBoxIdleTimeBtwnStacks->value();
+                double stackTime = (double)perStackSamples2 / (double)conWaveDataParam->sampleRate;
                 slaveUi->doubleSpinBoxBoxIdleTimeBtwnStacks->setValue(lastIdleTime + additionalIdleTime2);
-                slaveUi->labelPerStackTime->setText(QString("#time/stack(s) : %1(%2sample)")
-                    .arg((double)perStackSamples2 / (double)conWaveDataParam->sampleRate).arg(perStackSamples2));
+                slaveUi->labelPerStackTime->setText(QString("#time/stack(s) : %1(%2hz)")
+                    .arg(stackTime).arg(1 / stackTime).arg(perStackSamples2));
             }
             if (masterImagine != NULL) {
                 masterImagine->displayConWaveData();
@@ -4304,7 +4312,7 @@ void Imagine::displayConWaveData()
         ui.sbFreqDsplyRight->setMaximum(conWaveData->freqCompLength * conWaveData->freqResolution);
     // GUI waveform display
     updateControlWaveform(0, conWaveData->totalSampleNum - 1);
-    updateControlFrequency(0, conWaveData->freqCompLength * conWaveData->freqResolution);
+    updateControlFrequency(0, conWaveData->resonanceFreq*2);
     // Even though there is no error, if there are some warnings, we show them.
     if (conWaveData->getErrorMsg() != "") {
         QMessageBox::critical(this, "Imagine", conWaveData->getErrorMsg(),
@@ -4448,6 +4456,35 @@ void Imagine::updatePiezoSpeedCurve(SampleIdx leftEnd, SampleIdx rightEnd)
     piezoSpeedCurve->setData(curveData);
 }
 
+void Imagine::updateResonanceFrequencyCurve(SampleIdx leftEnd, SampleIdx rightEnd)
+{
+    int samplenum = conWaveData->freqCompLength*conWaveData->freqResolution;
+    CurveData *curveData = new CurveData(samplenum);
+    CurveData *curveDataBWL = new CurveData(samplenum);
+    CurveData *curveDataBWR = new CurveData(samplenum);
+    Positioner *pos = dataAcqThread->pPositioner;
+    double resonanceFreq = pos->resonanceFrequency();
+    double resonanceFreqBWL = resonanceFreq - conWaveData->bandwidth / 2.;
+    double resonanceFreqBWR = resonanceFreq + conWaveData->bandwidth / 2.;
+    double bottom = (double)(ui.sbFreqDsplyBottom->value()-100);
+    double top = (double)ui.sbFreqDsplyTop->value();
+    double dStart = static_cast<double>(leftEnd);
+    double dEnd = static_cast<double>(rightEnd);
+    // Resonance frequency
+    curveData->append(resonanceFreq - 0.001, bottom);
+    curveData->append(resonanceFreq, top);
+    curveData->append(resonanceFreq + 0.001, bottom);
+    piezoResFreqCurve->setData(curveData);
+    // Bandwidth lower bound
+    curveDataBWL->append(resonanceFreqBWL - 0.00001, bottom);
+    curveDataBWL->append(resonanceFreqBWL, top);
+    piezoResFreqCurveBWL->setData(curveDataBWL);
+    // Bandwidth upper bound
+    curveDataBWR->append(resonanceFreqBWR, top);
+    curveDataBWR->append(resonanceFreqBWR + 0.00001, bottom);
+    piezoResFreqCurveBWR->setData(curveDataBWR);
+}
+
 // read jason data to waveform data
 void Imagine::updateControlWaveform(SampleIdx leftEnd, SampleIdx rightEnd)
 {
@@ -4474,7 +4511,8 @@ void Imagine::updateControlFrequency(SampleIdx leftEnd, SampleIdx rightEnd)
         loadConFreqDataAndPlot(leftEnd, rightEnd, i);
     }
 
-    // updateResonanceFrequencyCurve(leftEnd, rightEnd);
+    updateResonanceFrequencyCurve(leftEnd, rightEnd);
+
     conFreqPlot->replot();
 
     // ui update
@@ -4716,8 +4754,11 @@ void Imagine::on_sbFreqDsplyLeft_valueChanged(int value)
 
 void Imagine::on_sbFreqDsplyTop_valueChanged(int value)
 {
+    int right = ui.sbFreqDsplyRight->value();
+    int left = ui.sbFreqDsplyLeft->value();
     int bottom = ui.sbFreqDsplyBottom->value();
     conFreqPlot->setAxisScale(QwtPlot::yLeft, bottom, value);
+    updateResonanceFrequencyCurve(left, right);
     conFreqPlot->replot();
 }
 
@@ -4732,8 +4773,7 @@ void Imagine::on_sbFreqDsplyBottom_valueChanged(int value)
 void Imagine::on_btnFreqDsplyReset_clicked()
 {
     ui.sbFreqDsplyLeft->setValue(0);
-    ui.sbFreqDsplyRight->setValue(conWaveData->freqCompLength * conWaveData->freqResolution);
-    Positioner *pos = dataAcqThread->pPositioner;
+    ui.sbFreqDsplyRight->setValue(conWaveData->resonanceFreq*2);
     ui.sbFreqDsplyTop->setValue(aoFreqMaxy * 1.1);
     ui.sbFreqDsplyBottom->setValue(aoFreqMiny * 1.1);
 }
@@ -5924,5 +5964,13 @@ void Imagine::on_pbTestButton_pressed()
 {
     char *crash;
     crash[2] = 1;
+}
+
+void Imagine::on_tabWavDisplay_currentChanged(int index)
+{
+    if (index == 0)
+        ui.labelGuideCurve->setText(QString("Maximum speed"));
+    else
+        ui.labelGuideCurve->setText(QString("Resonance frequency"));
 }
 #pragma endregion
