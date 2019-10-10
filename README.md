@@ -1,6 +1,6 @@
 # Imagine
 
-A graphical interface for recording with OCPI microscopes..
+A graphical interface for recording with OCPI microscopes.
 
 ## Installation
 
