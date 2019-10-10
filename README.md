@@ -264,7 +264,7 @@ The laser module of OCPI-2 has five different wavelengths. We can turn on and of
 
 ![alt text](doc/menu07_waveform.png)
 
-- Enable : makes the waveform control mode enable. If disabled, the parameter control mode is selected.
+- Enable : enables the waveform control mode. If disabled, the parameter control mode is selected.
 - File name :selects a .json custom waveform file.
 - Control info. : brings up pop up window which includes a list of control names and assigned DAQ channels.
 - exp. trigger mode : selects a exp. trigger mode of this waveform control.
