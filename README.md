@@ -129,7 +129,7 @@ A graphical interface for recording with OCPI microscopes.
 2. Script control mode
 In the script control mode, we can execute javascript code in Imagine. In addition, Imagine provides several javascript functions to provide access to some essential operations which are used to record data. Thereby, we can execute several experiments according to the control flow specified with javascript code by one execution without intervention.
 
-In the Imagine GUI, general settings, parameter control settings and .json file name for waveform control can be saved in an configuration file with a ‘save configuration’ command in file menu. In script control mode, we can load, verify and record with this configuration file.
+In the Imagine GUI, general settings, parameter control settings and .json file name for waveform control can be saved in a configuration file with a ‘save configuration’ command in file menu. In script control mode, we can load, verify and record with this configuration file.
 
 Typical work flow is as follows.
 
