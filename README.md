@@ -156,7 +156,7 @@ Imagine GUI is composed with several sections as listed below with numbers corre
 
 1. Parameters and display control window
 
-This window is designed for setting overall parameters for the microscope operation and display. This window consists of tree main sections which are "Config and control", "Histogram" and "Intensity". Currently, "Intensity" tab is not used. "Histogram" section displays histogram of an image displayed in "Display window". "Config and control" tab is designed for setting overall parameters such as camera control, positioner control, laser control and stimuli control which are used to config an experiment. Also, it provides some basic tools for the following inspection of acquired data.
+This window is designed for setting overall parameters for the microscope operation and display. This window consists of three main sections which are "Config and control", "Histogram" and "Intensity". Currently, the "Intensity" tab is not used. "Histogram" section displays histogram of an image displayed in "Display window". "Config and control" tab is designed for setting overall parameters such as camera control, positioner control, laser control and stimuli control which are used to configure an experiment. Also, it provides some basic tools for later inspection of acquired data.
 
 2. Display window
 
