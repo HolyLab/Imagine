@@ -2,7 +2,31 @@
 
 A graphical interface for recording with OCPI microscopes.
 
+## Companion paper
+A paper explaining most of the implementation details and related hardware can be found [here](https://www.nature.com/articles/s41467-019-12340-0).
+
+```
+@article{Greer2019,
+  title={Fast objective coupled planar illumination microscopy},
+  author = {Greer, Cody and Holy, Timothy E.},
+  journal={Nature Communications},
+  volume={10},
+  pages={4483},
+  year={2019},
+  URL = {https://doi.org/10.1038/s41467-019-12340-0},
+  eprint = {https://www.nature.com/articles/s41467-019-12340-0.pdf},
+  doi = {10.1038/s41467-019-12340-0}
+}
+```
+
 ## Installation
+
+We need to install below items
+- Imagine
+- Software development tools and libraries : Visual studio, QT, QWT, Boost, FFTW
+- Hardware related SDK and driver : PCO camera SDK,  National Instrument DAQ driver
+
+### Installation steps
 
 1. Clone this Imagine repository
 
@@ -15,7 +39,7 @@ A graphical interface for recording with OCPI microscopes.
 4. Install QT add-in for vc2015
    - install add-in
    - go to QT VS Tools tab in visual studio and set the right directory
-	* for vc2017 and Qt5.11 : set this as C:\Qt\5.11.2\msvc2017_64
+	ex) for vc2015 and Qt5.7 : set this as C:\Qt\5.7\msvc2015_64
 
 5. Install QWT v6.1.3
    - open the Visual Studio tools directory under the windows Start menu, select "Developer's command prompt"(run as administrator)
@@ -105,14 +129,13 @@ A graphical interface for recording with OCPI microscopes.
 
 		    libfftw3-3.lib, libfftw3f-3.lib, libfftw3l-3.lib
 
-11. Copy all files needed in the output directory and 'Working Directory' (Specified in Configuration Properties>Debugging>Working Directory)
-   - Camera related dlls : SC2_Cam.dll, sc2_clhs.dll(REALM), sc2_cl_me4.dll(OCPI)
-   - QT related dlls : Qt5Core.dll, Qt5Gui.dll, Qt5OpenGL.dll,
-         Qt5PrintSupport.dll, Qt5Script.dll, Qt5SerialPort.dll,
-         Qt5Svg.dll, Qt5Widgets.dll
-   - QWT related dll : qwt.dll
-   - FFTW related dll : libfftw3-3.dll, libfftw3f-3.dll, libfftw3l-3.dll
-   - JavaScript files : imagine.js, 'related rig name'.js
+11. Now, we can build Imagine project. But, to execute the Imagine, we need to copy all files below under the 'Output Directory' and 'Working Directory' of Imagine project.
+   - Camera related dlls (located in C:\Program Files (x86)\Digital Camera Toolbox\pco.sdk\bin) : SC2_Cam.dll and camera interface dll (sc2_clhs.dll or sc2_cl_me4.dll)
+   - QT related dlls (located under the installed directory (ex) C:\Qt\Qt5.7.0\5.7\msvc2015_64\bin) :
+		Qt5Core.dll, Qt5Gui.dll, Qt5OpenGL.dll, Qt5PrintSupport.dll, Qt5Script.dll, Qt5SerialPort.dll, Qt5Svg.dll, Qt5Widgets.dll
+   - QWT related dll (located in C:\Qwt-6.1.3\lib): qwt.dll
+   - FFTW related dll (located in C:\FFTW): libfftw3-3.dll, libfftw3f-3.dll, libfftw3l-3.dll
+   - JavaScript files (located in (Imagine directory)\Imagine\scripts) : imagine.js, 'related rig name'.js ((ex) ocpi-2.js)
 
 ## Usage
 
@@ -199,13 +222,13 @@ We can open and close a laser shutter of laser. "Heatsink Fan" and "Temperature"
 
 ![alt text](doc/menu_dd04.png)
 
-Display Full Image : this menu causes the camera to acquire images with the entire sensor.
-No Auto Scale : does not apply auto scale to the intensity of the captured images in displaying them.
-Auto Scale On First Frame : applies auto scale to the first frame image of a stack. And following frames are scaled with the scale factor of the first frame of the stack to which they belong.
-Auto Scale On All Frames : independently auto scales every frame of the captured images.
-Manual : enables users to set the scale manually. Intensity from "min" value and "max" value will be scaled to 0 to 255. If we overlap the camera1 image with the camera2 image, "cam2 min" and "cam2 max" can be used to set the minimum and maximum intensity value of the camera2 image.
-Colorize Saturated Pixels : enables display to indicate the saturated pixel with some colors. Blue color pixels indicates pixels which have minus intensity value after scaling. Red is for pixels having intensity over 256.
-Flicker control : reduces the flicker caused by abnormal black frames between normal frames.
+- Display Full Image : this menu causes the camera to acquire images with the entire sensor.
+- No Auto Scale : does not apply auto scale to the intensity of the captured images in displaying them.
+- Auto Scale On First Frame : applies auto scale to the first frame image of a stack. And following frames are scaled with the scale factor of the first frame of the stack to which they belong.
+- Auto Scale On All Frames : independently auto scales every frame of the captured images.
+- Manual : enables users to set the scale manually. Intensity from "min" value and "max" value will be scaled to 0 to 255. If we overlap the camera1 image with the camera2 image, "cam2 min" and "cam2 max" can be used to set the minimum and maximum intensity value of the camera2 image.
+- Colorize Saturated Pixels : enables display to indicate the saturated pixel with some colors. Blue color pixels indicates pixels which have minus intensity value after scaling. Red is for pixels having intensity over 256.
+- Flicker control : reduces the flicker caused by abnormal black frames between normal frames.
 
 ### Parameters and display control window
 
@@ -219,11 +242,11 @@ This tab is designed for setting the location and filename of output file and ad
 
 ![alt text](doc/menu02_camera.png)
 
-- Record both cameras : enables to record both cameras.
+- Record both cameras : enables recording from both cameras.
 - number of stacks : sets the number of stacks.
 - number of frames/stack : sets the number of frames in a stack.
 - exposure time(s) : set exposure time. This value is valid only for "External Start" mode in exposure trigger mode.
-- exposure trigger mode : selects exposure trigger mode. Refer to the explanation in the exposure trigger mode section.
+- exposure trigger mode : selects exposure trigger mode. Refer to the explanation in the 'trigger mode' section of [PCO camera manual](https://www.pco.de/fileadmin/fileadmin/user_upload/pco-manuals/pco.camware_manual.pdf).
 - idle time between stacks(s) : sets idle time between stacks.
 - bi-directional imaging : acquires images during positioner "flyback." Refer to the bi-directional imaging waveform below.
 - angle from horizontal(deg) : specifies angle between objective lens and horizontal plane (optional, user info only).
@@ -236,16 +259,41 @@ This tab is designed for setting the location and filename of output file and ad
 - use zoom window value : enables soft ROI with the region selected by zoom window.
 full chip size : enable full size imaging.
 
+Some parameters such as exposure time and idle time between stacks are tightly related with some parameters in positioner tab.
+And, some parameters related with ROI are restricted according to  ROI mode such as soft ROI (details about ROI modes are explained in the [PCO camera manual](https://www.pco-tech.com/fileadmin/fileadmin/user_upload/pco-manuals/pco.sdk_manual.pdf)). Imagine internally blocks undesired number of these parameters.
+
+##### Positioner control waveform and camera control pulse for bi-directional imaging
+
+<img src="doc/waveform_bidir.png" alt="alt text" width="600"/>
+
 3. Stimuli tab
 
 ![alt text](doc/menu03_stimuli.png)
-
 - Stimulus file : selects a .stim file. Then, Imagine will display the specified stimuli description in the editing window and generate stimuli table listed in the Stimuli window.
 - Apply stimuli : applies the stimuli table.
 
 this figure, 'HR_test.stim' file is loaded, which shows an example description of stimuli. Here, several pairs of numbers are listed. The left number is a stack number and the right number is a stimulus number. If "Apply stimuli" is enabled, the stimulus number will be encoded with a 4-bit binary number and then each bits will be used to generate TTL pulses to channel P0.0 ~ P0.3.
 
-4. Display tab
+4. Positioner tab
+
+![alt text](doc/menu04_positioner.png)
+
+This tab is for setting the start position and stop position of positioner and also positioner moving back time.
+
+- Axis : reserved for later use
+- min distance(um) : reserved for later use
+- max distance(um) : reserved for later use
+- start position(um) : sets the start position of the positioner (refer to the positioner control waveform below).
+- move to position(um) : moves positioner to the specified position by clicking the 'move' button.
+- stop position(um) : sets the stop position of the positioner
+- Refresh button : captures the current position of the positioner.
+- time for moving back(s) : Refer to the positioner control waveform below. This time should be longer than (stop position - start position)/(maximum positioner speed) and shorter than idle time between stacks when we don't use bi-directional imaging mode. Imagine can set the shortest time valid automatically by checking the 'Auto' checkbox.
+
+##### Positioner control waveform and camera control pulse
+
+<img src="doc/waveform.png" alt="alt text" width="600"/>
+
+5. Display tab
 
 ![alt text](doc/menu05_display.png)
 
@@ -254,13 +302,13 @@ this figure, 'HR_test.stim' file is loaded, which shows an example description o
 - Mismatch correction for image 2 : helps to find mismatch parameters between the two overlapped images. When we capture images from two cameras, usually mismatch happens because of the difference between two optical paths to the cameras. We can correct the mismatch between overlapped images in the display window by changing "Translation X","Translation Y" and "Rotation angle" spinbox values. Once a user find well matched parameters with these spinboxes, the user should do the actual correction with those parameters in following analysis with separate tools. Imagine does not do the actual mismatch correction to the data. If this mismatch correction is performed before acquisition, these parameters will be saved in the .imagine output file.
 - Save current image : takes a snapshot of current display window.
 
-5. Laser tab
+6. Laser tab
 
 ![alt text](doc/menu06_laser.png)
 
 The laser module of OCPI-2 has five different wavelengths. We can turn on and off an individual laser by checking the checkbox beside which the wavelength is labeled. The power of the laser can be also adjusted with slide bars and spinboxes. During the laser setting, we need to open the main laser shutter by clicking the "Open Shutter" button in the main menu. If we use waveform control mode, we can control the each shutters of the five individual wavelengths differently.
 
-6. Waveform tab
+7. Waveform tab
 
 ![alt text](doc/menu07_waveform.png)
 
@@ -270,21 +318,21 @@ The laser module of OCPI-2 has five different wavelengths. We can turn on and of
 - exp. trigger mode : selects a exp. trigger mode of this waveform control.
 - waveform display controls : enables us to select which waveform and to set a x axis interval or a y interval to display (only display purpose).
 
-7. AI and DI tab
+8. AI and DI tab
 
 ![alt text](doc/menu08_ai_and_di.png)
 
 - Imagine file name : selects a .imagine file. Then, Imagine will load .ai and .di file which include data of analog input signals and digital input signals respectively.
 - Waveform display controls : enables us to select which waveform and to set a x axis interval(x min, x max) or a y axis interval(y min, y max) to display. Notice the "Redraw" button. Different from the waveform display control in "waveform" tab, the waveform display window will be updated only when we press this button for the x interval change.
 
-8. Script tab
+9. Script tab
 
 ![alt text](doc/menu09_script.png)
 
-- Script file : selects a .jl script file. Then, Imagine will display the specified script in the editing window
+- Script file : selects a .js script file. Then, Imagine will display the specified script in the editing window
 - Undo : undoes the last change in the editing window.
 - Redo : redoes the last undo in the editing window.
-- Save : saves the script in the editing window to .jl file.
+- Save : saves the script in the editing window to .js file.
 - Execute : executes the script in the editing window.
 - Stop : stops the execution.
 
