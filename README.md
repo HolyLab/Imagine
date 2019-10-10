@@ -199,7 +199,7 @@ We can open and close a laser shutter of laser. "Heatsink Fan" and "Temperature"
 
 ![alt text](doc/menu_dd04.png)
 
-Display Full Image : this menu make the camera ROI as full region.
+Display Full Image : this menu causes the camera to acquire images with the entire sensor.
 No Auto Scale : does not apply auto scale to the intensity of the captured images in displaying them.
 Auto Scale On First Frame : applies auto scale to the first frame image of a stack. And following frames are scaled with the scale factor of the first frame of the stack which they are belonged.
 Auto Scale On All Frames : applies auto scale to the every frame of the capture images.
