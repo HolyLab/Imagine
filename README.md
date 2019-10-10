@@ -201,7 +201,7 @@ We can open and close a laser shutter of laser. "Heatsink Fan" and "Temperature"
 
 Display Full Image : this menu causes the camera to acquire images with the entire sensor.
 No Auto Scale : does not apply auto scale to the intensity of the captured images in displaying them.
-Auto Scale On First Frame : applies auto scale to the first frame image of a stack. And following frames are scaled with the scale factor of the first frame of the stack which they are belonged.
+Auto Scale On First Frame : applies auto scale to the first frame image of a stack. And following frames are scaled with the scale factor of the first frame of the stack to which they belong.
 Auto Scale On All Frames : applies auto scale to the every frame of the capture images.
 Manual : enables users to set the scale manually. Intensity from "min" value and "max" value will be scaled to 0 to 255. If we overlap the camera1 image with the camera2 image, "cam2 min" and "cam2 max" can be used to set the minimum and maximum intensity value of the camera2 image.
 Colorize Saturated Pixels : enables display to indicate the saturated pixel with some colors. Blue color pixels indicates pixels which have minus intensity value after scaling. Red is for pixels having intensity over 256.
