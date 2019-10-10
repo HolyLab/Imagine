@@ -225,7 +225,7 @@ This tab is designed for setting the location and filename of output file and ad
 - exposure time(s) : set exposure time. This value is valid only for "External Start" mode in exposure trigger mode.
 - exposure trigger mode : selects exposure trigger mode. Refer to the explanation in the exposure trigger mode section.
 - idle time between stacks(s) : sets idle time between stacks.
-- bi-directional imaging : makes an acquisition enable during the positioner travel back time also. Refer to the bi-directional imaging waveform below.
+- bi-directional imaging : acquires images during positioner "flyback." Refer to the bi-directional imaging waveform below.
 - angle from horizontal(deg) : specifies angle between objective lens and horizontal plane (optional, user info only).
 - objective lens : specifies zoom factor of the objective lens. This is just used as an information.
 - um per pixel (xy plane) : specifies pixel size. This can be also calculated from the zoom factor. This is just used as an information.
