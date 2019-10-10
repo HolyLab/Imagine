@@ -292,7 +292,7 @@ In this figure, 'scriptControlTest.js' file is loaded, which shows example scrip
 
 ### Script control mode
 
-In the script control mode, we can execute a java script code in the Imagine. In addition, Imagine provides several java functions for user to access some essential operations which are used to record data. Thereby, we can execute several experiments according to the control flow specified with java script code by one execution without intervention.
+In the script control mode, we can execute javascript code in the Imagine. In addition, Imagine provides several javascript functions for user to access some essential operations which are used to record data. Thereby, we can execute several experiments according to the control flow specified with javascript code by one execution without intervention.
 
 In the Imagine GUI, general settings, parameter control settings and .json file name for waveform control can be saved in an configuration file with a ‘save configuration’ command in file menu. In script control mode, we can load, verify and record with this configuration file.
 
