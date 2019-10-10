@@ -250,7 +250,7 @@ this figure, 'HR_test.stim' file is loaded, which shows an example description o
 ![alt text](doc/menu05_display.png)
 
 - Display area size : scales the display size.
-- Camera and File choose radio button : chooses which images to display between images form cameras or captured images from .imagine file. And, we can display images from two cameras in one display window by overlapping them with different colors or in two windows separately.
+- Camera and File choose radio button : chooses which images to display between images from cameras or captured images from .imagine file. And, we can display images from two cameras in one display window by overlapping them with different colors or in two windows separately.
 - Mismatch correction for image 2 : helps to find mismatch parameters between the two overlapped images. When we capture images from two cameras, usually mismatch happens because of the difference between two optical paths to the cameras. We can correct the mismatch between overlapped images in the display window by changing "Translation X","Translation Y" and "Rotation angle" spinbox values. Once a user find well matched parameters with these spinboxes, the user should do the actual correction with those parameters in following analysis with separate tools. Imagine does not do the actual mismatch correction to the data. If this mismatch correction is performed before acquisition, these parameters will be saved in the .imagine output file.
 - Save current image : takes a snapshot of current display window.
 
