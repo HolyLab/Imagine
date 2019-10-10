@@ -213,7 +213,7 @@ Flicker control : reduces the flicker caused by abnormal black frames between no
 
 ![alt text](doc/menu01_general.png)
 
-This tab is designed for setting the location and filename of output file and adding some comments about the parameter setting of this experiment. These settings and comments can be saved in a configuration file which will be created by clicking the "Save Configuration" item in "File" menu.
+This tab is designed for setting the location and filename of output file and adding some comments about the parameter settings of this experiment. These settings and comments can be saved in a configuration file which will be created by clicking the "Save Configuration" item in the "File" menu.
 
 2. Camera tab
 
