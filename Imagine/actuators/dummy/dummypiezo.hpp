@@ -6,7 +6,8 @@
 
 class DummyPiezo: public Positioner {
 public:
-    DummyPiezo(int maxposition, int maxspeed, double fres, QString ctrlrsetup){
+    DummyPiezo(int minposition, int maxposition, int maxspeed, double fres, QString ctrlrsetup){
+        minpos = minposition;
         maxpos = maxposition;
         maxspd = maxspeed;
         resonanceFreq = fres;
@@ -15,7 +16,7 @@ public:
     }
    ~DummyPiezo(){}
 
-   int minPos(){return 0;}
+   int minPos(){return minpos;}
    int maxPos(){return maxpos; }
    int maxSpeed() { return maxspd; }
    double resonanceFrequency() { return resonanceFreq; }
@@ -48,6 +49,7 @@ public:
    QTime getDAQStartTime() { return daqStartTime; };
 
 private:
+    int minpos = 0;
     int maxpos = 0;
     int maxspd = 0;
     double resonanceFreq;

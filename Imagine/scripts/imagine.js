@@ -3,7 +3,7 @@ if(rig=="dummy"){
     var magnificationFactor = "1"
 	var positioner = "dummy";
 	var maxposition = "800"; // this value is for ocpi-2 positioner
-	var minposition = "0"; // this value is for ocpi-2 positioner
+	var minposition = "-800"; // this value is for ocpi-2 positioner
 	var maxspeed = "4000"; // this value is for ocpi-2 positioner
 	var f_res = "115.7"; // this value is for ocpi-2 positioner
 	var ctrlrsetup = "none" // no piezo controller setting
