@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
     ImgApplication a(argc, argv);
 
     //rig = "ocpi-2";
-    rig = string("dummy");
+    rig = string("realm");
     if (argc == 2) {
         rig = argv[1];
         std::cout << "The rig is: " << rig << std::endl;
