@@ -195,14 +195,15 @@ int main(int argc, char *argv[])
     splash->showMessage(QString("Initialize the %1 actuator ...").arg(positionerType), align, col);
     Positioner *pos = nullptr;
     int maxposition = se->globalObject().property("maxposition").toNumber();
+    int minposition = se->globalObject().property("minposition").toNumber();
     int maxspeed = se->globalObject().property("maxspeed").toNumber();
     double f_res = se->globalObject().property("f_res").toNumber();
     QString ctrlrsetup = se->globalObject().property("ctrlrsetup").toString();
     if (positionerType == "volpiezo") {
-        pos = new VolPiezo(ainame, aoname, maxposition, maxspeed, f_res, ctrlrsetup);
+        pos = new VolPiezo(ainame, aoname, minposition, maxposition, maxspeed, f_res, ctrlrsetup);
     }
     else if (positionerType == "dummy") {
-        pos = new DummyPiezo(maxposition, maxspeed, f_res, ctrlrsetup);
+        pos = new DummyPiezo(minposition, maxposition, maxspeed, f_res, ctrlrsetup);
     }
     else {
         QMessageBox::critical(0, "Imagine", "Unsupported positioner."

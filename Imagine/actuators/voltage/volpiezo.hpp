@@ -10,11 +10,12 @@
 class VolPiezo : public Positioner {
     string clkName;// use AO as trigger for DO and AI
 public:
-    VolPiezo(QString aistring, QString aostring, int maxposition, int maxspeed, double fres, QString ctrlrsetup){
+    VolPiezo(QString aistring, QString aostring, int minposition, int maxposition, int maxspeed, double fres, QString ctrlrsetup){
         ainame = aistring;
         aoname = aostring;
         aoOnce = nullptr;
         ao = nullptr;
+        minpos = minposition;
         maxpos = maxposition;
         maxspd = maxspeed;
         resonanceFreq = fres;
@@ -24,7 +25,7 @@ public:
     ~VolPiezo() { delete aoOnce; delete ao; }
 
 	//TODO: make these configurable elsewhere.  may be better to subclass VolPiezo for individual positioner models
-    int minPos(){ return 0; }
+    int minPos(){ return minpos; }
     int maxPos(){ return maxpos; }
     int maxSpeed(){ return maxspd; } //microns per second
     double resonanceFrequency() { return resonanceFreq; }
@@ -60,6 +61,7 @@ private:
     int numAOChannel;
     NiDaqAoWriteOne * aoOnce;
     NiDaqAo* ao;
+    int minpos = 0;
     int maxpos = 0;
     int maxspd = 0;
     QString setuptype;
