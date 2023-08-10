@@ -118,9 +118,9 @@ if (rig == "realm") {
     var f_res = "115.7"; // this value is for ocpi-2 positioner
     var ctrlrsetup = "none" // no piezo controller setting
     var daq = "ni";
-    var doname = "Dev2/port0/line0:6";
-    var diname = "Dev2/port0/line7";
-    var aoname = "Dev2/ao";
-    var ainame = "Dev2/ai";
+    var doname = "Dev1/port0/line0:6";
+    var diname = "Dev1/port0/line7";
+    var aoname = "Dev1/ao";
+    var ainame = "Dev1/ai";
     var maxlaserfreq = "25";
 }
