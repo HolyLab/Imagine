@@ -273,7 +273,7 @@ private:
         // Analog output (AO0 ~ AO3)                                // ctrlIdx
         { QString(STR_AOHEADER).append("0"), STR_axial_piezo },     // 0
         { QString(STR_AOHEADER).append("1"), STR_hor_piezo },
-        { QString(STR_AOHEADER).append("2"), STR_galvo1 },     // 0
+        { QString(STR_AOHEADER).append("2"), STR_galvo1 },          // 2
         { QString(STR_AOHEADER).append("3"), STR_galvo2 },
         // Analog input (AI0 ~ AI31)
         { QString(STR_AIHEADER).append("0"), STR_axial_piezo_mon }, // 4
@@ -297,10 +297,12 @@ private:
 	QVector<QVector<QString>> realmSecured = { // secured signal name for realm
 		// Analog output (AO0 ~ AO1)								// ctrlIdx
 		{ QString(STR_AOHEADER).append("0"), STR_axial_piezo },     // 0
-		// Analog input (AI0 ~ AI15)
+        { QString(STR_AOHEADER).append("1"), STR_hor_piezo },       // 1
+        // Analog input (AI0 ~ AI15)
 		{ QString(STR_AIHEADER).append("0"), STR_axial_piezo_mon }, // 2
-		{ QString(STR_AIHEADER).append("1"), STR_stimuli_mon }, // 3
-		// Digital output (P0.0 ~ P0.6)
+		{ QString(STR_AIHEADER).append("1"), STR_hor_piezo_mon },   // 3
+        { QString(STR_AIHEADER).append("2"), STR_stimuli_mon },     // 4
+        // Digital output (P0.0 ~ P0.6)
 		{ QString(STR_P0HEADER).append("4"), STR_488nm_laser_str }, // 18
 		{ QString(STR_P0HEADER).append("5"), STR_camera1 },
 		// Digital input (P0.7)                                     // 25
@@ -562,9 +564,15 @@ bool ControlWaveform::getWaveSampleValue(int waveIdx, SampleIdx sampleIdx, Typ &
     if (dataType == PDT_RAW)
         value = findValue(waveList_Raw[waveIdx], begin, end, sampleIdx);
     else if (dataType == PDT_VOLTAGE)
-        value = findValueVol(waveList_Raw[waveIdx], waveList_Vol[waveIdx], begin, end, sampleIdx);
+        if (waveList_Vol.isEmpty())
+            value = findValue(waveList_Raw[waveIdx], begin, end, sampleIdx);
+        else
+            value = findValueVol(waveList_Raw[waveIdx], waveList_Vol[waveIdx], begin, end, sampleIdx);
     else if (dataType == PDT_Z_POSITION)
-        value = findValuePos(waveList_Raw[waveIdx], waveList_Pos[waveIdx], begin, end, sampleIdx);
+        if (waveList_Pos.isEmpty())
+            value = findValue(waveList_Raw[waveIdx], begin, end, sampleIdx);
+        else
+            value = findValuePos(waveList_Raw[waveIdx], waveList_Pos[waveIdx], begin, end, sampleIdx);
     return true;
 }
 

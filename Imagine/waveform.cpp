@@ -475,7 +475,10 @@ CFErrorCode ControlWaveform::parsing(void)
                 dataType = 1; // piezo raw data
             }
             else
-                dataType = 2; // other analog data which might need some conversions
+                if (((rig == "ocpi-2") || (rig == "realm")) && (channelSignalList[i][0] == QString(STR_AOHEADER).append("1")))
+                    dataType = 1; // piezo raw data
+                else
+                    dataType = 2; // other analog data which might need some conversions
         }
         else {
             control = (digital[channelSignalList[i][1]].toObject())[STR_Seq].toArray();
