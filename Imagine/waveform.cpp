@@ -63,10 +63,11 @@ void ControlWaveform::initControlWaveform(QString rig)
     maxPiezoSpeed = seTmp->globalObject().property("maxspeed").toNumber();
     maxLaserFreq = seTmp->globalObject().property("maxlaserfreq").toNumber();
     resonanceFreq = seTmp->globalObject().property("f_res").toNumber();
-    if ((rig == "ocpi-2") || (rig == "dummy")) {
+    if ((rig == "ocpi-2") || (rig == "realm") || (rig == "dummy")) {
         minGalvoVol = seTmp->globalObject().property("mingalvovoltage").toNumber();
         maxGalvoVol = seTmp->globalObject().property("maxgalvovoltage").toNumber();
         maxGalvoSpeed = seTmp->globalObject().property("maxgalvospeed").toNumber();
+        maxGalvoFreq = seTmp->globalObject().property("maxgalvofreq").toNumber();
     }
     file.close();
     delete seTmp;
@@ -1175,6 +1176,37 @@ CFErrorCode ControlWaveform::fastSpeedCheck(int maxSpeed, int minRaw, int maxRaw
     return NO_CF_ERROR;
 }
 
+CFErrorCode ControlWaveform::galvoFreqCheck(double maxFreq, int ctrlIdx, SampleIdx& dataSize)
+{
+    dataSize = getCtrlSampleNum(ctrlIdx);
+    if (dataSize == 0)
+        return NO_CF_ERROR;
+    int waveIdx, controlIdx;
+    double freq, durationInSamples;
+    QVector<bool> usedWaveIdx(waveList_Raw.size(), false);
+
+    for (controlIdx = 0; controlIdx < controlList[ctrlIdx]->size(); controlIdx += 2) {
+        waveIdx = controlList[ctrlIdx]->at(controlIdx + 1);
+        if (usedWaveIdx[waveIdx] == false)
+        {
+            int wave0, wave1, lastIdx = -1;
+            for (int i = 0; i < getWaveSampleNum(waveIdx) - 1; i++) {
+                getWaveSampleValue(waveIdx, i, wave0);
+                getWaveSampleValue(waveIdx, i + 1, wave1);
+                if ((wave0 < 0) && (wave1 > 0)) { // check rising edge (TODO: when it doesn't across the zero or sine wave)
+                    durationInSamples = static_cast<double>(i - lastIdx);
+                    freq = static_cast<double>(sampleRate) / durationInSamples;
+                    if ((freq > maxFreq) && (lastIdx > 0))
+                        return ERR_GALVO_FREQ_FAST;
+                    lastIdx = i;
+                }
+            }
+            usedWaveIdx[waveIdx] = true;
+        }
+    }
+    return NO_CF_ERROR;
+}
+
 CFErrorCode ControlWaveform::analogResonanceFreqCheck(int ctrlIdx, double &ratio, SampleIdx &strt, SampleIdx &stop)
 {
     QVector<double> ratios, ac_powers;
@@ -1368,9 +1400,17 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
             }
             // galvo control speed check
             if (channelSignalList[i][1].left(5) == STR_galvo) {
-                CFErrorCode err = galvoSpeedCheck(maxGalvoSpeed, minGalvoVol, maxGalvoVol, i, sampleNum, strt, stop);
-                if (err & (ERR_PIEZO_SPEED_FAST | ERR_PIEZO_INSTANT_CHANGE)) {
+                if (maxGalvoSpeed > 0) {
+                    CFErrorCode err = galvoSpeedCheck(maxGalvoSpeed, minGalvoVol, maxGalvoVol, i, sampleNum, strt, stop);
+                }
+                if (maxGalvoFreq > 0) {
+                    CFErrorCode err |= galvoFreqCheck(maxGalvoFreq, i, sampleNum);
+                }
+                if (err & (ERR_PIEZO_SPEED_FAST | ERR_PIEZO_INSTANT_CHANGE | ERR_GALVO_FREQ_FAST)) {
                     errorMsg.append(QString("'%1' control is too fast\n").arg(channelSignalList[i][1]));
+                }
+                if (err & (ERR_GALVO_FREQ_FAST)) {
+                    errorMsg.append(QString("'%1' control frequency is too fast\n").arg(channelSignalList[i][1]));
                 }
                 if (err & (ERR_PIEZO_VALUE_INVALID)) {
                     errorMsg.append(QString("'%1' control value should not be negative.\n")

@@ -147,6 +147,7 @@ using namespace std;
 #define STR_hor_piezo           "horizontal piezo"
 #define STR_axial_piezo_mon     "axial piezo monitor"
 #define STR_hor_piezo_mon       "horizontal piezo monitor"
+#define STR_galvo_mon           "galvo monitor"
 #define STR_all_lasers          "all lasers"
 #define STR_camera1             "camera1"
 #define STR_camera2             "camera2"
@@ -186,16 +187,17 @@ enum CFErrorCode : unsigned int
     ERR_CAMERA_PULSE_NUM_ERR    = 1 << 10,
     ERR_LASER_SPEED_FAST        = 1 << 11,
     ERR_LASER_INSTANT_CHANGE    = 1 << 12,
-    ERR_SHORT_WAVEFORM          = 1 << 13,
+    ERR_GALVO_FREQ_FAST         = 1 << 13,
+    ERR_SHORT_WAVEFORM          = 1 << 14,
     // load ai di data error
-    ERR_READ_AI                 = 1 << 14,
-    ERR_READ_DI                 = 1 << 15,
+    ERR_READ_AI                 = 1 << 15,
+    ERR_READ_DI                 = 1 << 16,
     // waveform generation error
-    ERR_TRAVELBACKTIME_SHORT    = 1 << 16,
-    ERR_IDLETIME_SHORT          = 1 << 17,
-    ERR_FILE_OPEN               = 1 << 18,
+    ERR_TRAVELBACKTIME_SHORT    = 1 << 17,
+    ERR_IDLETIME_SHORT          = 1 << 18,
+    ERR_FILE_OPEN               = 1 << 19,
     // frequency analysis error
-    ERR_FREQUENCY_ANALYSIS_ERR  = 1 << 19
+    ERR_FREQUENCY_ANALYSIS_ERR  = 1 << 20
 }; // ai, di and command file error code
 
 enum PiezoDataType
@@ -297,10 +299,10 @@ private:
 	QVector<QVector<QString>> realmSecured = { // secured signal name for realm
 		// Analog output (AO0 ~ AO1)								// ctrlIdx
 		{ QString(STR_AOHEADER).append("0"), STR_axial_piezo },     // 0
-        { QString(STR_AOHEADER).append("1"), STR_hor_piezo },       // 1
+        { QString(STR_AOHEADER).append("1"), STR_galvo },           // 1
         // Analog input (AI0 ~ AI15)
 		{ QString(STR_AIHEADER).append("0"), STR_axial_piezo_mon }, // 2
-		{ QString(STR_AIHEADER).append("1"), STR_hor_piezo_mon },   // 3
+		{ QString(STR_AIHEADER).append("1"), STR_galvo_mon },       // 3
         { QString(STR_AIHEADER).append("2"), STR_stimuli_mon },     // 4
         // Digital output (P0.0 ~ P0.6)
 		{ QString(STR_P0HEADER).append("4"), STR_488nm_laser_str }, // 18
@@ -326,6 +328,7 @@ private:
         SampleIdx &dataSize, SampleIdx &strt, SampleIdx &stop);
     CFErrorCode galvoSpeedCheck(double maxVolSpeed, int minVol, int maxVol, int ctrlIdx,
         SampleIdx &dataSize, SampleIdx &strt, SampleIdx &stop);
+    CFErrorCode galvoFreqCheck(double maxFreq, int ctrlIdx, SampleIdx& dataSize);
     CFErrorCode analogSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx, SampleIdx &dataSize,
         SampleIdx &strt, SampleIdx &stop);
     CFErrorCode fullSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx,
@@ -355,6 +358,7 @@ public:
     int minGalvoVol = 0;
     int maxGalvoVol = 0;
     int maxGalvoSpeed = 0;
+    int maxGalvoFreq = 0;
     double resonanceFreq;  // this value comes from imagine.js
     double bandwidth = 20.; // bandwidth around resonance frequency to check safety
     double threshold = 0.02; // threshold(%) for power around resonance frequency
