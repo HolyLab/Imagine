@@ -187,17 +187,18 @@ enum CFErrorCode : unsigned int
     ERR_CAMERA_PULSE_NUM_ERR    = 1 << 10,
     ERR_LASER_SPEED_FAST        = 1 << 11,
     ERR_LASER_INSTANT_CHANGE    = 1 << 12,
-    ERR_GALVO_FREQ_FAST         = 1 << 13,
-    ERR_SHORT_WAVEFORM          = 1 << 14,
+    ERR_GALVO_VALUE_INVALID     = 1 << 13,
+    ERR_GALVO_FREQ_FAST         = 1 << 14,
+    ERR_SHORT_WAVEFORM          = 1 << 15,
     // load ai di data error
-    ERR_READ_AI                 = 1 << 15,
-    ERR_READ_DI                 = 1 << 16,
+    ERR_READ_AI                 = 1 << 16,
+    ERR_READ_DI                 = 1 << 17,
     // waveform generation error
-    ERR_TRAVELBACKTIME_SHORT    = 1 << 17,
-    ERR_IDLETIME_SHORT          = 1 << 18,
-    ERR_FILE_OPEN               = 1 << 19,
+    ERR_TRAVELBACKTIME_SHORT    = 1 << 18,
+    ERR_IDLETIME_SHORT          = 1 << 19,
+    ERR_FILE_OPEN               = 1 << 20,
     // frequency analysis error
-    ERR_FREQUENCY_ANALYSIS_ERR  = 1 << 20
+    ERR_FREQUENCY_ANALYSIS_ERR  = 1 << 21
 }; // ai, di and command file error code
 
 enum PiezoDataType
@@ -328,7 +329,10 @@ private:
         SampleIdx &dataSize, SampleIdx &strt, SampleIdx &stop);
     CFErrorCode galvoSpeedCheck(double maxVolSpeed, int minVol, int maxVol, int ctrlIdx,
         SampleIdx &dataSize, SampleIdx &strt, SampleIdx &stop);
-    CFErrorCode galvoFreqCheck(double maxFreq, int ctrlIdx, SampleIdx& dataSize);
+    CFErrorCode ControlWaveform::galvoFreqCheck(double maxFreq, int minVol, int maxVol, int ctrlIdx,
+        SampleIdx& dataSize, SampleIdx& strt, SampleIdx& stop);
+    CFErrorCode ControlWaveform::analogFreqCheck(double maxFreq, int minRaw, int maxRaw, int ctrlIdx,
+        SampleIdx& dataSize, SampleIdx& strt, SampleIdx& stop);
     CFErrorCode analogSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx, SampleIdx &dataSize,
         SampleIdx &strt, SampleIdx &stop);
     CFErrorCode fullSpeedCheck(int maxSpeed, int minRaw, int maxRaw, int ctrlIdx,

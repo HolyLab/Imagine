@@ -170,7 +170,7 @@ double ControlWaveform::raw2Zpos(int raw)
 
 int ControlWaveform::zpos2Raw(double pos)
 {
-    int raw = pos / static_cast<double>(maxPiezoPos) * piezo10Vint16Value;
+    int raw = floor(pos / static_cast<double>(maxPiezoPos) * piezo10Vint16Value);
     return raw;
 }
 
@@ -183,7 +183,7 @@ float64 ControlWaveform::raw2Voltage(int raw) // unit : voltage
 
 int ControlWaveform::voltage2Raw(float64 vol)
 {
-    int raw = vol * piezo10Vint16Value / 10.; // *10: 0-10vol range for piezo
+    int raw = floor(vol * piezo10Vint16Value / 10.); // *10: 0-10vol range for piezo
     return raw;
 }
 
@@ -1176,7 +1176,17 @@ CFErrorCode ControlWaveform::fastSpeedCheck(int maxSpeed, int minRaw, int maxRaw
     return NO_CF_ERROR;
 }
 
-CFErrorCode ControlWaveform::galvoFreqCheck(double maxFreq, int ctrlIdx, SampleIdx& dataSize)
+CFErrorCode ControlWaveform::galvoFreqCheck(double maxFreq, int minVol, int maxVol, int ctrlIdx,
+    SampleIdx& dataSize, SampleIdx& strt, SampleIdx& stop)
+{
+    int minRaw = voltage2Raw(minVol);
+    int maxRaw = voltage2Raw(maxVol);
+    CFErrorCode retVal = analogFreqCheck(maxFreq, minRaw, maxRaw, ctrlIdx, dataSize, strt, stop);
+    return retVal;
+}
+
+CFErrorCode ControlWaveform::analogFreqCheck(double maxFreq, int minRaw, int maxRaw, int ctrlIdx,
+    SampleIdx& dataSize, SampleIdx& strt, SampleIdx& stop)
 {
     dataSize = getCtrlSampleNum(ctrlIdx);
     if (dataSize == 0)
@@ -1192,8 +1202,13 @@ CFErrorCode ControlWaveform::galvoFreqCheck(double maxFreq, int ctrlIdx, SampleI
             int wave0, wave1, lastIdx = -1;
             for (int i = 0; i < getWaveSampleNum(waveIdx) - 1; i++) {
                 getWaveSampleValue(waveIdx, i, wave0);
+                if ((wave0 < minRaw) || (wave0 > maxRaw)) { // Invalid value
+                    strt = i;
+                    stop = i;
+                    return ERR_GALVO_VALUE_INVALID;
+                }
                 getWaveSampleValue(waveIdx, i + 1, wave1);
-                if ((wave0 < 0) && (wave1 > 0)) { // check rising edge (TODO: when it doesn't across the zero or sine wave)
+                if ((wave0 <= 0) && (wave1 > 0)) { // check rising edge (TODO: when it doesn't across the zero or sine wave)
                     durationInSamples = static_cast<double>(i - lastIdx);
                     freq = static_cast<double>(sampleRate) / durationInSamples;
                     if ((freq > maxFreq) && (lastIdx > 0))
@@ -1400,21 +1415,22 @@ CFErrorCode ControlWaveform::waveformValidityCheck()
             }
             // galvo control speed check
             if (channelSignalList[i][1].left(5) == STR_galvo) {
+                CFErrorCode err = NO_CF_ERROR;
                 if (maxGalvoSpeed > 0) {
-                    CFErrorCode err = galvoSpeedCheck(maxGalvoSpeed, minGalvoVol, maxGalvoVol, i, sampleNum, strt, stop);
+                    err |= galvoSpeedCheck(maxGalvoSpeed, minGalvoVol, maxGalvoVol, i, sampleNum, strt, stop);
                 }
                 if (maxGalvoFreq > 0) {
-                    CFErrorCode err |= galvoFreqCheck(maxGalvoFreq, i, sampleNum);
+                    err |= galvoFreqCheck(maxGalvoFreq, minGalvoVol, maxGalvoVol, i, sampleNum, strt, stop);
                 }
-                if (err & (ERR_PIEZO_SPEED_FAST | ERR_PIEZO_INSTANT_CHANGE | ERR_GALVO_FREQ_FAST)) {
+                if (err & (ERR_PIEZO_SPEED_FAST | ERR_PIEZO_INSTANT_CHANGE)) {
                     errorMsg.append(QString("'%1' control is too fast\n").arg(channelSignalList[i][1]));
                 }
                 if (err & (ERR_GALVO_FREQ_FAST)) {
                     errorMsg.append(QString("'%1' control frequency is too fast\n").arg(channelSignalList[i][1]));
                 }
-                if (err & (ERR_PIEZO_VALUE_INVALID)) {
-                    errorMsg.append(QString("'%1' control value should not be negative.\n")
-                        .arg(channelSignalList[i][1]));//.arg(maxPos));
+                if (err & (ERR_GALVO_VALUE_INVALID)) {
+                    errorMsg.append(QString("'%1' control value is out of range in sample index %2.\n")
+                        .arg(channelSignalList[i][1])).arg(strt);//.arg(maxPos));
                 }
                 if ((sampleNum != 0) && (sampleNum != totalSampleNum)) {
                     err |= ERR_SAMPLE_NUM_MISMATCHED;

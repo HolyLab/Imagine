@@ -14,7 +14,7 @@ if(rig=="dummy"){
 	var ainame = "Dev2/ai";
 	var maxlaserfreq = "1000"; // this shutter is fast but temporally set as 1000
 	var maxgalvospeed = "100"; // 100V/sec
-	var maxgalvoFreq = "100"; // 100Hz
+	var maxgalvofreq = "100"; // 100Hz
 	var mingalvovoltage = "-5"; // -5V
 	var maxgalvovoltage = "5"; // 5V
 }
@@ -83,7 +83,7 @@ if(rig=="ocpi-2"){
 	var ainame = "Dev2/ai";
 	var maxlaserfreq = "1000000"; // this shutter is fast but temporally set as 1000
 	var maxgalvospeed = "100"; // 100V/sec
-	var maxgalvoFreq = "-1"; // check frequency only when this value is positive
+	var maxgalvofreq = "-1"; // check frequency only when this value is positive
 	var mingalvovoltage = "-10"; // 100V/sec
 	var maxgalvovoltage = "10"; // 100V/sec
 }
@@ -126,7 +126,7 @@ if (rig == "realm") {
     var ainame = "Dev1/ai";
     var maxlaserfreq = "25";
 	var maxgalvospeed = "-1"; // check speed only when this value is positive
-	var maxgalvoFreq = "100"; // 100Hz
+	var maxgalvofreq = "100"; // 100Hz
 	var mingalvovoltage = "-5"; // -5V
 	var maxgalvovoltage = "5"; // 5V
 }
